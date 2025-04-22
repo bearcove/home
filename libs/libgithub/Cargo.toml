@@ -1,0 +1,18 @@
+[package]
+name = "libgithub"
+edition.workspace = true
+rust-version.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]

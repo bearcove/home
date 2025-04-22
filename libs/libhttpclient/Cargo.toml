@@ -1,0 +1,25 @@
+[package]
+name = "libhttpclient"
+edition.workspace = true
+rust-version.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+bytes = "1.10.1"
+form_urlencoded = "1.2.1"
+futures-core = "0.3.31"
+futures-util = "0.3.31"
+http = "1.3.1"
+merde.workspace = true
+reqwest = "0.12.15"
