@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use config::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::{AuthBundle, Profile, Tier, UserInfo};
 use eyre::Result;
-use httpclient::{HeaderValue, HttpClient, Uri, header};
+use libhttpclient::{HeaderValue, HttpClient, Uri, header};
 use merde::{CowStr, IntoStatic, Map};
 use time::OffsetDateTime;
 use tracing::debug;
@@ -28,7 +28,7 @@ impl ModImpl {
 
         let gh_sec = tc.github_secrets()?;
 
-        let res = httpclient::load()
+        let res = libhttpclient::load()
             .client()
             .post(Uri::from_static(
                 "https://github.com/login/oauth/access_token",
@@ -336,7 +336,7 @@ impl ModImpl {
         };
         let variables = Map::new().with("login", login);
 
-        let res = httpclient::load()
+        let res = libhttpclient::load()
             .client()
             .post(Uri::from_static("https://api.github.com/graphql"))
             .polite_user_agent()

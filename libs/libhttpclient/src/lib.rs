@@ -43,7 +43,7 @@ pub struct ClientOpts {
     pub follow_redirects: bool,
 }
 
-pub fn awaken() -> &'static dyn Mod {
+pub fn load() -> &'static dyn Mod {
     static MOD: ModImpl = ModImpl;
     &MOD
 }

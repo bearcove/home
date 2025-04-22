@@ -3978,7 +3978,7 @@ dependencies = [
  "eyre",
  "fs-err 3.1.0",
  "futures-core",
- "httpclient",
+ "libhttpclient",
  "merde",
  "time",
  "tracing",

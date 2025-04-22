@@ -11,9 +11,6 @@ dylo.workspace = true
 eyre = { version = "0.6.12", default-features = false }
 merde.workspace = true
 config = { path = "../config" }
-
-# impl deps
-httpclient = { path = "../httpclient", features = ["json"] }
 credentials = { path = "../credentials" }
 fs-err = { version = "3.1.0", optional = true }
 time = { version = "0.3.41", optional = true }
@@ -21,6 +18,7 @@ tracing = { version = "0.1.41", optional = true }
 url = { version = "2.5.4", optional = true }
 dylo-runtime = "2.5.0"
 futures-core = "0.3.31"
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 
 [features]
 default = ["impl"]
