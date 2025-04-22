@@ -12,7 +12,7 @@ conflux = { path = "../conflux", features = [] }
 # impl dependencies
 html-escape = { version = "0.2.13", optional = true }
 pulldown-cmark = { version = "0.11.3", features = ["simd"], optional = true }
-saphyr = { version = "0.0.1", default-features = false, optional = true }
+saphyr = { version = "0.0.4", default-features = false, optional = true }
 slug = { version = "0.1.6", optional = true }
 template = { path = "../template" }
 highlight = { path = "../highlight", optional = true }

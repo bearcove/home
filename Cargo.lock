@@ -2151,6 +2151,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hashlink"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
+dependencies = [
+ "hashbrown 0.15.2",
+]
+
+[[package]]
 name = "hattip"
 version = "0.1.0"
 dependencies = [
@@ -2662,7 +2671,7 @@ dependencies = [
  "dylo-runtime",
  "merde",
  "noteyre",
- "ordered-float",
+ "ordered-float 4.6.0",
 ]
 
 [[package]]
@@ -3605,7 +3614,7 @@ dependencies = [
  "camino",
  "compact_bytes",
  "compact_str",
- "ordered-float",
+ "ordered-float 4.6.0",
  "rusqlite",
  "serde",
  "time",
@@ -3988,7 +3997,7 @@ dependencies = [
  "merde",
  "noteyre",
  "num_cpus",
- "ordered-float",
+ "ordered-float 4.6.0",
  "ravif",
  "rgb",
  "tempfile",
@@ -4711,6 +4720,15 @@ name = "ordered-float"
 version = "4.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bb71e1b3fa6ca1c61f383464aaf2bb0e2f8e772a1f01d486832464de363b951"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "ordered-float"
+version = "5.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2c1f9f56e534ac6a9b8a4600bdf0f530fb393b5f393e7b4d03489c3cf0c3f01"
 dependencies = [
  "num-traits",
 ]
@@ -5996,23 +6014,24 @@ dependencies = [
 
 [[package]]
 name = "saphyr"
-version = "0.0.1"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80de2fc4848ba3cdd64b7127f2ffc420b8596bb10e80261a3895526c8c97f2e3"
+checksum = "9235237b78e93229dfceefd307ca041d6e1752ac7eaaf392531c3778fa4810a1"
 dependencies = [
  "arraydeque",
- "hashlink 0.8.4",
+ "hashlink 0.10.0",
+ "ordered-float 5.0.0",
  "saphyr-parser",
 ]
 
 [[package]]
 name = "saphyr-parser"
-version = "0.0.1"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "886b4bb040ecd2944f54c3543e612c336396e3eba700c5063d8bad5f40bac3d7"
+checksum = "2f5c8d67f5937b6b8a42c0d6038d90571ca3d8a99cc4adae69e490ba0acc6bf1"
 dependencies = [
  "arraydeque",
- "hashlink 0.8.4",
+ "hashlink 0.10.0",
 ]
 
 [[package]]
