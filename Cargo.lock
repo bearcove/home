@@ -1576,11 +1576,11 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4effef5cda58e3ac0eca104902d72eab3a846490784071ded6bc2d4dac5a480c"
+checksum = "d463cdbfd164edf1bba30df23cf639dc6fbd000a03311f5f8dcfeff08299eb03"
 dependencies = [
- "facet-core",
+ "facet-core 0.11.0",
  "facet-derive",
 ]
 
@@ -1591,34 +1591,44 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d19ab200f37e8c2144ee62c22b8303e4dfbc98d20e210c4cefc0a616a99be379"
 dependencies = [
  "bitflags 2.9.0",
+ "impls",
+]
+
+[[package]]
+name = "facet-core"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f5905953877795d96aef172f2206950339e350f9862c0b1c0d15b781c7a97c0"
+dependencies = [
+ "bitflags 2.9.0",
  "camino",
  "impls",
 ]
 
 [[package]]
 name = "facet-derive"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67fd8a3e3b2cff5e205183715ec52abc7ee36edbc5c12129c83c130814706978"
+checksum = "c1e70487e8dfa130f15b682d12a5a72ea05d49be05fdd3d5a2515b7bac6b707a"
 dependencies = [
- "facet-core",
+ "facet-core 0.11.0",
  "facet-derive-emit",
 ]
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "927368f3a5c41915cad97c43c10b1d3cf3c5f68b05200b829ed245272e4cccdf"
+checksum = "ef4e65d115e0ba547d9ff23808dce39b9147c89608c45494a3054d48cec2dae4"
 dependencies = [
  "facet-derive-parse",
 ]
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1131699e66bb7557f70b3fa60c0060ffd5b47248dcdc8e520e6897a8fd73bef0"
+checksum = "2a4a06efa3e0b08f2aff06def429a0a06b304379167be9491e24bad0f282c19d"
 dependencies = [
  "unsynn",
 ]
@@ -1630,7 +1640,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ac7b0f594e075d7742ec2dd1a4d4d70fdccedb97a2d409c2bdf3694f1a30aee"
 dependencies = [
  "ariadne",
- "facet-core",
+ "facet-core 0.10.1",
  "facet-reflect",
  "log",
  "owo-colors 4.2.0",
@@ -1642,7 +1652,7 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61779191385b18d97815892155687b114e850d3d75362f7b95b12c1608f78581"
 dependencies = [
- "facet-core",
+ "facet-core 0.10.1",
  "facet-reflect",
  "yansi",
 ]
@@ -1654,7 +1664,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e22562ba0bca8e3a87f22d9580e83f06d8ca34bb4472919774f1b9784071f51"
 dependencies = [
  "bitflags 2.9.0",
- "facet-core",
+ "facet-core 0.10.1",
  "owo-colors 4.2.0",
 ]
 
