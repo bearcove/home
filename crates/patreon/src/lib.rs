@@ -8,7 +8,7 @@ use config::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::AuthBundle;
 use eyre::Result;
 use futures_core::future::BoxFuture;
-use httpclient::{HttpClient, Uri};
+use libhttpclient::{HttpClient, Uri};
 use merde::CowStr;
 use std::collections::HashSet;
 #[derive(Debug, Clone)]

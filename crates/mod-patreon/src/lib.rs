@@ -7,7 +7,7 @@ use credentials::AuthBundle;
 use eyre::Context as _;
 use eyre::Result;
 use futures_core::future::BoxFuture;
-use httpclient::{HttpClient, Uri};
+use libhttpclient::{HttpClient, Uri};
 use merde::CowStr;
 #[cfg(feature = "impl")]
 use merde::IntoStatic;
@@ -82,7 +82,7 @@ impl Mod for ModImpl {
                 serializer.finish()
             };
 
-            let res = httpclient::load()
+            let res = libhttpclient::load()
                 .client()
                 .post(Uri::from_static("https://patreon.com/api/oauth2/token"))
                 .form(tok_params)
@@ -138,7 +138,7 @@ impl Mod for ModImpl {
                             .finish()
                     };
 
-                    let client = httpclient::load().client();
+                    let client = libhttpclient::load().client();
                     let uri = Uri::from_static("https://www.patreon.com/api/oauth2/token");
                     tracing::info!(%uri, "Refresh params: {tok_params:#?}");
                     let res = client
@@ -201,7 +201,7 @@ impl Mod for ModImpl {
                 .scheme("https")
                 .authority("www.patreon.com")
                 .path_and_query(
-                    httpclient::form_urlencoded::Serializer::new(format!(
+                    libhttpclient::form_urlencoded::Serializer::new(format!(
                         "/api/oauth2/v2/campaigns/{patreon_campaign_id}/members?"
                     ))
                     .append_pair("include", "currently_entitled_tiers")
@@ -333,7 +333,7 @@ impl ModImpl {
         let identity_url = identity_url.to_string();
 
         let identity_uri = identity_url.parse::<Uri>().unwrap();
-        let res = httpclient::load()
+        let res = libhttpclient::load()
             .client()
             .get(identity_uri.clone())
             .bearer_auth(&creds.access_token)

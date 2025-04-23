@@ -52,7 +52,6 @@ image = { path = "../image", optional = true }
 tempfile = { version = "3.19.1", optional = true }
 uffmpeg = { path = "../uffmpeg", optional = true }
 httpclient = { path = "../httpclient", optional = true }
-github = { path = "../github", optional = true }
 patreon = { path = "../patreon", optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 content-type = { path = "../content-type", optional = true }
@@ -76,6 +75,7 @@ tempdir = { version = "0.3.7", optional = true }
 revision = { version = "0.1.0", path = "../revision", optional = true }
 config = { version = "0.1.0", path = "../config" }
 open = { version = "5.3.2", optional = true }
+libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
 
 # the `mod-cub` crate is built with `impl` enabled, which brings in the impl-only deps
 [features]
@@ -110,7 +110,7 @@ impl = [
     "dep:tempfile",
     "dep:uffmpeg",
     "dep:httpclient",
-    "dep:github",
+
     "dep:patreon",
     "dep:serde",
     "dep:content-type",

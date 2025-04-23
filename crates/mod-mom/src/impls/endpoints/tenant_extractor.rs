@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::{async_trait, extract::FromRequestParts};
 use config::TenantDomain;
-use httpclient::{StatusCode, request::Parts};
+use libhttpclient::{StatusCode, request::Parts};
 use serde::Deserialize;
 
 use crate::impls::{

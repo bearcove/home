@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::routing::get;
 use config::is_development;
-use httpclient::Uri;
+use libhttpclient::Uri;
 
 use crate::impls::{MomTenantState, global_state};
 use crate::{ListMissingArgs, ListMissingResponse, TenantEventPayload};
@@ -14,8 +14,7 @@ use axum::{
     routing::{post, put},
 };
 use credentials::AuthBundle;
-use github::GitHubCredentials;
-use github::{GitHubCallbackArgs, GitHubCallbackResponse};
+use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse, GitHubCredentials};
 use merde::IntoStatic;
 use objectstore::{ObjectStoreKey, ObjectStoreKeyRef};
 use patreon::{
@@ -114,7 +113,7 @@ async fn github_callback(
     let body = std::str::from_utf8(&body[..])?;
     let args: GitHubCallbackArgs = merde::json::from_str(body)?;
 
-    let mod_github = github::load();
+    let mod_github = libgithub::load();
 
     let web = global_state().web;
     let creds = mod_github
@@ -226,7 +225,7 @@ async fn auth_bundle_update(
             .await?;
         auth_bundle
     } else if let Some(github_id) = auth_bundle.user_info.profile.github_id {
-        let mod_github = github::load();
+        let mod_github = libgithub::load();
         let github_creds = {
             let conn = ts.pool.get()?;
             get_github_credentials(&conn, &github_id)?
@@ -295,7 +294,7 @@ async fn objectstore_list_missing(
             .path_and_query(format!("/tenant/{tenant_name}/objectstore/list-missing"))
             .build()
             .unwrap();
-        let client = httpclient::load().client();
+        let client = libhttpclient::load().client();
 
         match client.post(uri).json(&args)?.send_and_expect_200().await {
             Err(e) => {

@@ -22,9 +22,9 @@ use noteyre::BsForResults;
 use bytes::Bytes;
 use conflux::RevisionIdRef;
 use credentials::AuthBundle;
-use github::{GitHubCallbackArgs, GitHubCallbackResponse};
 #[cfg(feature = "impl")]
 use httpclient::{HttpClient, RequestBuilder};
+use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
 #[allow(unused_imports)]
 use mom::{
     ListMissingArgs, ListMissingResponse, MomEvent,

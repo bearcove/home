@@ -19,7 +19,6 @@ tokio = { workspace = true, features = ["time"], optional = true }
 tracing = { version = "0.1.41", optional = true }
 credentials = { path = "../credentials" }
 mom = { path = "../mom" }
-github = { path = "../github" }
 patreon = { path = "../patreon" }
 bytes = "1.10.1"
 websock = { path = "../websock", optional = true }
@@ -27,6 +26,7 @@ objectstore = { path = "../objectstore" }
 dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
 futures-core = "0.3.31"
+libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
 
 [features]
 default = ["impl"]

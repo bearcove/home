@@ -5,7 +5,7 @@ use crate::impls::{
 };
 use axum::{Form, Router, response::Redirect, routing::get};
 use cub_types::{CubReq, CubTenant};
-use github::GitHubLoginPurpose;
+use libgithub::GitHubLoginPurpose;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies};
@@ -77,7 +77,7 @@ async fn serve_login_with_github(tr: CubReqImpl, params: Option<Form<LoginParams
     } else {
         GitHubLoginPurpose::Regular
     };
-    let location = github::load().make_login_url(tr.tenant.tc(), tr.web(), purpose)?;
+    let location = libgithub::load().make_login_url(tr.tenant.tc(), tr.web(), purpose)?;
     Redirect::to(&location).into_legacy_reply()
 }
 
@@ -122,7 +122,7 @@ async fn serve_patreon_callback_inner(
 async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     let ts = tr.tenant.clone();
     let tcli = tr.tenant.tcli();
-    let callback_args = github::GitHubCallbackArgs {
+    let callback_args = libgithub::GitHubCallbackArgs {
         raw_query: tr.raw_query().to_owned().into(),
     };
     let callback_res = tcli.github_callback(&callback_args).await?;
@@ -137,7 +137,7 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
             .as_deref()
             .unwrap_or_default();
         if ts.rc()?.admin_github_ids.iter().any(|id| id == github_id) {
-            let mod_github = github::load();
+            let mod_github = libgithub::load();
             if callback_res
                 .github_credentials
                 .scope

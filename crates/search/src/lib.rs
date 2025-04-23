@@ -8,3 +8,35 @@ use config::WebConfig;
 use conflux::RevisionView;
 use conflux::{Completion, InputPath, LoadedPage, SearchResults, Viewer};
 pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+use percent_encoding::{AsciiSet, CONTROLS, percent_encode};
+const FRAGMENT_ENCODE_SET_BASE: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'<')
+    .add(b'>')
+    .add(b'`');
+const CUSTOM_FRAGMENT_ENCODE_SET: &AsciiSet = &FRAGMENT_ENCODE_SET_BASE
+    .add(b'-')
+    .add(b',')
+    .add(b':')
+    .add(b'=')
+    .add(b'#')
+    .add(b'&')
+    .add(b'\'')
+    .add(b'"')
+    .add(b'<')
+    .add(b'>')
+    .add(b'{')
+    .add(b'}')
+    .add(b'|')
+    .add(b'\\')
+    .add(b'^')
+    .add(b'~')
+    .add(b'[')
+    .add(b']')
+    .add(b'.');
+/// Encodes a string for use in a URL fragment (#fragment), with additional
+/// encoding for '-' and '.' characters.
+fn fragment_urlencode(input: &[u8]) -> String {
+    percent_encode(input, CUSTOM_FRAGMENT_ENCODE_SET).to_string()
+}

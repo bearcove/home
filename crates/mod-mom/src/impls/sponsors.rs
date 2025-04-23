@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use futures_util::TryFutureExt;
-use github::GitHubCredentials;
-use httpclient::HttpClient;
+use libgithub::GitHubCredentials;
+use libhttpclient::HttpClient;
 use merde::{CowStr, IntoStatic};
 
 use crate::{
@@ -62,7 +62,7 @@ async fn github_list_sponsors(
     };
     let github_credentials = merde::json::from_str_owned::<GitHubCredentials>(&github_credentials)
         .map_err(|e| e.into_static())?;
-    let github = github::load();
+    let github = libgithub::load();
     github
         .list_sponsors(&ts.ti.tc, client, &github_credentials)
         .await

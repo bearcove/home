@@ -11,7 +11,7 @@ use httpclient::{HeaderMap, HeaderValue, Uri, header::self};
 use bytes::Bytes;
 use conflux::RevisionIdRef;
 use credentials::AuthBundle;
-use github::{GitHubCallbackArgs, GitHubCallbackResponse};
+use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
 #[allow(unused_imports)]
 use mom::{
     ListMissingArgs, ListMissingResponse, MomEvent,

@@ -13,12 +13,10 @@ conflux = { path = "../conflux", features = ["rusqlite"] }
 merde = { workspace = true, features = ["json", "rusqlite", "serde", "camino"] }
 config = { path = "../config", features = ["serde"] }
 errhandling = { path = "../errhandling", optional = true }
-httpclient = { path = "../httpclient", features = ["json"], optional = true }
 objectstore = { path = "../objectstore", features = ["rusqlite"] }
 term = { path = "../term", optional = true }
 credentials = { path = "../credentials", optional = true }
 patreon = { path = "../patreon", optional = true }
-github = { path = "../github", optional = true }
 content-type = { path = "../content-type", optional = true }
 derivations = { version = "0.1.0", path = "../derivations" }
 
@@ -58,6 +56,8 @@ noteyre = { version = "0.1.0", path = "../noteyre" }
 futures-core = "0.3.31"
 owo-colors = "4.2.0"
 itertools = "0.14.0"
+libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 
 [features]
 default = ["impl"]
@@ -78,8 +78,8 @@ impl = [
     "dep:content-type",
     "dep:credentials",
     "dep:errhandling",
-    "dep:github",
-    "dep:httpclient",
+
+
     "dep:patreon",
     "dep:term",
     "dep:tempfile",

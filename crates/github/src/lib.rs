@@ -3,11 +3,11 @@
 // To regenerate, run `dylo gen` in the root of the workspace directory
 // For more information, see https://github.com/bearcove/dylo
 use futures_core::future::BoxFuture;
+use libhttpclient::HttpClient;
 use std::collections::HashSet;
 use config::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::AuthBundle;
 use eyre::Result;
-use httpclient::HttpClient;
 use merde::CowStr;
 #[derive(Debug, Clone)]
 pub struct GitHubCallbackArgs<'s> {

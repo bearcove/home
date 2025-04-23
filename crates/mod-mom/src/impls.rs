@@ -9,9 +9,9 @@ use axum::extract::ws;
 use config::{MomConfig, RevisionConfig, TenantDomain, TenantInfo, WebConfig, is_development};
 use conflux::Pak;
 use credentials::AuthBundle;
-use httpclient::HttpClient;
 use inflight::InflightSlots;
 use itertools::Itertools;
+use libhttpclient::HttpClient;
 use merde::IntoStatic;
 use noteyre::BsForResults;
 use objectstore::{ObjectStore, ObjectStoreKey};
@@ -303,7 +303,7 @@ pub async fn serve(args: MomServeArgs) -> noteyre::Result<()> {
         drop(rx_event);
 
         let mut gs = MomGlobalState {
-            client: Arc::from(httpclient::load().client()),
+            client: Arc::from(libhttpclient::load().client()),
             bx_event: tx_event,
             tenants: Default::default(),
             config: Arc::new(config),

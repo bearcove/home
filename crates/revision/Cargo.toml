@@ -14,6 +14,7 @@ cub-types = { version = "0.1.0", path = "../cub-types" }
 dylo-runtime = "2.5.0"
 eyre.workspace = true
 facet-json = "0.11.1"
+facet-pretty = "0.13.0"
 futures-core = "0.3.31"
 
 [features]
