@@ -3269,6 +3269,7 @@ dependencies = [
 name = "liberrhandling"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "color-backtrace",
  "color-eyre",
  "eyre",
@@ -3279,6 +3280,7 @@ dependencies = [
 name = "libfs"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "camino",
  "eyre",
  "ignore",
@@ -3316,6 +3318,7 @@ dependencies = [
 name = "libhighlight"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "dumbcache",
  "nerdfonts",
  "tracing",

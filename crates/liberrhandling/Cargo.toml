@@ -8,8 +8,6 @@ crate-type = ["dylib"]
 
 [dependencies]
 eyre = { version = "0.6.12", default-features = false }
-
-# impl dependencies
 color-backtrace = { version = "0.7.0", default-features = false, features = [
     "use-backtrace-crate",
 ] }
@@ -17,3 +15,4 @@ color-eyre = { version = "0.6.3", default-features = false, features = [
     "track-caller",
 ] }
 termcolor = { version = "1.4.1" }
+autotrait = "0.1.4"

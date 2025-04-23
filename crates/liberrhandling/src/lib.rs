@@ -1,11 +1,14 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+use autotrait::autotrait;
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     fn install(&self) {
         const RUST_BACKTRACE: &str = "RUST_BACKTRACE";
@@ -77,7 +80,6 @@ pub fn should_include_frame_name(name: impl AsRef<str>) -> bool {
     !excludes.iter().any(|exclude| name.contains(exclude))
 }
 
-#[cfg(feature = "impl")]
 mod impls {
     use color_backtrace::{BacktracePrinter, Frame, Verbosity};
 

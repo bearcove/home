@@ -1,17 +1,17 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
+use autotrait::autotrait;
 use camino::Utf8PathBuf;
 use std::{fs::FileType, path::Path};
 
-#[cfg(feature = "impl")]
 use ignore::overrides::OverrideBuilder;
-#[cfg(feature = "impl")]
 use notify::{Watcher as _, recommended_watcher};
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
 #[derive(Debug)]
 pub struct WatcherEvent {
@@ -29,7 +29,6 @@ pub enum WatcherEventKind {
 pub type WalkDirItem = eyre::Result<Box<dyn DirEntry>>;
 pub type WalkDirIter = Box<dyn Iterator<Item = WalkDirItem>>;
 
-#[cfg(feature = "impl")]
 fn from_notify_kind(kind: notify::EventKind) -> Option<WatcherEventKind> {
     match kind {
         notify::EventKind::Create(_) => Some(WatcherEventKind::Create),
@@ -39,7 +38,7 @@ fn from_notify_kind(kind: notify::EventKind) -> Option<WatcherEventKind> {
     }
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn walkdir(&self, path: &Path) -> eyre::Result<WalkDirIter> {
         let path = Path::new(path);
@@ -80,10 +79,9 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct DirEntryWrapper(ignore::DirEntry);
 
-#[dylo::export]
+#[autotrait]
 impl DirEntry for DirEntryWrapper {
     fn file_type(&self) -> Option<FileType> {
         self.0.file_type()
@@ -98,10 +96,9 @@ impl DirEntry for DirEntryWrapper {
     }
 }
 
-#[cfg(feature = "impl")]
 struct WatcherWrapper(notify::RecommendedWatcher);
 
-#[dylo::export]
+#[autotrait]
 impl Watcher for WatcherWrapper {
     fn watch(&mut self, path: &Path) -> eyre::Result<()> {
         self.0.watch(path, notify::RecursiveMode::Recursive)?;

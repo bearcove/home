@@ -1,7 +1,3 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
-#[cfg(feature = "impl")]
 const HIGHLIGHT_NAMES: &[&str] = &[
     "attribute",
     "constant",
@@ -134,7 +130,7 @@ pub struct HighlightCodeParams<'a> {
     pub byte_offset: usize,
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     /// Get a string containing all nerdfont icons for all language types
     fn all_icons(&self) -> String {
@@ -277,7 +273,6 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 impl Default for ModImpl {
     fn default() -> Self {
         let highlight_names = HIGHLIGHT_NAMES
@@ -749,7 +744,6 @@ impl Default for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 pub(crate) mod impls {
     use crate::HighlightCodeParams;
     use crate::Lang;
