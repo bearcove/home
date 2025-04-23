@@ -63,8 +63,7 @@ impl RevisionView for Revision {
     }
 }
 
-pub use noteyre::{BS, BsForErrors, BsForResults};
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub use eyre::Result;
 
 pub trait CacheBuster: Send + Sync + 'static {
     /// Cache-bust the given asset path.
@@ -1351,9 +1350,9 @@ impl PathMappings {
         None
     }
 
-    pub fn to_disk_path(&self, input_path: &InputPathRef) -> noteyre::Result<Utf8PathBuf> {
+    pub fn to_disk_path(&self, input_path: &InputPathRef) -> eyre::Result<Utf8PathBuf> {
         self.to_disk_path_maybe(input_path).ok_or_else(|| {
-            noteyre::eyre!(
+            eyre::eyre!(
                 "Failed to map input path {} to disk path. Available mappings: {}",
                 input_path,
                 self.entries
@@ -1365,9 +1364,9 @@ impl PathMappings {
         })
     }
 
-    pub fn to_input_path(&self, disk_path: &Utf8Path) -> noteyre::Result<InputPath> {
+    pub fn to_input_path(&self, disk_path: &Utf8Path) -> eyre::Result<InputPath> {
         self.to_input_path_maybe(disk_path).ok_or_else(|| {
-            noteyre::eyre!(
+            eyre::eyre!(
                 "Failed to map disk path {} to input path. Available mappings: {}",
                 disk_path,
                 self.entries

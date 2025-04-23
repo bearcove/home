@@ -1,5 +1,4 @@
-use merde::{time::Rfc3339, CowStr};
-use noteyre::BS;
+use merde::{CowStr, time::Rfc3339};
 use time::OffsetDateTime;
 
 pub type Result<T, E = BS> = std::result::Result<T, E>;

@@ -1,0 +1,20 @@
+[package]
+name = "libmedia"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+config = { version = "0.1.0", path = "../config" }
+conflux = { version = "0.1.0", path = "../conflux" }
+dylo.workspace = true
+dylo-runtime = "2.5.0"
+html-escape = { version = "0.2.13" }
+image = { version = "0.1.0", path = "../image" }
+noteyre = { version = "0.1.0", path = "../noteyre" }
+
+[features]
+default = ["impl"]
+impl = []

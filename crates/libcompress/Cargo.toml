@@ -1,0 +1,20 @@
+[package]
+name = "libcompress"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+dylo.workspace = true
+bytes = "1.10.1"
+
+# impl deps
+brotli = { version = "6.0.0" }
+flate2 = { version = "1.1.0" }
+dylo-runtime = "2.5.0"
+
+[features]
+default = ["impl"]
+impl = []

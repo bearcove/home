@@ -1,0 +1,17 @@
+[package]
+name = "libmath"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+dylo.workspace = true
+dylo-runtime = "2.5.0"
+noteyre = { version = "0.1.0", path = "../noteyre" }
+pulldown-latex = { version = "0.7.1" }
+
+[features]
+default = ["impl"]
+impl = []

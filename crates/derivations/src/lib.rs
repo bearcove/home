@@ -21,7 +21,7 @@ impl<'a> DerivationInfo<'a> {
     pub fn lookup(
         pak: &'a Pak<'static>,
         derivation: &'a Derivation,
-    ) -> noteyre::Result<DerivationInfo<'a>> {
+    ) -> eyre::Result<DerivationInfo<'a>> {
         let input = pak
             .inputs
             .get_or_help(closest::ResourceKind::Input, &derivation.input)
@@ -38,7 +38,7 @@ impl<'a> DerivationInfo<'a> {
         ti: Arc<TenantInfo>,
         object_store: Arc<dyn ObjectStore>,
         web: WebConfig,
-    ) -> noteyre::Result<Bytes> {
+    ) -> eyre::Result<Bytes> {
         let e = match object_store.get(&self.input.key()).await {
             Ok(res) => return res.bytes().await.bs(),
             Err(e) => e,
@@ -255,7 +255,7 @@ impl HasPipelineHash for VContainer {
 pub async fn objectstore_for_tenant(
     ti: &TenantInfo,
     env: Environment,
-) -> noteyre::Result<Arc<dyn ObjectStore>> {
+) -> eyre::Result<Arc<dyn ObjectStore>> {
     let objectstore = objectstore::load();
 
     let disk_path = ti.internal_dir().join("object-cache");

@@ -701,7 +701,7 @@ dependencies = [
  "http-range",
  "libhttpclient",
  "mom",
- "noteyre",
+ "eyre",
  "tokio",
  "tracing",
  "websock",
@@ -901,7 +901,7 @@ dependencies = [
  "figment",
  "fs-err 2.11.0",
  "merde",
- "noteyre",
+ "eyre",
  "owo-colors 4.2.0",
  "plait",
  "serde",
@@ -922,7 +922,7 @@ dependencies = [
  "image 0.1.0",
  "merde",
  "minijinja",
- "noteyre",
+ "eyre",
  "objectstore",
  "plait",
  "rusqlite",
@@ -1079,7 +1079,7 @@ name = "credentials"
 version = "0.1.0"
 dependencies = [
  "merde",
- "noteyre",
+ "eyre",
  "serde",
  "time",
 ]
@@ -1242,7 +1242,7 @@ dependencies = [
  "mom",
  "momclient",
  "nix 0.29.0",
- "noteyre",
+ "eyre",
  "objectstore",
  "open",
  "parking_lot",
@@ -1399,7 +1399,7 @@ dependencies = [
  "conflux",
  "content-type",
  "image 0.1.0",
- "noteyre",
+ "eyre",
  "objectstore",
  "seahash",
  "tokio",
@@ -2766,7 +2766,7 @@ dependencies = [
  "jpegxl-rs",
  "jxl-oxide",
  "merde",
- "noteyre",
+ "eyre",
  "num_cpus",
  "ordered-float",
  "ravif",
@@ -3614,7 +3614,7 @@ dependencies = [
  "html-escape",
  "math",
  "media",
- "noteyre",
+ "eyre",
  "pulldown-cmark",
  "saphyr",
  "slug",
@@ -3664,7 +3664,7 @@ name = "math"
 version = "0.1.0"
 dependencies = [
  "dylo-runtime",
- "noteyre",
+ "eyre",
  "pulldown-latex",
 ]
 
@@ -3707,7 +3707,7 @@ dependencies = [
  "dylo-runtime",
  "html-escape",
  "image 0.1.0",
- "noteyre",
+ "eyre",
 ]
 
 [[package]]
@@ -3865,7 +3865,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-api"
+name = "libapi"
 version = "0.1.0"
 dependencies = [
  "cub-types",
@@ -3878,7 +3878,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-cdn"
+name = "libcdn"
 version = "0.1.0"
 dependencies = [
  "bytesize 2.0.1",
@@ -3894,14 +3894,14 @@ dependencies = [
  "http-range",
  "libhttpclient",
  "mom",
- "noteyre",
+ "eyre",
  "tokio",
  "tracing",
  "websock",
 ]
 
 [[package]]
-name = "mod-clap"
+name = "libclap"
 version = "0.1.0"
 dependencies = [
  "camino",
@@ -3911,7 +3911,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-compress"
+name = "libcompress"
 version = "0.1.0"
 dependencies = [
  "brotli",
@@ -3922,7 +3922,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-config"
+name = "libconfig"
 version = "0.1.0"
 dependencies = [
  "base64",
@@ -3936,7 +3936,7 @@ dependencies = [
  "figment",
  "fs-err 2.11.0",
  "merde",
- "noteyre",
+ "eyre",
  "owo-colors 4.2.0",
  "plait",
  "serde",
@@ -3944,7 +3944,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-cub"
+name = "libcub"
 version = "0.1.0"
 dependencies = [
  "api",
@@ -3980,7 +3980,7 @@ dependencies = [
  "mom",
  "momclient",
  "nix 0.29.0",
- "noteyre",
+ "eyre",
  "objectstore",
  "open",
  "parking_lot",
@@ -4010,7 +4010,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-doctor"
+name = "libdoctor"
 version = "0.1.0"
 dependencies = [
  "dylo",
@@ -4021,7 +4021,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-errhandling"
+name = "liberrhandling"
 version = "0.1.0"
 dependencies = [
  "color-backtrace",
@@ -4033,7 +4033,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-fs"
+name = "libfs"
 version = "0.1.0"
 dependencies = [
  "camino",
@@ -4045,7 +4045,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-highlight"
+name = "libhighlight"
 version = "0.1.0"
 dependencies = [
  "dumbcache",
@@ -4057,7 +4057,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-htmlrewrite"
+name = "libhtmlrewrite"
 version = "0.1.0"
 dependencies = [
  "dylo",
@@ -4066,7 +4066,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-image"
+name = "libimage"
 version = "0.1.0"
 dependencies = [
  "content-type",
@@ -4077,7 +4077,7 @@ dependencies = [
  "jpegxl-rs",
  "jxl-oxide",
  "merde",
- "noteyre",
+ "eyre",
  "num_cpus",
  "ordered-float",
  "ravif",
@@ -4088,7 +4088,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-lightningcss"
+name = "liblightningcss"
 version = "0.1.0"
 dependencies = [
  "dylo",
@@ -4097,7 +4097,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-markdown"
+name = "libmarkdown"
 version = "0.1.0"
 dependencies = [
  "config",
@@ -4110,7 +4110,7 @@ dependencies = [
  "insta",
  "math",
  "media",
- "noteyre",
+ "eyre",
  "pulldown-cmark",
  "saphyr",
  "slug",
@@ -4118,17 +4118,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-math"
+name = "libmath"
 version = "0.1.0"
 dependencies = [
  "dylo",
  "dylo-runtime",
- "noteyre",
+ "eyre",
  "pulldown-latex",
 ]
 
 [[package]]
-name = "mod-media"
+name = "libmedia"
 version = "0.1.0"
 dependencies = [
  "config",
@@ -4137,11 +4137,11 @@ dependencies = [
  "dylo-runtime",
  "html-escape",
  "image 0.1.0",
- "noteyre",
+ "eyre",
 ]
 
 [[package]]
-name = "mod-mom"
+name = "libmom"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -4188,7 +4188,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-momclient"
+name = "libmomclient"
 version = "0.1.0"
 dependencies = [
  "bytes",
@@ -4212,7 +4212,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-objectstore"
+name = "libobjectstore"
 version = "0.1.0"
 dependencies = [
  "bytes",
@@ -4233,7 +4233,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-patreon"
+name = "libpatreon"
 version = "0.1.0"
 dependencies = [
  "config",
@@ -4254,7 +4254,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-reddit"
+name = "libreddit"
 version = "0.1.0"
 dependencies = [
  "config",
@@ -4269,7 +4269,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-revision"
+name = "librevision"
 version = "0.1.0"
 dependencies = [
  "atomicwrites",
@@ -4308,7 +4308,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-search"
+name = "libsearch"
 version = "0.1.0"
 dependencies = [
  "config",
@@ -4325,7 +4325,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-svg"
+name = "libsvg"
 version = "0.1.0"
 dependencies = [
  "base64",
@@ -4350,7 +4350,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-template"
+name = "libtemplate"
 version = "0.1.0"
 dependencies = [
  "camino",
@@ -4382,7 +4382,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-term"
+name = "libterm"
 version = "0.1.0"
 dependencies = [
  "anstyle-parse",
@@ -4403,7 +4403,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-tracingsub"
+name = "libtracingsub"
 version = "0.1.0"
 dependencies = [
  "dylo",
@@ -4413,7 +4413,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-webpage"
+name = "libwebpage"
 version = "0.1.0"
 dependencies = [
  "base64",
@@ -4430,7 +4430,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mod-websock"
+name = "libwebsock"
 version = "0.1.0"
 dependencies = [
  "dylo",

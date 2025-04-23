@@ -1,0 +1,25 @@
+[package]
+name = "liberrhandling"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+dylo.workspace = true
+eyre = { version = "0.6.12", default-features = false }
+
+# impl dependencies
+color-backtrace = { version = "0.7.0", default-features = false, features = [
+    "use-backtrace-crate",
+] }
+color-eyre = { version = "0.6.3", default-features = false, features = [
+    "track-caller",
+] }
+termcolor = { version = "1.4.1" }
+dylo-runtime = "2.5.0"
+
+[features]
+default = ["impl"]
+impl = []

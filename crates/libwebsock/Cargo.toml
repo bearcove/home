@@ -1,0 +1,30 @@
+[package]
+name = "libwebsock"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+dylo.workspace = true
+tokio-proxy = { path = "../tokio-proxy" }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
+rubicon = "3.4.9"
+http = { version = "1.3.1" }
+
+# impl deps
+hickory-resolver = { version = "0.24.4" }
+tokio-tungstenite = { version = "0.23.1", features = [
+    "rustls-tls-native-roots",
+] }
+tracing = { version = "0.1.41" }
+tokio = { version = "1.44", features = ["fs"] }
+futures-util = { version = "0.3.31" }
+rustls = { version = "0.23", features = ["ring"], default-features = false }
+dylo-runtime = "2.5.0"
+futures-core = "0.3.31"
+
+[features]
+default = ["impl"]
+impl = []

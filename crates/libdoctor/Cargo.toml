@@ -1,0 +1,16 @@
+[package]
+name = "libdoctor"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+futures-core = "0.3.31"
+http = "1.3.1"
+tokio = { workspace = true }
+
+[features]
+default = ["impl"]
+impl = []

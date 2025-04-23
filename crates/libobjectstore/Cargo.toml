@@ -1,0 +1,30 @@
+[package]
+name = "libobjectstore"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+dylo.workspace = true
+futures-util = "0.3.31"
+bytes = "1"
+rubicon = "3.4.9"
+
+# impl deps
+object_store = { version = "0.10.2", features = ["aws"] }
+tokio-proxy = { path = "../tokio-proxy" }
+tracing = { version = "0.1.41" }
+tokio = { version = "1.44" }
+config = { path = "../config" }
+merde.workspace = true
+rusqlite = { workspace = true }
+plait = { path = "../plait" }
+dylo-runtime = "2.5.0"
+futures-core = "0.3.31"
+facet.workspace = true
+
+[features]
+default = ["impl"]
+impl = []

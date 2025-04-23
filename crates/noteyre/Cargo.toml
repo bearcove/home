@@ -1,7 +1,0 @@
-[package]
-name = "noteyre"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-b-x = "1.0.3"
