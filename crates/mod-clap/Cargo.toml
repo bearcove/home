@@ -11,9 +11,9 @@ camino = { version = "1.1.9" }
 dylo.workspace = true
 
 # impl deps
-clap = { version = "4.5.34", features = ["derive"], optional = true }
+clap = { version = "4.5.34", features = ["derive"] }
 dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = ["dep:clap"]
+impl = []

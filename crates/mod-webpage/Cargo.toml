@@ -12,15 +12,15 @@ dylo-runtime = "2.5.0"
 merde.workspace = true
 
 # impl deps
-webpage = { version = "2.0.1", optional = true, default-features = false }
-tokio = { workspace = true, optional = true }
-url = { version = "2.5.4", optional = true }
-base64 = { version = "0.22.1", optional = true }
-futures-util = { version = "0.3.31", optional = true }
+webpage = { version = "2.0.1", default-features = false }
+tokio = { workspace = true }
+url = { version = "2.5.4" }
+base64 = { version = "0.22.1" }
+futures-util = { version = "0.3.31" }
 image = { version = "0.1.0", path = "../image" }
 futures-core = "0.3.31"
 libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 
 [features]
 default = ["impl"]
-impl = ["dep:webpage", "dep:tokio", "dep:url", "dep:base64", "dep:futures-util"]
+impl = []

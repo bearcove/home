@@ -10,6 +10,10 @@ crate-type = ["rlib"]
 [dependencies]
 eyre = { version = "0.6.12", default-features = false }
 camino = { version = "1.1.9" }
+
+# impl dependencies
+ignore = { version = "0.4.23" }
+notify = { version = "6.1.1" }
 dylo-runtime = "2.5.0"
 
 [features]

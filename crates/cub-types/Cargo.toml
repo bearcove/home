@@ -13,6 +13,6 @@ mom = { version = "0.1.0", path = "../mom" }
 momclient = { version = "0.1.0", path = "../momclient" }
 objectstore = { version = "0.1.0", path = "../objectstore" }
 search = { version = "0.1.0", path = "../search" }
-template = { version = "0.1.0", path = "../template" }
+template-types = { version = "0.1.0", path = "../template-types" }
 time = "0.3.41"
 websock = { version = "0.1.0", path = "../websock" }

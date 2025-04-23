@@ -12,7 +12,7 @@ use hattip::{
 use momclient::MomTenantClient;
 use objectstore::ObjectStore;
 use search::Index;
-use template::TemplateCollection;
+use template_types::TemplateCollection;
 use websock::WebSocketStream;
 
 /// An indexed revision (with a template collection, a search index, etc.)

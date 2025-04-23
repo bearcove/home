@@ -1,5 +1,5 @@
 use noteyre::bail;
-use template::{DataObject, DataValue};
+use template_types::{DataObject, DataValue};
 
 pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, DataObject)> {
     macro_rules! trace {
@@ -102,7 +102,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
                             if key_str.is_empty() {
                                 // okay I guess there's no args
                             } else {
-                                bail!("unexpected EOF while reading shortcode key. full string: {args_str}");
+                                bail!(
+                                    "unexpected EOF while reading shortcode key. full string: {args_str}"
+                                );
                             }
                         }
                         // If we encounter an '=', it means we've finished reading the key
@@ -165,7 +167,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
                                         // ignore, wait for the value to start
                                         Value::Unknown
                                     } else {
-                                        bail!("unexpected character in value: {c}. full string: {args_str}");
+                                        bail!(
+                                            "unexpected character in value: {c}. full string: {args_str}"
+                                        );
                                     }
                                 }
                             }
@@ -185,7 +189,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
 
                                 match c {
                                     '💣' => {
-                                        bail!("unexpected EOF: expecting escape. full string: {args_str}");
+                                        bail!(
+                                            "unexpected EOF: expecting escape. full string: {args_str}"
+                                        );
                                     }
                                     '\\' => {
                                         s.push('\\');
@@ -212,7 +218,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
                             } else {
                                 match c {
                                     '💣' => {
-                                        bail!("unexpected EOF: unclosed string. full string: {args_str}");
+                                        bail!(
+                                            "unexpected EOF: unclosed string. full string: {args_str}"
+                                        );
                                     }
                                     '\\' => *escape = true,
                                     '"' | '”' => {
@@ -233,7 +241,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
                                     }
                                     _ => match content {
                                         CowSpan::Span(span) => {
-                                            trace!("ended up in .... Value::String, a non-closing char, span is {span:?}, i={i:?}, c={c:?}");
+                                            trace!(
+                                                "ended up in .... Value::String, a non-closing char, span is {span:?}, i={i:?}, c={c:?}"
+                                            );
                                             span.extend_till(i, c);
                                         }
                                         CowSpan::String(s) => {
@@ -263,7 +273,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
                         },
                         Value::Boolean { content } => {
                             if c == '💣' {
-                                bail!("unexpected EOF: expecting boolean value. full string: {args_str}");
+                                bail!(
+                                    "unexpected EOF: expecting boolean value. full string: {args_str}"
+                                );
                             }
                             content.extend_till(i, c);
 
@@ -281,7 +293,9 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
                                     // if the string is already 5 characters long, it's not a valid
                                     // boolean, so we bail
                                     if boolean_str.len() >= 5 {
-                                        bail!("invalid boolean value: {boolean_str}. full string: {args_str}");
+                                        bail!(
+                                            "invalid boolean value: {boolean_str}. full string: {args_str}"
+                                        );
                                     }
                                 }
                             }
@@ -298,7 +312,7 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> noteyre::Result<(String, 
 
 #[cfg(test)]
 mod tests {
-    use template::DataValue;
+    use template_types::DataValue;
 
     use super::*;
 

@@ -13,13 +13,13 @@ bytes = "1"
 rubicon = "3.4.9"
 
 # impl deps
-object_store = { version = "0.10.2", features = ["aws"], optional = true }
-tokio-proxy = { path = "../tokio-proxy", optional = true }
-tracing = { version = "0.1.41", optional = true }
-tokio = { version = "1.44", optional = true, features = [] }
+object_store = { version = "0.10.2", features = ["aws"] }
+tokio-proxy = { path = "../tokio-proxy" }
+tracing = { version = "0.1.41" }
+tokio = { version = "1.44" }
 config = { path = "../config" }
 merde.workspace = true
-rusqlite = { workspace = true, optional = true }
+rusqlite = { workspace = true }
 plait = { path = "../plait" }
 dylo-runtime = "2.5.0"
 futures-core = "0.3.31"
@@ -27,5 +27,4 @@ facet.workspace = true
 
 [features]
 default = ["impl"]
-impl = ["object_store", "tokio", "tokio-proxy", "tracing"]
-rusqlite = ["dep:rusqlite"]
+impl = []

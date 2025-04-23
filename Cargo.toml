@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*", "libs/libgithub", "libs/libhttpclient"]
+members = ["crates/*", "libs/libgithub", "libs/libhttpclient", "libs/libpatreon"]
 exclude = ["crates/.zed", "crates-outside-workspace/rubicon-exports"]
 resolver = "3"
 

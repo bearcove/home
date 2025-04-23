@@ -7,17 +7,3 @@ pub trait Mod: Send + Sync + 'static {
         args: CompileArgs,
     ) -> noteyre::Result<Box<dyn TemplateCollection>>;
 }
-pub trait TemplateCollection: Send + Sync + 'static {
-    fn render_template_to(
-        &self,
-        w: &mut dyn std::io::Write,
-        args: RenderTemplateArgs<'_>,
-    ) -> noteyre::Result<()>;
-    fn render_shortcode_to(
-        &self,
-        w: &mut dyn std::io::Write,
-        sc: Shortcode<'_>,
-        rv: Arc<dyn RevisionView>,
-        web: WebConfig,
-    ) -> noteyre::Result<RenderShortcodeResult>;
-}

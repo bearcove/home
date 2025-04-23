@@ -9,14 +9,18 @@ crate-type = ["rlib"]
 
 [dependencies]
 config = { path = "../config" }
-conflux = { path = "../conflux", features = [] }
+conflux = { path = "../conflux" }
 
 # impl deps
 merde = { workspace = true, features = ["json"] }
+rand = { version = "0.8.5" }
+tokio = { workspace = true, features = ["time"] }
+tracing = { version = "0.1.41" }
 credentials = { path = "../credentials" }
 mom = { path = "../mom" }
 patreon = { path = "../patreon" }
 bytes = "1.10.1"
+websock = { path = "../websock" }
 objectstore = { path = "../objectstore" }
 dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }

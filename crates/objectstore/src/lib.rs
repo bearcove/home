@@ -11,9 +11,8 @@ use futures_util::stream::BoxStream;
 use std::{borrow::Cow, ops::Range, sync::Arc};
 use config::{AwsSecrets, Environment, ObjectStorageConfig};
 plait::plait! {
-    with crates { merde #[cfg(feature = "rusqlite")] rusqlite } #[doc =
-    " The key of an object in the object store"] pub struct ObjectStoreKey => &
-    ObjectStoreKeyRef;
+    with crates { merde rusqlite } #[doc = " The key of an object in the object store"]
+    pub struct ObjectStoreKey => & ObjectStoreKeyRef;
 }
 /// Options for a put request
 #[derive(Default, Clone)]

@@ -7,7 +7,7 @@ include!(".dylo/support.rs");
 use std::{collections::HashSet, sync::Arc};
 use config::{TenantInfo, WebConfig};
 use conflux::{Href, InputPath, InputPathRef, MarkdownRef, RevisionView, Toc};
-use template::TemplateCollection;
+use template_types::TemplateCollection;
 pub struct CollectDependenciesResult {
     pub frontmatter: Option<String>,
     pub deps: HashSet<InputPath>,

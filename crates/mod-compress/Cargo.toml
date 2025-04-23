@@ -11,10 +11,10 @@ dylo.workspace = true
 bytes = "1.10.1"
 
 # impl deps
-brotli = { version = "6.0.0", optional = true }
-flate2 = { version = "1.1.0", optional = true }
+brotli = { version = "6.0.0" }
+flate2 = { version = "1.1.0" }
 dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = ["dep:brotli", "dep:flate2"]
+impl = []

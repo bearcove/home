@@ -40,10 +40,8 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "text.strikethrough",
 ];
 
-#[cfg(feature = "impl")]
 use std::{collections::HashMap, sync::Arc};
 
-#[cfg(feature = "impl")]
 use tree_sitter_collection::tree_sitter_highlight::{
     self, Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
 };

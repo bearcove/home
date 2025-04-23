@@ -24,8 +24,6 @@ use std::fmt;
 plait::plait! {
     with crates {
         merde
-
-        #[cfg(feature = "rusqlite")]
         rusqlite
     }
 

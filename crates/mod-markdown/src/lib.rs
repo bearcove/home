@@ -9,7 +9,7 @@ use conflux::{Href, InputPath, InputPathRef, MarkdownRef, RevisionView, Toc};
 use impls::{FormatterMode, options};
 #[cfg(feature = "impl")]
 use pulldown_cmark::Parser;
-use template::TemplateCollection;
+use template_types::TemplateCollection;
 
 #[cfg(feature = "impl")]
 mod impls;

@@ -10,13 +10,13 @@ crate-type = ["cdylib"]
 dylo.workspace = true
 dylo-runtime = "2.5.0"
 noteyre = { path = "../noteyre" }
-camino = { version = "1.1.9", optional = true }
+camino = { version = "1.1.9" }
 
 # impl deps — these are only used in `mod-cub`
 merde = { workspace = true, features = ["yaml"] }
-mom = { path = "../mom", optional = true }
-conflux = { path = "../conflux", optional = true }
-momclient = { path = "../momclient", optional = true }
+mom = { path = "../mom" }
+conflux = { path = "../conflux" }
+momclient = { path = "../momclient" }
 axum = { version = "0.7.9", default-features = false, features = [
     "http1",
     "tokio",
@@ -24,115 +24,60 @@ axum = { version = "0.7.9", default-features = false, features = [
     "query",
     "macros",
     "form",
-], optional = true }
+] }
 tokio = { workspace = true, features = ["full"] }
-tower = { version = "0.4.13", features = ["steer"], optional = true }
-tower-cookies = { version = "0.10.0", features = ["private"], optional = true }
-tracing = { workspace = true, optional = true }
-eyre = { workspace = true, optional = true }
-time = { version = "0.3.41", features = ["formatting"], optional = true }
-parking_lot = { version = "0.12.3", optional = true }
-url = { version = "2.5.4", features = ["serde"], optional = true }
-derivations = { path = "../derivations", optional = true }
-search = { path = "../search", optional = true }
-template = { path = "../template", optional = true }
-objectstore = { path = "../objectstore", optional = true }
-term = { path = "../term", optional = true }
-nix = { version = "0.29.0", features = ["process", "signal"], optional = true }
-http = { version = "1.3.1", optional = true }
-http-body-util = { version = "0.1.3", optional = true }
-compress = { path = "../compress", optional = true }
-pin-project-lite = { version = "0.2.16", optional = true }
-rand = { version = "0.8.5", optional = true }
-strsim = { version = "0.11.1", optional = true }
-webpage = { path = "../webpage", optional = true }
-flume = { version = "0.11.1", optional = true }
-bytesize = { version = "1.3.2", optional = true }
-image = { path = "../image", optional = true }
-tempfile = { version = "3.19.1", optional = true }
-uffmpeg = { path = "../uffmpeg", optional = true }
+tower = { version = "0.4.13", features = ["steer"] }
+tower-cookies = { version = "0.10.0", features = ["private"] }
+tracing = { workspace = true }
+eyre = { workspace = true }
+time = { version = "0.3.41", features = ["formatting"] }
+parking_lot = { version = "0.12.3" }
+url = { version = "2.5.4", features = ["serde"] }
+derivations = { path = "../derivations" }
+search = { path = "../search" }
+template = { path = "../template" }
+objectstore = { path = "../objectstore" }
+term = { path = "../term" }
+nix = { version = "0.29.0", features = ["process", "signal"] }
+http = { version = "1.3.1" }
+http-body-util = { version = "0.1.3" }
+compress = { path = "../compress" }
+pin-project-lite = { version = "0.2.16" }
+rand = { version = "0.8.5" }
+strsim = { version = "0.11.1" }
+webpage = { path = "../webpage" }
+flume = { version = "0.11.1" }
+bytesize = { version = "1.3.2" }
+image = { path = "../image" }
+tempfile = { version = "3.19.1" }
+uffmpeg = { path = "../uffmpeg" }
 libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
-patreon = { path = "../patreon", optional = true }
-serde = { workspace = true, features = ["derive"], optional = true }
-content-type = { path = "../content-type", optional = true }
-itertools = { version = "0.14.0", optional = true }
-closest = { version = "0.1.0", path = "../closest", optional = true }
-ulid = { version = "1.2.1", optional = true }
-errhandling = { version = "0.1.0", path = "../errhandling", optional = true }
-credentials = { path = "../credentials", optional = true }
-libc = { version = "0.2.171", optional = true }
-regex = { version = "1.11.1", optional = true }
-strip-ansi-escapes = { version = "0.2.1", optional = true }
-cdn = { version = "0.1.0", path = "../cdn", optional = true }
-hattip = { version = "0.1.0", path = "../hattip", optional = true }
-api = { version = "0.1.0", path = "../api", optional = true }
-websock = { version = "0.1.0", path = "../websock", optional = true }
-hyper = { version = "1.6.0", optional = true }
+patreon = { path = "../patreon" }
+serde = { workspace = true, features = ["derive"] }
+content-type = { path = "../content-type" }
+itertools = { version = "0.14.0" }
+closest = { version = "0.1.0", path = "../closest" }
+ulid = { version = "1.2.1" }
+errhandling = { version = "0.1.0", path = "../errhandling" }
+credentials = { path = "../credentials" }
+libc = { version = "0.2.171" }
+regex = { version = "1.11.1" }
+strip-ansi-escapes = { version = "0.2.1" }
+cdn = { version = "0.1.0", path = "../cdn" }
+hattip = { version = "0.1.0", path = "../hattip" }
+api = { version = "0.1.0", path = "../api" }
+websock = { version = "0.1.0", path = "../websock" }
+hyper = { version = "1.6.0" }
 futures-core = "0.3.31"
-cub-types = { version = "0.1.0", path = "../cub-types", optional = true }
-futures-util = { version = "0.3.31", optional = true }
-tempdir = { version = "0.3.7", optional = true }
-revision = { version = "0.1.0", path = "../revision", optional = true }
+cub-types = { version = "0.1.0", path = "../cub-types" }
+futures-util = { version = "0.3.31" }
+tempdir = { version = "0.3.7" }
+revision = { version = "0.1.0", path = "../revision" }
 config = { version = "0.1.0", path = "../config" }
-open = { version = "5.3.2", optional = true }
+open = { version = "5.3.2" }
 libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
 
 # the `mod-cub` crate is built with `impl` enabled, which brings in the impl-only deps
 [features]
 default = ["impl"]
-impl = [
-    "dep:axum",
-    "dep:tower",
-    "dep:tower-cookies",
-    "dep:tracing",
-    "dep:eyre",
-    "dep:time",
-    "dep:parking_lot",
-    "dep:url",
-    "dep:camino",
-    "dep:derivations",
-    "dep:search",
-    "dep:template",
-    "dep:objectstore",
-    "dep:term",
-    "dep:nix",
-    "dep:http",
-    "dep:http-body-util",
-    "dep:compress",
-    "dep:pin-project-lite",
-    "dep:rand",
-    "dep:strsim",
-    "dep:webpage",
-    "dep:flume",
-    "dep:bytesize",
-
-    "dep:image",
-    "dep:tempfile",
-    "dep:uffmpeg",
-
-    "dep:patreon",
-    "dep:serde",
-    "dep:content-type",
-    "dep:itertools",
-    "dep:closest",
-    "dep:ulid",
-    "dep:errhandling",
-    "dep:credentials",
-    "dep:conflux",
-
-    "dep:momclient",
-    "dep:mom",
-    "dep:libc",
-    "dep:regex",
-    "dep:strip-ansi-escapes",
-    "dep:cdn",
-    "dep:hattip",
-    "dep:api",
-    "dep:websock",
-    "dep:hyper",
-    "dep:cub-types",
-    "dep:futures-util",
-    "dep:revision",
-    "dep:tempdir",
-    "dep:open",
-]
+impl = []

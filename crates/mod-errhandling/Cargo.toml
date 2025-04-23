@@ -13,13 +13,13 @@ eyre = { version = "0.6.12", default-features = false }
 # impl dependencies
 color-backtrace = { version = "0.7.0", default-features = false, features = [
     "use-backtrace-crate",
-], optional = true }
+] }
 color-eyre = { version = "0.6.3", default-features = false, features = [
     "track-caller",
-], optional = true }
-termcolor = { version = "1.4.1", optional = true }
+] }
+termcolor = { version = "1.4.1" }
 dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = ["dep:color-backtrace", "dep:color-eyre", "dep:termcolor"]
+impl = []

@@ -12,6 +12,15 @@ eyre = { version = "0.6.12", default-features = false }
 merde = { workspace = true, features = ["json"] }
 config = { path = "../config" }
 credentials = { path = "../credentials" }
+
+# impl dependencies
+fs-err = { version = "3.1.0" }
+jsonapi = { version = "0.7.0" }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = { version = "1.0.140" }
+time = { version = "0.3.41" }
+tracing = { version = "0.1.41" }
+url = { version = "2.5.4" }
 dylo-runtime = "2.5.0"
 futures-core = "0.3.31"
 libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }

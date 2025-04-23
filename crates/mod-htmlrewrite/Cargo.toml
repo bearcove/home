@@ -10,9 +10,9 @@ crate-type = ["cdylib"]
 dylo.workspace = true
 
 # impl deps
-lol_html = { version = "1.2.1", optional = true }
+lol_html = { version = "1.2.1" }
 dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = ["dep:lol_html"]
+impl = []

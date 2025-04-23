@@ -10,11 +10,9 @@ crate-type = ["cdylib"]
 dylo.workspace = true
 
 # impl dependencies
-lightningcss = { version = "1.0.0-alpha.65", features = [
-    "browserslist",
-], optional = true }
+lightningcss = { version = "1.0.0-alpha.65", features = ["browserslist"] }
 dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = ["dep:lightningcss"]
+impl = []

@@ -8,76 +8,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 dylo = { workspace = true }
-
-# generated with `dylo list`
-github = { path = "../github", optional = true }
-clap = { path = "../clap", optional = true }
-lightningcss = { path = "../lightningcss", optional = true }
-cub = { path = "../cub", optional = true }
-revision = { path = "../revision", optional = true }
-doctor = { path = "../doctor", optional = true }
-errhandling = { path = "../errhandling", optional = true }
-svg = { path = "../svg", optional = true }
-mom = { path = "../mom", optional = true }
-template = { path = "../template", optional = true }
-momclient = { path = "../momclient", optional = true }
-search = { path = "../search", optional = true }
-highlight = { path = "../highlight", optional = true }
-api = { path = "../api", optional = true }
-image = { path = "../image", optional = true }
-config = { path = "../config", optional = true }
-websock = { path = "../websock", optional = true }
-compress = { path = "../compress", optional = true }
-htmlrewrite = { path = "../htmlrewrite", optional = true }
-math = { path = "../math", optional = true }
-tracingsub = { path = "../tracingsub", optional = true }
-term = { path = "../term", optional = true }
-objectstore = { path = "../objectstore", optional = true }
-reddit = { path = "../reddit", optional = true }
-cdn = { path = "../cdn", optional = true }
-markdown = { path = "../markdown", optional = true }
-libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
-webpage = { path = "../webpage", optional = true }
-fs = { path = "../fs", optional = true }
-media = { path = "../media", optional = true }
-patreon = { path = "../patreon", optional = true }
 dylo-runtime = "2.5.0"
 futures-core = "0.3.31"
 http = "1.3.1"
-tokio = { workspace = true, optional = true }
+tokio = { workspace = true }
 
 [features]
 default = ["impl"]
-impl = [
-    "dep:github",
-    "dep:clap",
-    "dep:lightningcss",
-    "dep:cub",
-    "dep:revision",
-    "dep:doctor",
-    "dep:errhandling",
-    "dep:svg",
-    "dep:mom",
-    "dep:template",
-    "dep:momclient",
-    "dep:search",
-    "dep:highlight",
-    "dep:api",
-    "dep:image",
-    "dep:config",
-    "dep:websock",
-    "dep:compress",
-    "dep:htmlrewrite",
-    "dep:math",
-    "dep:tracingsub",
-    "dep:term",
-    "dep:objectstore",
-    "dep:reddit",
-    "dep:cdn",
-    "dep:markdown",
-    "dep:webpage",
-    "dep:fs",
-    "dep:media",
-    "dep:patreon",
-    "dep:tokio",
-]
+impl = []

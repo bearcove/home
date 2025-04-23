@@ -12,13 +12,13 @@ config = { path = "../config" }
 libhttpclient = { path = "../../libs/libhttpclient" }
 
 # impl deps
-merde = { workspace = true, optional = true }
-tracing = { version = "0.1", optional = true }
-url = { version = "2.5.4", optional = true }
+merde = { workspace = true }
+tracing = { version = "0.1" }
+url = { version = "2.5.4" }
 dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
 futures-core = "0.3.31"
 
 [features]
 default = ["impl"]
-impl = ["dep:merde", "dep:tracing", "dep:url"]
+impl = []

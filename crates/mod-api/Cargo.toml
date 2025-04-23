@@ -8,10 +8,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # impl-only dependencies
-dylo = { workspace = true, optional = true }
-url = { version = "2.5.4", optional = true }
-reddit = { version = "0.1.0", path = "../reddit", optional = true }
-tracing = { workspace = true, optional = true }
+dylo = { workspace = true }
+url = { version = "2.5.4" }
+reddit = { version = "0.1.0", path = "../reddit" }
+tracing = { workspace = true }
 
 # core dependencies
 hattip = { version = "0.1.0", path = "../hattip" }
@@ -20,4 +20,4 @@ dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = ["dep:url", "dep:dylo", "dep:reddit", "dep:tracing"]
+impl = []

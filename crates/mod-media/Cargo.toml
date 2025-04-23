@@ -11,10 +11,10 @@ config = { version = "0.1.0", path = "../config" }
 conflux = { version = "0.1.0", path = "../conflux" }
 dylo.workspace = true
 dylo-runtime = "2.5.0"
-html-escape = { version = "0.2.13", optional = true }
+html-escape = { version = "0.2.13" }
 image = { version = "0.1.0", path = "../image" }
 noteyre = { version = "0.1.0", path = "../noteyre" }
 
 [features]
 default = ["impl"]
-impl = ["dep:html-escape"]
+impl = []

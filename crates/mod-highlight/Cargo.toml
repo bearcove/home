@@ -9,18 +9,13 @@ crate-type = ["cdylib"]
 [dependencies]
 dylo.workspace = true
 # impl dependencies
-dumbcache = { path = "../dumbcache", optional = true }
-tracing = { version = "0.1.41", optional = true }
-tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter", optional = true }
-nerdfonts = { path = "../nerdfonts", optional = true }
+dumbcache = { path = "../dumbcache" }
+tracing = { version = "0.1.41" }
+tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" }
+nerdfonts = { path = "../nerdfonts" }
 dylo-runtime = "2.5.0"
 
 
 [features]
 default = ["impl"]
-impl = [
-    "dep:dumbcache",
-    "dep:tracing",
-    "dep:tree-sitter-collection",
-    "dep:nerdfonts",
-]
+impl = []

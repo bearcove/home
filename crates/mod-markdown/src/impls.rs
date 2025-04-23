@@ -18,7 +18,7 @@ use saphyr::{Yaml, yaml::YamlLoader};
 use conflux::{InputPath, InputPathRef, Markdown, TocEntry};
 use math::MathMode;
 use slug::slugify;
-use template::{DataObject, DataValue};
+use template_types::{DataObject, DataValue};
 
 mod argparse;
 use argparse::parse_emphasis_shortcode;
@@ -649,7 +649,7 @@ impl<'a> Formatter<'a> {
                                 .templates
                                 .render_shortcode_to(
                                     &mut BoInserter::new(&mut buffer, range.start),
-                                    template::Shortcode {
+                                    template_types::Shortcode {
                                         name: shortcode_name,
                                         args: shortcode_args,
                                         body: None,
@@ -754,7 +754,7 @@ impl<'a> Formatter<'a> {
                                     .templates
                                     .render_shortcode_to(
                                         &mut BoInserter::new(&mut buffer, range.start),
-                                        template::Shortcode {
+                                        template_types::Shortcode {
                                             name: &shortcode_name,
                                             args: shortcode_args,
                                             body: Some("___BODY_MARKER___"),
@@ -1275,7 +1275,7 @@ mod tests {
     use config::{Environment, TenantConfig, TenantInfo, WebConfig};
     use conflux::{MarkdownRef, RevisionView};
     use indoc::indoc;
-    use template::{RenderShortcodeResult, RenderTemplateArgs, TemplateCollection};
+    use template_types::{RenderShortcodeResult, RenderTemplateArgs, TemplateCollection};
 
     struct DummyHighlight;
 
@@ -1327,7 +1327,7 @@ mod tests {
         fn render_shortcode_to(
             &self,
             w: &mut dyn std::io::Write,
-            args: template::Shortcode<'_>,
+            args: template_types::Shortcode<'_>,
             _rv: Arc<dyn RevisionView>,
             _web: WebConfig,
         ) -> noteyre::Result<RenderShortcodeResult> {

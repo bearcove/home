@@ -10,8 +10,8 @@ crate-type = ["cdylib"]
 dylo.workspace = true
 dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
-pulldown-latex = { version = "0.7.1", optional = true }
+pulldown-latex = { version = "0.7.1" }
 
 [features]
 default = ["impl"]
-impl = ["dep:pulldown-latex"]
+impl = []

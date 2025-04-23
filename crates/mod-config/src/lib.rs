@@ -8,13 +8,11 @@ use facet_pretty::FacetPretty;
 use noteyre::{BS, BsForResults};
 #[cfg(feature = "impl")]
 use owo_colors::OwoColorize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
 pub use camino;
-
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "impl")]
 #[derive(Default)]
@@ -131,7 +129,6 @@ impl Mod for ModImpl {
 
 plait::plait! {
     with crates {
-        #[cfg(feature = "serde")]
         serde
 
         merde
@@ -175,37 +172,30 @@ impl std::fmt::Display for PrettyTenantDomain {
     }
 }
 
-#[derive(Facet, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Facet, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CubConfig {
     /// size the disk cache is allowed to use
-    #[cfg_attr(feature = "serde", serde(skip_serializing))]
-    #[cfg_attr(
-        feature = "serde",
-        serde(default = "serde_defaults::default_disk_cache_size")
-    )]
+    #[serde(skip_serializing)]
+    #[serde(default = "serde_defaults::default_disk_cache_size")]
     pub disk_cache_size: ByteSize,
 
     /// Listen address without http, something like "127.0.0.1:1111"
-    #[cfg_attr(feature = "serde", serde(default = "serde_defaults::cub_address"))]
+    #[serde(default = "serde_defaults::cub_address")]
     pub address: SocketAddr,
 
     /// If the favorite port is taken, try to find a random port
-    #[cfg_attr(
-        feature = "serde",
-        serde(default = "serde_defaults::random_port_fallback")
-    )]
+    #[serde(default = "serde_defaults::random_port_fallback")]
     pub random_port_fallback: bool,
 
     /// Something like `http://localhost:1118`
     /// or `http://mom.svc.cluster.local:1118`, never
     /// a trailing slash.
-    #[cfg_attr(feature = "serde", serde(default = "serde_defaults::mom_base_url"))]
+    #[serde(default = "serde_defaults::mom_base_url")]
     pub mom_base_url: String,
 
     /// API key used to talk to mom
-    #[cfg_attr(feature = "serde", serde(default = "serde_defaults::mom_api_key"))]
+    #[serde(default = "serde_defaults::mom_api_key")]
     pub mom_api_key: MomApiKey,
 
     /// Where to store tenant data (think `/var/www/sites` or something)
@@ -215,8 +205,8 @@ pub struct CubConfig {
     pub reddit_secrets: Option<RedditSecrets>,
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MomConfig {
     /// Tenant data dir
     pub tenant_data_dir: Utf8PathBuf,
@@ -246,16 +236,15 @@ impl CubConfig {
 }
 
 /// tenant-specific configuration that's common betweeen mom and cub
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct TenantConfig {
     /// tenant name (and domain name)
-    #[cfg_attr(feature = "serde", serde(default = "serde_defaults::tenant_name"))]
+    #[serde(default = "serde_defaults::tenant_name")]
     pub name: TenantDomain,
 
     /// domain aliases for redirecting old domains to the current domain
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub domain_aliases: Vec<TenantDomain>,
 
     /// used to access S3 bucket for assets etc.
@@ -405,10 +394,9 @@ impl TenantInfo {
 
 /// That config is part of the revision paks — it's stored in `home.config.json` and
 /// contains no secrets at all
-#[derive(Facet, Clone, Default)]
+#[derive(Facet, Clone, Default, Serialize, Deserialize)]
 #[facet(default)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[serde(deny_unknown_fields)]
 pub struct RevisionConfig {
     /// where to push this site in prod?
     pub id: String,
@@ -417,19 +405,19 @@ pub struct RevisionConfig {
     /// randomly override, say, `fasterthanli.me`, with whatever they want.
 
     /// Patreon campaign IDs to allow access
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub patreon_campaign_ids: Vec<String>,
 
     /// admin github user IDs
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub admin_github_ids: Vec<String>,
 
     /// admin patreon user IDs
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub admin_patreon_ids: Vec<String>,
 
     /// SVG font face collection
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub svg_fonts: Vec<SvgFontSpec>,
 }
 
@@ -439,9 +427,8 @@ merde::derive! {
     }
 }
 
-#[derive(Clone, Facet)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SvgFontSpec {
     /// how the font is referred to in CSS, e.g. `IosevkaFtl`
     pub family: String,
@@ -462,9 +449,8 @@ merde::derive! {
     }
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(transparent))]
-#[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct FontWeight(pub u16);
 
 impl std::fmt::Display for FontWeight {
@@ -496,9 +482,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct FontWeight transparent
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
-#[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 #[repr(u8)]
 pub enum FontStyle {
     #[default]
@@ -543,7 +528,6 @@ merde::derive! {
     }
 }
 
-#[cfg(feature = "serde")]
 mod serde_defaults {
     use crate::{MOM_DEV_API_KEY, TenantDomain};
 
@@ -575,9 +559,8 @@ mod serde_defaults {
     }
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ObjectStorageConfig {
     pub bucket: S3BucketName,
     pub region: S3RegionName,
@@ -589,9 +572,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct ObjectStorageConfig { bucket, region, endpoint }
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TenantSecrets {
     pub aws: AwsSecrets,
     pub patreon: Option<PatreonSecrets>,
@@ -602,9 +584,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TenantSecrets { aws, patreon, github }
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AwsSecrets {
     pub access_key_id: String,
     pub secret_access_key: String,
@@ -614,9 +595,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct AwsSecrets { access_key_id, secret_access_key }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Environment {
     Development,
     Production,
@@ -666,9 +646,8 @@ impl std::fmt::Display for Environment {
     }
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PatreonSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
@@ -678,9 +657,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct PatreonSecrets { oauth_client_id, oauth_client_secret }
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GitHubSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
@@ -690,9 +668,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct GitHubSecrets { oauth_client_id, oauth_client_secret }
 }
 
-#[derive(Clone, Facet)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RedditSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
@@ -702,15 +679,14 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct RedditSecrets { oauth_client_id, oauth_client_secret }
 }
 
-#[derive(Clone, Facet)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MomSecrets {
     /// Can read all tenants — used by cubs
     pub readonly_api_key: MomApiKey,
 
     /// Can read/write specific tenants, used by humans
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub scoped_api_keys: HashMap<MomApiKey, ScopedMomApiKey>,
 }
 
@@ -720,11 +696,10 @@ merde::derive! {
 
 pub const MOM_DEV_API_KEY: &MomApiKeyRef = MomApiKeyRef::from_static("mom_KEY_IN_DEV");
 
-#[derive(Clone, Facet)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ScopedMomApiKey {
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub tenants: Vec<TenantDomain>,
 }
 
@@ -762,7 +737,6 @@ impl std::fmt::Display for ByteSize {
     }
 }
 
-#[cfg(feature = "serde")]
 impl std::str::FromStr for ByteSize {
     type Err = String;
 
@@ -786,7 +760,6 @@ impl std::str::FromStr for ByteSize {
     }
 }
 
-#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for ByteSize {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -813,7 +786,7 @@ pub fn production_mom_url() -> &'static str {
     "https://mom.bearcove.cloud"
 }
 
-#[cfg(all(test, feature = "serde"))]
+#[cfg(test)]
 mod bytesize_tests {
     use std::str::FromStr;
 

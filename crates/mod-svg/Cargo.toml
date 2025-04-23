@@ -9,41 +9,25 @@ crate-type = ["cdylib"]
 [dependencies]
 dylo.workspace = true
 dylo-runtime = "2.5.0"
-quick-xml = { version = "0.37.3", optional = true }
+quick-xml = { version = "0.37.3" }
 conflux = { path = "../conflux" }
-tokio = { workspace = true, features = [
-    "time",
-    "process",
-    "sync",
-], optional = true }
-rand = { version = "0.8.5", optional = true }
-libc = { version = "0.2.171", optional = true }
-image = { version = "0.1.0", path = "../image", optional = true }
+tokio = { workspace = true, features = ["time", "process", "sync"] }
+rand = { version = "0.8.5" }
+libc = { version = "0.2.171" }
+image = { version = "0.1.0", path = "../image" }
 noteyre = { version = "0.1.0", path = "../noteyre" }
-which = { version = "7.0.2", optional = true }
-tempfile = { version = "3.19.1", optional = true }
-camino = { version = "1.1.9", optional = true }
-base64 = { version = "0.22.1", optional = true }
-lightningcss = { version = "1.0.0-alpha.65", optional = true }
+which = { version = "7.0.2" }
+tempfile = { version = "3.19.1" }
+camino = { version = "1.1.9" }
+base64 = { version = "0.22.1" }
+lightningcss = { version = "1.0.0-alpha.65" }
 futures-core = "0.3.31"
-config = { version = "0.1.0", path = "../config", optional = true }
+config = { version = "0.1.0", path = "../config" }
 bytes = "1.10.1"
 
 [features]
 default = ["impl"]
-impl = [
-    "dep:quick-xml",
-    "dep:tokio",
-    "dep:rand",
-    "dep:libc",
-    "dep:image",
-    "dep:which",
-    "dep:tempfile",
-    "dep:camino",
-    "dep:base64",
-    "dep:lightningcss",
-    "dep:config",
-]
+impl = []
 
 [dev-dependencies]
 insta = "1.42.2"

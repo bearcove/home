@@ -10,6 +10,7 @@ crate-type = ["rlib"]
 [dependencies]
 dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
+pulldown-latex = { version = "0.7.1" }
 
 [features]
 default = []

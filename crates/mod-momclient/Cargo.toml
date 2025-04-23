@@ -9,18 +9,18 @@ crate-type = ["cdylib"]
 [dependencies]
 dylo.workspace = true
 config = { path = "../config" }
-conflux = { path = "../conflux", features = [] }
+conflux = { path = "../conflux" }
 
 # impl deps
 merde = { workspace = true, features = ["json"] }
-rand = { version = "0.8.5", optional = true }
-tokio = { workspace = true, features = ["time"], optional = true }
-tracing = { version = "0.1.41", optional = true }
+rand = { version = "0.8.5" }
+tokio = { workspace = true, features = ["time"] }
+tracing = { version = "0.1.41" }
 credentials = { path = "../credentials" }
 mom = { path = "../mom" }
 patreon = { path = "../patreon" }
 bytes = "1.10.1"
-websock = { path = "../websock", optional = true }
+websock = { path = "../websock" }
 objectstore = { path = "../objectstore" }
 dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
@@ -30,4 +30,4 @@ libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 
 [features]
 default = ["impl"]
-impl = ["dep:rand", "dep:tokio", "dep:tracing", "dep:websock"]
+impl = []

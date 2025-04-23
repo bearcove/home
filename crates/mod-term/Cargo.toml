@@ -11,33 +11,20 @@ dylo.workspace = true
 clap = { path = "../clap" }
 
 # impl deps
-anstyle-parse = { version = "0.2.6", optional = true }
-coolor = { version = "0.9.0", optional = true }
-displaydoc = { version = "0.2.5", optional = true }
-fs-err = { version = "2.11.0", optional = true }
-nix = { version = "0.29.0", features = ["process"], optional = true }
-owo-colors = { version = "4.2.0", optional = true }
-portable-pty = { version = "0.8.1", optional = true }
-shell-quote = { version = "0.6.1", optional = true }
-term_size = { version = "0.3.2", optional = true }
-termion = { version = "4.0.4", optional = true }
-tracing = { version = "0.1.41", optional = true }
-which = { version = "6.0.3", optional = true }
+anstyle-parse = { version = "0.2.6" }
+coolor = { version = "0.9.0" }
+displaydoc = { version = "0.2.5" }
+fs-err = { version = "2.11.0" }
+nix = { version = "0.29.0", features = ["process"] }
+owo-colors = { version = "4.2.0" }
+portable-pty = { version = "0.8.1" }
+shell-quote = { version = "0.6.1" }
+term_size = { version = "0.3.2" }
+termion = { version = "4.0.4" }
+tracing = { version = "0.1.41" }
+which = { version = "6.0.3" }
 dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]
-impl = [
-    "dep:anstyle-parse",
-    "dep:coolor",
-    "dep:displaydoc",
-    "dep:fs-err",
-    "dep:nix",
-    "dep:owo-colors",
-    "dep:portable-pty",
-    "dep:shell-quote",
-    "dep:term_size",
-    "dep:termion",
-    "dep:tracing",
-    "dep:which",
-]
+impl = []

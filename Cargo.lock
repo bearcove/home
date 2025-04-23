@@ -206,6 +206,9 @@ dependencies = [
  "cub-types",
  "dylo-runtime",
  "hattip",
+ "reddit",
+ "tracing",
+ "url 2.5.4",
 ]
 
 [[package]]
@@ -686,11 +689,22 @@ dependencies = [
 name = "cdn"
 version = "0.1.0"
 dependencies = [
+ "bytesize 2.0.1",
+ "config",
+ "conflux",
+ "content-type",
  "cub-types",
+ "derivations",
  "dylo-runtime",
  "futures-core",
  "hattip",
+ "http-range",
  "libhttpclient",
+ "mom",
+ "noteyre",
+ "tokio",
+ "tracing",
+ "websock",
 ]
 
 [[package]]
@@ -749,6 +763,7 @@ name = "clap"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "clap 4.5.37",
  "dylo-runtime",
 ]
 
@@ -866,8 +881,10 @@ dependencies = [
 name = "compress"
 version = "0.1.0"
 dependencies = [
+ "brotli",
  "bytes",
  "dylo-runtime",
+ "flate2",
 ]
 
 [[package]]
@@ -876,14 +893,19 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "camino",
+ "dotenvy",
  "dylo-runtime",
  "facet",
  "facet-json",
  "facet-pretty",
+ "figment",
+ "fs-err 2.11.0",
  "merde",
  "noteyre",
+ "owo-colors 4.2.0",
  "plait",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1188,14 +1210,65 @@ dependencies = [
 name = "cub"
 version = "0.1.0"
 dependencies = [
+ "api",
+ "axum",
+ "bytesize 1.3.3",
+ "camino",
+ "cdn",
+ "closest",
+ "compress",
  "config",
+ "conflux",
+ "content-type",
+ "credentials",
+ "cub-types",
+ "derivations",
  "dylo-runtime",
+ "errhandling",
+ "eyre",
+ "flume",
  "futures-core",
+ "futures-util",
+ "hattip",
+ "http",
+ "http-body-util",
+ "hyper",
+ "image 0.1.0",
+ "itertools 0.14.0",
+ "libc",
  "libgithub",
  "libhttpclient",
  "merde",
+ "mom",
+ "momclient",
+ "nix 0.29.0",
  "noteyre",
+ "objectstore",
+ "open",
+ "parking_lot",
+ "patreon",
+ "pin-project-lite",
+ "rand 0.8.5",
+ "regex 1.11.1",
+ "revision",
+ "search",
+ "serde",
+ "strip-ansi-escapes",
+ "strsim",
+ "tempdir",
+ "tempfile",
+ "template",
+ "term",
+ "time",
  "tokio",
+ "tower 0.4.13",
+ "tower-cookies",
+ "tracing",
+ "uffmpeg",
+ "ulid",
+ "url 2.5.4",
+ "webpage 0.1.0",
+ "websock",
 ]
 
 [[package]]
@@ -1211,7 +1284,7 @@ dependencies = [
  "momclient",
  "objectstore",
  "search",
- "template",
+ "template-types",
  "time",
  "websock",
 ]
@@ -1428,7 +1501,7 @@ dependencies = [
  "dylo-runtime",
  "futures-core",
  "http",
- "libhttpclient",
+ "tokio",
 ]
 
 [[package]]
@@ -1553,8 +1626,11 @@ checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 name = "errhandling"
 version = "0.1.0"
 dependencies = [
+ "color-backtrace",
+ "color-eyre",
  "dylo-runtime",
  "eyre",
+ "termcolor",
 ]
 
 [[package]]
@@ -1828,6 +1904,8 @@ dependencies = [
  "camino",
  "dylo-runtime",
  "eyre",
+ "ignore",
+ "notify",
 ]
 
 [[package]]
@@ -2061,19 +2139,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
-name = "github"
-version = "0.1.0"
-dependencies = [
- "config",
- "credentials",
- "dylo-runtime",
- "eyre",
- "futures-core",
- "libhttpclient",
- "merde",
-]
-
-[[package]]
 name = "glob"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2254,7 +2319,11 @@ dependencies = [
 name = "highlight"
 version = "0.1.0"
 dependencies = [
+ "dumbcache",
  "dylo-runtime",
+ "nerdfonts",
+ "tracing",
+ "tree-sitter-collection",
 ]
 
 [[package]]
@@ -2354,6 +2423,7 @@ name = "htmlrewrite"
 version = "0.1.0"
 dependencies = [
  "dylo-runtime",
+ "lol_html",
 ]
 
 [[package]]
@@ -2691,9 +2761,19 @@ version = "0.1.0"
 dependencies = [
  "content-type",
  "dylo-runtime",
+ "fs-err 3.1.0",
+ "image 0.25.6",
+ "jpegxl-rs",
+ "jxl-oxide",
  "merde",
  "noteyre",
+ "num_cpus",
  "ordered-float",
+ "ravif",
+ "rgb",
+ "tempfile",
+ "tracing",
+ "webp",
 ]
 
 [[package]]
@@ -3317,6 +3397,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8355be11b20d696c8f18f6cc018c4e372165b1fa8126cef092399c9951984ffa"
 
 [[package]]
+name = "libpatreon"
+version = "0.1.0"
+
+[[package]]
 name = "libredox"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3352,6 +3436,7 @@ name = "lightningcss"
 version = "0.1.0"
 dependencies = [
  "dylo-runtime",
+ "lightningcss 1.0.0-alpha.65",
 ]
 
 [[package]]
@@ -3525,8 +3610,15 @@ dependencies = [
  "config",
  "conflux",
  "dylo-runtime",
+ "highlight",
+ "html-escape",
+ "math",
+ "media",
  "noteyre",
- "template",
+ "pulldown-cmark",
+ "saphyr",
+ "slug",
+ "template-types",
 ]
 
 [[package]]
@@ -3573,6 +3665,7 @@ version = "0.1.0"
 dependencies = [
  "dylo-runtime",
  "noteyre",
+ "pulldown-latex",
 ]
 
 [[package]]
@@ -3612,6 +3705,7 @@ dependencies = [
  "config",
  "conflux",
  "dylo-runtime",
+ "html-escape",
  "image 0.1.0",
  "noteyre",
 ]
@@ -3919,42 +4013,11 @@ dependencies = [
 name = "mod-doctor"
 version = "0.1.0"
 dependencies = [
- "api",
- "cdn",
- "clap 0.1.0",
- "compress",
- "config",
- "cub",
- "doctor",
  "dylo",
  "dylo-runtime",
- "errhandling",
- "fs",
  "futures-core",
- "github",
- "highlight",
- "htmlrewrite",
  "http",
- "image 0.1.0",
- "libhttpclient",
- "lightningcss 0.1.0",
- "markdown",
- "math",
- "media",
- "mom",
- "momclient",
- "objectstore",
- "patreon",
- "reddit",
- "revision",
- "search",
- "svg",
- "template",
- "term",
  "tokio",
- "tracingsub",
- "webpage 0.1.0",
- "websock",
 ]
 
 [[package]]
@@ -3979,24 +4042,6 @@ dependencies = [
  "eyre",
  "ignore",
  "notify",
-]
-
-[[package]]
-name = "mod-github"
-version = "0.1.0"
-dependencies = [
- "config",
- "credentials",
- "dylo",
- "dylo-runtime",
- "eyre",
- "fs-err 3.1.0",
- "futures-core",
- "libhttpclient",
- "merde",
- "time",
- "tracing",
- "url 2.5.4",
 ]
 
 [[package]]
@@ -4069,7 +4114,7 @@ dependencies = [
  "pulldown-cmark",
  "saphyr",
  "slug",
- "template",
+ "template-types",
 ]
 
 [[package]]
@@ -4407,22 +4452,46 @@ dependencies = [
 name = "mom"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "axum",
+ "bytesize 1.3.3",
  "camino",
  "config",
  "conflux",
+ "content-type",
+ "credentials",
  "derivations",
  "dylo-runtime",
+ "errhandling",
+ "eyre",
+ "ffmpeg-sidecar",
  "futures-core",
+ "futures-util",
  "image 0.1.0",
+ "inflight",
  "itertools 0.14.0",
  "libgithub",
  "libhttpclient",
  "merde",
+ "nix 0.29.0",
  "noteyre",
  "objectstore",
  "owo-colors 4.2.0",
+ "parking_lot",
+ "patreon",
+ "r2d2",
+ "r2d2_sqlite",
+ "rusqlite",
  "serde",
+ "svg",
+ "tempfile",
+ "term",
+ "time",
  "tokio",
+ "tokio-stream",
+ "tracing",
+ "uffmpeg",
+ "url 2.5.4",
 ]
 
 [[package]]
@@ -4442,6 +4511,10 @@ dependencies = [
  "noteyre",
  "objectstore",
  "patreon",
+ "rand 0.8.5",
+ "tokio",
+ "tracing",
+ "websock",
 ]
 
 [[package]]
@@ -4924,9 +4997,16 @@ dependencies = [
  "credentials",
  "dylo-runtime",
  "eyre",
+ "fs-err 3.1.0",
  "futures-core",
+ "jsonapi",
  "libhttpclient",
  "merde",
+ "serde",
+ "serde_json",
+ "time",
+ "tracing",
+ "url 2.5.4",
 ]
 
 [[package]]
@@ -5693,7 +5773,10 @@ dependencies = [
  "dylo-runtime",
  "futures-core",
  "libhttpclient",
+ "merde",
  "noteyre",
+ "tracing",
+ "url 2.5.4",
 ]
 
 [[package]]
@@ -5844,14 +5927,38 @@ dependencies = [
 name = "revision"
 version = "0.1.0"
 dependencies = [
+ "atomicwrites",
+ "camino",
+ "closest",
  "config",
  "conflux",
+ "content-type",
  "cub-types",
+ "derivations",
  "dylo-runtime",
+ "errhandling",
  "eyre",
  "facet-json",
  "facet-pretty",
+ "fs",
  "futures-core",
+ "image 0.1.0",
+ "itertools 0.14.0",
+ "markdown",
+ "merde",
+ "noteyre",
+ "rayon",
+ "redb",
+ "seahash",
+ "search",
+ "svg",
+ "template",
+ "time",
+ "tokio",
+ "tracing",
+ "uffmpeg",
+ "ulid",
+ "wildmatch",
 ]
 
 [[package]]
@@ -6161,8 +6268,13 @@ dependencies = [
  "config",
  "conflux",
  "dylo-runtime",
+ "eyre",
+ "html-escape",
+ "indicium",
  "noteyre",
  "percent-encoding 2.3.1",
+ "tantivy",
+ "tracing",
 ]
 
 [[package]]
@@ -6607,11 +6719,22 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 name = "svg"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "bytes",
+ "camino",
+ "config",
  "conflux",
  "dylo-runtime",
  "futures-core",
+ "image 0.1.0",
+ "libc",
+ "lightningcss 1.0.0-alpha.65",
  "noteyre",
+ "quick-xml 0.37.4",
+ "rand 0.8.5",
+ "tempfile",
+ "tokio",
+ "which 7.0.3",
 ]
 
 [[package]]
@@ -6882,14 +7005,37 @@ name = "template"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "closest",
  "config",
  "conflux",
  "credentials",
  "dylo-runtime",
+ "form_urlencoded",
+ "highlight",
+ "html-escape",
+ "htmlrewrite",
+ "image 0.1.0",
+ "itertools 0.13.0",
+ "markdown",
+ "media",
+ "merde",
+ "minijinja",
  "mom",
  "noteyre",
  "percent-encoding 2.3.1",
+ "rand 0.8.5",
  "search",
+ "serde_json",
+ "time",
+ "urlencoding",
+]
+
+[[package]]
+name = "template-types"
+version = "0.1.0"
+dependencies = [
+ "conflux",
+ "eyre",
 ]
 
 [[package]]
@@ -6907,8 +7053,20 @@ dependencies = [
 name = "term"
 version = "0.1.0"
 dependencies = [
+ "anstyle-parse",
  "clap 0.1.0",
+ "coolor",
+ "displaydoc",
  "dylo-runtime",
+ "fs-err 2.11.0",
+ "nix 0.29.0",
+ "owo-colors 4.2.0",
+ "portable-pty",
+ "shell-quote",
+ "term_size",
+ "termion",
+ "tracing",
+ "which 6.0.3",
 ]
 
 [[package]]
@@ -7331,6 +7489,7 @@ version = "0.1.0"
 dependencies = [
  "dylo-runtime",
  "env_logger",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -8102,11 +8261,16 @@ dependencies = [
 name = "webpage"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "dylo-runtime",
  "futures-core",
+ "futures-util",
  "image 0.1.0",
  "libhttpclient",
  "merde",
+ "tokio",
+ "url 2.5.4",
+ "webpage 2.0.1",
 ]
 
 [[package]]
