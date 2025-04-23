@@ -1,0 +1,33 @@
+query($first: Int, $after: String) {
+  viewer {
+    sponsors(first: $first, after: $after) {
+      pageInfo {
+        endCursor
+      }
+      nodes {
+        ... on User {
+          login
+          name
+          sponsorshipForViewerAsSponsorable {
+            privacyLevel
+            tier {
+              monthlyPriceInDollars
+              isOneTime
+            }
+          }
+        }
+        ... on Organization {
+          login
+          name
+          sponsorshipForViewerAsSponsorable {
+            privacyLevel
+            tier {
+              monthlyPriceInDollars
+              isOneTime
+            }
+          }
+        }
+      }
+    }
+  }
+}

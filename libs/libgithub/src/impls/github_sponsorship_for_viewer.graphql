@@ -1,0 +1,16 @@
+query ($login: String!) {
+  viewer {
+    databaseId
+    login
+    name
+    avatarUrl
+  }
+  user(login: $login) {
+    sponsorshipForViewerAsSponsor {
+      tier {
+        isOneTime
+        monthlyPriceInDollars
+      }
+    }
+  }
+}
