@@ -1,0 +1,3105 @@
+---
+source: mods/markdown/src/lib.rs
+expression: html
+---
+<p>The <a href="https://www.nature.com/nature-research/about">Nature weekly journal of
+science</a> was first published in 1869. And after one and a half century, it has finally completed one cycle of
+<a href="https://en.wikipedia.org/wiki/Carcinisation">carcinization</a>, by publishing
+an article about <a href="https://www.rust-lang.org/">the Rust programming language</a>.</p><p>It&#x27;s a <a href="https://www.nature.com/articles/d41586-020-03382-2">really good article</a>.</p><p>What I liked about this article is that it didn&#x27;t <em>just</em> talk about
+performance, or even just memory safety - it also talked about correctness.</p><p>Well, it also talked about diversity and inclusion, which I think is also
+extremely important, but it&#x27;s not an <em>intrinsic</em> quality of the language,
+more of a state of affairs - which we cannot take for granted, as the nature
+of human dynamics is that they are... dynamic.</p><p>{% sc amossays %}
+Which is not to say that the quality of the community around Rust, those who
+build, use, and teach Rust, does not affect the quality of the language
+itself. Quite the contrary. What I <em>am</em> saying, is that if we are not
+careful, a community can rapidly degrade, especially as a language gains
+wider adoption.
+{% endsc %}</p><p>{% sc bearsays %}
+Right! It&#x27;s not quite as simple as &quot;one bad apple spoils the bunch&quot;, it&#x27;s
+more about eventual moderator burnout.</p><p>I mean, if you just take a look at Re-
+{% endsc %}</p><p>{% sc amossays %}
+Uhhh moving on
+{% endsc %}</p><p>{% sc bearsays %}
+...fine.
+{% endsc %}</p><p>With all that said - I don&#x27;t feel especially qualified to discuss that topic
+at length right now (possibly ever), which is why for today, I&#x27;ll try to
+remain focused on the notion of correctness.</p><h2><a id="the-challenges-of-rust-advocacy" href="#the-challenges-of-rust-advocacy" class="anchor"></a>The challenges of Rust advocacy</h2><p>Whenever the topic of Rust comes up, it&#x27;s usually in comparison with some
+other language. And quite often (to the chagrin of many in the community),
+the conversation devolves into a series of arguments about why some piece of
+software ought to be written (or rewritten) in Rust.</p><p>This pattern is so common, it has become a meme - with its own acronym: RIIR,
+for &quot;Rewrite It In Rust&quot;. If you put those words in a search engine you&#x27;ll
+find no shortage of articles explaining why you should - or shouldn&#x27;t - RIIR.</p><p>But apart from their frequency and length, there is something else that&#x27;s
+extremely common about these arguments. The &quot;do RIIR&quot; side, despite their
+best efforts, is frequently perceived by the other side as being &quot;superior&quot;
+or &quot;elitist&quot;.</p><p>This is made worse by articles in the style of &quot;I tried to RIIR, and it
+didn&#x27;t work out for me&quot;, which usually leads to one of several conclusions,
+some of which are: &quot;the promises made by Rust were not upheld&quot;, or &quot;the
+author went about this all wrong&quot;, neither of which are particularly good
+press for, well, Rust.</p><p>I&#x27;ve tried to pinpoint what exactly about Rust &quot;evangelism&quot; makes it seem so
+unpalatable to folks who are perfectly comfortable using the languages
+they&#x27;ve been using for years (sometimes decades), and I&#x27;ve come to an
+explanation I&#x27;m reasonably happy with.</p><p>It comes in the form of a collection of statements, all of which I believe
+are true simultaneously:</p><p><strong>1) Programming in Rust requires you to think differently</strong></p><p>This has several implications: first, trying to replicate patterns that are
+common in other languages is often bound to fail spectacularly. This makes
+the learning experience quite frustrating for some, and is in itself enough
+to explain why a lot of the &quot;I tried to RIIR&quot; articles end up the way they
+do.</p><p>To an &quot;outsider&quot; (someone who has never written Rust), this statement alone
+also <em>already</em> feels superior. If you&#x27;ve gone through the wonderful
+experience of getting a new manager who feels like they need to change
+everything slightly just to assert their position - this is what it <em>can</em>
+feel like.</p><p>{% sc amossays %}
+That feeling tends to dissipate after persevering for a period of time. What
+once appeared as petty &quot;calls to authority&quot;, changes for changes&#x27; sake, are
+eventually almost all revealed to be <em>fundamental</em> changes, that are
+necessary to make the whole system work.</p><p>And sometimes they&#x27;re just current limitations of the language and&#x2F;or its
+implementations. That&#x27;s something the C++ crowd runs into a lot more.
+{% endsc %}</p><p>{% sc bearsays %}
+Wait, implementations, plural? I thought Rust had no spec and there was only
+one compiler?
+{% endsc %}</p><p>{% sc amossays %}
+Arguably, <a href="https://rust-analyzer.github.io/">rust-analyzer</a> is a partial
+reimplementation of a lot of the language. Inside rustc itself, there are
+several concurrent implementations of the same components.</p><p>See for example <a href="https://github.com/rust-lang/polonius">Polonius</a>, the
+next-generation borrow checker, the <a href="https://github.com/rust-lang/miri">Miri</a>
+interpreter, or the <a href="https://github.com/bjorn3/rustc_codegen_cranelift">Cranelift codegen
+backend</a>.
+{% endsc %}</p><p>This statement is equally irritating to the functional programming crowd, who
+are <em>already</em> enamored with languages that requires them to think
+differently, sometimes much more differently, than &quot;traditional&quot; languages
+like, C, C++, Java, Python, Go, etc.</p><p>{% sc amossays %}
+&quot;Traditional&quot; is put in scare quotes here because of course, functional
+programming languages are not particularly recent. I&#x27;m (mis)using it in the
+sense &quot;that you would find a lot of job openings for in the past decade&quot;.
+{% endsc %}</p><p>&quot;No&quot;, say the Haskellers, understandably, &quot;Rust is <em>not</em> a &#x27;fundamental&#x27;
+departure from &#x27;&#x27;&#x27;traditional&#x27;&#x27;&#x27; imperative programming languages, in fact,
+look at it, and its filthy, filthy side effects&quot;.</p><p>To which I say: fair. But also: <strong>the novelty is in the compromise</strong>. If you
+can find a way to reconcile two fundamentally different but well-established
+methods, you&#x27;ve made something new, that solves a new category of problems,
+or that solves more easily an old category of problems - at any rate: it&#x27;s
+worth looking into.</p><p><strong>2) It is harder to write any code at all in Rust</strong></p><p>Again, there are several ways to misconstrue this statement: I don&#x27;t believe
+Rust is particularly harder to write, than, say, x86 assembly.</p><p>{% sc bearsays %}
+Or is it?
+{% endsc %}</p><p>But it is, arguably, harder to write any code at all in Rust, than in Go, or
+JavaScript. You can take a perfectly fine JavaScript program, and struggle
+for <em>hours</em> to rewrite it in Rust, because the compiler <em>requires</em> you to
+care about more aspects of the problem than you had to before.</p><p>Which begs the question: why would anyone submit themselves to this?</p><p>That is a completely fair question. Because in this instance, the JavaScript
+program was &quot;complete&quot; before its Rust equivalent was, and they solved the
+same problem. Sure, the Rust program may be faster - but is that enough of
+a differentiator?</p><p>We could have shipped the JavaScript program earlier, acquired customers, and
+increased revenue. And we could&#x27;ve worried about &quot;minor bugs&quot; and
+&quot;performance difficulties&quot; later on.</p><p>Or so I&#x27;m being told.</p><p>And as Rust is beginning to see wider adoption, not only in almost all of the
+major software companies, but in a lot of the smaller ones as well, this is
+an argument that real actual people like you and me are going over several
+times a day, every day of the week, because we as an industry are not good
+with the whole work&#x2F;life balance thingy.</p><p><strong>3) It is easier to write &quot;correct&quot; code in Rust</strong></p><p>This is where things get tricky.</p><p>Because &quot;correct&quot; is not an end goal. &quot;Correct&quot;, much like chaos, is a ladder.</p><p>Unless you&#x27;re embarking on a mission to the moon, or you&#x27;re writing software
+for self-driving cars, or... okay there&#x27;s actually quite a few applications
+for which you do need to be &quot;correct&quot; - but say, if you&#x27;re working for a
+company that sells a &quot;non-essential&quot; customer product or service (and that&#x27;s
+most of the industry), you only need to be <em>correct enough</em>.</p><p>Say you&#x27;re writing a music recommendation system. The correctness
+requirements here are <em>extremely lax</em>. You could totally get away with just
+pulling from the &quot;most listened&quot; titles dataset, and vaguely bucketing things
+by year or genres. Not that anyone would actually do that. Wink wink.</p><p>Point is: if 50% of your recommendations are only tangentially related to
+your customer&#x27;s interests, it probably won&#x27;t hurt the bottom line. And
+anyway: are they paying customers? Or are they just freeloaders making it up
+by getting some ads shoved into their ears now and then? Maybe you could only
+run the <em>real</em> recommendation system for those premium accounts.</p><p>But I digress.</p><p>There&#x27;s a <em>lot</em> of software applications for which being correct is not all
+that important. Unless customers - paying customers - start to notice, and
+straight up threaten to leave you for a competitor if you don&#x27;t fix the
+incorrectness, presto.</p><p>Let&#x27;s talk about uptime: the percentage of the time that a service is
+&quot;available&quot;, or &quot;healthy&quot;. No one is foolish enough to promise 100% uptime.
+We barely have enough control over matter to achieve <code>99.99%</code> uptime - and we
+do so by building redundant systems. If a node won&#x27;t handle requests
+properly, just fall back to another node, or take it out of rotation, set up
+more load balancers, filter out the word &quot;latency&quot; on Slack, do something,
+anything!</p><p>And if you really <em>can&#x27;t</em> achieve the promised uptime, well, you still have a
+way out: you can give the customer their money back, sort of, in the form of
+a &quot;credit&quot;, which effectively makes their next bill a little lighter.</p><p>But does that mean you shouldn&#x27;t care, or worry about correctness? No!</p><p>{% sc bearsays %}
+Today: Rhetorical questions 101, with Amos.
+{% endsc %}</p><p>Every bit of incorrectness you ship has a cost. The most direct cost is
+giving customers &quot;credits&quot; - you&#x27;re literally taking a chunk out of your own
+profits, as penance for failing to meet your own goals.</p><p>But fixing lots of &quot;minor bugs&quot; has an engineering cost, too. <em>Someone</em> has
+to go through the backlog, or the ice box, or wherever kids store their
+<del>plums</del> tickets nowadays, and actually ship the fix. And hope that their
+fix does not introduce a regression.</p><p>So you write tests. And then some more tests. And some of them are flaky,
+because of the law of large numbers, or something like that. So you allow
+them to fail. And then you find bugs in your tests, so you fix those bugs
+too, but not after you&#x27;ve &quot;fixed&quot; your code so it passes the tests,
+introducing an error because it turns out the <del>call was coming from inside
+the house</del> test was wrong all along.</p><p>And while your engineers are busy doing all this, they&#x27;re not working on new
+features. Features that would be much faster to build originally in Go, or
+JavaScript, or so I&#x27;m told. And so your company falls behind, as others
+continue to innovate, which could eventually cost you your entire
+marketshare.</p><p>This is not a work of fiction - it&#x27;s something that has happened in all
+industries, for as long as we&#x27;ve had industries.</p><p>Of course, the reverse nightmare scenario is also real - we all know that one
+colleague who, by our own estimation, spends &quot;forever&quot; trying to get
+something juuuuuuuuust right. This can <em>also</em> cause a company to fall behind
+while others continue innovating and capturing the market.</p><p>So, as with a lot of things - it&#x27;s a balance.</p><p>{% sc bearsays %}
+Tonight, at 11: Platitudes, with Amos.
+{% endsc %}</p><p>And if you&#x27;ve managed to not let yourself be distracted by the meanderings
+the introduction to this article has taken, you might remember that I
+mentioned Rust was a <em>compromise</em>, and so you may well have an inkling where
+it is that I&#x27;m trying to go with all this.</p><p>And you would be correct.</p><p>{% sc bearsays %}
+Ha!
+{% endsc %}</p><h2><a id="implicit-contracts-are-everywhere" href="#implicit-contracts-are-everywhere" class="anchor"></a>Implicit contracts are everywhere</h2><p>The world is a messy, <em>messy</em> place. Depending on how your brain apprehends
+your surroundings, and your current mental state, the world can range from
+&quot;okay, I guess&quot; to deeply upsetting.</p><p>Social interactions are a perfect way to familiarize ourselves with the
+notion of &quot;implicit contracts&quot;.</p><p>It is understood, among good company, that there are certain things one ought
+not to discuss out loud. Or not with people you don&#x27;t know well enough. Or
+not with your family. Or not at all.</p><p>This is part of a &quot;social contract&quot;, that I honestly don&#x27;t remember signing,
+which is kinda bullshit if you want my opinion, but regardless - a large
+number of scholars agree that it is, indeed, &quot;a thing&quot;, so let&#x27;s just go with
+it.</p><p>Kids in particular, tend to be frustrated by the vagueness of this social
+contract. Kids, and <a href="https://www.youtube.com/watch?v=I-67hbucUjQ">Nathan
+Fielder</a>, whose videos rarely
+fail to make me laugh, but make others extremely uncomfortable, due to the
+sheer awkwardness of not behaving like others expect you to, even in fairly
+innocent situations.</p><p>The thing about this &quot;social contract&quot;, apart from being poorly defined and
+ever-evolving, is that there exists very little in the way of enforcing it.</p><p>Ah, to be an edgy teenager again, discovering - for the first time in
+history, no doubt - the idea that &quot;if we all stop going to school, there is
+nothing they can do about it&quot;.</p><p>{% sc bearsays %}
+I&#x27;m sure that went well.
+{% endsc %}</p><p>{% sc amossays %}
+Well, it wasn&#x27;t as big a walkout as I had envisioned, but eventually
+the school administration and I agreed that it was probably best if I
+skipped certain classes for a while, so it all worked out in the end.
+{% endsc %}</p><p>{% sc bearsays %}
+I&#x27;m not sure you learned the right lesson from that, but discussing
+incentives is probably best left for another day.
+{% endsc %}</p><p>Anyway - the same &quot;implicit contracts&quot; apply to the tech world.</p><p>For instance, it is generally agreed-upon that hammering a server with
+hundreds of thousands of requests in a short period of time is &quot;rude&quot;.
+But do it over it a period of ten years, and you&#x27;re a &quot;valued customer&quot;.</p><p>Confusing, I know.</p><p>And that&#x27;s not all. If a service listens for TCP connections on port 80, it&#x27;s
+generally expected to speak
+<a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">HTTP</a>. That one
+is <a href="https://tools.ietf.org/html/rfc1340">actually codified in an RFC</a>, but
+again, there&#x27;s nothing preventing you from, you know, just not.</p><p>The rule is not <em>enforced</em>. Thankfully, there is no IETF police.</p><p>And as you gain customers, and your product is used by a wider variety of
+folks, you tend to encounter more and more folks that &quot;just&quot; completely
+disregard your assumptions.</p><p>Let&#x27;s take one of my favorite examples and look at the SSH protocol: when
+a client connects to an SSH server, one of the first thing that happens is
+that the server sends its version to the client.</p><p>{% sc amossays %}
+Why that part of the protocol exists, it&#x27;s hard to say. Presumably, the
+authors of SSH were eager to give potential attackers an easier way to test
+for vulnerabilities simply by parsing the version string, as is the case
+of the <code>Server</code> HTTP header.</p><p>Or maybe they didn&#x27;t think of it that way. It&#x27;s impossible to tell.
+{% endsc %}</p><p>But wait, I lied! <em>Before</em> the servers sends its version, it may send
+&quot;other lines of data&quot;.</p><p>Now, normally-behaved SSH servers usually send lines from a text file, and we
+call this their &quot;banner message&quot;. Or it can be automatically generated, and
+then we call this a MOTD (for Message Of The Day).</p><p>But if you think outside the box... and you want to prevent attackers from
+getting inside the box...</p><p>you can send...</p><p>&quot;lines of data&quot;...</p><p>very slowly...</p><p>forever.</p><p>This is called an <a href="https://nullprogram.com/blog/2019/03/22/">SSH Tarpit</a>, and
+I think it&#x27;s equal parts hilarious and brilliant.</p><p>It&#x27;s also a clear violation of the implicit contract between an SSH client
+and an SSH server. It&#x27;s not the <em>only</em> violation that can occur. For example,
+the SSH server could just take a <em>very long</em> time to accept the connection
+(ie. to complete the <a href="https://developer.mozilla.org/en-US/docs/Glossary/TCP_handshake">TCP handshake</a>).</p><p>But this violation is so common, it has <del>become a meme</del> caused all clients
+to protect against it by default. Network applications tend to set &quot;timeouts&quot;
+on operations - in this case, the &quot;connect timeout&quot; would expire, and the
+client would simply give up, which would free it up to try again.</p><p>If the SSH server simply sent <em>nothing</em>, a &quot;read timeout&quot; might expire, and
+again, the client would give up on this connection and try again.</p><p>In all four of the RFCs in which the SSH protocol is documented, the word
+&quot;timeout&quot; is only mentioned once, to recommend that servers have an
+<a href="https://tools.ietf.org/html/rfc4252#section-4">authentication timeout</a>.
+There&#x27;s no mention of connection timeouts, a testament to the fact that
+it&#x27;s just &quot;one of these things you should know about if you program networked
+applications&quot;.</p><p>Unfortunately, not all of &quot;those things&quot; are obvious, or even particularly
+well-known.</p><p>{% sc recap %}
+If I say &quot;you can&#x27;t talk to me like that&quot;, well, there&#x27;s nothing preventing
+you from continuing to talk to me like that. It&#x27;s rude, but not impossible.</p><p>Software is rude <em>all the time</em>.
+{% endsc %}</p><h2><a id="let-s-talk-about-http-headers" href="#let-s-talk-about-http-headers" class="anchor"></a>Let&#x27;s talk about HTTP headers</h2><p>Imagine we have a server that speaks exclusively HTTP&#x2F;1.1.</p><p>It serves a variety of domains, such as <code>internal.example.org</code>,
+<code>ducks.example.org</code>, and <code>giraffes.example.org</code>.</p><p>The problem? You really <em>only</em> want to serve <code>ducks.example.org</code> and
+<code>giraffes.example.org</code> to everyone, while <code>internal.example.org</code> should only
+be accessible from the company VPN.</p><p>HTTP&#x2F;1.1 seems like a pretty simple protocol...</p><p>{% sc bearsays %}
+...until you need to <em>actually</em> implement it correctly, anyway - at that
+point, all bets are off.
+{% endsc %}</p><p>...so we may be tempted to just add a proxy that perform access control, by
+parsing HTTP requests.</p><p>I&#x27;m sure we can cobble something together...</p><code data-lang="javascript">&#x2F;&#x2F; This code is full of sins - but it serves its purpose.
+
+const net = require(&quot;net&quot;);
+
+async function main() {
+  let server = new net.Server({}, onConnection);
+  server.on(&quot;error&quot;, (err) =&gt; {
+    throw err;
+  });
+  let port = 8124;
+  server.listen(port, () =&gt; {
+    console.log(`Now listening on port ${port}`);
+  });
+}
+
+function onConnection(sock) {
+  (async () =&gt; {
+    &#x2F;&#x2F; Read a full HTTP&#x2F;1.1 request
+    let buf = &quot;&quot;;
+    while (true) {
+      await readable(sock);
+      buf += sock.read();
+
+      if (buf.endsWith(&quot;\r\n\r\n&quot;)) {
+        break;
+      }
+    }
+
+    buf = buf.trim();
+    console.log(`==== incoming HTTP request ====`);
+    console.log(buf);
+    console.log(`===============================`);
+    console.log(`(came from ${JSON.stringify(sock.address())})`);
+  })().catch((err) =&gt; {
+    throw err;
+  });
+}
+
+async function readable(r) {
+  return new Promise((resolve, reject) =&gt; {
+    r.once(&quot;readable&quot;, resolve);
+    r.once(&quot;error&quot;, reject);
+    r.once(&quot;close&quot;, reject);
+  });
+}
+
+main().catch((err) =&gt; {
+  throw err;
+});
+</code><p>And run it:</p><code data-lang="shell">$ node index.js
+Now listening on port 8124
+</code><p>And then, from another shell:</p><code data-lang="shell">$ domain=&quot;internal.example.org&quot;; curl --connect-to &quot;${domain}:80:localhost:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot;
+</code><p>{% sc tip %}
+This works in bash or zsh - it sets a variable named <code>domain</code> to the value
+<code>internal.example.org</code>, then instructs <code>curl</code> to <em>not</em> perform a
+<a href="https://en.wikipedia.org/wiki/Domain_Name_System">DNS</a> lookup, but instead
+connect directly to <code>localhost:8124</code>, which is the address our
+<a href="https://nodejs.org/">node.js</a> server listens on.
+{% endsc %}</p><p>And our first shell session would show:</p><code data-lang="shell">$ node index.js
+Now listening on port 8124
+==== incoming HTTP request ====
+GET &#x2F; HTTP&#x2F;1.1
+Host: internal.example.org
+User-Agent: curl&#x2F;7.73.0
+Accept: *&#x2F;*
+===============================
+(came from {&quot;address&quot;:&quot;::ffff:127.0.0.1&quot;,&quot;family&quot;:&quot;IPv6&quot;,&quot;port&quot;:8124})
+</code><p>What do we observe here?</p><p>The first line has the HTTP method, the path, and the protocol. All
+subsequent lines (until <code>CRLFCRLF</code>) are for headers. If we want to filter by
+host, we&#x27;re going to want to parse those.</p><p>The result of <code>socket.address()</code> is sort of unexpected for me - I wasn&#x27;t
+planning on supporting IPv6, so let&#x27;s try and disable that:</p><code data-lang="javascript">&#x2F;&#x2F; new: we specify a hostname of `0.0.0.0` (an IPv4 address)
+server.listen(port, &quot;0.0.0.0&quot;, () =&gt; {
+  console.log(`Now listening on port ${port}`);
+});
+</code><code data-lang="shell">node index.js
+Now listening on port 8124
+==== incoming HTTP request ====
+GET &#x2F; HTTP&#x2F;1.1
+Host: internal.example.org
+User-Agent: curl&#x2F;7.73.0
+Accept: *&#x2F;*
+===============================
+(came from {&quot;address&quot;:&quot;127.0.0.1&quot;,&quot;family&quot;:&quot;IPv4&quot;,&quot;port&quot;:8124})
+</code><p>Okay, so - for the purposes of our exercise, let&#x27;s assume that only the
+following addresses can access the internal website:</p><ul><li><code>127.0.0.x</code> (with any <code>x</code>)</li><li><code>2.58.12.x</code> (with any <code>x</code>)</li></ul><p>So, we&#x27;ll probably want a function that lets us know, given an IP address,
+whether it&#x27;s allowed to access the internal website or not.</p><code data-lang="javascript">function isAllowed(addr) {
+  return addr.startsWith(&quot;127.0.0.&quot;) || addr.startsWith(&quot;2.58.12.&quot;);
+}
+</code><p>Then, we shall use it from a <code>handleRequest</code> function:</p><code data-lang="javascript">async function handleRequest(sock, payload) {
+  let { address } = sock.address();
+  let status, output;
+
+  if (isAllowed(address)) {
+    status = &quot;200 OK&quot;;
+    output = &quot;Access granted!&quot;;
+  } else {
+    status = &quot;403 Forbidden&quot;;
+    output = &quot;Forbidden.&quot;;
+  }
+
+  console.log(`[${address}] ${status}`);
+  sock.write(`HTTP&#x2F;1.1 ${status}\r\n\r\n`);
+  sock.write(`${output}\n`);
+  sock.end();
+}
+</code><p>And finally, change <code>onConnection</code> to use <code>handleRequest</code>:</p><code data-lang="javascript">function onConnection(sock) {
+  (async () =&gt; {
+    &#x2F;&#x2F; Read a full HTTP&#x2F;1.1 request
+    let buf = &quot;&quot;;
+    while (true) {
+      await readable(sock);
+      buf += sock.read();
+
+      if (buf.endsWith(&quot;\r\n\r\n&quot;)) {
+        break;
+      }
+    }
+
+    buf = buf.trim();
+    await handleRequest(sock, buf);
+  })().catch((err) =&gt; {
+    throw err;
+  });
+}
+</code><p>And, as we say in French, &quot;le tour est joué&quot;!</p><p>If we make a request to localhost, here <code>127.0.0.1</code> with IPv4, we get
+a 200 OK:</p><code data-lang="shell">$ domain=&quot;internal.example.org&quot;; curl -v --connect-to &quot;${domain}:80:localhost:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot;
+* Connecting to hostname: localhost
+* Connecting to port: 8124
+*   Trying 127.0.0.1:8124...
+* Connected to localhost (127.0.0.1) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: internal.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 200 OK
+* no chunk, no close, no size. Assume close to signal end
+&lt;
+Access granted!
+* Closing connection 0
+</code><p>But if we make a request to our LAN IP (which is <em>not</em> in the <code>192.168.x</code> here, because I
+happen to be running all this on <a href="https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux#WSL_2">WSL 2</a>),
+we get a 403 Forbidden:</p><code data-lang="shell">$ domain=&quot;internal.example.org&quot;; curl -v --connect-to &quot;${domain}:80:172.31.194.107:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot;
+* Connecting to hostname: 172.31.194.107
+* Connecting to port: 8124
+*   Trying 172.31.194.107:8124...
+* Connected to 172.31.194.107 (172.31.194.107) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: internal.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 403 Forbidden
+* no chunk, no close, no size. Assume close to signal end
+&lt;
+Forbidden.
+* Closing connection 0
+</code><p>For completeness, here are the server logs:</p><code data-lang="shell">$ node index.js
+Now listening on port 8124
+[127.0.0.1] 200 OK
+[172.31.194.107] 403 Forbidden
+</code><p>Everything matches up. Wonderful.</p><p>Well, our program isn&#x27;t quite complete yet - we <em>always</em> apply access
+control, even for public domains like <code>ducks.example.org</code>:</p><code data-lang="shell">$ domain=&quot;ducks.example.org&quot;; curl -I --connect-to &quot;${domain}:80:172.31.194.107:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot;
+HTTP&#x2F;1.1 403 Forbidden
+</code><p>So, we need to <em>actually</em> parse the incoming HTTP request.</p><p>Let&#x27;s whip up something real quick:</p><code data-lang="javascript">function parseRequest(payload) {
+  let req = {
+    headers: {},
+  };
+
+  let lines = payload.split(&#x2F;[\r]?\n&#x2F;);
+  let tokens = lines.shift().split(&quot; &quot;);
+  req.method = tokens[0];
+  req.path = tokens[1];
+  req.protocol = tokens[2];
+
+  for (const line of lines) {
+    let i = line.indexOf(&quot;:&quot;);
+    let name = line.substring(0, i);
+    let value = line.substring(i + 1).trim();
+    req.headers[name] = value;
+  }
+  return req;
+}
+</code><p>And use it from <code>handleRequest</code>:</p><code data-lang="javascript">async function handleRequest(sock, payload) {
+  &#x2F;&#x2F; new:
+  let req = parseRequest(payload);
+  console.log(JSON.stringify(req, null, 2));
+
+  &#x2F;&#x2F; old:
+  let { address } = sock.address();
+  let status, output;
+
+  if (isAllowed(address)) {
+    status = &quot;200 OK&quot;;
+    output = &quot;Access granted!&quot;;
+  } else {
+    status = &quot;403 Forbidden&quot;;
+    output = &quot;Forbidden.&quot;;
+  }
+
+  console.log(`[${address}] ${status}`);
+  sock.write(`HTTP&#x2F;1.1 ${status}\r\n\r\n`);
+  sock.write(`${output}\n`);
+  sock.end();
+}
+</code><p>Now our server logs are a lot more informative:</p><code data-lang="shell">$ node index.js
+Now listening on port 8124
+{
+  &quot;headers&quot;: {
+    &quot;Host&quot;: &quot;ducks.example.org&quot;,
+    &quot;User-Agent&quot;: &quot;curl&#x2F;7.73.0&quot;,
+    &quot;Accept&quot;: &quot;*&#x2F;*&quot;
+  },
+  &quot;method&quot;: &quot;HEAD&quot;,
+  &quot;path&quot;: &quot;&#x2F;&quot;,
+  &quot;protocol&quot;: &quot;HTTP&#x2F;1.1&quot;
+}
+[172.31.194.107] 403 Forbidden
+</code><p>Let&#x27;s implement the rest of the logic we set out to implement:</p><code data-lang="javascript">function isRestricted(req) {
+  return req.headers.Host === &quot;internal.example.org&quot;;
+}
+</code><p>We can now change the condition in <code>handleRequest</code> to:</p><code data-lang="javascript">if (!isRestricted(req) || isAllowed(address)) {
+  status = &quot;200 OK&quot;;
+  output = &quot;Access granted!&quot;;
+} else {
+  status = &quot;403 Forbidden&quot;;
+  output = &quot;Forbidden.&quot;;
+}
+</code><p>And everything behaves as expected.
+<a href="https://www.urbandictionary.com/define.php?term=Allowlist">Allowlisted</a> IPs
+get access to everything, including the internal site:</p><code data-lang="shell">$ for subdomain in ducks giraffes internal; do domain=&quot;${subdomain}.example.org&quot;; echo $domain; curl -I --connect-to &quot;${domain}:80:localhost:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot; ; done
+ducks.example.org
+HTTP&#x2F;1.1 200 OK
+
+giraffes.example.org
+HTTP&#x2F;1.1 200 OK
+
+internal.example.org
+HTTP&#x2F;1.1 200 OK
+</code><p>Whereas other IP addresses get access only to the public sites:</p><code data-lang="shell">$ for subdomain in ducks giraffes internal; do domain=&quot;${subdomain}.example.org&quot;; echo $domain; curl -I --connect-to &quot;${domain}:80:172.31.194.107:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot; ; done
+ducks.example.org
+HTTP&#x2F;1.1 200 OK
+
+giraffes.example.org
+HTTP&#x2F;1.1 200 OK
+
+internal.example.org
+HTTP&#x2F;1.1 403 Forbidden
+</code><p>We&#x27;re done! That was easy.</p><p>Well, except for one part. Our proxy isn&#x27;t actually proxying anything at all.
+For it to actually proxy anything, we need to... well, we need some server to
+proxy to.</p><p>I know, we&#x27;ll write it in Go! Because in the real world, the origin server
+may be written by a completely different team, with different language
+preferences.</p><code data-lang="go">package main
+
+import (
+  &quot;bufio&quot;
+  &quot;fmt&quot;
+  &quot;io&quot;
+  &quot;log&quot;
+  &quot;net&quot;
+  &quot;strings&quot;
+)
+
+const hostPrefix = &quot;host: &quot;
+
+func main() {
+  &#x2F;&#x2F; This server is *not* meant to be exposed to the internet, so it only
+  &#x2F;&#x2F; binds to localhost, not `0.0.0.0`.
+  addr := &quot;localhost:8125&quot;
+
+  l, err := net.Listen(&quot;tcp4&quot;, addr)
+  must(err)
+
+  log.Printf(&quot;Now listening on %v&quot;, addr)
+
+handleConn:
+  for {
+    conn, err := l.Accept()
+    must(err)
+
+    ip := strings.Split(conn.RemoteAddr().String(), &quot;:&quot;)[0]
+    log.Printf(&quot;Connection from %v&quot;, ip)
+
+    buf := bufio.NewReader(conn)
+
+    for {
+      lineBytes, _, err := buf.ReadLine()
+      line := strings.ToLower(string(lineBytes))
+      log.Printf(&quot;%v&quot;, line)
+
+      if strings.HasPrefix(line, hostPrefix) {
+        host := strings.TrimPrefix(line, hostPrefix)
+        switch host {
+        case &quot;ducks.example.org&quot;:
+          reply(conn, &quot;200 OK&quot;, &quot;Have some happy ducks!&quot;)
+        case &quot;giraffes.example.org&quot;:
+          reply(conn, &quot;200 OK&quot;, &quot;Here&#x27;s a long neck&quot;)
+        case &quot;internal.example.org&quot;:
+          reply(conn, &quot;200 OK&quot;, &quot;[CONFIDENTIAL] The secret ingredient is love&quot;)
+        default:
+          reply(conn, &quot;404 Not Found&quot;, &quot;No such domain is hosted on this server&quot;)
+        }
+        continue handleConn
+      }
+      must(err)
+    }
+  }
+}
+
+func reply(conn io.WriteCloser, status string, payload string) {
+  fmt.Fprintf(conn, &quot;HTTP&#x2F;1.1 %s\r\n\r\n&quot;, status)
+  fmt.Fprintf(conn, &quot;%s\n&quot;, payload)
+  conn.Close()
+}
+
+func must(err error) {
+  if err != nil {
+    log.Fatalf(&quot;%#v&quot;, err)
+  }
+}
+</code><code data-lang="">$ go run main.go
+2020&#x2F;12&#x2F;06 00:49:32 Now listening on localhost:8125
+</code><p>Our origin server is completely unprotected - but then again, it&#x27;s not
+exposed to the internet, so this is fine.</p><p>It works quite well, though!</p><code data-lang="shell">$ for subdomain in ducks giraffes internal; do domain=&quot;${subdomain}.example.org&quot;; echo &quot;\n${domain}&quot;; curl &quot;http:&#x2F;&#x2F;${domain}&quot; --connect-to &quot;${domain}:80:localhost:8125&quot; ; done
+
+ducks.example.org
+Have some happy ducks!
+
+giraffes.example.org
+Here&#x27;s a long neck
+
+internal.example.org
+[CONFIDENTIAL] The secret ingredient is love
+</code><p>For the curious, here&#x27;s the output from our Go server:</p><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;06 00:51:54 Now listening on localhost:8125
+2020&#x2F;12&#x2F;06 00:51:55 Connection from 127.0.0.1
+2020&#x2F;12&#x2F;06 00:51:55 get &#x2F; http&#x2F;1.1
+2020&#x2F;12&#x2F;06 00:51:55 host: ducks.example.org
+2020&#x2F;12&#x2F;06 00:51:55 Connection from 127.0.0.1
+2020&#x2F;12&#x2F;06 00:51:55 get &#x2F; http&#x2F;1.1
+2020&#x2F;12&#x2F;06 00:51:55 host: giraffes.example.org
+2020&#x2F;12&#x2F;06 00:51:55 Connection from 127.0.0.1
+2020&#x2F;12&#x2F;06 00:51:55 get &#x2F; http&#x2F;1.1
+2020&#x2F;12&#x2F;06 00:51:55 host: internal.example.org
+</code><p>So, the last missing piece of the puzzle is for the node.js &quot;access control
+proxy&quot; to forward the request to the origin - and to forward the response
+back to the client.</p><p>And here&#x27;s one way we could do it:</p><code data-lang="javascript">async function proxyRequest(sock, payload) {
+  let originSock = await new Promise((resolve, reject) =&gt; {
+    let sock = new net.Socket();
+    sock.on(&quot;error&quot;, reject);
+    sock.connect(8125, &quot;127.0.0.1&quot;, () =&gt; {
+      resolve(sock);
+    });
+  });
+  originSock.write(payload);
+  originSock.end();
+
+  forward: while (true) {
+    try {
+      await readable(originSock);
+    } catch (err) {
+      break forward;
+    }
+    let buf = originSock.read();
+    if (buf) {
+      sock.write(buf);
+    }
+  }
+  sock.end();
+}
+</code><p>Which would seamlessly integrate with our existing server code, albeit
+with the conditions flipped:</p><code data-lang="javascript">async function handleRequest(sock, payload) {
+  let req = parseRequest(payload);
+  console.log(JSON.stringify(req, null, 2));
+
+  let { address } = sock.address();
+
+  if (isRestricted(req) &amp;&amp; !isAllowed(address)) {
+    let status = &quot;403 Forbidden&quot;;
+    let output = &quot;Forbidden.&quot;;
+
+    console.log(`[${address}] ${status}`);
+    sock.write(`HTTP&#x2F;1.1 ${status}\r\n\r\n`);
+    sock.write(`${output}\n`);
+    sock.end();
+    return;
+  }
+
+  await proxyRequest(sock, payload);
+}
+</code><p>And with that, doing requests to localhost (ie. from <code>127.0.0.1</code>) gives us
+access to everything from the origin:</p><code data-lang="shell">$ for subdomain in ducks giraffes internal; do domain=&quot;${subdomain}.example.org&quot;; echo &quot;\n${domain}&quot;; curl --connect-to &quot;${domain}:80:127.0.0.1:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot; ; done
+
+ducks.example.org
+Have some happy ducks!
+
+giraffes.example.org
+Here&#x27;s a long neck
+
+internal.example.org
+[CONFIDENTIAL] The secret ingredient is love
+</code><p>And doing requests to the LAN IP address would <em>not</em> give us access to
+<code>internal.example.org</code> - just as we intended:</p><code data-lang="shell">$ for subdomain in ducks giraffes internal; do domain=&quot;${subdomain}.example.org&quot;; echo &quot;\n${domain}&quot;; curl --connect-to &quot;${domain}:80:172.31.194.107:8124&quot; &quot;http:&#x2F;&#x2F;${domain}&quot; ; done
+
+ducks.example.org
+Have some happy ducks!
+
+giraffes.example.org
+Here&#x27;s a long neck
+
+internal.example.org
+Forbidden.
+</code><p>And there you have it. Our server infrastructure is feature complete. It does
+serve all three sites, and in terms of access control, it even passes our
+black-box test, where we use an external HTTP client to make a request and
+only rely on the output.</p><p>Our solution however, has several flaws which are, as we&#x27;re about to see,
+quite problematic.</p><h2><a id="http-is-only-as-real-as-you-want-it-to-be" href="#http-is-only-as-real-as-you-want-it-to-be" class="anchor"></a>HTTP is only as real as you want it to be</h2><p>curl is a well-behaved citizen of the HTTP-verse.</p><p>By default, it sets the <code>Host</code> header to whatever was in the URL:</p><code data-lang="shell">$ curl -v http:&#x2F;&#x2F;172.31.207.114:8124
+*   Trying 172.31.207.114:8124...
+* Connected to 172.31.207.114 (172.31.207.114) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: 172.31.207.114:8124
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 404 Not Found
+* no chunk, no close, no size. Assume close to signal end
+&lt;
+No such domain is hosted on this server
+* Closing connection 0
+</code><p>And if you use the <code>-H</code> (or <code>--header</code>) flag to specify the <code>Host</code> header,
+well, it replace it with that value:</p><code data-lang="shell">$ curl -v http:&#x2F;&#x2F;172.31.207.114:8124 -H &quot;Host: ducks.example.org&quot;
+*   Trying 172.31.207.114:8124...
+* Connected to 172.31.207.114 (172.31.207.114) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: ducks.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 200 OK
+* no chunk, no close, no size. Assume close to signal end
+&lt;
+Have some happy ducks!
+* Closing connection 0
+</code><p>If we use a different casing for the <code>Host</code> header, it normalizes it:</p><code data-lang="shell">$ curl -v http:&#x2F;&#x2F;172.31.207.114:8124 -H &quot;hoST: ducks.example.org&quot;
+*   Trying 172.31.207.114:8124...
+* Connected to 172.31.207.114 (172.31.207.114) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: ducks.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 200 OK
+* no chunk, no close, no size. Assume close to signal end
+&lt;
+Have some happy ducks!
+* Closing connection 0
+</code><p>And if we try to pass a <em>second</em> <code>Host</code> header (even with a different
+casing!), it protects us from ourselves, only setting the first one:</p><code data-lang="shell">$ curl -v http:&#x2F;&#x2F;172.31.207.114:8124 -H &quot;hoST: ducks.example.org&quot; -H &quot;HOst: giraffes.example.org&quot;
+*   Trying 172.31.207.114:8124...
+* Connected to 172.31.207.114 (172.31.207.114) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: ducks.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 200 OK
+* no chunk, no close, no size. Assume close to signal end
+&lt;
+Have some happy ducks!
+* Closing connection 0
+</code><p>But curl is not the only way we can make HTTP requests.</p><p>Let&#x27;s handcraft an HTTP request. In the <code>evil-request.txt</code> file, we&#x27;ll put:</p><code data-lang="raw">GET &#x2F; HTTP&#x2F;1.1
+Host: ducks.example.org
+User-Agent: netcat&#x2F;0.7.1
+
+</code><p>(The blank line at the end is important)</p><p>Of course I&#x27;m doing this from Linux, so it&#x27;s only using <code>\n</code> as a line separator, and we
+want <code>\r\n</code> in HTTP, so, with a little help from <code>sed</code>, we can fix that:</p><code data-lang="shell">$ cat evil-request.txt | sed -z &#x27;s&#x2F;\n&#x2F;\r\n&#x2F;g&#x27; | od -c
+0000000   G   E   T       &#x2F;       H   T   T   P   &#x2F;   1   .   1  \r  \n
+0000020   H   o   s   t   :       d   u   c   k   s   .   e   x   a   m
+0000040   p   l   e   .   o   r   g  \r  \n   U   s   e   r   -   A   g
+0000060   e   n   t   :       n   e   t   c   a   t   &#x2F;   0   .   7   .
+0000100   1  \r  \n  \r  \n
+0000105
+</code><p>Okay, seems good! Let&#x27;s use netcat to speak TCP to our node.js access control service:</p><code data-lang="shell">$ cat evil-request.txt | sed -z &#x27;s&#x2F;\n&#x2F;\r\n&#x2F;g&#x27; | nc 172.31.207.114 8124
+HTTP&#x2F;1.1 200 OK
+
+Have some happy ducks!
+</code><p>Awesome. Who needs curl when you&#x27;ve got netcat?</p><p>{% sc bearsays %}
+And who needs netcat when you&#x27;ve got <a href="https://falzon.me/en/post/burl-a-pure-bash-http-client/">bash</a>??
+{% endsc %}</p><p>Our request isn&#x27;t really evil yet, though. Sure, recaptcha might look at it
+sideways, because of the unusual <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent">user agent</a>.</p><p>We can make it a lot more evil... if we do this:</p><code data-lang="raw">GET &#x2F; HTTP&#x2F;1.1
+Host: internal.example.org
+Host: ducks.example.org
+User-Agent: netcat&#x2F;0.7.1
+
+</code><code data-lang="shell">$ cat evil-request.txt | sed -z &#x27;s&#x2F;\n&#x2F;\r\n&#x2F;g&#x27; | nc 172.31.207.114 8124
+HTTP&#x2F;1.1 200 OK
+
+[CONFIDENTIAL] The secret ingredient is love
+</code><p>Uh oh.</p><p>We&#x27;re able to access the internal site from the outside! Our access control
+is not controlling any access at all.</p><p>But what&#x27;s actually happening here?</p><p>Well, here&#x27;s what the logs for our node.js service show:</p><code data-lang="raw">Now listening on port 8124
+{
+  &quot;headers&quot;: {
+    &quot;Host&quot;: &quot;ducks.example.org&quot;,
+    &quot;User-Agent&quot;: &quot;netcat&#x2F;0.7.1&quot;
+  },
+  &quot;method&quot;: &quot;GET&quot;,
+  &quot;path&quot;: &quot;HTTP&#x2F;1.1&quot;
+}
+</code><p>And here&#x27;s what the logs for our Go service show:</p><code data-lang="raw">2020&#x2F;12&#x2F;07 21:22:25 Now listening on localhost:8125
+2020&#x2F;12&#x2F;07 21:22:26 Connection from 127.0.0.1
+2020&#x2F;12&#x2F;07 21:22:26 get http&#x2F;1.1
+2020&#x2F;12&#x2F;07 21:22:26 host: internal.example.org
+</code><p>The crux of the problem seems to be that they don&#x27;t agree what the <code>Host</code>
+should be.</p><p>The node.js service parses <em>all</em> headers, and stores them in a JS object,
+which for non-JS folks, is more or less a hashmap, except it&#x27;s highly
+optimized when there&#x27;s a small number of keys (at least in V8 - I&#x27;m not sure
+what happens elsewhere).</p><p>So when we parse this request:</p><code data-lang="raw">GET &#x2F; HTTP&#x2F;1.1
+Host: internal.example.org
+Host: ducks.example.org
+User-Agent: netcat&#x2F;0.7.1
+</code><p>Our object first looks like this:</p><code data-lang="json">{
+  &quot;Host&quot;: &quot;internal.example.org&quot;
+}
+</code><p>And on the next line, it turns into this: <code>Host</code> is overwritten:</p><code data-lang="json">{
+  &quot;Host&quot;: &quot;ducks.example.org&quot;
+}
+</code><p>So, the node.js service <em>thinks</em> we&#x27;re requesting <code>ducks.example.org</code> and says:
+door&#x27;s open, come on in!</p><p>Our Go service, on the other hand, stops on the first <code>Host: </code> header line it finds:</p><code data-lang="go">    for {
+      lineBytes, _, err := buf.ReadLine()
+      line := strings.ToLower(string(lineBytes))
+      log.Printf(&quot;%v&quot;, line)
+
+      if strings.HasPrefix(line, hostPrefix) {
+        host := strings.TrimPrefix(line, hostPrefix)
+        &#x2F;&#x2F; omitted: host handling goes here
+        continue handleConn
+      }
+      must(err)
+    }
+</code><p>So, the first <code>Host</code> line has <code>internal.example.org</code>, and that&#x27;s what it
+serves, not performing any further checks, since that&#x27;s not its job!</p><p>But we can make an even <em>shorter</em> evil request.</p><code data-lang="raw">GET &#x2F; HTTP&#x2F;1.1
+host: internal.example.org
+User-Agent: netcat&#x2F;0.7.1
+
+</code><p>(Again, the final blank line is significant).</p><code data-lang="shell">$ cat evil-request.txt | sed -z &#x27;s&#x2F;\n&#x2F;\r\n&#x2F;g&#x27; | nc 172.31.207.114 8124
+HTTP&#x2F;1.1 200 OK
+
+[CONFIDENTIAL] The secret ingredient is love
+</code><p>{% sc bearsays %}
+Right! Since the node.js service looks up the Host header in a case-sensitive
+way, by doing <code>headers[&quot;Host&quot;]</code>, it just gets <code>undefined</code>, because here the
+Host header is, in fact, lowercase.
+{% endsc %}</p><p>...whereas the Go service converts all header lines to lowercase before it
+processes them:</p><code data-lang="go">    for {
+      lineBytes, _, err := buf.ReadLine()
+      &#x2F;&#x2F;                👇
+      line := strings.ToLower(string(lineBytes))
+      log.Printf(&quot;%v&quot;, line)
+
+      &#x2F;&#x2F; etc.
+    }
+</code><h2><a id="where-have-all-the-good-http-packages-gone" href="#where-have-all-the-good-http-packages-gone" class="anchor"></a>Where have all the good http packages gone?</h2><p>And this is a good place to preempt some criticism: some of you may have paid
+particularly close attention to the code <em>before</em> I showed its flaws, and to
+you, I say: well done!</p><p>Code review skills are important. And if you did, you may have seen this
+<em>whole thing</em> coming, before it unfolded. Double kudos.</p><p>More importantly, you may be thinking: Amos, that&#x27;s silly. Nobody just
+parses HTTP 1.1 like that, straight from the TCP firehose.</p><p>To which I say: bwahahahah. You sweet, sweet summer child. Yes they do. And
+they <a href="https://www.youtube.com/watch?v=G7LJC9vJluU">do it in C</a>.</p><p>It&#x27;s quite awful.</p><p>But more to the point - both node.js <em>and</em> Go come with http packages, which
+I carefully avoided... until now.</p><p>We&#x27;re going to switch to using them, and hopefully fix that terrible, no good
+security hole in the process. But here&#x27;s the thing: I&#x27;m much less interested
+in fixing that particular bug, than I am in <strong>preventing that whole category
+of bugs in the first place</strong>.</p><p>That, to me, is the real prize. But we&#x27;ll come back to that.</p><p>Let&#x27;s start with Go. If we rewrite our origin server with Go, it might look a
+little something like this:</p><code data-lang="go">package main
+
+import (
+  &quot;log&quot;
+  &quot;net&#x2F;http&quot;
+)
+
+func main() {
+  server := http.Server{
+    Addr: &quot;localhost:8125&quot;,
+    Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+      switch r.Host {
+      case &quot;ducks.example.org&quot;:
+        rw.Write([]byte(&quot;Have some happy ducks!\n&quot;))
+      case &quot;giraffes.example.org&quot;:
+        rw.Write([]byte(&quot;Here&#x27;s a long neck\n&quot;))
+      case &quot;internal.example.org&quot;:
+        rw.Write([]byte(&quot;[CONFIDENTIAL] The secret ingredient is love\n&quot;))
+      default:
+        rw.WriteHeader(404)
+        rw.Write([]byte(&quot;No such domain is hosted on this server\n&quot;))
+      }
+    }),
+  }
+  log.Printf(&quot;Will listen on %v&quot;, server.Addr)
+  log.Fatalf(&quot;%+v&quot;, server.ListenAndServe())
+}
+
+func must(err error) {
+  if err != nil {
+    log.Fatalf(&quot;%#v&quot;, err)
+  }
+}
+</code><p>There&#x27;s a lot of implicit behavior happening here. For example, if we look
+up the documentation for <code>http.ResponseWriter.Write</code>, we learn the following:</p><blockquote><p>Write writes the data to the connection as part of an HTTP reply.</p></blockquote><p>So far so good.</p><blockquote><p>If WriteHeader has not yet been called, Write calls
+<code>WriteHeader(http.StatusOK)</code> before writing the data.</p></blockquote><p>I guess that <em>is</em> the happy path.</p><blockquote><p>If the Header does not contain a <code>Content-Type</code> line, <code>Write</code> adds a
+<code>Content-Type</code> set to the result of passing the initial 512 bytes of written
+data to <code>DetectContentType</code>.</p></blockquote><p>That&#x27;s... opinionated.</p><p>Let&#x27;s take a quick look at <code>DetectContentType</code>:</p><code data-lang="go">&#x2F;&#x2F; DetectContentType implements the algorithm described
+&#x2F;&#x2F; at https:&#x2F;&#x2F;mimesniff.spec.whatwg.org&#x2F; to determine the
+&#x2F;&#x2F; Content-Type of the given data. It considers at most the
+&#x2F;&#x2F; first 512 bytes of data. DetectContentType always returns
+&#x2F;&#x2F; a valid MIME type: if it cannot determine a more specific one, it
+&#x2F;&#x2F; returns &quot;application&#x2F;octet-stream&quot;.
+func DetectContentType(data []byte) string {
+  if len(data) &gt; sniffLen {
+    data = data[:sniffLen]
+  }
+
+  &#x2F;&#x2F; Index of the first non-whitespace byte in data.
+  firstNonWS := 0
+  for ; firstNonWS &lt; len(data) &amp;&amp; isWS(data[firstNonWS]); firstNonWS++ {
+  }
+
+  for _, sig := range sniffSignatures {
+    if ct := sig.match(data, firstNonWS); ct != &quot;&quot; {
+      return ct
+    }
+  }
+
+  return &quot;application&#x2F;octet-stream&quot; &#x2F;&#x2F; fallback
+}
+</code><p>All the magic happens in the definition of <code>sniffSignatures</code> itself:</p><code data-lang="go">&#x2F;&#x2F; Data matching the table in section 6.
+var sniffSignatures = []sniffSig{
+  htmlSig(&quot;&lt;!DOCTYPE HTML&quot;),
+  htmlSig(&quot;&lt;HTML&quot;),
+  htmlSig(&quot;&lt;HEAD&quot;),
+  htmlSig(&quot;&lt;SCRIPT&quot;),
+  htmlSig(&quot;&lt;IFRAME&quot;),
+  htmlSig(&quot;&lt;H1&quot;),
+  htmlSig(&quot;&lt;DIV&quot;),
+  htmlSig(&quot;&lt;FONT&quot;),
+  htmlSig(&quot;&lt;TABLE&quot;),
+  htmlSig(&quot;&lt;A&quot;),
+  htmlSig(&quot;&lt;STYLE&quot;),
+  htmlSig(&quot;&lt;TITLE&quot;),
+  htmlSig(&quot;&lt;B&quot;),
+  htmlSig(&quot;&lt;BODY&quot;),
+  htmlSig(&quot;&lt;BR&quot;),
+  htmlSig(&quot;&lt;P&quot;),
+  htmlSig(&quot;&lt;!--&quot;),
+  &amp;maskedSig{
+    mask:   []byte(&quot;\xFF\xFF\xFF\xFF\xFF&quot;),
+    pat:    []byte(&quot;&lt;?xml&quot;),
+    skipWS: true,
+    ct:     &quot;text&#x2F;xml; charset=utf-8&quot;},
+  &amp;exactSig{[]byte(&quot;%PDF-&quot;), &quot;application&#x2F;pdf&quot;},
+  &amp;exactSig{[]byte(&quot;%!PS-Adobe-&quot;), &quot;application&#x2F;postscript&quot;},
+
+  &#x2F;&#x2F; UTF BOMs.
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\x00\x00&quot;),
+    pat:  []byte(&quot;\xFE\xFF\x00\x00&quot;),
+    ct:   &quot;text&#x2F;plain; charset=utf-16be&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\x00\x00&quot;),
+    pat:  []byte(&quot;\xFF\xFE\x00\x00&quot;),
+    ct:   &quot;text&#x2F;plain; charset=utf-16le&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\x00&quot;),
+    pat:  []byte(&quot;\xEF\xBB\xBF\x00&quot;),
+    ct:   &quot;text&#x2F;plain; charset=utf-8&quot;,
+  },
+
+  &#x2F;&#x2F; Image types
+  &#x2F;&#x2F; For posterity, we originally returned &quot;image&#x2F;vnd.microsoft.icon&quot; from
+  &#x2F;&#x2F; https:&#x2F;&#x2F;tools.ietf.org&#x2F;html&#x2F;draft-ietf-websec-mime-sniff-03#section-7
+  &#x2F;&#x2F; https:&#x2F;&#x2F;codereview.appspot.com&#x2F;4746042
+  &#x2F;&#x2F; but that has since been replaced with &quot;image&#x2F;x-icon&quot; in Section 6.2
+  &#x2F;&#x2F; of https:&#x2F;&#x2F;mimesniff.spec.whatwg.org&#x2F;#matching-an-image-type-pattern
+  &amp;exactSig{[]byte(&quot;\x00\x00\x01\x00&quot;), &quot;image&#x2F;x-icon&quot;},
+  &amp;exactSig{[]byte(&quot;\x00\x00\x02\x00&quot;), &quot;image&#x2F;x-icon&quot;},
+  &amp;exactSig{[]byte(&quot;BM&quot;), &quot;image&#x2F;bmp&quot;},
+  &amp;exactSig{[]byte(&quot;GIF87a&quot;), &quot;image&#x2F;gif&quot;},
+  &amp;exactSig{[]byte(&quot;GIF89a&quot;), &quot;image&#x2F;gif&quot;},
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF\x00\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;RIFF\x00\x00\x00\x00WEBPVP&quot;),
+    ct:   &quot;image&#x2F;webp&quot;,
+  },
+  &amp;exactSig{[]byte(&quot;\x89PNG\x0D\x0A\x1A\x0A&quot;), &quot;image&#x2F;png&quot;},
+  &amp;exactSig{[]byte(&quot;\xFF\xD8\xFF&quot;), &quot;image&#x2F;jpeg&quot;},
+
+  &#x2F;&#x2F; Audio and Video types
+  &#x2F;&#x2F; Enforce the pattern match ordering as prescribed in
+  &#x2F;&#x2F; https:&#x2F;&#x2F;mimesniff.spec.whatwg.org&#x2F;#matching-an-audio-or-video-type-pattern
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;.snd&quot;),
+    ct:   &quot;audio&#x2F;basic&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF\x00\x00\x00\x00\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;FORM\x00\x00\x00\x00AIFF&quot;),
+    ct:   &quot;audio&#x2F;aiff&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;ID3&quot;),
+    ct:   &quot;audio&#x2F;mpeg&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;OggS\x00&quot;),
+    ct:   &quot;application&#x2F;ogg&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;MThd\x00\x00\x00\x06&quot;),
+    ct:   &quot;audio&#x2F;midi&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF\x00\x00\x00\x00\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;RIFF\x00\x00\x00\x00AVI &quot;),
+    ct:   &quot;video&#x2F;avi&quot;,
+  },
+  &amp;maskedSig{
+    mask: []byte(&quot;\xFF\xFF\xFF\xFF\x00\x00\x00\x00\xFF\xFF\xFF\xFF&quot;),
+    pat:  []byte(&quot;RIFF\x00\x00\x00\x00WAVE&quot;),
+    ct:   &quot;audio&#x2F;wave&quot;,
+  },
+  &#x2F;&#x2F; 6.2.0.2. video&#x2F;mp4
+  mp4Sig{},
+  &#x2F;&#x2F; 6.2.0.3. video&#x2F;webm
+  &amp;exactSig{[]byte(&quot;\x1A\x45\xDF\xA3&quot;), &quot;video&#x2F;webm&quot;},
+
+  &#x2F;&#x2F; Font types
+  &amp;maskedSig{
+    &#x2F;&#x2F; 34 NULL bytes followed by the string &quot;LP&quot;
+    pat: []byte(&quot;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00LP&quot;),
+    &#x2F;&#x2F; 34 NULL bytes followed by \xF\xF
+    mask: []byte(&quot;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xFF&quot;),
+    ct:   &quot;application&#x2F;vnd.ms-fontobject&quot;,
+  },
+  &amp;exactSig{[]byte(&quot;\x00\x01\x00\x00&quot;), &quot;font&#x2F;ttf&quot;},
+  &amp;exactSig{[]byte(&quot;OTTO&quot;), &quot;font&#x2F;otf&quot;},
+  &amp;exactSig{[]byte(&quot;ttcf&quot;), &quot;font&#x2F;collection&quot;},
+  &amp;exactSig{[]byte(&quot;wOFF&quot;), &quot;font&#x2F;woff&quot;},
+  &amp;exactSig{[]byte(&quot;wOF2&quot;), &quot;font&#x2F;woff2&quot;},
+
+  &#x2F;&#x2F; Archive types
+  &amp;exactSig{[]byte(&quot;\x1F\x8B\x08&quot;), &quot;application&#x2F;x-gzip&quot;},
+  &amp;exactSig{[]byte(&quot;PK\x03\x04&quot;), &quot;application&#x2F;zip&quot;},
+  &#x2F;&#x2F; RAR&#x27;s signatures are incorrectly defined by the MIME spec as per
+  &#x2F;&#x2F;    https:&#x2F;&#x2F;github.com&#x2F;whatwg&#x2F;mimesniff&#x2F;issues&#x2F;63
+  &#x2F;&#x2F; However, RAR Labs correctly defines it at:
+  &#x2F;&#x2F;    https:&#x2F;&#x2F;www.rarlab.com&#x2F;technote.htm#rarsign
+  &#x2F;&#x2F; so we use the definition from RAR Labs.
+  &#x2F;&#x2F; TODO: do whatever the spec ends up doing.
+  &amp;exactSig{[]byte(&quot;Rar!\x1A\x07\x00&quot;), &quot;application&#x2F;x-rar-compressed&quot;},     &#x2F;&#x2F; RAR v1.5-v4.0
+  &amp;exactSig{[]byte(&quot;Rar!\x1A\x07\x01\x00&quot;), &quot;application&#x2F;x-rar-compressed&quot;}, &#x2F;&#x2F; RAR v5+
+
+  &amp;exactSig{[]byte(&quot;\x00\x61\x73\x6D&quot;), &quot;application&#x2F;wasm&quot;},
+
+  textSig{}, &#x2F;&#x2F; should be last
+}
+</code><p>Well. <em>At least it&#x27;s standard!</em></p><p>Except if we <a href="https://mimesniff.spec.whatwg.org/">look at the standard</a>, we learn
+what it&#x27;s for:</p><blockquote><p>The HTTP <code>Content-Type</code> header field is intended to indicate the MIME type of
+an HTTP response. However, many HTTP servers supply a <code>Content-Type</code> header
+field value that does not match the actual contents of the response.
+Historically, web browsers have tolerated these servers by examining the
+content of HTTP responses in addition to the <code>Content-Type</code> header field in
+order to determine the effective MIME type of the response.</p><p>Without a clear specification for how to &quot;sniff&quot; the MIME type, each user
+agent has been forced to reverse-engineer the algorithms of other user agents
+in order to maintain interoperability. Inevitably, these efforts have not
+been entirely successful, resulting in divergent behaviors among user agents.
+In some cases, these divergent behaviors have had security implications, as a
+user agent could interpret an HTTP response as a different MIME type than the
+server intended.</p><p>These security issues are most severe when an &quot;honest&quot; server allows
+potentially malicious users to upload their own files and then serves the
+contents of those files with a low-privilege MIME type. For example, if a
+server believes that the client will treat a contributed file as an image
+(and thus treat it as benign), but a user agent believes the content to be
+HTML (and thus privileged to execute any scripts contained therein), an
+attacker might be able to steal the user&#x27;s authentication credentials and
+mount other cross-site scripting attacks. (Malicious servers, of course, can
+specify an arbitrary MIME type in the <code>Content-Type</code> header field.)</p><p>This document describes a content sniffing algorithm that carefully balances
+the compatibility needs of user agent with the security constraints imposed
+by existing web content. The algorithm originated from research conducted by
+Adam Barth, Juan Caballero, and Dawn Song, based on content sniffing
+algorithms present in popular user agents, an extensive database of existing
+web content, and metrics collected from implementations deployed to a sizable
+number of users.</p></blockquote><p>A surprisingly readable introduction, for a standard. My understanding is that
+this is a standard for user agents to follow, ie., HTTP clients. Why is an HTTP
+server implementing this?</p><p>Well, because Go is opinionated, of course! This saves us one entire line of
+code! Conciseness, yay! <a href="https://ideolalia.com/essays/thought-leaders-and-chicken-sexers.html">Mr Graham would be so
+proud</a>.</p><p>Unfortunately, this means that, much like everything in Go, simple cases
+&quot;usually work&quot;, until they don&#x27;t anymore, and then you better strap in
+because you&#x27;re in for a <a href="/articles/i-want-off-mr-golangs-wild-ride">wild
+ride</a>.</p><p>What if you need to support a mime type that&#x27;s not in <code>sniffSignatures</code>?
+Is that system extensible? Of course not!</p><p><code>sniffSignatures</code> is private (&quot;unexported&quot;, to be technical), so you can&#x27;t
+add anything to it. It&#x27;s also a global, so it wouldn&#x27;t be wise to, anyway.</p><p>In that case, you should probably have your <em>own</em> mechanism to tag assets
+with their proper <code>Content-Type</code>, and set it explicitly, and at this point,
+you&#x27;re paying for the whole &quot;automatic buffering&quot; for no added benefit.</p><p>{% sc bearsays %}
+It&#x27;s worth noting that the detection itself is <a href="https://github.com/golang/go/blob/9c91cab0da9814a598f2c4f7568b6276ff972672/src/net/http/server.go#L1404">skipped in that case</a>.
+{% endsc %}</p><p>That&#x27;s not the last bit of implicitness going on. The last paragraph for
+<code>http.ResponseWriter.Write</code> reads:</p><blockquote><p>Additionally, if the total size of all written data is under a few KB and
+there are no <code>Flush</code> calls, the <code>Content-Length</code> header is added automatically.</p></blockquote><p>If we read between the lines, that means an <code>http.ResponseWriter</code> has an
+internal buffer, of &quot;some size that&#x27;s less than a few kilobytes&quot;, which it
+uses to sniff the content-type.</p><p>Well - actually that&#x27;s not true. An <code>http.ResponseWriter</code> does not have any
+internal buffer, because it&#x27;s an <code>interface</code>! Only the implementation given
+to you by the <code>http</code> package has a buffer. One could totally implement
+<code>http.ResponseWriter</code> for another type that has completely different
+semantics, and then the comments would be completely wrong.</p><p><em>Unless</em> you decide the interface&#x27;s comments are part of the interface
+itself, and then you have, you guessed it - an implicit contract.</p><p>Which nothing enforces.</p><p>And then we find ourselves in the interesting position where this code is
+unsafe:</p><code data-lang="go">func doSomething(rw http.ResponseWriter) {
+  &#x2F;&#x2F; 🙅‍♀️ woops, we&#x27;re casting to a completely different type
+  writeStuff(rw)
+}
+
+func writeStuff(w io.Writer) {
+  w.Write([]byte(&quot;stuff&quot;))
+}
+</code><p>The comments for the <code>Write</code> method of <code>io.Write</code> do not mention any
+content-type sniffing, buffering, or implicit header-writing:</p><blockquote><p>Writer is the interface that wraps the basic Write method.</p><p>Write writes <code>len(p)</code> bytes from <code>p</code> to the underlying data stream. It returns
+the number of bytes written from <code>p</code> (<code>0 &lt;= n &lt;= len(p)</code>) and any error
+encountered that caused the write to stop early. Write must return a non-nil
+error if it returns <code>n &lt; len(p)</code>. Write must not modify the slice data, even
+temporarily.</p><p>Implementations must not retain <code>p</code>.</p></blockquote><p>But hey, whatever. It works most of the time. And indeed if we do try
+the new version of our origin server, it appears to work fine:</p><code data-lang="shell">$ for subdomain in ducks giraffes internal; do domain=&quot;${subdomain}.example.org&quot;; echo &quot;\n${domain}&quot;; curl --connect-to &quot;${domain}:80:localhost:8125&quot; &quot;http:&#x2F;&#x2F;${domain}&quot; ; done
+
+ducks.example.org
+Have some happy ducks!
+
+giraffes.example.org
+Here&#x27;s a long neck
+
+internal.example.org
+[CONFIDENTIAL] The secret ingredient is love
+</code><h2><a id="what-are-we-v8ing-for-onwards" href="#what-are-we-v8ing-for-onwards" class="anchor"></a>What are we V8ing for? Onwards!</h2><p>Now onto node.js.</p><p>It too, has an <code>http</code> package. Heck, it even has an <code>https</code> package! And an
+<code>http2</code> package! Which makes it rather annoying to support all of these! But
+not to worry - there&#x27;s numerous takes on this available today from your local
+npm retailer.</p><p>Instead of creating a <code>net.Server</code>, we now create an <code>http.Server</code>:</p><code data-lang="javascript">const http = require(&quot;http&quot;);
+
+async function main() {
+  let server = new http.Server({});
+  server.on(&quot;request&quot;, (req, res) =&gt; {
+    handleRequest(req, res).catch((err) =&gt; {
+      throw err;
+    });
+  });
+  server.on(&quot;error&quot;, (err) =&gt; {
+    throw err;
+  });
+  let port = 8124;
+  server.listen(port, &quot;0.0.0.0&quot;, () =&gt; {
+    console.log(`Now listening on port ${port}`);
+  });
+}
+</code><p><code>handleRequest</code> now uses fields on the objects that the <code>http</code> package parsed
+for us:</p><code data-lang="javascript">async function handleRequest(req, res) {
+  console.log(
+    `[${req.socket.address().address}] ${JSON.stringify(req.headers, null, 2)}`,
+  );
+
+  if (isRestricted(req) &amp;&amp; !isAllowed(req.socket.address())) {
+    res.statusCode = 403;
+    res.end(&quot;Forbidden.\n&quot;);
+    return;
+  }
+
+  await proxyRequest(req, res);
+}
+</code><p>The <code>isAllowed</code> and <code>isRestricted</code> methods are just as before:</p><code data-lang="javascript">function isAllowed(addr) {
+  return addr.startsWith(&quot;127.0.0.&quot;) || addr.startsWith(&quot;2.58.12.&quot;);
+}
+
+function isRestricted(req) {
+  return req.headers.Host === &quot;internal.example.org&quot;;
+}
+</code><p>And finally, <code>proxyRequest</code> does a bunch of field-copying and piping:</p><code data-lang="javascript">async function proxyRequest(req, res) {
+  let originReq = new http.ClientRequest(`http:&#x2F;&#x2F;127.00.1:8125${req.url}`);
+  &#x2F;&#x2F; how convenient!
+  originReq.headers = req.headers;
+  req.pipe(originReq);
+
+  originReq.on(&quot;response&quot;, (originRes) =&gt; {
+    res.statusCode = originRes.statusCode;
+    res.statusMessage = originRes.statusMessage;
+    res.headers = originRes.headers;
+
+    originRes.pipe(res);
+  });
+}
+</code><p>Let&#x27;s check that our proxy still works. The response from upstream (the Go
+service) was:</p><code data-lang="shell">$ curl -v http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8125
+* Connecting to hostname: localhost
+* Connecting to port: 8125
+*   Trying 127.0.0.1:8125...
+* Connected to localhost (127.0.0.1) port 8125 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: ducks.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 200 OK
+&lt; Date: Tue, 08 Dec 2020 14:31:47 GMT
+&lt; Content-Length: 23
+&lt; Content-Type: text&#x2F;plain; charset=utf-8
+&lt;
+Have some happy ducks!
+* Connection #0 to host localhost left intact
+</code><p>And the response from our node.js service is:</p><code data-lang="shell">$ curl -v http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8124
+* Connecting to hostname: localhost
+* Connecting to port: 8124
+*   Trying 127.0.0.1:8124...
+* Connected to localhost (127.0.0.1) port 8124 (#0)
+&gt; GET &#x2F; HTTP&#x2F;1.1
+&gt; Host: ducks.example.org
+&gt; User-Agent: curl&#x2F;7.73.0
+&gt; Accept: *&#x2F;*
+&gt;
+* Mark bundle as not supporting multiuse
+&lt; HTTP&#x2F;1.1 404 Not Found
+&lt; Date: Tue, 08 Dec 2020 14:50:48 GMT
+&lt; Connection: keep-alive
+&lt; Keep-Alive: timeout=5
+&lt; Transfer-Encoding: chunked
+&lt;
+No such domain is hosted on this server
+* Connection #0 to host localhost left intact
+</code><p>Well... it&#x27;s getting a 404. But that&#x27;s not all.</p><p>Our upstream service is making use of <em>all the implicitness we talked about</em>.
+Even though we never specify it, our response has a <code>Content-Type</code>, and a
+<code>Content-Length</code>:</p><code data-lang="raw">&lt; Content-Length: 23
+&lt; Content-Type: text&#x2F;plain; charset=utf-8
+</code><p>Yet our node.js service replies does <em>not</em> set a <code>Content-Length</code>. Instead
+it uses <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding">chunked transfer encoding</a>.</p><p>Let&#x27;s look at the raw (as raw as curl will let us) answer from node.js:</p><code data-lang="shell">$ curl --raw -i http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8124
+HTTP&#x2F;1.1 404 Not Found
+Date: Tue, 08 Dec 2020 14:54:50 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+28
+No such domain is hosted on this server
+
+0
+</code><p>Sure enough, those are chunks. One 28-byte chunk, and a &quot;terminating&quot; 0-byte
+chunk. This is peculiar: our upstream response <em>has</em> a <code>Content-Length</code>, so
+there&#x27;s no need for chunking.</p><p>Maybe in <code>proxyRequest</code>?</p><code data-lang="javascript">let originReq = new http.ClientRequest(`http:&#x2F;&#x2F;127.00.1:8125${req.url}`);
+</code><p>This is correct. <code>req.url</code> is a relative URL, it needs to be concatenated to
+a &quot;base&quot; URL, which...</p><p>{% sc bearsays %}
+Hold on a minute... <code>127.00.1</code>?
+{% endsc %}</p><p>{% sc amossays %}
+Whoops. I actually did write that. And it actually did work.
+{% endsc %}</p><p>{% sc bearsays %}
+Oh whoa, <a href="https://tools.ietf.org/html/rfc3779#section-1.1">RFC 3779</a> talks about
+that - it&#x27;s an &quot;abbreviated prefix&quot;.
+{% endsc %}</p><p>{% sc amossays %}
+So <code>127.1</code> should work?
+{% endsc %}</p><code data-lang="shell">$ ping 127.1
+PING 127.1 (127.0.0.1) 56(84) bytes of data.
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.018 ms
+64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.022 ms
+</code><p>{% sc bearsays %}
+Whoa.
+{% endsc %}</p><p>How nice! I guess we all learned something today.</p><p>Let&#x27;s fully embrace the typo. So this line, now two bytes shorter:</p><code data-lang="javascript">let originReq = new http.ClientRequest(`http:&#x2F;&#x2F;127.1:8125${req.url}`);
+</code><p>...seems okay.</p><p>What about the next line?</p><code data-lang="javascript">originReq.headers = req.headers;
+</code><p>{% sc bearsays %}
+I don&#x27;t know, seems okay.
+{% endsc %}</p><p>Is it? It&#x27;s true that we do the reverse a couple lines down:</p><code data-lang="javascript">originReq.on(&quot;response&quot;, (originRes) =&gt; {
+  res.statusCode = originRes.statusCode;
+  res.statusMessage = originRes.statusMessage;
+  &#x2F;&#x2F; 👇 here
+  res.headers = originRes.headers;
+
+  originRes.pipe(res);
+});
+</code><p>...and there it seems to work just fine.</p><p>But maybe that&#x27;s where things go wrong? What is the type of
+<code>IncomingMessage.headers</code> anyway?</p><p>{% sc bearsays %}
+The.. type? In JS?
+{% endsc %}</p><p>{% sc amossays %}
+Ah, you know what I mean - whatever&#x27;s on <code>nodejs.org&#x2F;docs</code>.
+{% endsc %}</p><p>Let&#x27;s <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_message_headers">take a look</a>:</p><blockquote><h3><a id="message-headers" href="#message-headers" class="anchor"></a><code>message.headers</code></h3><p>Added in: v0.1.5</p><ul><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">&lt;Object&gt;</a></li></ul><p>The request&#x2F;response headers object.</p><p>Key-value pairs of header names and values. Header names are lower-cased.</p><code data-lang="javascript">&#x2F;&#x2F; Prints something like:
+&#x2F;&#x2F;
+&#x2F;&#x2F; { &#x27;user-agent&#x27;: &#x27;curl&#x2F;7.22.0&#x27;,
+&#x2F;&#x2F;   host: &#x27;127.0.0.1:8000&#x27;,
+&#x2F;&#x2F;   accept: &#x27;*&#x2F;*&#x27; }
+console.log(request.headers);
+</code></blockquote><p>{% sc amossays %}
+Looks like a regular object to me.
+{% endsc %}</p><p>{% sc bearsays %}
+Does it say what happens if you specify some headers multiple times?
+{% endsc %}</p><p>{% sc amossays %}
+As a matter of fact, it does:
+{% endsc %}</p><blockquote><p>Duplicates in raw headers are handled in the following ways, depending on the header name:</p><ul><li>Duplicates of <code>age</code>, <code>authorization</code>, <code>content-length</code>, <code>content-type</code>, <code>etag</code>, <code>expires</code>, <code>from</code>, <code>host</code>, <code>if-modified-since</code>, <code>if-unmodified-since</code>, <code>last-modified</code>, <code>location</code>, <code>max-forwards</code>, <code>proxy-authorization</code>, <code>referer</code>, <code>retry-after</code>, <code>server</code>, or <code>user-agent</code> are discarded.</li><li><code>set-cookie</code> is always an array. Duplicates are added to the array.</li><li>For duplicate <code>cookie</code> headers, the values are joined together with <code>&#x27;; &#x27;</code>.</li><li>For all other headers, the values are joined together with <code>&#x27;, &#x27;</code>.</li></ul></blockquote><p>{% sc bearsays %}
+Whew. That&#x27;s not a regular object at all.
+{% endsc %}</p><p>{% sc amossays %}
+It does seem to do a fair amount of transformation.
+{% endsc %}</p><p>Note that this logic <em>would</em> clarify how our first &quot;evil request&quot; should be
+handled. Only the first <code>Host</code> header counts, the other one is discarded.</p><p>{% sc bearsays %}
+Just out of curiosity, what&#x27;s the type of <code>ClientRequest.headers</code>?
+{% endsc %}</p><p>{% sc amossays %}
+Well, let&#x27;s see... ah.
+{% endsc %}</p><p>{% sc bearsays %}
+What?
+{% endsc %}</p><p>{% sc amossays %}
+There&#x27;s no <code>ClientRequest.headers</code> field.
+{% endsc %}</p><p>{% sc bearsays %}
+There&#x27;s none? Well how come we can assign to it?
+{% endsc %}</p><p>Well bear, we can assign to it because this is JavaScript, and &quot;fields&quot; on
+&quot;objects&quot; are a social construct. The only truth is hashmap (or hash table,
+or dictionary, or associative array, or whatever you want to call it).</p><p><a href="https://www.typescriptlang.org/">TypeScript</a> could save us from that one,
+and that&#x27;s why I swear by it.</p><p>So, let&#x27;s take a look at how we&#x27;re actually supposed to set headers.</p><blockquote><p>The header is still mutable using the <code>setHeader(name, value)</code>,
+<code>getHeader(name)</code>, <code>removeHeader(name)</code></p></blockquote><p>Interesting! So we have to <em>iterate</em> through all the headers from our
+incoming request, and set them one by one on the outgoing request.</p><p>Something like that:</p><code data-lang="javascript">for (const k of Object.keys(req.headers)) {
+  originReq.setHeader(k, req.headers[k]);
+}
+</code><p>With that change, things appear to work:</p><code data-lang="shell">$ curl --raw -i http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8124
+HTTP&#x2F;1.1 200 OK
+Date: Tue, 08 Dec 2020 15:18:06 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+17
+Have some happy ducks!
+
+0
+</code><p>Unfortunately, it&#x27;s still using <code>transfer-encoding: chunked</code>.</p><p>{% sc bearsays %}
+Also, what about multiple headers?
+{% endsc %}</p><p>{% sc amossays %}
+How do you mean?
+{% endsc %}</p><p>{% sc bearsays %}
+Sure, it&#x27;s not meaningful to have more than one <code>Host</code>, unless you&#x27;re trying
+some funny business. But for some <em>other</em> headers, it makes perfect sense.</p><p>Try sending multiple <code>set-cookie</code> for example?
+{% endsc %}</p><p>Alrighty, let&#x27;s make a request with two <code>Set-Cookie</code> headers - which is how
+you set multiple cookies. It can&#x27;t be concatenated with <code>;</code>, or <code>,</code>, because
+those both already have meanings in <code>Set-Cookie</code> header values.</p><code data-lang="shell">$ curl --raw -i http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8124 -H &quot;Set-Cookie: one=1&quot; -H &quot;Set-Cookie: two=2&quot;
+HTTP&#x2F;1.1 200 OK
+Date: Tue, 08 Dec 2020 15:22:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+17
+Have some happy ducks!
+
+0
+</code><p>Here&#x27;s the log output from the node.js service:</p><code data-lang="shell">[127.0.0.1] {
+  &quot;host&quot;: &quot;ducks.example.org&quot;,
+  &quot;user-agent&quot;: &quot;curl&#x2F;7.73.0&quot;,
+  &quot;accept&quot;: &quot;*&#x2F;*&quot;,
+  &quot;set-cookie&quot;: [
+    &quot;one=1&quot;,
+    &quot;two=2&quot;
+  ]
+}
+</code><p>{% sc bearsays %}
+Innnnteresting. It&#x27;s an array?
+{% endsc %}</p><p>It&#x27;s an array! Remember from the docs:</p><blockquote><p><code>set-cookie</code> is always an array. Duplicates are added to the array.</p></blockquote><p>{% sc bearsays %}
+And that works with <code>ClientRequest.setHeader</code>?
+{% endsc %}</p><p>Well, let&#x27;s <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_request_setheader_name_value">take a look</a>:</p><blockquote><h3><a id="request-setheader-name-value" href="#request-setheader-name-value" class="anchor"></a><code>request.setHeader(name, value)</code></h3><p>Added in: v1.6.0</p><ul><li><code>name</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#String_type">&lt;string&gt;</a></li><li><code>value</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#Data_types">&lt;any&gt;</a></li></ul><p>Sets a single header value for headers object. If this header already exists in the to-be-sent headers, its value will be replaced. Use an array of strings here to send multiple headers with the same name. Non-string values will be stored without modification. Therefore, <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_request_getheader_name"><code>request.getHeader()</code></a> may return non-string values. However, the non-string values will be converted to strings for network transmission.</p><code data-lang="javascript">request.setHeader(&quot;Content-Type&quot;, &quot;application&#x2F;json&quot;);
+</code><p>or</p><code data-lang="javascript">request.setHeader(&quot;Cookie&quot;, [&quot;type=ninja&quot;, &quot;language=javascript&quot;]);
+</code></blockquote><p>What a sweet, sweet bag of semantics.</p><p>The method sets &quot;a single header value&quot;, unless you pass a non-string, in
+which case it can be multiple values.</p><p>Non-string values are &quot;converted to strings for network transmission&quot;, except for
+<code>set-cookie</code>, which is converted to <em>multiple header lines</em> - if we replace our Go
+service with <code>netcat</code>, this time in <code>-l</code> (listen) mode:</p><code data-lang="shell">$ nc -vvv -l localhost -p 8125
+Listening on any address 8125
+Connection from 127.0.0.1:46986
+GET &#x2F; HTTP&#x2F;1.1
+host: ducks.example.org
+user-agent: curl&#x2F;7.73.0
+accept: *&#x2F;*
+set-cookie: one=1
+set-cookie: two=2
+Connection: close
+</code><p>And just to finish with the node.js side, turns out this bit of code was
+incorrect as well, and was causing the chunking:</p><code data-lang="javascript">originReq.on(&quot;response&quot;, (originRes) =&gt; {
+  res.statusCode = originRes.statusCode;
+  res.statusMessage = originRes.statusMessage;
+  &#x2F;&#x2F; this bit right here:
+  res.headers = originRes.headers;
+
+  originRes.pipe(res);
+});
+</code><p>That&#x27;s right! An <code>http.ServerResponse</code> doesn&#x27;t have a <code>headers</code> field either!</p><p>It has: <code>flushHeaders()</code>, <code>getHeader(name)</code>, <code>getHeaderNames()</code>, <code>getHeaders()</code>,
+<code>hasHeader(name)</code>, <code>removeHeader(name)</code>, <code>setHeader(name, value)</code>, and of course,
+<code>writeHead(statusCode[, statusMessage][, headers])</code>, <em>all of which have something
+to do with headers</em>.</p><p>What we probably want here is <code>setHeader(name, value)</code>. Or do we? Let&#x27;s
+see... if there&#x27;s multiple values for the same header name, we get an
+array... wait, that&#x27;s only for <code>set-cookie</code>. What about the other ones?</p><p>Oh they get concatenated, with either <code>; </code> or <code>, </code>. Okay. And how does
+<code>setHeader</code> work? Let&#x27;s <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_setheader_name_value">read the docs</a>:</p><blockquote><h3><a id="response-setheader-name-value" href="#response-setheader-name-value" class="anchor"></a>response.setHeader(name, value)</h3><p>Added in: v0.4.0</p><ul><li><code>name</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#String_type">&lt;string&gt;</a></li><li><code>value</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#Data_types">&lt;any&gt;</a></li></ul><p>Sets a single header value for implicit headers. If this header already exists in the to-be-sent headers, its value will be replaced. Use an array of strings here to send multiple headers with the same name. Non-string values will be stored without modification. Therefore, <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_getheader_name"><code>response.getHeader()</code></a> may return non-string values. However, the non-string values will be converted to strings for network transmission.</p><code data-lang="javascript">response.setHeader(&quot;Content-Type&quot;, &quot;text&#x2F;html&quot;);
+</code><p>or</p><code data-lang="javascript">response.setHeader(&quot;Set-Cookie&quot;, [&quot;type=ninja&quot;, &quot;language=javascript&quot;]);
+</code></blockquote><p>{% sc bearsays %}
+I&#x27;m getting déjà vu.
+{% endsc %}</p><p>{% sc amossays %}
+But wait, there&#x27;s more!
+{% endsc %}</p><blockquote><p>Attempting to set a header field name or value that contains invalid characters will result in a <a href="https://nodejs.org/docs/latest-v15.x/api/errors.html#errors_class_typeerror"><code>TypeError</code></a> being thrown.</p></blockquote><p>{% sc bearsays %}
+That&#x27;s defensible.
+{% endsc %}</p><p>{% sc amossays %}
+It goes on!
+{% endsc %}</p><blockquote><p>When headers have been set with <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_setheader_name_value"><code>response.setHeader()</code></a>, they will be merged with any headers passed to <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_writehead_statuscode_statusmessage_headers"><code>response.writeHead()</code></a>, with the headers passed to <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_writehead_statuscode_statusmessage_headers"><code>response.writeHead()</code></a> given precedence.</p><code data-lang="javascript">&#x2F;&#x2F; Returns content-type = text&#x2F;plain
+const server = http.createServer((req, res) =&gt; {
+  res.setHeader(&quot;Content-Type&quot;, &quot;text&#x2F;html&quot;);
+  res.setHeader(&quot;X-Foo&quot;, &quot;bar&quot;);
+  res.writeHead(200, { &quot;Content-Type&quot;: &quot;text&#x2F;plain&quot; });
+  res.end(&quot;ok&quot;);
+});
+</code></blockquote><p>{% sc bearsays %}
+Right, that still makes sense.
+{% endsc %}</p><blockquote><p>If <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_writehead_statuscode_statusmessage_headers"><code>response.writeHead()</code></a> method is called and this method has not been called, it will directly write the supplied header values onto the network channel without caching internally, and the <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_getheader_name"><code>response.getHeader()</code></a> on the header will not yield the expected result. If progressive population of headers is desired with potential future retrieval and modification, use <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_setheader_name_value"><code>response.setHeader()</code></a> instead of <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_response_writehead_statuscode_statusmessage_headers"><code>response.writeHead()</code></a>.</p></blockquote><p>{% sc bearsays %}
+Seems like a little bit of a gotcha, but also, who would do such a thing?</p><p>It&#x27;s nice that it&#x27;s mentioned in the docs at least.
+{% endsc %}</p><p>{% sc amossays %}
+It is nice for sure, but you know what would be even nicer?</p><p>If one didn&#x27;t need to read the docs to divine the behavior of those
+functions.
+{% endsc %}</p><p>{% sc bearsays %}
+So you&#x27;re lazy? You&#x27;re a lazy programmer? You can&#x27;t be arsed to read docs, is
+that it?
+{% endsc %}</p><p>{% sc amossays %}
+That&#x27;s certainly a popular opinion, yes - and simultaneously, that the articles
+I write are too long. But I&#x27;m sure there are harder truths to reconcile.
+{% endsc %}</p><p>{% sc bearsays %}
+Don&#x27;t deflect - what&#x27;s wrong with reading docs?
+{% endsc %}</p><p>Well, we&#x27;ve been over this with Go before.</p><p>Every time you rely on documentation to enforce correct behavior, you&#x27;re
+exposing the users of your API to potential bugs. Your API is no longer
+misuse-resistant.</p><p>And you don&#x27;t need a fancy type checker to do it, either.</p><p>If the <code>ClientRequest</code> or <code>ServerResponse</code> objects were
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal">sealed</a>,
+and we were using <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode">strict
+mode</a>,
+a <code>TypeError</code> could have been thrown when we tried to assign to <code>res.headers</code>.</p><p>Of course if you <em>do</em> have a fancy type checker, you could catch that error
+<em>before it happens</em>, which as far as I&#x27;m concerned, is the absolute dream.</p><p>{% sc bearsays %}
+So that&#x27;s a &quot;yes&quot; on the lazy thing?
+{% endsc %}</p><p>Not quite - I wouldn&#x27;t say I&#x27;m &quot;lazy&quot;, but I am a &quot;realist&quot;.</p><p>{% sc bearsays %}
+Oh boy, there he goes.
+{% endsc %}</p><p><em>Ideally</em>,
+everyone reads all the docs all the time, including whenever upgrading
+dependencies, and nobody ever breaks <a href="https://semver.org/">semantic
+versioning</a>, and we&#x27;re all smart enough to write C code
+that isn&#x27;t <a href="/articles/working-with-strings-in-rust">a trash fire waiting to
+happen</a>.</p><p>But <em>in actuality</em>, semver breakage happens all the dang time, we&#x27;re all
+exhausted and occasionally tell dependabot to just &quot;rebase and push&quot; at the
+end of a long workday, and the <a href="https://cve.mitre.org/">CVE database</a> is not
+going out of business any time soon.</p><p>From what we&#x27;ve seen so far, here are some of the things we could do in
+node.js, that would look <em>totally normal and innocent</em> in code review, but
+are actually way broken:</p><ol start="1"><li>Assign to <code>request.headers</code> or <code>response.headers</code> - those fields don&#x27;t
+exist</li><li>Call <code>request.setHeader(&quot;set-cookie&quot;, &quot;a=b&quot;)</code>, then call
+<code>request.setHeader(&quot;set-cookie&quot;, &quot;c=d&quot;)</code> (the second value would overwrite
+the first one)</li><li>Treat <code>message.headers[&quot;some-key&quot;]</code> like a string (not true for <code>set-cookie</code>)</li><li>Try to forward all headers by using <code>response.setHeader</code> on all the key-value
+pairs from a request.</li></ol><p>{% sc bearsays %}
+Wait, how is that last one wrong?
+{% endsc %}</p><p>I&#x27;m so glad you asked! You see, node.js <em>does</em> quite a bit of transformation before
+populating, say, <code>message.headers</code>.</p><p>So if there <em>were</em> multiples of a header it didn&#x27;t know about, it would join them
+together with <code>,</code>. But what if that&#x27;s not what you wanted?</p><p>If you&#x27;re writing a proxy, you may want to forward the headers more or less
+untouched, minus maybe some headers that are protected&#x2F;sensitive, and maybe
+adding one or two headers which are internal.</p><p>{% sc bearsays %}
+Can&#x27;t you do that in node.js?
+{% endsc %}</p><p>You <strong>totally can</strong> do that in node.js, thanks to <a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_message_rawheaders">rawHeaders</a>:</p><blockquote><h3><a id="message-rawheaders" href="#message-rawheaders" class="anchor"></a><code>message.rawHeaders</code></h3><p>Added in: v0.11.6</p><ul><li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#String_type">&lt;string[]&gt;</a></li></ul><p>The raw request&#x2F;response headers list exactly as they were received.</p><p>The keys and values are in the same list. It is <em>not</em> a list of tuples. So, the even-numbered offsets are key values, and the odd-numbered offsets are the associated values.</p><p>Header names are not lowercased, and duplicates are not merged.</p><code data-lang="javascript">&#x2F;&#x2F; Prints something like:
+&#x2F;&#x2F;
+&#x2F;&#x2F; [ &#x27;user-agent&#x27;,
+&#x2F;&#x2F;   &#x27;this is invalid because there can be only one&#x27;,
+&#x2F;&#x2F;   &#x27;User-Agent&#x27;,
+&#x2F;&#x2F;   &#x27;curl&#x2F;7.22.0&#x27;,
+&#x2F;&#x2F;   &#x27;Host&#x27;,
+&#x2F;&#x2F;   &#x27;127.0.0.1:8000&#x27;,
+&#x2F;&#x2F;   &#x27;ACCEPT&#x27;,
+&#x2F;&#x2F;   &#x27;*&#x2F;*&#x27; ]
+console.log(request.rawHeaders);
+</code></blockquote><p>So technically, all we need to do is this:</p><code data-lang="javascript">for (let i = 0; i &lt; req.rawHeaders.length; i += 2) {
+  let k = req.rawHeaders[i];
+  let v = req.rawHeaders[i + 1];
+  originReq.setHeader(k, v);
+}
+</code><p>And everything should work out</p><p>Let&#x27;s use <code>netcat</code> as a listener again:</p><code data-lang="shell">$ curl --raw -i http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8124 -H &quot;Set-Cookie: one=1&quot; -H &quot;Set-Cookie: two=2&quot;
+</code><code data-lang="shell">$ nc -vvv -l localhost -p 8125
+Listening on any address 8125
+Connection from 127.0.0.1:47416
+GET &#x2F; HTTP&#x2F;1.1
+Host: ducks.example.org
+User-Agent: curl&#x2F;7.73.0
+Accept: *&#x2F;*
+Set-Cookie: two=2
+Connection: close
+</code><p>Wait, where did <code>one=1</code> go?</p><p>{% sc bearsays %}
+Uhhh if you call <code>setHeader</code> with the same name twice, it overwrites...
+{% endsc %}</p><p>Oh right! Haha. That&#x27;s number 2 on the list. We were warned, and we stepped
+right in it anyway.</p><p>So what&#x27;s the correct way do to it? Well... there&#x27;s no method of
+<code>ClientRequest</code> that lets us pass &quot;raw headers&quot;, unlike <code>ServerResponse</code>,
+which has <code>writeHead</code>.</p><p>Sure, we could do something like this:</p><code data-lang="javascript">&#x2F;&#x2F; First, collect all raw headers into a Map&lt;String, Array&lt;String&gt;&gt;
+let headers = {};
+for (let i = 0; i &lt; req.rawHeaders.length; i += 2) {
+  let k = req.rawHeaders[i];
+  let v = req.rawHeaders[i + 1];
+  headers[k] = [...(headers[k] || []), v];
+}
+for (const k of Object.keys(headers)) {
+  let vv = headers[k];
+  &#x2F;&#x2F; `vv` is a non-string, so node.js should &quot;leave them alone&quot;
+  &#x2F;&#x2F; and only &quot;transform them to strings&quot; when sending them over
+  &#x2F;&#x2F; the network.
+  originReq.setHeader(k, vv);
+}
+</code><p>This <em>would</em> let our two <code>Set-Cookie</code> lines pass:</p><code data-lang="shell">$ nc -vvv -l localhost -p 8125
+Listening on any address 8125
+Connection from 127.0.0.1:47522
+GET &#x2F; HTTP&#x2F;1.1
+Host: ducks.example.org
+User-Agent: curl&#x2F;7.73.0
+Accept: *&#x2F;*
+Set-Cookie: one=1
+Set-Cookie: two=2
+Connection: close
+</code><p>Unless one of them had a slightly different casing...</p><code data-lang="shell">$ curl --raw -i http:&#x2F;&#x2F;ducks.example.org --connect-to ducks.example.org:80:localhost:8124 -H &quot;Set-Cookie: one=1&quot; -H &quot;set-Cookie: two=2&quot;
+</code><p>(The second is <code>set-Cookie</code>, with a lowercase <code>s</code>)</p><p>...and then only one of them would pass:</p><code data-lang="shell">$ nc -vvv -l localhost -p 8125
+Listening on any address 8125
+Connection from 127.0.0.1:47538
+GET &#x2F; HTTP&#x2F;1.1
+Host: ducks.example.org
+User-Agent: curl&#x2F;7.73.0
+Accept: *&#x2F;*
+set-Cookie: two=2
+Connection: close
+</code><p>We could of course normalize the casing ourselves to all-lowercase - or
+something else - but then we&#x27;re back to transforming headers and we&#x27;re not
+being a very transparent proxy.</p><p>As far as I&#x27;m concerned, I don&#x27;t see a way to make a node.js <code>ClientRequest</code>
+send multiple headers, some of which only differ from the others by their
+casing.</p><p>{% sc bearsays %}
+Amos, that&#x27;s silly.
+{% endsc %}</p><p>{% sc amossays %}
+Amos, that&#x27;s silly who?
+{% endsc %}</p><p>{% sc bearsays %}
+Amos, that&#x27;s silly: no application would actually depend on header casing.</p><p>It&#x27;s right there in <a href="https://www.ietf.org/rfc/rfc2616.html#section-4.2">RFC 2616, section 4.2</a>:</p><blockquote><p>Field names are case-insensitive.
+{% endsc %}</p></blockquote><p>{% sc amossays %}
+You&#x27;d be surprised.
+{% endsc %}</p><p>Speaking of being surprised... we made pretty significant changes when we
+ported our node.js access control service to the node.js <code>http</code> module.</p><p>Does it even still work?</p><code data-lang="shell">$ curl -i http:&#x2F;&#x2F;internal.example.org --connect-to internal.example.org:80:172.30.84.116:8124
+HTTP&#x2F;1.1 200 OK
+Date: Tue, 08 Dec 2020 16:36:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+[CONFIDENTIAL] The secret ingredient is love
+</code><p>Oh.</p><p>Oh no.</p><p>It does not work at all.</p><p>Let&#x27;s look at the access control code:</p><code data-lang="javascript">function isRestricted(req) {
+  return req.headers.Host === &quot;internal.example.org&quot;;
+}
+</code><p>It&#x27;s been so long since we wrote this code, I had completely forgotten about it.</p><p>{% sc bearsays %}
+That&#x27;s a LIE! You&#x27;ve planned EVERYTHING!
+{% endsc %}</p><p>...just like in the real world. Code is written, shipped, and forgotten. It
+is only remembered when it misbehaves, which is pretty sad if you think about
+it.</p><p>So let&#x27;s not think about it.</p><p>As it turns out, node.js normalizes header names to lower cases. We&#x27;ve read
+that before, in the middle of <em>all the docs we read</em> (who&#x27;s lazy now?), it was
+spelled out:</p><blockquote><p>Header names are lower-cased.</p></blockquote><p>So we can use our knowledge of the implementation and just access the <code>host</code>
+field, all lowercase:</p><code data-lang="javascript">function isRestricted(req) {
+  return req.headers.host === &quot;internal.example.org&quot;;
+}
+</code><p>And then, everything works fin-</p><code data-lang="shell">$ node index.js
+Now listening on port 8124
+[172.30.84.116] {
+  &quot;host&quot;: &quot;internal.example.org&quot;,
+  &quot;user-agent&quot;: &quot;curl&#x2F;7.73.0&quot;,
+  &quot;accept&quot;: &quot;*&#x2F;*&quot;
+}
+&#x2F;home&#x2F;amos&#x2F;ftl&#x2F;correctness&#x2F;http&#x2F;acl-js&#x2F;index.js:63
+  return addr.startsWith(&quot;127.0.0.&quot;) || addr.startsWith(&quot;2.58.12.&quot;);
+              ^
+
+TypeError: addr.startsWith is not a function
+    at isAllowed (&#x2F;home&#x2F;amos&#x2F;ftl&#x2F;correctness&#x2F;http&#x2F;acl-js&#x2F;index.js:63:15)
+    at handleRequest (&#x2F;home&#x2F;amos&#x2F;ftl&#x2F;correctness&#x2F;http&#x2F;acl-js&#x2F;index.js:24:29)
+    at Server.&lt;anonymous&gt; (&#x2F;home&#x2F;amos&#x2F;ftl&#x2F;correctness&#x2F;http&#x2F;acl-js&#x2F;index.js:6:5)
+    at Server.emit (node:events:376:20)
+    at parserOnIncoming (node:_http_server:919:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:126:17)
+</code><p>Oh no. Our <code>isAllowed</code> function is wrong too! Or maybe we&#x27;re just calling it
+wrong! Who knows? We don&#x27;t have a fancy type checker! We read docs 😎</p><p>So the documentation for <code>isAllowed</code> is... we didn&#x27;t write any.</p><p>But <a href="">the documentation</a> for <code>request.socket.address()</code> is:</p><blockquote><h3><a id="socket-address" href="#socket-address" class="anchor"></a><code>socket.address()</code></h3><p>Added in: v0.1.90</p><ul><li>Returns: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">&lt;Object&gt;</a></li></ul><p>Returns the bound <code>address</code>, the address <code>family</code> name and <code>port</code> of the socket as reported by the operating system: <code>{ port: 12346, family: &#x27;IPv4&#x27;, address: &#x27;127.0.0.1&#x27; }</code></p></blockquote><p>Which returns... an <code>Object</code>, so far so good, with fields <code>port</code>, <code>family</code>,
+and <code>address</code>. Ah, there it is! What we want is
+<code>request.socket.address().address</code>.</p><p>It somehow got lost in the port (no pun intended). And this time I <em>swear</em> I
+didn&#x27;t do a mistake on purpose, just to illustrate this article.</p><p>{% sc bearsays %}
+Yeah right.
+{% endsc %}</p><p>While we&#x27;re fixing this bug, let&#x27;s do a pass over the whole code. We&#x27;ll give
+up on proxying the headers as-is. Apparently that&#x27;s just not something the
+node.js <code>http</code> package is meant for - which is fine! Not everything needs to
+be general-purpose.</p><p>So let&#x27;s just use <code>setHeader</code> for the <code>ClientRequest</code>, and let&#x27;s use <code>writeHead</code>
+for the <code>ServerResponse</code>, which is the closest we can reasonably get today.</p><p>{% sc tip %}
+Note that <code>writeHead</code> accepts <em>either</em> raw headers or normalized headers,
+which means it must be able to distinguish between an &quot;object&quot; (or hash map,
+or hash table, or dictionary, or associative array) and an &quot;array&quot;.</p><p>I wonder what it does when you pass an array with an odd number of fields. So
+much delicious undefined behavior! But there&#x27;s only so much that&#x27;s fit to print.
+You try it and <a href="https://twitter.com/fasterthanlime">report back</a>!
+{% endsc %}</p><p>So, without further ado, here&#x27;s the final version of our node.js code:</p><code data-lang="javascript">const http = require(&quot;http&quot;);
+
+&#x2F;&#x2F; an IIFE (immediately-invoked function expression), just for fun
+(function () {
+  let server = new http.Server({});
+  server.on(&quot;request&quot;, handleRequest);
+  server.on(&quot;error&quot;, (err) =&gt; {
+    throw err;
+  });
+  let port = 8124;
+  server.listen(port, &quot;0.0.0.0&quot;, () =&gt; {
+    console.log(`Now listening on port ${port}`);
+  });
+})();
+
+&#x2F;&#x2F; none of what we were doing was async, so it&#x27;s all
+&#x2F;&#x2F; old-style node.js callbacks now
+function handleRequest(req, res) {
+  console.log(
+    `[${req.socket.address().address}] ${JSON.stringify(req.headers, null, 2)}`,
+  );
+
+  if (isRestricted(req) &amp;&amp; !isAllowed(req.socket.address().address)) {
+    res.statusCode = 403;
+    res.end(&quot;Forbidden.\n&quot;);
+    return;
+  }
+
+  let originReq = new http.ClientRequest(`http:&#x2F;&#x2F;127.1:8125${req.url}`);
+  &#x2F;&#x2F; forward client request headers to origin
+  for (const k of Object.keys(req.headers)) {
+    originReq.setHeader(k, req.headers[k]);
+  }
+  &#x2F;&#x2F; forward client request body to origin
+  req.pipe(originReq);
+
+  originReq.on(&quot;response&quot;, (originRes) =&gt; {
+    &#x2F;&#x2F; forward origin response headers to client
+    res.writeHead(
+      originRes.statusCode,
+      originRes.statusMessage,
+      originRes.rawHeaders,
+    );
+    &#x2F;&#x2F; forward origin response body to client
+    originRes.pipe(res);
+  });
+}
+
+function isAllowed(addr) {
+  return addr.startsWith(&quot;127.0.0.&quot;) || addr.startsWith(&quot;2.58.12.&quot;);
+}
+
+function isRestricted(req) {
+  return req.headers.host === &quot;internal.example.org&quot;;
+}
+</code><p>And just like that, our access control service is, again, controlling access:</p><code data-lang="shell">$ curl -i http:&#x2F;&#x2F;internal.example.org --connect-to internal.example.org:80:172.30.84.116:8124
+HTTP&#x2F;1.1 403 Forbidden
+Date: Tue, 08 Dec 2020 17:03:27 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Content-Length: 11
+
+Forbidden.
+</code><code data-lang="shell">$ curl -i http:&#x2F;&#x2F;internal.example.org --connect-to internal.example.org:80:localhost:8124
+HTTP&#x2F;1.1 200 OK
+Date: Tue, 08 Dec 2020 17:03:33 GMT
+Content-Length: 45
+Content-Type: text&#x2F;plain; charset=utf-8
+Connection: close
+
+[CONFIDENTIAL] The secret ingredient is love
+</code><p>And as a bonus - it&#x27;s not chunking anymore! Because we&#x27;re setting the
+<code>content-length</code> we get from origin on the <code>ServerResponse</code>, node.js knows
+that chunking is not necessary because we know the length of the full
+response.</p><p>{% sc recap %}
+There are many, <em>many</em> ways to misuse the node.js APIs. Even when reading
+docs, those mistakes do happen. Some of them result in runtime errors, and
+some of them just silently do the wrong thing.
+{% endsc %}</p><p>And this is where we stop looking at node.js.</p><p>Well... no. We should take our final code and let TypeScript check it.</p><h2><a id="a-bit-of-typescript-as-a-treat" href="#a-bit-of-typescript-as-a-treat" class="anchor"></a>A bit of TypeScript, as a treat</h2><p>I don&#x27;t feel like setting up the whole compilation pipeline, but we can get
+TypeScript to <em>only</em> do type checking of our <code>.js</code> file. If we just slap
+<code>&#x2F;&#x2F;@ts-check</code> at the top of our file, <a href="https://code.visualstudio.com/">VS Code</a> has us covered.</p><p>First off, it&#x27;s unhappy about our <code>handleRequest</code> function:</p><blockquote><p>Parameter <code>req</code> implicitly has an <code>any</code> type, but a better type may be inferred from usage.</p></blockquote><p>Actually inferring it from usage results in a pretty lengthy type, based on,
+well, usage - so after it does that, there&#x27;s no longer any errors, but it also
+doesn&#x27;t match the node.js API, just &quot;how we use it&quot;:</p><code data-lang="javascript">&#x2F;**
+ * @param {{ socket: { address: () =&gt; { (): any; new (): any; address: any; }; }; headers: { [x: string]: string | number | readonly string[]; }; url: any; pipe: (arg0: import(&quot;http&quot;).ClientRequest) =&gt; void; }} req
+ * @param {{ statusCode: number; end: (arg0: string) =&gt; void; writeHead: (arg0: number, arg1: string, arg2: string[]) =&gt; void; }} res
+ *&#x2F;
+function handleRequest(req, res) {
+  &#x2F;&#x2F; etc.
+}
+</code><p>Instead, what we want is this:</p><code data-lang="javascript">&#x2F;**
+ * @param {http.IncomingMessage} req
+ * @param {http.ServerResponse} res
+ *&#x2F;
+function handleRequest(req, res) {
+  &#x2F;&#x2F; etc.
+}
+</code><p>And if we do this, it finds two errors!</p><code data-lang="shell">$ tsc --noEmit --allowJs .&#x2F;index.js
+index.js:23:30 - error TS2339: Property &#x27;address&#x27; does not exist on type &#x27;{} | AddressInfo&#x27;.
+  Property &#x27;address&#x27; does not exist on type &#x27;{}&#x27;.
+
+23     `[${req.socket.address().address}] ${JSON.stringify(req.headers, null, 2)}`
+                                ~~~~~~~
+
+index.js:26:60 - error TS2339: Property &#x27;address&#x27; does not exist on type &#x27;{} | AddressInfo&#x27;.
+  Property &#x27;address&#x27; does not exist on type &#x27;{}&#x27;.
+
+26   if (isRestricted(req) &amp;&amp; !isAllowed(req.socket.address().address)) {
+                                                              ~~~~~~~
+
+
+Found 2 errors.
+</code><p>Well. That&#x27;s rather unhelpful. I <em>can</em> see a <code>net.Socket</code> returning an empty
+object (although, why not <code>null</code>?) if we call <code>address()</code> before it&#x27;s connected,
+like so:</p><code data-lang="shell">$ node -i
+Welcome to Node.js v15.3.0.
+Type &quot;.help&quot; for more information.
+&gt; let sock = new require(&quot;net&quot;).Socket();
+undefined
+&gt; sock.address()
+{}
+&gt;
+</code><p>...but in this case, that can never happen: <code>handleRequest</code> is only ever
+passed to <code>server.on(&quot;request&quot;, ...)</code>, and so it only ever gets instances of
+<code>http.IncomingMessage</code>, whose <code>socket</code>s are <em>always</em> connected, so
+<code>address()</code> never returns <code>{}</code>.</p><p>So, that&#x27;s a false positive: the type checker is reporting an error where
+there is none. I can see that it&#x27;s just trying to be cautious - things may be
+fine now, but what if we called <code>handleRequest</code> for somewhere else, with a
+carefully-crafted <code>http.IncomingMessage</code> whose <code>socket</code> was <em>not</em> connected?</p><p>Then who would be the wiser? tsc, no doubt.</p><p>But in the meantime, let&#x27;s use the escape hatch TypeScript gives us and just
+add a <code>!</code> after accessing the field:</p><code data-lang="javascript">  console.log(
+    `[${req.socket.address().address!}] ${JSON.stringify(req.headers, null, 2)}`
+  );
+
+  if (isRestricted(req) &amp;&amp; !isAllowed(req.socket.address().address!)) {
+    res.statusCode = 403;
+    res.end(&quot;Forbidden.\n&quot;);
+    return;
+  }
+</code><code data-lang="shell">$ tsc --noEmit --allowJs .&#x2F;index.js
+index.js:23:9 - error TS8013: Non-null assertions can only be used in TypeScript files.
+
+23     `[${req.socket.address().address!}] ${JSON.stringify(req.headers, null, 2)}`
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+index.js:26:39 - error TS8013: Non-null assertions can only be used in TypeScript files.
+
+26   if (isRestricted(req) &amp;&amp; !isAllowed(req.socket.address().address!)) {
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Found 2 errors.
+</code><p>Wait, nope, we&#x27;re still writing vanilla JavaScript, just with <a href="https://jsdoc.app/">JSDoc
+annotations</a>. I guess we&#x27;ll just have to uh... be creative:</p><code data-lang="javascript">&#x2F;&#x2F; safety: the `net.Socket` from `http.IncomingMessage` are always connected,
+&#x2F;&#x2F; so the address is never `{}`
+&#x2F;** @type {import(&quot;net&quot;).AddressInfo} *&#x2F;
+&#x2F;&#x2F; @ts-ignore
+let address = req.socket.address().address;
+
+console.log(`[${address}] ${JSON.stringify(req.headers, null, 2)}`);
+
+if (isRestricted(req) &amp;&amp; !isAllowed(address)) {
+  res.statusCode = 403;
+  res.end(&quot;Forbidden.\n&quot;);
+  return;
+}
+</code><p>There! Now we no longer have errors.</p><p>Thankfully, TypeScript has a secret reserve of errors called &quot;strict mode&quot;, which
+enables a bunch more checks, and since we want our code to be really high-quality,
+we might as opt into it:</p><code data-lang="shell">$ tsc --noEmit --allowJs --strict .&#x2F;index.js
+index.js:39:28 - error TS2345: Argument of type &#x27;string | string[] | undefined&#x27; is not assignable to parameter of type &#x27;string | number | readonly string[]&#x27;.
+  Type &#x27;undefined&#x27; is not assignable to type &#x27;string | number | readonly string[]&#x27;.
+
+39     originReq.setHeader(k, req.headers[k]);
+                              ~~~~~~~~~~~~~~
+
+index.js:47:7 - error TS2345: Argument of type &#x27;number | undefined&#x27; is not assignable to parameter of type &#x27;number&#x27;.
+  Type &#x27;undefined&#x27; is not assignable to type &#x27;number&#x27;.
+
+47       originRes.statusCode,
+         ~~~~~~~~~~~~~~~~~~~~
+
+index.js:56:20 - error TS7006: Parameter &#x27;addr&#x27; implicitly has an &#x27;any&#x27; type.
+
+56 function isAllowed(addr) {
+                      ~~~~
+
+index.js:60:23 - error TS7006: Parameter &#x27;req&#x27; implicitly has an &#x27;any&#x27; type.
+
+60 function isRestricted(req) {
+                         ~~~
+
+
+Found 4 errors.
+</code><p>Let&#x27;s tackle the bottom two, since they&#x27;re easy. We know <code>isAllowed</code> takes a <code>string</code>, and
+<code>isRestricted</code> takes a <code>http.IncomingMessage</code>.</p><code data-lang="javascript">&#x2F;**
+ * @param {string} addr
+ *&#x2F;
+function isAllowed(addr) {
+  return addr.startsWith(&quot;127.0.0.&quot;) || addr.startsWith(&quot;2.58.12.&quot;);
+}
+
+&#x2F;**
+ * @param {http.IncomingMessage} req
+ *&#x2F;
+function isRestricted(req) {
+  return req.headers.host === &quot;internal.example.org&quot;;
+}
+</code><p>Ahhh. Better.</p><p>{% sc tip %}
+Note that this wouldn&#x27;t have caught our little <code>req.headers.Host</code> mishap.</p><p>As neat as it is, TypeScript does not let you define a type that &quot;only
+has lower-cased keys&quot;...
+{% endsc %}</p><p>Correct! in fact, here&#x27;s the type of <code>IncomingHttpHeaders</code>:</p><code data-lang="typescript">&#x2F;&#x2F; incoming headers will never contain number
+interface IncomingHttpHeaders extends NodeJS.Dict&lt;string | string[]&gt; {
+  accept?: string;
+  &quot;accept-language&quot;?: string;
+  &quot;accept-patch&quot;?: string;
+  &quot;accept-ranges&quot;?: string;
+  &quot;access-control-allow-credentials&quot;?: string;
+  &quot;access-control-allow-headers&quot;?: string;
+  &quot;access-control-allow-methods&quot;?: string;
+  &quot;access-control-allow-origin&quot;?: string;
+  &quot;access-control-expose-headers&quot;?: string;
+  &quot;access-control-max-age&quot;?: string;
+  &quot;access-control-request-headers&quot;?: string;
+  &quot;access-control-request-method&quot;?: string;
+  age?: string;
+  allow?: string;
+  &quot;alt-svc&quot;?: string;
+  authorization?: string;
+  &quot;cache-control&quot;?: string;
+  connection?: string;
+  &quot;content-disposition&quot;?: string;
+  &quot;content-encoding&quot;?: string;
+  &quot;content-language&quot;?: string;
+  &quot;content-length&quot;?: string;
+  &quot;content-location&quot;?: string;
+  &quot;content-range&quot;?: string;
+  &quot;content-type&quot;?: string;
+  cookie?: string;
+  date?: string;
+  expect?: string;
+  expires?: string;
+  forwarded?: string;
+  from?: string;
+  host?: string;
+  &quot;if-match&quot;?: string;
+  &quot;if-modified-since&quot;?: string;
+  &quot;if-none-match&quot;?: string;
+  &quot;if-unmodified-since&quot;?: string;
+  &quot;last-modified&quot;?: string;
+  location?: string;
+  origin?: string;
+  pragma?: string;
+  &quot;proxy-authenticate&quot;?: string;
+  &quot;proxy-authorization&quot;?: string;
+  &quot;public-key-pins&quot;?: string;
+  range?: string;
+  referer?: string;
+  &quot;retry-after&quot;?: string;
+  &quot;sec-websocket-accept&quot;?: string;
+  &quot;sec-websocket-extensions&quot;?: string;
+  &quot;sec-websocket-key&quot;?: string;
+  &quot;sec-websocket-protocol&quot;?: string;
+  &quot;sec-websocket-version&quot;?: string;
+  &quot;set-cookie&quot;?: string[];
+  &quot;strict-transport-security&quot;?: string;
+  tk?: string;
+  trailer?: string;
+  &quot;transfer-encoding&quot;?: string;
+  upgrade?: string;
+  &quot;user-agent&quot;?: string;
+  vary?: string;
+  via?: string;
+  warning?: string;
+  &quot;www-authenticate&quot;?: string;
+}
+</code><p>Which is straight-up <em>hilarious</em>.</p><p>Mostly, it&#x27;s done that way so that:</p><ul><li><code>set-cookie</code> is <em>always</em> a <code>string[]</code></li><li>Other known headers are always just a <code>string</code></li></ul><p>But it also extends <code>NodeJS.Dict&lt;string | string[]&gt;</code>, which means that <em>any
+other header</em> can be either a <code>string</code> or a <code>string[]</code> (or <code>undefined</code>).</p><p>At any rate, the following code isn&#x27;t an error at all:</p><code data-lang="javascript">&#x2F;**
+ * @param {http.IncomingMessage} req
+ *&#x2F;
+function isRestricted(req) {
+  return req.headers.Host === &quot;internal.example.org&quot;;
+}
+</code><p>But this code is:</p><code data-lang="javascript">&#x2F;**
+ * @param {http.IncomingMessage} req
+ *&#x2F;
+function isRestricted(req) {
+  return req.headers[&quot;set-cookie&quot;] === &quot;internal.example.org&quot;;
+}
+</code><code data-lang="shell">index.js:67:10 - error TS2367: This condition will always return &#x27;false&#x27; since the types &#x27;string[] | undefined&#x27; and &#x27;string&#x27; have no overlap.
+
+67   return req.headers[&quot;set-cookie&quot;] === &quot;internal.example.org&quot;;
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</code><p>Good for <code>set-cookie</code>.</p><p>Let&#x27;s look at our remaining errors:</p><code data-lang="shell">index.js:30:39 - error TS2345: Argument of type &#x27;AddressInfo&#x27; is not assignable to parameter of type &#x27;string&#x27;.
+
+30   if (isRestricted(req) &amp;&amp; !isAllowed(address)) {
+                                         ~~~~~~~
+</code><p>Woops, this one is legit! We accidentally declared <code>let address</code> as an
+<code>AddressInfo</code>, when it&#x27;s really a <code>string</code>, because we&#x27;re accessing
+<code>socket.address().address</code>, remember?</p><p>Let&#x27;s fix it:</p><code data-lang="javascript">&#x2F;&#x2F; safety: the `net.Socket` from `http.IncomingMessage` are always connected,
+&#x2F;&#x2F; so the address is never `{}`
+&#x2F;** @type {string} *&#x2F;
+&#x2F;&#x2F; @ts-ignore
+let address = req.socket.address().address;
+</code><p>Next up:</p><code data-lang="shell">index.js:47:7 - error TS2345: Argument of type &#x27;number | undefined&#x27; is not assignable to parameter of type &#x27;number&#x27;.
+  Type &#x27;undefined&#x27; is not assignable to type &#x27;number&#x27;.
+
+47       originRes.statusCode,
+         ~~~~~~~~~~~~~~~~~~~~
+</code><p>That one&#x27;s a bit annoying. If the server does not respond with a status code,
+well... wouldn&#x27;t parsing fail way before then? We wouldn&#x27;t even get headers!</p><p>But sure, let&#x27;s be &quot;correct&quot;:</p><code data-lang="javascript">originReq.on(&quot;response&quot;, (originRes) =&gt; {
+  if (!originRes.statusCode) {
+    res.writeHead(502, &quot;Oh hey y&#x27;all are back early&quot;);
+    res.end(&quot;Origin&#x27;s haunted.&quot;);
+    return;
+  }
+
+  &#x2F;&#x2F; forward origin response headers to client
+  res.writeHead(
+    originRes.statusCode,
+    originRes.statusMessage,
+    originRes.rawHeaders,
+  );
+  &#x2F;&#x2F; forward origin response body to client
+  originRes.pipe(res);
+});
+</code><p>Amazingly, this is enough for <code>tsc</code> to figure out that if we reach the second
+<code>res.writeHead</code>, then <code>originRes.statusCode</code> <em>cannot be falsy</em>, so this took
+care of that error.</p><p>(This is not sarcastic btw, I genuinely like TypeScript a lot. It&#x27;s the best
+of a very messy situation).</p><p>Finally, we&#x27;re left with this error:</p><code data-lang="shell">$ index.js:39:28 - error TS2345: Argument of type &#x27;string | string[] | undefined&#x27; is not assignable to parameter of type &#x27;string | number | readonly string[]&#x27;.
+  Type &#x27;undefined&#x27; is not assignable to type &#x27;string | number | readonly string[]&#x27;.
+
+39     originReq.setHeader(k, req.headers[k]);
+                              ~~~~~~~~~~~~~~
+</code><p>That one&#x27;s annoying - but illuminating. Much easier than reading the docs.</p><p>{% sc bearsays %}
+Okay I&#x27;m halfway onboard the lazy train now - this <em>is</em> nicer than opening
+the docs. You can even keep your browser closed.</p><p>I could get used to this.
+{% endsc %}</p><p>So, according to the types we&#x27;re seeing here, <code>requests[k]</code> <em>could</em> be <code>undefined</code>.</p><p>I&#x27;m not sure I agree, but maybe it&#x27;s confused by our usage of <code>Object.keys</code>?</p><code data-lang="javascript">for (const k of Object.keys(req.headers)) {
+  originReq.setHeader(k, req.headers[k]);
+}
+</code><p>If I hover the <code>k</code> in <code>const k</code>, it just says <code>string</code>, which - okay, yeah, if we
+look up <em>arbitrary</em> header names, we might get <code>undefined</code>. Otherwise, we won&#x27;t.</p><p>We can fix it like this:</p><code data-lang="javascript">&#x2F;&#x2F; forward client request headers to origin
+for (const k of Object.keys(req.headers)) {
+  &#x2F;&#x2F; this is solely to make the type checker happy
+  let v = req.headers[k];
+  if (v) {
+    originReq.setHeader(k, v);
+  }
+}
+</code><p>Which is... not great, because we&#x27;re adding an <code>if</code> branch solely for
+type-checking purposes, and I don&#x27;t think it&#x27;ll be eliminated. It might be
+deemed &quot;unlikely&quot; by the JIT and the &quot;it&#x27;s never undefined&quot; path may become
+the fast path, but that&#x27;s for me to ignore and you to profile.</p><p>The other option is to use <code>&#x2F;&#x2F;@ts-ignore</code>, but it&#x27;s a bit too much of a
+shotgun blast for my taste, since it disables checking for the <em>whole line</em>.
+What if that line was doing something else wrong? Uncaught errors! The
+horror!</p><p>{% sc recap %}
+TypeScript can help catch <em>some</em> misuses of the node.js APIs, but not all of them!</p><p>Sometimes, it <em>thinks</em> it&#x27;s caught errors, but really, it&#x27;s only just getting
+in the way.</p><p>This is not really TypeScript&#x27;s fault. Typings for a package can only be as
+good as the original package. If a function returns <code>string | number | readonly string[]</code>, well, all bets are off.
+{% endsc %}</p><h2><a id="just-gopher-it" href="#just-gopher-it" class="anchor"></a>Just gopher it</h2><p>It is time... to look at Go again. If anything, we&#x27;ve learn that accurately
+modelling HTTP, even just HTTP headers, is harder than it appears at first
+glance.</p><p>Do you remember, ages ago, when someone confidently said that?</p><blockquote><p>HTTP&#x2F;1.1 seems like a pretty simple protocol...</p></blockquote><p>How foolish it seems now! Utter hogwash.</p><p>Sometimes things are just complicated!</p><p>And it&#x27;s not like you can convince everyone to speak a particular flavor of
+HTTP; those services are meant to be user-facing, handling requests from a
+variety of user agents, some of which are malicious, while the rest are
+merely misguided (which is programmer for &quot;opinionated, but in a way that&#x27;s
+not to my advantage&quot;).</p><p>So, let&#x27;s take a look at how Go tackles this problem. But be warned: I&#x27;m
+going to say nice things about it.</p><p>{% sc bearsays %}
+Whaaaaaaaat? But that goes against the preconceived notion that so many people
+have of you, you can&#x27;t just-
+{% endsc %}</p><p>{% sc amossays %}
+Hate to interrupt you bear, but I think we&#x27;ve blown past our quota for &quot;meta
+banter&quot; several pages ago, we better get on with it.
+{% endsc %}</p><p>So, we&#x27;ve looked at some of the types that node.js uses to represent headers,
+and so far we&#x27;ve had:</p><ul><li>An object, whose keys are always lower-case (unless you mess with it... but
+plz refrain), and whose values are always strings, unless they&#x27;re arrays
+of strings, which <code>set-cookie</code> always is, but others might be too,
+according to the TypeScript typings.</li></ul><p>And then:</p><ul><li>An array of length <code>n*2</code>, where even positions contain header names (that&#x27;s right,
+<code>0</code> is even), and odd positions contain header values.</li></ul><p><a href="https://nodejs.org/docs/latest-v15.x/api/http.html#http_message_rawheaders">The documentation</a> takes special care to note that:</p><blockquote><p>The keys and values are in the same list. It is <strong>not</strong> a list of tuples.
+So, the even-numbered offsets are key values, and the odd-numbered offsets
+are the associated values.</p></blockquote><p>This sounds a little funky at first, until you realize that, well, JavaScript
+does not have tuples, so it would have to be an array of arrays, and that
+ends up being a <em>lot</em> of allocations, and even more importantly, a lot of
+<a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science)">GC</a>
+bookkeeping.</p><p>So, enough with the suspense - what does Go do?</p><p>Well first off, <code>Go</code> actually takes the <code>host</code> header and extracts it to a
+separate field:</p><code data-lang="go">type Request struct {
+  &#x2F;&#x2F; (other fields are omitted)
+
+  &#x2F;&#x2F; For server requests, Host specifies the host on which the
+  &#x2F;&#x2F; URL is sought. For HTTP&#x2F;1 (per RFC 7230, section 5.4), this
+  &#x2F;&#x2F; is either the value of the &quot;Host&quot; header or the host name
+  &#x2F;&#x2F; given in the URL itself. For HTTP&#x2F;2, it is the value of the
+  &#x2F;&#x2F; &quot;:authority&quot; pseudo-header field.
+  &#x2F;&#x2F; It may be of the form &quot;host:port&quot;. For international domain
+  &#x2F;&#x2F; names, Host may be in Punycode or Unicode form. Use
+  &#x2F;&#x2F; golang.org&#x2F;x&#x2F;net&#x2F;idna to convert it to either format if
+  &#x2F;&#x2F; needed.
+  &#x2F;&#x2F; To prevent DNS rebinding attacks, server Handlers should
+  &#x2F;&#x2F; validate that the Host header has a value for which the
+  &#x2F;&#x2F; Handler considers itself authoritative. The included
+  &#x2F;&#x2F; ServeMux supports patterns registered to particular host
+  &#x2F;&#x2F; names and thus protects its registered Handlers.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For client requests, Host optionally overrides the Host
+  &#x2F;&#x2F; header to send. If empty, the Request.Write method uses
+  &#x2F;&#x2F; the value of URL.Host. Host may contain an international
+  &#x2F;&#x2F; domain name.
+  Host string
+}
+</code><p>What the comment omits is that, for HTTP&#x2F;1, only the <em>first</em> <code>Host</code> header is
+taken into account - which sounds reasonable, and matches what node.js does.</p><p>What the comment does point out, is that this struct also works for
+HTTP&#x2F;2 - it simply jams the <code>:authority</code> pseudo-header in there (as per
+<a href="https://tools.ietf.org/html/rfc7540#section-8.1.2.3">RFC 7540</a>).</p><p>{% sc bearsays %}
+...do you think linking RFCs will make commenters easier on you? Because
+that&#x27;s not going to work.
+{% endsc %}</p><p>{% sc amossays %}
+Look,
+{% endsc %}</p><p>Similarly, <code>Content-Length</code> has its own field:</p><code data-lang="go">  &#x2F;&#x2F; ContentLength records the length of the associated content.
+  &#x2F;&#x2F; The value -1 indicates that the length is unknown.
+  &#x2F;&#x2F; Values &gt;= 0 indicate that the given number of bytes may
+  &#x2F;&#x2F; be read from Body.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For client requests, a value of 0 with a non-nil Body is
+  &#x2F;&#x2F; also treated as unknown.
+  ContentLength int64
+</code><p>There&#x27;s also fields for <code>TransferEncoding</code>, and <code>Connection: Close</code>.</p><p>As for the other headers, well, there&#x27;s <code>Header</code>:</p><code data-lang="go">  &#x2F;&#x2F; Header contains the request header fields either received
+  &#x2F;&#x2F; by the server or to be sent by the client.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; If a server received a request with header lines,
+  &#x2F;&#x2F;
+  &#x2F;&#x2F;  Host: example.com
+  &#x2F;&#x2F;  accept-encoding: gzip, deflate
+  &#x2F;&#x2F;  Accept-Language: en-us
+  &#x2F;&#x2F;  fOO: Bar
+  &#x2F;&#x2F;  foo: two
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; then
+  &#x2F;&#x2F;
+  &#x2F;&#x2F;  Header = map[string][]string{
+  &#x2F;&#x2F;    &quot;Accept-Encoding&quot;: {&quot;gzip, deflate&quot;},
+  &#x2F;&#x2F;    &quot;Accept-Language&quot;: {&quot;en-us&quot;},
+  &#x2F;&#x2F;    &quot;Foo&quot;: {&quot;Bar&quot;, &quot;two&quot;},
+  &#x2F;&#x2F;  }
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For incoming requests, the Host header is promoted to the
+  &#x2F;&#x2F; Request.Host field and removed from the Header map.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; HTTP defines that header names are case-insensitive. The
+  &#x2F;&#x2F; request parser implements this by using CanonicalHeaderKey,
+  &#x2F;&#x2F; making the first character and any characters following a
+  &#x2F;&#x2F; hyphen uppercase and the rest lowercase.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For client requests, certain headers such as Content-Length
+  &#x2F;&#x2F; and Connection are automatically written when needed and
+  &#x2F;&#x2F; values in Header may be ignored. See the documentation
+  &#x2F;&#x2F; for the Request.Write method.
+  Header Header
+</code><p>There&#x27;s a lot to unpack here, so let&#x27;s go paragraph by paragraph:</p><code data-lang="go">  &#x2F;&#x2F; Header contains the request header fields either received
+  &#x2F;&#x2F; by the server or to be sent by the client.
+</code><p>Go uses the same types for sending and receiving requests, which is occasionally
+convenient, and often a very large <a href="https://en.wiktionary.org/wiki/footgun">footgun</a>
+since some fields may only make sense when sending, and others while receiving.</p><code data-lang="go">  &#x2F;&#x2F; If a server received a request with header lines,
+  &#x2F;&#x2F;
+  &#x2F;&#x2F;  Host: example.com
+  &#x2F;&#x2F;  accept-encoding: gzip, deflate
+  &#x2F;&#x2F;  Accept-Language: en-us
+  &#x2F;&#x2F;  fOO: Bar
+  &#x2F;&#x2F;  foo: two
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; then
+  &#x2F;&#x2F;
+  &#x2F;&#x2F;  Header = map[string][]string{
+  &#x2F;&#x2F;    &quot;Accept-Encoding&quot;: {&quot;gzip, deflate&quot;},
+  &#x2F;&#x2F;    &quot;Accept-Language&quot;: {&quot;en-us&quot;},
+  &#x2F;&#x2F;    &quot;Foo&quot;: {&quot;Bar&quot;, &quot;two&quot;},
+  &#x2F;&#x2F;  }
+</code><p>Here we can see the <em>actual</em> underlying type of <code>Header</code>: a <code>map[string][]string</code>. Or,
+as we&#x27;ve spelled it before, in TypeScript parlance, a <code>Map&lt;String, Array&lt;String&gt;&gt;</code>.</p><p>{% sc bearsays %}
+...which was not quite accurate, as an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map">ES6
+Map</a>
+is not the same as an Object.
+{% endsc %}</p><p>Basically, it means that for every header name, we have an array (well, a Go slice) of
+potential values.</p><p>Which leaves us with the problem of the header <em>names</em>, which should be case-insensitive.</p><p>As we can see from the example, and unlike node.js, Go&#x27;s <code>http</code> package does
+<em>not</em> just lower-case everything. It takes the surprising approach of...
+making everything Title-Case:</p><code data-lang="go">  &#x2F;&#x2F; HTTP defines that header names are case-insensitive. The
+  &#x2F;&#x2F; request parser implements this by using CanonicalHeaderKey,
+  &#x2F;&#x2F; making the first character and any characters following a
+  &#x2F;&#x2F; hyphen uppercase and the rest lowercase.
+</code><p>Here&#x27;s the actual implementation of <code>CanonicalHeaderKey</code>:</p><code data-lang="go">&#x2F;&#x2F; CanonicalHeaderKey returns the canonical format of the
+&#x2F;&#x2F; header key s. The canonicalization converts the first
+&#x2F;&#x2F; letter and any letter following a hyphen to upper case;
+&#x2F;&#x2F; the rest are converted to lowercase. For example, the
+&#x2F;&#x2F; canonical key for &quot;accept-encoding&quot; is &quot;Accept-Encoding&quot;.
+&#x2F;&#x2F; If s contains a space or invalid header field bytes, it is
+&#x2F;&#x2F; returned without modifications.
+func CanonicalHeaderKey(s string) string { return textproto.CanonicalMIMEHeaderKey(s) }
+</code><p>...fine, here&#x27;s the actual implementation of <code>CanonicalMimeHeaderKey</code>:</p><code data-lang="go">&#x2F;&#x2F; CanonicalMIMEHeaderKey returns the canonical format of the
+&#x2F;&#x2F; MIME header key s. The canonicalization converts the first
+&#x2F;&#x2F; letter and any letter following a hyphen to upper case;
+&#x2F;&#x2F; the rest are converted to lowercase. For example, the
+&#x2F;&#x2F; canonical key for &quot;accept-encoding&quot; is &quot;Accept-Encoding&quot;.
+&#x2F;&#x2F; MIME header keys are assumed to be ASCII only.
+&#x2F;&#x2F; If s contains a space or invalid header field bytes, it is
+&#x2F;&#x2F; returned without modifications.
+func CanonicalMIMEHeaderKey(s string) string {
+  commonHeaderOnce.Do(initCommonHeader)
+
+  &#x2F;&#x2F; Quick check for canonical encoding.
+  upper := true
+  for i := 0; i &lt; len(s); i++ {
+    c := s[i]
+    if !validHeaderFieldByte(c) {
+      return s
+    }
+    if upper &amp;&amp; &#x27;a&#x27; &lt;= c &amp;&amp; c &lt;= &#x27;z&#x27; {
+      return canonicalMIMEHeaderKey([]byte(s))
+    }
+    if !upper &amp;&amp; &#x27;A&#x27; &lt;= c &amp;&amp; c &lt;= &#x27;Z&#x27; {
+      return canonicalMIMEHeaderKey([]byte(s))
+    }
+    upper = c == &#x27;-&#x27;
+  }
+  return s
+}
+</code><p>{% sc bearsays %}
+Hey! That&#x27;s not utf-8 safe!
+{% endsc %}</p><p>{% sc amossays %}
+Doesn&#x27;t matter. As per RFC 2616, header names are &quot;tokens&quot;, and a &quot;token&quot;
+is &quot;at least 1 of: any CHAR except CTLs or separators&quot;, and a &quot;CHAR&quot; is
+&quot;any US-ASCII character (octets 0 - 127)&quot;.
+{% endsc %}</p><p>This is actually only the checking code - the fast path. That&#x27;s right, <strong>Go
+servers are slower if you send them lower-case headers</strong>. Maybe we shouldn&#x27;t
+have written our access control service in node.js!</p><p>Here&#x27;s where the actual mutation happens:</p><code data-lang="go">&#x2F;&#x2F; canonicalMIMEHeaderKey is like CanonicalMIMEHeaderKey but is
+&#x2F;&#x2F; allowed to mutate the provided byte slice before returning the
+&#x2F;&#x2F; string.
+&#x2F;&#x2F;
+&#x2F;&#x2F; For invalid inputs (if a contains spaces or non-token bytes), a
+&#x2F;&#x2F; is unchanged and a string copy is returned.
+func canonicalMIMEHeaderKey(a []byte) string {
+  &#x2F;&#x2F; See if a looks like a header key. If not, return it unchanged.
+  for _, c := range a {
+    if validHeaderFieldByte(c) {
+      continue
+    }
+    &#x2F;&#x2F; Don&#x27;t canonicalize.
+    return string(a)
+  }
+
+  upper := true
+  for i, c := range a {
+    &#x2F;&#x2F; Canonicalize: first letter upper case
+    &#x2F;&#x2F; and upper case after each dash.
+    &#x2F;&#x2F; (Host, User-Agent, If-Modified-Since).
+    &#x2F;&#x2F; MIME headers are ASCII only, so no Unicode issues.
+    if upper &amp;&amp; &#x27;a&#x27; &lt;= c &amp;&amp; c &lt;= &#x27;z&#x27; {
+      c -= toLower
+    } else if !upper &amp;&amp; &#x27;A&#x27; &lt;= c &amp;&amp; c &lt;= &#x27;Z&#x27; {
+      c += toLower
+    }
+    a[i] = c
+    upper = c == &#x27;-&#x27; &#x2F;&#x2F; for next time
+  }
+  &#x2F;&#x2F; The compiler recognizes m[string(byteSlice)] as a special
+  &#x2F;&#x2F; case, so a copy of a&#x27;s bytes into a new string does not
+  &#x2F;&#x2F; happen in this map lookup:
+  if v := commonHeader[string(a)]; v != &quot;&quot; {
+    return v
+  }
+  return string(a)
+}
+</code><p>This code actually mentions that &quot;MIME headers are ASCII only&quot;. That&#x27;s genuinely nice.</p><p>This part is not so nice:</p><code data-lang="go">  &#x2F;&#x2F; The compiler recognizes m[string(byteSlice)] as a special
+  &#x2F;&#x2F; case, so a copy of a&#x27;s bytes into a new string does not
+  &#x2F;&#x2F; happen in this map lookup:
+  if v := commonHeader[string(a)]; v != &quot;&quot; {
+</code><p>But I guess <a href="/articles/working-with-strings-in-rust">strings are hard</a>.</p><p>So, in Go:</p><ul><li>Any header name can have any number of header values</li><li>All header names are normalized to <code>Weird-Pre-Http2-Case</code></li></ul><p>And indeed, the <code>Header</code> type (which really should be called <code>HeaderMap</code>, or
+<code>Headers</code> or something, but conciseness above all!!) comes with a collection
+of handy methods.</p><p>It has <code>Add(key, value string)</code>, it has <code>Clone()</code>, <code>Del(key string)</code>,
+<code>Get(key string)</code>, <code>Set(key, value string)</code>, and <code>Values(key string) []string</code>.</p><p>It also has <code>Write(w io.Writer) error</code> and <code>WriteSubset(w io.Writer, exclude map[string]bool) error</code> - the latter feels like a strange addition, but maybe
+there&#x27;s a good reason for it.</p><p>Here&#x27;s the thing though - <code>Header</code> is not a <code>struct</code>.</p><p>It&#x27;s just a type definition. (Not a type alias - those are different!).</p><p>Here it is:</p><code data-lang="go">type Header map[string][]string
+</code><p>Which means that any function that can operate on a <code>map[k]v</code>, can also
+operate on a <code>Header</code>.</p><p>So... you could totally still have the same bug we had in node.js:</p><code data-lang="go">package main
+
+import (
+  &quot;log&quot;
+  &quot;net&#x2F;http&quot;
+)
+
+func main() {
+  &#x2F;&#x2F; This is constructed properly, according to the &quot;contract&quot; written
+  &#x2F;&#x2F; in `http.Header`&#x27;s documentation:
+  headers := http.Header{
+    &quot;Host&quot;: []string{&quot;internal.example.org&quot;},
+  }
+
+  &#x2F;&#x2F; but it is parsed incorrectly:
+  log.Printf(&quot;Is this endpoint restricted? %v&quot;, isRestricted(headers))
+}
+
+func isRestricted(headers http.Header) bool {
+  &#x2F;&#x2F; nothing is preventing us from doing this
+  for _, v := range headers[&quot;host&quot;] {
+    if v == &quot;internal.example.org&quot; {
+      return true
+    }
+  }
+  return false
+}
+</code><p>This prints:</p><code data-lang="shell">2009&#x2F;11&#x2F;10 23:00:00 Is this endpoint restricted? false
+</code><p>Similarly, there&#x27;s nothing that prevents us from constructing an instance of <code>http.Header</code>
+that contradicts its documentation:</p><code data-lang="go">package main
+
+import (
+  &quot;net&#x2F;http&quot;
+  &quot;os&quot;
+)
+
+func main() {
+  headers := http.Header{
+    &quot;Host&quot;: []string{&quot;internal.example.org&quot;},
+    &quot;host&quot;: []string{&quot;ducks.example.org&quot;},
+  }
+
+  headers.Write(os.Stdout)
+}
+</code><p>Also, and this one is completely gratuitous, you can construct this, which makes no sense whatsoever:</p><code data-lang="go">package main
+
+import (
+  &quot;net&#x2F;http&quot;
+  &quot;os&quot;
+)
+
+func main() {
+  headers := http.Header{
+    &quot;secure&quot;: []string{},
+  }
+
+  headers.Write(os.Stdout)
+}
+</code><p>This just doesn&#x27;t write anything.</p><p>But if someone were to check whether the key&#x27;s in the map...</p><code data-lang="go">package main
+
+import (
+  &quot;log&quot;
+  &quot;net&#x2F;http&quot;
+  &quot;os&quot;
+)
+
+func main() {
+  headers := http.Header{
+    &quot;secure&quot;: []string{},
+  }
+
+  if _, ok := headers[&quot;secure&quot;]; ok {
+    log.Println(&quot;This request is secure!&quot;)
+  }
+
+  headers.Write(os.Stdout)
+}
+</code><code data-lang="shell">2009&#x2F;11&#x2F;10 23:00:00 This request is secure!
+</code><p>And this all stems from one of the aspects of Go I&#x27;ve discussed before, which
+is that the shortcuts that were taken when designing its type system makes it
+a language that&#x27;s both very confusing (in lieu of being &quot;simple&quot;) <em>and</em> that
+consistently resists modelling reality.</p><p>A good example of this is zero values.</p><p>Go fields <em>cannot</em> be uninitialized, because every type has a zero value.</p><code data-lang="go">package main
+
+import &quot;log&quot;
+
+&#x2F;&#x2F; A Foobarist can foobar. This comment brought to you by `go-lint`.
+type Foobarist interface {
+  Foobar()
+}
+
+func main() {
+  var x int
+  var s string
+  var fb Foobarist
+  var sl []string
+  log.Printf(&quot;x = %#v&quot;, x)
+  log.Printf(&quot;s = %#v&quot;, s)
+  log.Printf(&quot;fb = %#v&quot;, fb)
+  log.Printf(&quot;sl = %#v&quot;, sl)
+}
+</code><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;11 21:50:32 x = 0
+2020&#x2F;12&#x2F;11 21:50:32 s = &quot;&quot;
+2020&#x2F;12&#x2F;11 21:50:32 fb = &lt;nil&gt;
+2020&#x2F;12&#x2F;11 21:50:32 sl = []string(nil)
+</code><p>{% sc bearsays %}
+And yes, there&#x27;s <a href="https://yourbasic.org/golang/gotcha-why-nil-error-not-equal-nil/">a well-known
+gotcha</a>
+around <code>nil</code> and interfaces, but that&#x27;s not what we&#x27;re discussing here.
+{% endsc %}</p><p>So, if we make a <code>struct</code>, it too will have a zero value.</p><code data-lang="go">package main
+
+import &quot;log&quot;
+
+&#x2F;&#x2F; A Profile is a Profile. This comment brought to you by big tautology.
+type Profile struct {
+  Name string
+  Bio  string
+}
+
+func main() {
+  var pf Profile
+  log.Printf(&quot;pf = %#v&quot;, pf)
+}
+</code><p>Now imagine that <code>Profile</code> is being persisted to a database somewhere.</p><p>Let&#x27;s make a quick in-memory database for demonstration purposes. We&#x27;ll need
+a <code>go.mod</code>:</p><code data-lang="raw">module go-musings
+
+go 1.15
+</code><code data-lang="go">&#x2F;&#x2F; in `go-musings&#x2F;database&#x2F;database.go`
+
+package database
+
+&#x2F;&#x2F; A Profile is a Profile.
+type Profile struct {
+  Name string
+  Bio  string
+}
+
+type DB struct {
+  seed    int64
+  records map[int64]Profile
+}
+
+func NewDB() DB {
+  return DB{
+    seed:    0,
+    records: make(map[int64]Profile),
+  }
+}
+
+func (db *DB) Insert(profile Profile) int64 {
+  id := db.seed
+  db.seed++
+  db.records[id] = profile
+  return id
+}
+
+func (db *DB) Get(id int64) Profile {
+  return db.records[id]
+}
+
+func (db *DB) Update(id int64, profile Profile) {
+  db.records[id] = profile
+}
+</code><p>Such an API lets us do many things! We can insert a profile into the
+database, then get it, update one field, and get it again:</p><code data-lang="go">&#x2F;&#x2F; in `go-musings&#x2F;main.go`
+
+package main
+
+import (
+  &quot;log&quot;
+
+  &quot;go-musings&#x2F;database&quot;
+)
+
+func main() {
+  db := database.NewDB()
+
+  pf := database.Profile{
+    Name: &quot;Lilibet&quot;,
+    Bio:  &quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;,
+  }
+  id := db.Insert(pf)
+
+  &#x2F;&#x2F; Update the name
+  {
+    pf := db.Get(id)
+    pf.Name = &quot;Elizabeth&quot;
+    db.Update(id, pf)
+  }
+
+  log.Printf(&quot;%#v&quot;, db.Get(id))
+}
+</code><p>But what if we wanted to update a record <em>without</em> retrieving it?</p><p>Something like this:</p><code data-lang="go">func main() {
+  db := database.NewDB()
+
+  pf := database.Profile{
+    Name: &quot;Lilibet&quot;,
+    Bio:  &quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;,
+  }
+  id := db.Insert(pf)
+
+  &#x2F;&#x2F; Update the name - without getting first!
+  db.Update(id, database.Profile{Name: &quot;Elizabeth&quot;})
+
+  log.Printf(&quot;%#v&quot;, db.Get(id))
+}
+</code><p>In terms of performance, this can make a big difference. We no longer have to
+read and deserialize <em>all the fields</em> from the database only to put them back
+again. Writes can be batched transparently so they can be executed very
+rapidly, instead of constantly blocking because we&#x27;re waiting for reads to be
+done.</p><p>But with our current design, it does not work, because it resets
+<code>Profile.Bio</code> to its zero value:</p><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;11 22:18:41 database.Profile{Name:&quot;Elizabeth&quot;, Bio:&quot;&quot;}
+</code><p>So, when I say &quot;Go fields cannot be uninitialized&quot;, it doesn&#x27;t mean &quot;the
+compiler will make sure you initialize everything to some meaningful value&quot;.
+It means &quot;if you don&#x27;t, the compiler will insert zero values, which may or
+may not make sense for your application&quot;.</p><p>Of course, not all hope is lost - we can adjust our database implementation
+to <em>only</em> update fields that have non-zero values set:</p><code data-lang="go">&#x2F;&#x2F; in `go-musings&#x2F;database&#x2F;database.go`
+
+func (db *DB) Update(id int64, profile Profile) {
+  &#x2F;&#x2F; pretend this isn&#x27;t just a dumb `map[k]v` and
+  &#x2F;&#x2F; we can actually update things in-place, otherwise
+  &#x2F;&#x2F; none of this makes any sense.
+  pf := db.records[id]
+  changed := false
+  if profile.Name != &quot;&quot; {
+    pf.Name = profile.Name
+    changed = true
+  }
+  if profile.Bio != &quot;&quot; {
+    pf.Bio = profile.Bio
+    changed = true
+  }
+  if changed {
+    db.records[id] = pf
+  }
+}
+</code><p>Now our program actually works! We can update the <code>Name</code> while leaving the <code>Bio</code> alone.</p><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;11 22:23:43 database.Profile{Name:&quot;Elizabeth&quot;, Bio:&quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;}
+</code><p>...but now there&#x27;s something we can no longer do. If we try to <em>just</em> clear the <code>Bio</code>:</p><code data-lang="go">func main() {
+  db := database.NewDB()
+
+  pf := database.Profile{
+    Name: &quot;Lilibet&quot;,
+    Bio:  &quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;,
+  }
+  id := db.Insert(pf)
+
+  &#x2F;&#x2F; Remove the bio
+  db.Update(id, database.Profile{Bio: &quot;&quot;})
+
+  log.Printf(&quot;%#v&quot;, db.Get(id))
+}
+</code><p>...then nothing happens:</p><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;11 22:26:48 database.Profile{Name:&quot;Lilibet&quot;, Bio:&quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;}
+</code><p>Because, thanks to zero values, there&#x27;s no difference between any of these:</p><code data-lang="go">db.Update(id, database.Profile{})
+db.Update(id, database.Profile{Name: &quot;&quot;})
+db.Update(id, database.Profile{Bio: &quot;&quot;})
+db.Update(id, database.Profile{Name: &quot;&quot;, Bio: &quot;&quot;})
+</code><p>So, let&#x27;s think of a way to address this. We could replace our <code>string</code> with
+<code>*string</code> - pointers to a string.</p><code data-lang="go">&#x2F;&#x2F; A Profile is a Profile.
+type Profile struct {
+  Name *string
+  Bio  *string
+}
+</code><p>And then... well then we have a bunch of things to worry about.</p><p>First off, when we insert a <code>Profile</code>, we want to default to <code>&quot;&quot;</code> for all
+fields, because that&#x27;s <em>still</em> our zero value:</p><code data-lang="go">func (db *DB) Insert(profile Profile) int64 {
+  id := db.seed
+  db.seed++
+  if profile.Name == nil {
+    var s = &quot;&quot;
+    profile.Name = &amp;s
+  }
+  if profile.Bio == nil {
+    var s = &quot;&quot;
+    profile.Bio = &amp;s
+  }
+  db.records[id] = profile
+  return id
+}
+</code><p>And then in <code>Update</code>, we only update if non-nil:</p><code data-lang="go">func (db *DB) Update(id int64, profile Profile) {
+  &#x2F;&#x2F; again, pretend this isn&#x27;t a `map[k]v` and we can update things in-place
+  pf := db.records[id]
+  changed := false
+  if profile.Name != nil {
+    pf.Name = profile.Name
+    changed = true
+  }
+  if profile.Bio != nil {
+    pf.Bio = profile.Bio
+    changed = true
+  }
+  if changed {
+    db.records[id] = pf
+  }
+}
+</code><p>So, where do we stand now?</p><p>Well, everything is terribly unergonomic:</p><code data-lang="go">&#x2F;&#x2F; in `go-musings&#x2F;main.go`
+
+package main
+
+import (
+  &quot;log&quot;
+
+  &quot;go-musings&#x2F;database&quot;
+)
+
+func main() {
+  db := database.NewDB()
+
+  name := &quot;Lilibet&quot;
+  bio := &quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;
+  pf := database.Profile{
+    Name: &amp;name,
+    Bio:  &amp;bio,
+  }
+  id := db.Insert(pf)
+
+  &#x2F;&#x2F; Remove the bio
+  newBio := &quot;&quot;
+  db.Update(id, database.Profile{Bio: &amp;newBio})
+
+  log.Printf(&quot;%#v&quot;, db.Get(id))
+}
+</code><p>But we can make a little <code>stringptr</code> function to help a little:</p><code data-lang="go">&#x2F;&#x2F; in `go-musings&#x2F;main.go`
+
+package main
+
+import (
+  &quot;log&quot;
+
+  &quot;go-musings&#x2F;database&quot;
+)
+
+func stringptr(s string) *string {
+  return &amp;s
+}
+
+func main() {
+  db := database.NewDB()
+
+  pf := database.Profile{
+    Name: stringptr(&quot;Lilibet&quot;),
+    Bio:  stringptr(&quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;),
+  }
+  id := db.Insert(pf)
+
+  &#x2F;&#x2F; Remove the bio
+  db.Update(id, database.Profile{Bio: stringptr(&quot;&quot;)})
+
+  log.Printf(&quot;%#v&quot;, db.Get(id))
+}
+</code><p>And it <em>does</em> work:</p><code data-lang="go">$ go run main.go
+2020&#x2F;12&#x2F;11 22:36:37 database.Profile{Name:(*string)(0xc0000961e0), Bio:(*string)(0xc000096200)}
+</code><p>Well.. it&#x27;s hard to tell that it works, because the default debug formatter
+will <em>not</em> show you what a <code>*string</code> points to, but if we use something
+slightly friendlier, like <a href="https://pkg.go.dev/github.com/davecgh/go-spew/spew">spew</a>:</p><code data-lang="go">package main
+
+import (
+  &quot;go-musings&#x2F;database&quot;
+
+  &quot;github.com&#x2F;davecgh&#x2F;go-spew&#x2F;spew&quot;
+)
+
+func stringptr(s string) *string {
+  return &amp;s
+}
+
+func main() {
+  db := database.NewDB()
+
+  pf := database.Profile{
+    Name: stringptr(&quot;Lilibet&quot;),
+    Bio:  stringptr(&quot;I don&#x27;t want even *want* to be queen and yet my sister is jealous.&quot;),
+  }
+  id := db.Insert(pf)
+
+  &#x2F;&#x2F; Remove the bio
+  db.Update(id, database.Profile{Bio: stringptr(&quot;&quot;)})
+
+  spew.Dump(db.Get(id))
+}
+</code><code data-lang="shell">$ go run main.go
+(database.Profile) {
+ Name: (*string)(0xc0001102b0)((len=7) &quot;Lilibet&quot;),
+ Bio: (*string)(0xc0001102d0)(&quot;&quot;)
+}
+</code><p>There! We did it!</p><p>{% sc bearsays %}
+🎉!
+{% endsc %}</p><p>Of course, all of that is only an option if you have the luxury of defining
+the struct yourself.</p><p>Which you don&#x27;t, if, for example, you use a code generator like the
+<a href="https://developers.google.com/protocol-buffers">protobuf</a> compiler for Go,
+which always generates <code>string</code> fields, even though in proto3 all fields are
+optional.</p><p>So, in that scenario, you have absolutely no way to tell between an &quot;unset
+field&quot; and &quot;the empty string&quot;. Which, sure, doesn&#x27;t matter <em>most of the time</em>.</p><p>Until it does, and well... what do you do then?</p><p>Well, you signal whether a field is set or not out-of-band, of course!</p><p>With something like:</p><code data-lang="go">type Profile struct {
+  Name string
+  HasName bool
+  Bio string
+  HasBio bool
+}
+</code><p>Sounds ridiculous? Well, that&#x27;s exactly how Go maps work.</p><p>If you have a <code>map[string]string</code>, and you try to get an entry that does not
+exist you get... the zero value for a string, ie. <code>&quot;&quot;</code>:</p><code data-lang="go">package main
+
+import &quot;log&quot;
+
+func main() {
+  m := make(map[string]string)
+  m[&quot;i-do-exist&quot;] = &quot;&quot;
+  log.Printf(&quot;%#v&quot;, m[&quot;i-do-exist&quot;])
+  log.Printf(&quot;%#v&quot;, m[&quot;i-do-not-exist&quot;])
+}
+</code><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;11 23:03:27 &quot;&quot;
+2020&#x2F;12&#x2F;11 23:03:27 &quot;&quot;
+</code><p>How do you know if it&#x27;s <em>actually</em> in the map? Well, indexing a map actually
+returns two values, so if you assign both of them, you can get that info - as
+I mentioned, out of band:</p><code data-lang="go">package main
+
+import &quot;log&quot;
+
+func main() {
+  m := make(map[string]string)
+  m[&quot;i-do-exist&quot;] = &quot;&quot;
+
+  {
+    v, ok := m[&quot;i-do-exist&quot;]
+    log.Printf(&quot;%#v, %#v&quot;, v, ok)
+  }
+  {
+    v, ok := m[&quot;i-do-not-exist&quot;]
+    log.Printf(&quot;%#v, %#v&quot;, v, ok)
+  }
+}
+</code><code data-lang="shell">$ go run main.go
+2020&#x2F;12&#x2F;11 23:05:03 &quot;&quot;, true
+2020&#x2F;12&#x2F;11 23:05:03 &quot;&quot;, false
+</code><p>If you have a <code>string</code> and a <code>bool</code>, you have four possible combinations:</p><ol start="1"><li>the string is empty and the bool is <code>false</code></li><li>the string is empty and the bool is <code>true</code></li><li>the string is non-empty and the bool is <code>false</code></li><li>the string is non-empty and the bool is <code>true</code></li></ol><p>Combination 3 is <em>never</em> returned when indexing a map in Go, but it&#x27;s...
+there. It&#x27;s expressible. If we were able to implement our <em>own</em> data
+structures that supported indexing, and the standard interface was something
+like:</p><code data-lang="go">&#x2F;&#x2F; as of Go 1.15, generics are not a thing (*also* not the topic of this post)
+&#x2F;&#x2F; anyway, use your imagination:
+type K string
+type V string
+type Index interface {
+  Get(k K) (V, bool)
+}
+</code><p>...then nothing at all would prevent us from returning <code>&quot;lol&quot;, false</code>.</p><p>Even without combination 3 being constructed, multi-return and out-of-band
+&quot;setness&quot; signalling are the source of <em>so many</em> application bugs.</p><p>Of course, it never segfaults. So it&#x27;s better than C, right? Because memory
+safety, yay! It just silently does the wrong thing. So now vulnerabilities are
+caused by logic errors instead of corrupted memory.</p><p>{% sc bearsays %}
+This <em>does</em> sound better, though.
+{% endsc %}</p><p>{% sc amossays %}
+Yeah. Then again, that&#x27;s a pretty low bar. Bash is memory-safe too!
+{% endsc %}</p><p>{% sc bearsays %}
+Right... so is Excel. Hopefully?
+{% endsc %}</p><p>{% sc amossays %}
+Hopefully.
+{% endsc %}</p><p>One of the big selling point of Go is &quot;we removed the footguns!&quot; but... did
+you? Seems like we just traded weapons. We&#x27;re <em>very much</em> still in &quot;just be
+careful&quot; territory.</p><h2><a id="just-don-t-write-bugs" href="#just-don-t-write-bugs" class="anchor"></a>Just don&#x27;t write bugs!</h2><p>And this leads me to one of the central points of this... <em>looks at time
+estimate</em> this essay I guess.</p><p>I made three claims about Rust earlier:</p><ol start="1"><li>Programming in Rust requires you to think differently</li><li>It is harder to write any code at all in Rust</li><li>It is easier to write &quot;correct&quot; code in Rust</li></ol><p>The first two claims are easy to accept for anyone trying out Rust for the
+first time. The third one is another affair entirely.</p><p>See, if all you have are the first two claims, it&#x27;s pretty easy to conclude
+that Rustaceans are either masochists (which... who&#x27;s asking?) <em>or</em> that they
+just like things that are hard because they&#x27;re hard and that makes them feel
+clever.</p><p>But here&#x27;s the thing: <strong>Rust is not specifically designed for clever people</strong>.</p><p>Quite the contrary in fact. Look at me! Trying to make those subtle points
+online! What a stupid, stupid idea. Only grief can come out of this. Clearly
+&quot;clever&quot; is not a good descriptor here.</p><p>The corollary of claim 3 is: <strong>it is harder to write &quot;correct&quot; code in other
+languages</strong>. And by other languages, I&#x27;m again thinking in particular of
+JavaScript, Ruby, Lua, Go, C, C#, Java, etc. - not Haskell.</p><p>Here&#x27;s one thing that&#x27;s often said and <em>sounds</em> superior, but isn&#x27;t:
+<strong>Learning Rust made me a better programmer</strong>.</p><p>Mostly because, after many rounds of, uh, friendly negotiation with the
+compiler, it&#x27;s made me so much more aware of the sheer amount of things that
+can go wrong in a program.</p><p>And it&#x27;s not like Rust <em>made</em> me paranoid. I was aware of <em>most</em> of these
+failure conditions before picking up Rust. But the Rust compiler forces you
+to address these upfront.</p><p>The whole language encourages you to model your program in such a way that
+you don&#x27;t leave anything to chance. That things that should not happen are
+either not modelled at all, handled explicitly, or halt the program safely.</p><p>In Rust, if you have a &quot;string&quot; field that must be set, you just say this:</p><code data-lang="rust">struct Person {
+  name: String,
+}
+</code><p>It <em>has</em> to be initialized. It doesn&#x27;t just default to the empty string.</p><p>This is a compile error:</p><code data-lang="rust">fn main() {
+    let p = Person {};
+}
+</code><code data-lang="shell">$ cargo check
+    Checking rust-musings v0.1.0 (&#x2F;home&#x2F;amos&#x2F;ftl&#x2F;correctness&#x2F;rust-musings)
+error[E0063]: missing field `name` in initializer of `Person`
+ --&gt; src&#x2F;main.rs:6:13
+  |
+6 |     let p = Person {};
+  |             ^^^^^^ missing `name`
+</code><p>If you <em>want</em> it to default to the empty string, you can implement the
+<code>Default</code> trait for your struct, and <em>explicitly</em> say that it should
+use the default values for any unspecified fields:</p><code data-lang="rust">#[derive(Default, Debug)]
+struct Person {
+    name: String,
+}
+
+fn main() {
+    let p = Person {
+        ..Default::default()
+    };
+    dbg!(p);
+}
+</code><code data-lang="shell">$ cargo run -q
+[src&#x2F;main.rs:10] p = Person {
+    name: &quot;&quot;,
+}
+</code><p>And if that field is optional... well you explicitly make it optional:</p><code data-lang="rust">#[derive(Default, Debug)]
+struct Person {
+    name: Option&lt;String&gt;,
+}
+
+fn main() {
+    let p = Person {
+        name: Some(&quot;Elizabeth&quot;.into()),
+    };
+    dbg!(p);
+    let p = Person {
+        ..Default::default()
+    };
+    dbg!(p);
+}
+
+</code><p>In which case the field is either <code>Some(&quot;some string&quot;)</code>, or <code>None</code>:</p><code data-lang="shell">$ cargo run -q
+[src&#x2F;main.rs:10] p = Person {
+    name: Some(
+        &quot;Elizabeth&quot;,
+    ),
+}
+[src&#x2F;main.rs:14] p = Person {
+    name: None,
+}
+</code><p>And that&#x27;s also the way a <code>HashMap</code> works. When indexing a <code>HashMap</code>, you
+either get a <code>Some(value)</code>, or a <code>None</code>. It only returns &quot;one thing&quot;.</p><code data-lang="rust">use std::collections::HashMap;
+
+fn main() {
+    let mut map: HashMap&lt;String, String&gt; = Default::default();
+    map.insert(&quot;i-exist&quot;.into(), &quot;yay&quot;.into());
+
+    dbg!(map.get(&quot;i-exist&quot;));
+    dbg!(map.get(&quot;i-do-not-exist&quot;));
+}
+</code><code data-lang="shell">$ cargo run -q
+[src&#x2F;main.rs:7] map.get(&quot;i-exist&quot;) = Some(
+    &quot;yay&quot;,
+)
+[src&#x2F;main.rs:8] map.get(&quot;i-do-not-exist&quot;) = None
+</code><p>And you can&#x27;t accidentally pretend you got a value when you really didn&#x27;t -
+you need to handle both cases, one way or the other:</p><code data-lang="rust">use std::collections::HashMap;
+
+fn main() {
+    let mut map: HashMap&lt;String, String&gt; = Default::default();
+    map.insert(&quot;foo&quot;.into(), &quot;bar&quot;.into());
+
+    &#x2F;&#x2F; stops program with a generic error message if value isn&#x27;t `Some`
+    print_str(map.get(&quot;foo&quot;).unwrap());
+
+    &#x2F;&#x2F; stops program with a custom error message if value isn&#x27;t `Some`
+    print_str(map.get(&quot;foo&quot;).expect(&quot;we wanted foo to be set&quot;));
+
+    &#x2F;&#x2F; only executed if return value is `Some`
+    if let Some(s) = map.get(&quot;foo&quot;) {
+        print_str(s);
+    }
+
+    &#x2F;&#x2F; handles both cases explicitly
+    match map.get(&quot;foo&quot;) {
+        Some(s) =&gt; {
+            print_str(s);
+        }
+        None =&gt; {
+            &#x2F;&#x2F; do nothing
+        }
+    }
+}
+
+fn print_str(s: &amp;str) {
+    dbg!(s);
+}
+</code><code data-lang="shell">$ cargo run -q
+[src&#x2F;main.rs:27] s = &quot;bar&quot;
+[src&#x2F;main.rs:27] s = &quot;bar&quot;
+[src&#x2F;main.rs:27] s = &quot;bar&quot;
+[src&#x2F;main.rs:27] s = &quot;bar&quot;
+</code><p>All this isn&#x27;t at the expense of performance, either. An <code>Option&lt;&amp;T&gt;</code> is the
+same size as a <code>*const T</code> - it&#x27;s just <code>None</code> if the pointer is null.</p><p>{% sc tip %}
+You normally wouldn&#x27;t experience raw pointers unless you&#x27;re writing <code>unsafe</code>
+code on purpose, when doing <a href="https://doc.rust-lang.org/nomicon/ffi.html">FFI</a> for example.
+{% endsc %}</p><p>This is just one of the <em>many</em> ways Rust lets you model what actually happens
+in your program. And once you&#x27;re past the initial frustration, and you really
+see the value proposition, everything else feels terribly uncomfortable.</p><p>Writing JavaScript and Go is <em>terrifying</em> to me now. All the pitfalls I
+already knew about before picking up Rust still exist, but now it&#x27;s all the
+more obvious that <em>there&#x27;s no systemic way to avoid them</em>.</p><p>You &quot;just have to be careful&quot;.</p><p>Which of course never actually works.</p><p>Proponents of the &quot;just be careful&quot; mantra (C advocates in particular) will
+tell you that anyone who wrote a bug just isn&#x27;t an experienced enough
+programmer - as if we were all engaged in some permanent game of battle
+royale.</p><p>This is, to put it mildly, self-aggrandizing horseshit.</p><p>Engineering is not about &quot;not doing mistakes&quot;. Engineering is about <strong>designing
+systems that ensure fewer mistakes occur</strong>.</p><p>Rust is such a system.</p><h2><a id="i-think-we-were-talking-about-http" href="#i-think-we-were-talking-about-http" class="anchor"></a>I think we were talking about HTTP?</h2><p>Right! HTTP.</p><p>Let&#x27;s take another look at some of the data structures used to represent HTTP
+requests and responses in Go.</p><p>We&#x27;ve already discussed <code>Request.Header</code>, which is a <code>map[string][]string</code> in
+disguise. But it doesn&#x27;t end there.</p><p>For incoming requests, the protocol version is stored in no less than three fields!</p><code data-lang="go">  &#x2F;&#x2F; The protocol version for incoming server requests.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For client requests, these fields are ignored. The HTTP
+  &#x2F;&#x2F; client code always uses either HTTP&#x2F;1.1 or HTTP&#x2F;2.
+  &#x2F;&#x2F; See the docs on Transport for details.
+  Proto      string &#x2F;&#x2F; &quot;HTTP&#x2F;1.0&quot;
+  ProtoMajor int    &#x2F;&#x2F; 1
+  ProtoMinor int    &#x2F;&#x2F; 0
+</code><p>Again, that means we can construct nonsensical inputs, like:</p><code data-lang="go">  req := Request {
+    Proto: &quot;HTTP&#x2F;1.1&quot;,
+    ProtoMajor: 2,
+    ProtoMinor: 0,
+  }
+</code><p>One slightly more correct way to do it would be to have a separate struct
+type, <code>HTTPVersion</code>, that only stores the Major and Minor version:</p><code data-lang="go">  type HTTPVersion struct {
+    Major int
+    Minor int
+  }
+</code><p>...and have it implement <code>String()</code>, so you can have a String representation
+whenever needed:</p><code data-lang="go">  func (hv HTTPVersion) String() string {
+    return fmt.Sprintf(&quot;HTTP&#x2F;%v.%v&quot;, hv.Major, hv.Minor)
+  }
+</code><p>Although that would still leave several issues: you could still build
+non-existent (definitely non-supported) versions of HTTP, like <code>4.-7</code>.</p><p>You could also <em>still</em> mutate <code>Major</code> and <code>Minor</code>, since they&#x27;re public
+(exported) fields, so in Go, you&#x27;d have no choice but to unexport them and
+add getters - and then you&#x27;d need a constructor, too:</p><code data-lang="go">  type HTTPVersion struct {
+    major int
+    minor int
+  }
+
+  func NewHTTPVersion(major int, minor int) HTTPVersion {
+    return HTTPVersion { major, minor }
+  }
+
+  func (hv HTTPVersion) Major() int {
+    return hv.major
+  }
+
+  func (hv HTTPVersion) Minor() int {
+    return hv.minor
+  }
+</code><p>Let&#x27;s look at other fields, like... <code>ContentLength</code>:</p><code data-lang="go">  &#x2F;&#x2F; ContentLength records the length of the associated content.
+  &#x2F;&#x2F; The value -1 indicates that the length is unknown.
+  &#x2F;&#x2F; Values &gt;= 0 indicate that the given number of bytes may
+  &#x2F;&#x2F; be read from Body.
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For client requests, a value of 0 with a non-nil Body is
+  &#x2F;&#x2F; also treated as unknown.
+  ContentLength int64
+</code><p>Mhhh, using <code>-1</code> to signal that the length is unknown. Sounds familiar?</p><p>We&#x27;re using in-band signalling now! Reserving some values to indicate
+specific conditions. What does a value of -2 through -9223372036854775808
+mean?</p><p>It goes on:</p><code data-lang="go">  &#x2F;&#x2F; URL specifies either the URI being requested (for server
+  &#x2F;&#x2F; requests) or the URL to access (for client requests).
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For server requests, the URL is parsed from the URI
+  &#x2F;&#x2F; supplied on the Request-Line as stored in RequestURI.  For
+  &#x2F;&#x2F; most requests, fields other than Path and RawQuery will be
+  &#x2F;&#x2F; empty. (See RFC 7230, Section 5.3)
+  &#x2F;&#x2F;
+  &#x2F;&#x2F; For client requests, the URL&#x27;s Host specifies the server to
+  &#x2F;&#x2F; connect to, while the Request&#x27;s Host field optionally
+  &#x2F;&#x2F; specifies the Host header value to send in the HTTP
+  &#x2F;&#x2F; request.
+  URL *url.URL
+</code><p>More dual-purpose fields! For client requests, <code>URL</code> is the full, absolute
+URL you want to request, and so the Host is set.</p><p>But for server requests, <code>URL</code> is just a relative URL, and it&#x27;s the <code>Host</code>
+field that counts.</p><p>Why? I don&#x27;t know! You tell me! All the pieces were there!</p><p>Speaking of <code>URL</code>, here&#x27;s its definition:</p><code data-lang="go">type URL struct {
+  Scheme      string
+  Opaque      string    &#x2F;&#x2F; encoded opaque data
+  User        *Userinfo &#x2F;&#x2F; username and password information
+  Host        string    &#x2F;&#x2F; host or host:port
+  Path        string    &#x2F;&#x2F; path (relative paths may omit leading slash)
+  RawPath     string    &#x2F;&#x2F; encoded path hint (see EscapedPath method)
+  ForceQuery  bool      &#x2F;&#x2F; append a query (&#x27;?&#x27;) even if RawQuery is empty
+  RawQuery    string    &#x2F;&#x2F; encoded query values, without &#x27;?&#x27;
+  Fragment    string    &#x2F;&#x2F; fragment for references, without &#x27;#&#x27;
+  RawFragment string    &#x2F;&#x2F; encoded fragment hint (see EscapedFragment method)
+}
+</code><p>At a glance, just looking at this definition, try to guess - how should you
+build a fragment?</p><p>As as reminder, a &quot;fragment&quot; is the part of the URL that is not sent to the
+server, it&#x27;s only accessible to the user agent:</p><code data-lang="raw">https:&#x2F;&#x2F;example.org?query#fragment
+                         ^^^^^^^^^
+</code><p>So, when building a <code>URL</code> to be formatted, should we set <code>Fragment</code> or <code>RawFragment</code>?</p><p>Well, we can look at <a href="https://pkg.go.dev/net/url#URL.String">the documentation for
+<code>URL.String()</code></a>. As usual with Go APIs
+that &quot;look simple&quot;, it&#x27;s not:</p><blockquote><p><code>String</code> reassembles the URL into a valid URL string.</p><p>The general form of the result is one of:</p><code data-lang="">scheme:opaque?query#fragment
+scheme:&#x2F;&#x2F;userinfo@host&#x2F;path?query#fragment
+</code><p>If <code>u.Opaque</code> is non-empty, <code>String</code> uses the first form; otherwise it uses the
+second form. Any non-ASCII characters in host are escaped. To obtain the
+path, <code>String</code> uses <code>u.EscapedPath()</code>.</p><p>In the second form, the following rules apply:</p><ul><li>if <code>u.Scheme</code> is empty, scheme: is omitted.</li><li>if <code>u.User</code> is nil, userinfo@ is omitted.</li><li>if <code>u.Host</code> is empty, host&#x2F; is omitted.</li><li>if <code>u.Scheme</code> and <code>u.Host</code> are empty and <code>u.User</code> is nil,
+the entire scheme:&#x2F;&#x2F;userinfo@host&#x2F; is omitted.</li><li>if <code>u.Host</code> is non-empty and <code>u.Path</code> begins with a &#x2F;,
+the form host&#x2F;path does not add its own &#x2F;.</li><li>if <code>u.RawQuery</code> is empty, ?query is omitted.</li><li>if <code>u.Fragment</code> is empty, #fragment is omitted.</li></ul></blockquote><p>The answer was <code>u.Fragment</code>, because <code>URL</code> escapes it, via... <code>EscapedFragment()</code>, which
+has this documentation:</p><blockquote><p><code>EscapedFragment</code> returns the escaped form of <code>u.Fragment</code>.</p><p>In general there are multiple possible escaped forms of any fragment.</p><p><code>EscapedFragment</code> returns <code>u.RawFragment</code> when it is a valid escaping of <code>u.Fragment</code>.</p><p>Otherwise <code>EscapedFragment</code> ignores <code>u.RawFragment</code> and computes an escaped
+form on its own.</p><p>The <code>String</code> method uses <code>EscapedFragment</code> to construct its result. In general, code
+should call <code>EscapedFragment</code> instead of reading <code>u.RawFragment</code> directly.</p></blockquote><p>So, to get the full picture, we had to look at the definition of the <code>URL</code>
+struct, its <code>String()</code> method, and, to further understand what <code>String()</code>
+does, its <code>EscapedFragment()</code> method. That&#x27;s assuming the documentation is
+up-to-date.</p><p>Maintaining <em>both</em> the escaped and non-escaped fragment might make sense from
+a performance standpoint - if you parse an incoming request and forward it
+somewhere else, there&#x27;s no need to re-escape the fragment, you can just
+forward the &quot;raw fragment&quot; you got in the first place.</p><p>But by storing both as exported fields and letting the user manipulate
+either, the designers of this bit of the Go API have drawn themselves into a
+corner, where they had to add complicated semantics to all functions that
+touch either variant of the fragment so that it &quot;makes sense most of the
+time&quot;.</p><p>I&#x27;m going to stop showing you Go APIs now because I&#x27;ve used up my sigh
+reserve, but if you&#x27;re brave enough to keep looking at them, you&#x27;ll see
+those patterns used <em>all over</em>.</p><p>Reading those and thinking, <em>really thinking</em> about the implications of their
+design is going to be more convincing than any amount of material I can
+personally write, so, by all means, go and do it.</p><p>But before you do - let&#x27;s look at how some of these problems are modelled
+by popular Rust crates for HTTP.</p><h2><a id="a-look-at-hyper" href="#a-look-at-hyper" class="anchor"></a>A look at hyper</h2><p><a href="https://crates.io/crates/hyper">hyper</a> is one of my favorite crates. But I
+could say that about a lot of crates.</p><p>It&#x27;s a low-level HTTP library, consisting of quality building blocks.</p><p>Let&#x27;s look at the definition of a <code>Request</code> in hyper:</p><code data-lang="rust">pub struct Request&lt;T&gt; {
+    head: Parts,
+    body: T,
+}
+</code><p>Okay, so a <code>Request</code> is generic over its body type. Why? Because the body can
+be anything. It can be a string in memory, or it can be a bunch of bytes
+(a <code>Vec&lt;u8&gt;</code> or equivalent), also in memory, or it can be a File, from which
+you can read, or it can be another thing that can be streamed.</p><p>The only requirement for a body is that you can poll it for data and trailers
+(because yes, trailing HTTP headers are a thing which we <em>will not</em> discuss).</p><p>Then there&#x27;s the head, a <code>Parts</code>:</p><code data-lang="rust">&#x2F;&#x2F;&#x2F; Component parts of an HTTP `Request`
+&#x2F;&#x2F;&#x2F;
+&#x2F;&#x2F;&#x2F; The HTTP request head consists of a method, uri, version, and a set of
+&#x2F;&#x2F;&#x2F; header fields.
+pub struct Parts {
+    &#x2F;&#x2F;&#x2F; The request&#x27;s method
+    pub method: Method,
+
+    &#x2F;&#x2F;&#x2F; The request&#x27;s URI
+    pub uri: Uri,
+
+    &#x2F;&#x2F;&#x2F; The request&#x27;s version
+    pub version: Version,
+
+    &#x2F;&#x2F;&#x2F; The request&#x27;s headers
+    pub headers: HeaderMap&lt;HeaderValue&gt;,
+
+    &#x2F;&#x2F;&#x2F; The request&#x27;s extensions
+    pub extensions: Extensions,
+
+    _priv: (),
+}
+</code><p>Interesting! There&#x27;s no <code>host</code> field here. Only a <code>uri</code>.</p><p>The <code>method</code> field is an opaque type:</p><code data-lang="rust">#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct Method(Inner);
+</code><p>...that wraps a private enum, which accommodates well-known HTTP methods
+<em>and</em> extensions:</p><code data-lang="rust">#[derive(Clone, PartialEq, Eq, Hash)]
+enum Inner {
+    Options,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Head,
+    Trace,
+    Connect,
+    Patch,
+    &#x2F;&#x2F; If the extension is short enough, store it inline
+    ExtensionInline([u8; MAX_INLINE], u8),
+    &#x2F;&#x2F; Otherwise, allocate it
+    ExtensionAllocated(Box&lt;[u8]&gt;),
+}
+</code><p>{% sc tip %}
+A trick similar to the <code>smartstring</code> crate is used here.</p><p>You can read more about it in <a href="/articles/peeking-inside-a-rust-enum">Peeking inside a Rust enum</a>.
+{% endsc %}</p><p>The <code>version</code> field is an opaque type:</p><code data-lang="rust">pub struct Version(Http);
+
+impl Version {
+    &#x2F;&#x2F;&#x2F; `HTTP&#x2F;0.9`
+    pub const HTTP_09: Version = Version(Http::Http09);
+
+    &#x2F;&#x2F;&#x2F; `HTTP&#x2F;1.0`
+    pub const HTTP_10: Version = Version(Http::Http10);
+
+    &#x2F;&#x2F;&#x2F; `HTTP&#x2F;1.1`
+    pub const HTTP_11: Version = Version(Http::Http11);
+
+    &#x2F;&#x2F;&#x2F; `HTTP&#x2F;2.0`
+    pub const HTTP_2: Version = Version(Http::H2);
+
+    &#x2F;&#x2F;&#x2F; `HTTP&#x2F;3.0`
+    pub const HTTP_3: Version = Version(Http::H3);
+}
+</code><p>..which wraps a private enum, containing all the supported versions of HTTP:</p><code data-lang="rust">#[derive(PartialEq, PartialOrd, Copy, Clone, Eq, Ord, Hash)]
+enum Http {
+    Http09,
+    Http10,
+    Http11,
+    H2,
+    H3,
+    __NonExhaustive,
+}
+</code><p>...and provides a <code>Debug</code> implementation to format it as a string:</p><code data-lang="rust">impl fmt::Debug for Version {
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;&#x27;_&gt;) -&gt; fmt::Result {
+        use self::Http::*;
+
+        f.write_str(match self.0 {
+            Http09 =&gt; &quot;HTTP&#x2F;0.9&quot;,
+            Http10 =&gt; &quot;HTTP&#x2F;1.0&quot;,
+            Http11 =&gt; &quot;HTTP&#x2F;1.1&quot;,
+            H2 =&gt; &quot;HTTP&#x2F;2.0&quot;,
+            H3 =&gt; &quot;HTTP&#x2F;3.0&quot;,
+            __NonExhaustive =&gt; unreachable!(),
+        })
+    }
+}
+</code><p>Note that there is absolutely no way (in safe code) to construct an HTTP
+version that&#x27;s meaningless.</p><p>But what&#x27;s particularly interesting is how HTTP headers are represented.</p><p>The <code>headers</code> field is of type <code>HeaderMap</code> which is defined as follows:</p><code data-lang="rust">pub struct HeaderMap&lt;T = HeaderValue&gt; {
+    &#x2F;&#x2F; Used to mask values to get an index
+    mask: Size,
+    indices: Box&lt;[Pos]&gt;,
+    entries: Vec&lt;Bucket&lt;T&gt;&gt;,
+    extra_values: Vec&lt;ExtraValue&lt;T&gt;&gt;,
+    danger: Danger,
+}
+</code><p>Well.. it&#x27;s not a <code>Vec&lt;(String, String)&gt;</code>. And it&#x27;s not a <code>HashMap&lt;String, String&gt;</code>.</p><p>It&#x27;s not a <code>HashMap&lt;String, Vec&lt;String&gt;&gt;</code> either.</p><p>It&#x27;s a <em>multimap</em> (like a hashmap, but each key can have multiple values), of
+<code>HeaderName</code> to <code>HeaderValue</code>.</p><p>All through <code>hyper</code>, we&#x27;re following the principle of &quot;you can only build
+something that&#x27;s meaningful&quot;.</p><p>So for example, in Go you can do this:</p><code data-lang="go">package main
+
+import (
+  &quot;fmt&quot;
+  &quot;net&#x2F;http&quot;
+  &quot;strings&quot;
+)
+
+func main() {
+  headers := make(http.Header)
+  headers.Add(&quot;Host&quot;, &quot;example.org&quot;)
+  headers.Add(&quot;Née&quot;, &quot;élégante&quot;)
+
+  sb := new(strings.Builder)
+  headers.Write(sb)
+  fmt.Printf(&quot;%s\n&quot;, sb)
+}
+</code><p>And generate non-compliant HTTP headers:</p><code data-lang="shell">$ go run main.go
+Host: example.org
+Née: élégante
+</code><p>But when using hyper in Rust, you can&#x27;t build it.</p><p>The following is a compile-time error:</p><code data-lang="rust">use hyper::HeaderMap;
+
+fn main() {
+    let mut headers = HeaderMap::new();
+    headers.insert(&quot;Née&quot;, &quot;élégante&quot;);
+}
+</code><code data-lang="shell">$ cargo check --quiet
+error[E0308]: mismatched types
+ --&gt; src&#x2F;main.rs:5:27
+  |
+5 |     headers.insert(&quot;Née&quot;, &quot;élégante&quot;);
+  |                           ^^^^^^^^^^ expected struct `HeaderValue`, found `&amp;str`
+
+error: aborting due to previous error
+</code><p>It wants a <code>HeaderValue</code>. And you can only build a <code>HeaderValue</code> if you
+pass.. a valid header value, which this is not, so this is a runtime error:</p><code data-lang="rust">use hyper::{header::HeaderValue, HeaderMap};
+
+fn main() {
+    let mut headers = HeaderMap::new();
+    headers.insert(&quot;Née&quot;, HeaderValue::from_static(&quot;élégante&quot;));
+}
+</code><code data-lang="shell">$ RUST_BACKTRACE=1 cargo run --quiet
+thread &#x27;main&#x27; panicked at &#x27;invalid header value&#x27;, &#x2F;home&#x2F;amos&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;http-0.2.1&#x2F;src&#x2F;header&#x2F;value.rs:64:17
+stack backtrace:
+   0: std::panicking::begin_panic
+             at &#x2F;home&#x2F;amos&#x2F;.rustup&#x2F;toolchains&#x2F;stable-x86_64-unknown-linux-gnu&#x2F;lib&#x2F;rustlib&#x2F;src&#x2F;rust&#x2F;library&#x2F;std&#x2F;src&#x2F;panicking.rs:505
+   1: http::header::value::HeaderValue::from_static
+             at &#x2F;home&#x2F;amos&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;http-0.2.1&#x2F;src&#x2F;header&#x2F;value.rs:64
+   2: rust_musings::main
+             at .&#x2F;src&#x2F;main.rs:5
+   3: core::ops::function::FnOnce::call_once
+             at &#x2F;home&#x2F;amos&#x2F;.rustup&#x2F;toolchains&#x2F;stable-x86_64-unknown-linux-gnu&#x2F;lib&#x2F;rustlib&#x2F;src&#x2F;rust&#x2F;library&#x2F;core&#x2F;src&#x2F;ops&#x2F;function.rs:227
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+</code><p>Similarly, if we &quot;fix&quot; our header value, but keep an invalid header name,
+we&#x27;ll also panic (ie. the program will safely stop):</p><code data-lang="rust">use hyper::{header::HeaderValue, HeaderMap};
+
+fn main() {
+    let mut headers = HeaderMap::new();
+    headers.insert(&quot;Née&quot;, HeaderValue::from_static(&quot;elegant&quot;));
+}
+</code><code data-lang="shell">$ RUST_BACKTRACE=1 cargo run --quiet
+thread &#x27;main&#x27; panicked at &#x27;static str is invalid name: InvalidHeaderName&#x27;, &#x2F;home&#x2F;amos&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;http-0.2.1&#x2F;src&#x2F;header&#x2F;name.rs:2042:64
+stack backtrace:
+   0: rust_begin_unwind
+             at &#x2F;rustc&#x2F;7eac88abb2e57e752f3302f02be5f3ce3d7adfb4&#x2F;library&#x2F;std&#x2F;src&#x2F;panicking.rs:483
+   1: core::panicking::panic_fmt
+             at &#x2F;rustc&#x2F;7eac88abb2e57e752f3302f02be5f3ce3d7adfb4&#x2F;library&#x2F;core&#x2F;src&#x2F;panicking.rs:85
+   2: core::option::expect_none_failed
+             at &#x2F;rustc&#x2F;7eac88abb2e57e752f3302f02be5f3ce3d7adfb4&#x2F;library&#x2F;core&#x2F;src&#x2F;option.rs:1234
+   3: core::result::Result&lt;T,E&gt;::expect
+             at &#x2F;home&#x2F;amos&#x2F;.rustup&#x2F;toolchains&#x2F;stable-x86_64-unknown-linux-gnu&#x2F;lib&#x2F;rustlib&#x2F;src&#x2F;rust&#x2F;library&#x2F;core&#x2F;src&#x2F;result.rs:933
+   4: http::header::name::HdrName::from_static
+             at &#x2F;home&#x2F;amos&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;http-0.2.1&#x2F;src&#x2F;header&#x2F;name.rs:2042
+   5: &lt;&amp;str as http::header::map::into_header_name::Sealed&gt;::insert
+             at &#x2F;home&#x2F;amos&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;http-0.2.1&#x2F;src&#x2F;header&#x2F;map.rs:3312
+   6: http::header::map::HeaderMap&lt;T&gt;::insert
+             at &#x2F;home&#x2F;amos&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;http-0.2.1&#x2F;src&#x2F;header&#x2F;map.rs:1137
+   7: rust_musings::main
+             at .&#x2F;src&#x2F;main.rs:5
+   8: core::ops::function::FnOnce::call_once
+             at &#x2F;home&#x2F;amos&#x2F;.rustup&#x2F;toolchains&#x2F;stable-x86_64-unknown-linux-gnu&#x2F;lib&#x2F;rustlib&#x2F;src&#x2F;rust&#x2F;library&#x2F;core&#x2F;src&#x2F;ops&#x2F;function.rs:227
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+</code><p>Only if we fix both, can we actually add it to our <code>HeaderMap</code>:</p><code data-lang="rust">use hyper::{header::HeaderValue, HeaderMap};
+
+fn main() {
+    let mut headers = HeaderMap::new();
+    headers.insert(&quot;Born&quot;, HeaderValue::from_static(&quot;elegant&quot;));
+    dbg!(headers);
+}
+</code><code data-lang="shell">$ cargo run --quiet
+[src&#x2F;main.rs:6] headers = {
+    &quot;born&quot;: &quot;elegant&quot;,
+}
+</code><p>Note also that <code>HeaderMap</code> normalizes header names - since the RFC says that
+header names are case insensitive.</p><p>What if we don&#x27;t want to panic? Say, if our header names and values come from
+user input?</p><p>We can just use the non-panicking variants!</p><p>Let&#x27;s give it a shot:</p><code data-lang="rust">use hyper::{
+    header::{HeaderName, HeaderValue},
+    HeaderMap,
+};
+
+fn main() {
+    let mut args = std::env::args().skip(1);
+    let mut headers = HeaderMap::new();
+    while let (Some(k), Some(v)) = (args.next(), args.next()) {
+        if let Ok(k) = HeaderName::from_bytes(k.as_bytes()) {
+            if let Ok(v) = HeaderValue::from_bytes(v.as_bytes()) {
+                headers.insert(k, v);
+            } else {
+                println!(&quot;Skipping invalid header value {}&quot;, v);
+            }
+        } else {
+            println!(&quot;Skipping invalid header name {}&quot;, k);
+        }
+    }
+    dbg!(headers);
+}
+</code><code data-lang="shell">$ cargo run --quiet -- host example.org née élégante born élégante born elegant
+Skipping invalid header name née
+[src&#x2F;main.rs:20] headers = {
+    &quot;host&quot;: &quot;example.org&quot;,
+    &quot;born&quot;: &quot;elegant&quot;,
+}
+</code><p>{% sc bearsays %}
+Super neat! But wait... where&#x27;s the message that says &quot;Skipping invalid
+header value élégante&quot;?
+{% endsc %}</p><p>A fair question - since that message wasn&#x27;t printed it&#x27;s safe to assume that
+&quot;élégante&quot; is <em>not</em> in fact, an invalid header value. Let&#x27;s check the
+documentation of <code>HeaderValue</code> to see what&#x27;s up:</p><code data-lang="">&#x2F;&#x2F;&#x2F; Represents an HTTP header field value.
+&#x2F;&#x2F;&#x2F;
+&#x2F;&#x2F;&#x2F; In practice, HTTP header field values are usually valid ASCII. However, the
+&#x2F;&#x2F;&#x2F; HTTP spec allows for a header value to contain opaque bytes as well. In this
+&#x2F;&#x2F;&#x2F; case, the header field value is not able to be represented as a string.
+&#x2F;&#x2F;&#x2F;
+&#x2F;&#x2F;&#x2F; To handle this, the `HeaderValue` is useable as a type and can be compared
+&#x2F;&#x2F;&#x2F; with strings and implements `Debug`. A `to_str` fn is provided that returns
+&#x2F;&#x2F;&#x2F; an `Err` if the header value contains non visible ascii characters.
+</code><p>AhAH! So HTTP <em>does</em> allow non-ASCII headers, but they&#x27;re not &quot;strings&quot;, so
+<code>HeaderValue::from_static</code> disallows them.</p><p>However, if we switch from <code>HeaderMap::insert</code> to <code>HeaderMap::append</code>, we can
+see that both our <code>born</code> headers were accepted:</p><code data-lang="rust">    while let (Some(k), Some(v)) = (args.next(), args.next()) {
+        if let Ok(k) = HeaderName::from_bytes(k.as_bytes()) {
+            if let Ok(v) = HeaderValue::from_bytes(v.as_bytes()) {
+                &#x2F;&#x2F; NEW! (was headers.insert)
+                headers.append(k, v);
+            } else {
+                println!(&quot;Skipping invalid header value {}&quot;, v);
+            }
+        } else {
+            println!(&quot;Skipping invalid header name {}&quot;, k);
+        }
+    }
+</code><code data-lang="shell">$ cargo run --quiet -- host example.org née élégante born élégante born elegant
+Skipping invalid header name née
+[src&#x2F;main.rs:21] headers = {
+    &quot;host&quot;: &quot;example.org&quot;,
+    &quot;born&quot;: &quot;\xc3\xa9l\xc3\xa9gante&quot;,
+    &quot;born&quot;: &quot;elegant&quot;,
+}
+</code><p>Now, I don&#x27;t know about you, but I&#x27;m impressed. I didn&#x27;t even <em>know</em> that
+hyper did that. But when you have a language that lets you model a problem
+properly, it&#x27;s not exactly a surprise when people do.</p><p>And that&#x27;s an important point as well - you <em>could</em> have a Rust HTTP
+implementation that just uses <code>HashMap&lt;String, Vec&lt;String&gt;&gt;</code> - but why do
+that when you can have a high-performance multimap, which is fast in the 90%
+case and still correct the rest of the time?</p><p>{% sc tip %}
+<code>hyper</code> even goes so far as to have enum values for common headers, so
+there&#x27;s no allocation required to store the name of headers like
+&quot;accept-charset&quot;, &quot;host&quot;, or &quot;www-authenticate&quot;.
+{% endsc %}</p><p>And you <em>could</em> have a Go HTTP library that has a slightly better structure
+than the official one... and in fact <a href="https://github.com/valyala/fasthttp">people have done exactly
+that</a> - but then you lose out on a
+<em>huge</em> part of the ecosystem because this is not a thing Go encourages. At
+all.</p><p>In Go, we just want most things to work out most of the time. And if they really
+don&#x27;t, well... we can probably just patch it. And if we can&#x27;t, well, we&#x27;re in
+deep trouble but we could always just write <a href="https://github.com/kubernetes/code-generator">a code generator</a>.</p><h2><a id="enough-with-the-comparisons-already" href="#enough-with-the-comparisons-already" class="anchor"></a>Enough with the comparisons already</h2><p>As I&#x27;ve mentioned before, a lot of discussions around programming languages
+quickly becomes heated - it&#x27;s as if we&#x27;re cheering for sports teams instead
+of discussing systems.</p><p>I&#x27;m wholly uninterested in cheering for a team. I am <em>very</em> interested in
+systems that prevent mistakes, or even better, <em>entire classes</em> of mistakes.</p><p>When you hear someone talk about how much they love Rust, once they&#x27;ve really
+started loving it, it&#x27;s hard to take it at face value - especially if you&#x27;ve
+already practiced different programming languages before.</p><p>If you&#x27;ve been following industry trends (because, well, of the job market),
+you&#x27;ve probably experienced Ruby, Python, JavaScript, Java, Go, C, etc.</p><p>And while there are significant differences between these languages, in terms
+of how effective they are at letting you model a problem &quot;correctly&quot;... it&#x27;s
+not night and day.</p><p>You might have to write a lot more assertions in C, boilerplate in Java, and
+write a lot more tests in dynamic languages, but they&#x27;re more or less all
+equally permissive in terms of letting you &quot;construct impossible values&quot;,
+which <em>cannot</em> be processed meaningfully and end up polluting your whole
+codebase with unending validation - if you care enough to do it, anyway.</p><p>In terms of modelling a problem, Rust really is <em>several steps</em> above those
+languages. But it&#x27;s not alien technology - it&#x27;s not completely removed from
+existing systems, in an ivory tower. It exists as a compromise, that
+significantly improves the status quo <em>and</em> integrates well.</p><p>This is what makes Rust unique to me. Of course Rust was strongly influenced
+by languages that came before it. Again: the value is in the compromise.</p><p>Memory management is a particularly big hurdle for folks moving from the
+languages I mentioned - I&#x27;ve argued before that it&#x27;s not manual memory
+management, it&#x27;s more <a href="/articles/declarative-memory-management">declarative memory
+management</a>.</p><p>But much like most of what Rust provides, you can opt into it over time.</p><p>It&#x27;s fine to prototype something with <code>String</code> and <code>clone</code> whenever you need
+to. Or use an
+<a href="https://doc.rust-lang.org/stable/std/sync/struct.Arc.html">Arc</a>. And later
+you can figure out if it&#x27;s worth replacing with some borrowed types, for
+performance. You don&#x27;t have to come up with the most performance design
+upfront (even though it&#x27;s real tempting!).</p><p>Over time, though, if you commit to writing Rust and trying to really go all
+the way into what it <em>encourages</em> you to do (write safe, correct code),
+you&#x27;ll find yourself thinking differently: writing types and function
+signatures first, implementations later.</p><p>But also, restructuring your program so that state is neatly separated, so
+you don&#x27;t get into heated discussion with the borrow checker. Fields will
+start being grouped by &quot;mutation affinity&quot; rather than by &quot;theme&quot;, as you may
+have done in other languages previously. You&#x27;ll end up naming quite a few
+structs <code>State</code>.</p><p>It really is a wonderful journey, and even if you still have to write other
+languages for your day job, the experience you&#x27;ll acquire learning Rust is
+applicable in other languages too - even C++!</p><p>Hopefully this article doesn&#x27;t just add to the pile - it&#x27;s hard to advocate
+for a solution without pointing how other solutions fail to address specific
+problems, so a bit of comparison was unavoidable.</p><p>If you want to learn Rust, there are <em>many</em> excellent resources online,
+like the official <a href="https://doc.rust-lang.org/stable/book/">Rust book</a>.</p><p>If you enjoyed my writing, there&#x27;s <a href="/tags/rust">a lot more of it</a> specific to
+Rust. I even have <a href="/series">entire series</a>.</p><p>No matter your path to Rust, I guarantee you&#x27;ll at least learn <em>something</em>
+that is applicable to your trade elsewhere. And if you don&#x27;t, well, you
+can always <a href="https://github.com/rust-lang/rust">contribute to it</a>!</p>

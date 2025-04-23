@@ -1,0 +1,637 @@
+include!(".dylo/spec.rs");
+include!(".dylo/support.rs");
+
+use config::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
+use futures_core::future::BoxFuture;
+use std::str::FromStr;
+
+use libhttpclient::{
+    HeaderMap, HeaderValue, Uri,
+    header::{self},
+};
+#[cfg(feature = "impl")]
+use merde::IntoStatic;
+#[cfg(feature = "impl")]
+use std::{sync::Arc, time::Instant};
+#[cfg(feature = "impl")]
+use tracing::info;
+
+#[cfg(feature = "impl")]
+use eyre::BsForResults;
+
+use bytes::Bytes;
+use conflux::RevisionIdRef;
+use credentials::AuthBundle;
+use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
+#[cfg(feature = "impl")]
+use libhttpclient::{HttpClient, RequestBuilder};
+#[allow(unused_imports)]
+use mom::{
+    ListMissingArgs, ListMissingResponse, MomEvent,
+    media_types::{
+        HeadersMessage, TranscodeEvent, TranscodingProgress, UploadDoneMessage, WebSocketMessage,
+    },
+};
+use objectstore::ObjectStoreKeyRef;
+use patreon::{
+    PatreonCallbackArgs, PatreonCallbackResponse, PatreonRefreshCredentials,
+    PatreonRefreshCredentialsArgs,
+};
+
+pub trait MomEventListener: Send + 'static {
+    fn on_event<'fut>(&'fut self, event: MomEvent<'static>) -> BoxFuture<'fut, ()>;
+}
+
+#[cfg(feature = "impl")]
+#[derive(Default)]
+struct ModImpl;
+
+pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
+
+#[dylo::export]
+impl Mod for ModImpl {
+    fn client(
+        &'static self,
+        mcc: MomClientConfig,
+    ) -> BoxFuture<'static, Result<Box<dyn MomClient>>> {
+        Box::pin(async move {
+            let hclient = libhttpclient::load().client();
+            let hclient: Arc<dyn HttpClient> = Arc::from(hclient);
+
+            let mclient = MomClientImpl { hclient, mcc };
+            let mclient: Box<dyn MomClient> = Box::new(mclient);
+            Ok(mclient)
+        })
+    }
+
+    fn subscribe_to_mom_events(
+        &'static self,
+        ev_listener: Box<dyn MomEventListener>,
+        mcc: MomClientConfig,
+    ) -> BoxFuture<'static, Result<()>> {
+        Box::pin(async move {
+            let (ev_tx, mut ev_rx) = tokio::sync::mpsc::channel(128);
+
+            let relay_fut = {
+                async move {
+                    let base_uri = Uri::try_from(mcc.base_url.clone()).unwrap();
+
+                    let uri = Uri::builder()
+                        .scheme(if base_uri.scheme_str() == Some("https") {
+                            "wss"
+                        } else {
+                            "ws"
+                        })
+                        .authority(base_uri.authority().unwrap().as_str())
+                        .path_and_query("/events")
+                        .build()
+                        .unwrap();
+
+                    'connect_loop: loop {
+                        tracing::debug!(%uri, "Connecting to mom...");
+                        async fn random_sleep() {
+                            let jitter = rand::random::<u64>() % 500;
+                            tokio::time::sleep(std::time::Duration::from_millis(1000 + jitter))
+                                .await;
+                        }
+
+                        let before = Instant::now();
+                        let mod_websock = websock::load();
+
+                        let mut ws = match tokio::time::timeout(
+                            std::time::Duration::from_secs(3),
+                            mod_websock.websocket_connect(uri.clone(), {
+                                let mut map = HeaderMap::new();
+                                map.insert(
+                                    libhttpclient::header::AUTHORIZATION,
+                                    HeaderValue::from_str(&format!("Bearer {}", mcc.api_key()))
+                                        .unwrap(),
+                                );
+                                map
+                            }),
+                        )
+                        .await
+                        {
+                            Ok(Ok(res)) => res,
+                            Ok(Err(e)) => {
+                                tracing::warn!("Failed to connect to mom: {}", e);
+                                random_sleep().await;
+                                continue 'connect_loop;
+                            }
+                            Err(_) => {
+                                tracing::warn!("Timeout connecting to mom");
+                                random_sleep().await;
+                                continue 'connect_loop;
+                            }
+                        };
+                        let elapsed = before.elapsed();
+                        tracing::info!(%uri, ?elapsed, "🧸 mom connection established!");
+
+                        #[allow(unused_labels)]
+                        'receive_loop: loop {
+                            let before_recv = Instant::now();
+                            let ev = match ws.receive().await {
+                                None => {
+                                    tracing::warn!("Connection closed by mom");
+                                    tracing::warn!("...will reconnect now");
+                                    continue 'connect_loop;
+                                }
+                                Some(Ok(ev)) => ev,
+                                Some(Err(e)) => {
+                                    tracing::warn!("Failed to receive mom event: {e}");
+                                    tracing::warn!("...will reconnect now");
+                                    continue 'connect_loop;
+                                }
+                            };
+
+                            let ev = match ev {
+                                websock::Frame::Text(ev) => ev,
+                                _ => {
+                                    return Err(eyre::BS::from_string(
+                                        "Expected text frame".into(),
+                                    ));
+                                }
+                            };
+
+                            let ev = merde::json::from_str_owned::<MomEvent>(&ev)
+                                .map_err(|e| e.into_static())
+                                .bs()?;
+                            let elapsed = before_recv.elapsed();
+                            tracing::debug!(?ev, ?elapsed, "Got event from mom");
+
+                            _ = ev_tx.send(ev).await;
+                        }
+                    }
+                }
+            };
+
+            tokio::spawn(async move {
+                let res: Result<()> = relay_fut.await;
+                if let Err(e) = res {
+                    tracing::error!("Failed to relay mom events: {e}");
+                    tracing::error!(
+                        "Is the local mom newer? Maybe? If the schema changed, you can develop locally by exporting the environment variable FORCE_LOCAL_MOM=1"
+                    );
+                }
+            });
+
+            tokio::spawn({
+                async move {
+                    while let Some(ev) = ev_rx.recv().await {
+                        ev_listener.on_event(ev).await;
+                    }
+                }
+            });
+
+            Ok(())
+        })
+    }
+}
+
+/// Configuration for a Mom client.
+///
+/// Contains the base URL of the Mom server and the API key required for authentication.
+#[derive(Clone)]
+pub struct MomClientConfig {
+    /// The base URL of the Mom server.
+    pub base_url: String,
+    /// The API key used to authenticate with the Mom server.
+    pub api_key: Option<MomApiKey>,
+}
+
+impl MomClientConfig {
+    /// Creates a new `MomClientConfig` with the given base URL and API key.
+    pub fn api_key(&self) -> MomApiKey {
+        self.api_key.clone().unwrap_or_else(|| {
+            eprintln!("==================================================");
+            eprintln!("=                                                =");
+            eprintln!("=      WARNING: set $MOM_API_KEY to something    =");
+            eprintln!("=      real to deploy                            =");
+            eprintln!("=                                                =");
+            eprintln!("==================================================");
+            MOM_DEV_API_KEY.to_owned()
+        })
+    }
+}
+
+#[cfg(feature = "impl")]
+struct MomClientImpl {
+    hclient: Arc<dyn HttpClient>,
+    mcc: MomClientConfig,
+}
+
+#[dylo::export]
+impl MomClient for MomClientImpl {
+    fn mom_tenant_client(&self, tenant_name: config::TenantDomain) -> Box<dyn MomTenantClient> {
+        Box::new(MomTenantClientImpl {
+            base_path: format!("/tenant/{tenant_name}"),
+            hclient: self.hclient.clone(),
+            mcc: self.mcc.clone(),
+        })
+    }
+}
+
+#[cfg(feature = "impl")]
+struct MomTenantClientImpl {
+    mcc: MomClientConfig,
+    base_path: String,
+    hclient: Arc<dyn HttpClient>,
+}
+
+#[cfg(feature = "impl")]
+impl MomTenantClientImpl {
+    /// Makes a URL for the mom server, for login/auth purposes
+    /// note: path is a relative path, like `objectstore/list-missing` (no leading slash)
+    #[cfg(feature = "impl")]
+    fn config_mom_uri(&self, relative_path: &str) -> Uri {
+        let base_url = Uri::from_str(&self.mcc.base_url).unwrap();
+        let full_path = format!("{}/{}", self.base_path, relative_path);
+        Uri::builder()
+            .scheme(base_url.scheme_str().unwrap_or("https"))
+            .authority(base_url.authority().unwrap().as_str())
+            .path_and_query(&full_path)
+            .build()
+            .unwrap()
+    }
+
+    /// Makes a URL for the mom server, for revision/asset uploads
+    /// note: path is a relative path, like `objectstore/list-missing` (no leading slash)
+    #[cfg(feature = "impl")]
+    fn prod_mom_url(&self, relative_path: &str) -> (String, Uri) {
+        use config::is_development;
+
+        let base_url = if is_development() {
+            production_mom_url().to_string()
+        } else {
+            self.mcc.base_url.clone()
+        };
+        let full_path = format!("{}/{}", self.base_path, relative_path);
+        let url = format!("{base_url}{full_path}");
+        let uri = Uri::from_str(&url).unwrap();
+        (url, uri)
+    }
+}
+
+#[dylo::export]
+impl MomTenantClient for MomTenantClientImpl {
+    fn update_auth_bundle<'fut>(
+        &'fut self,
+        body: &'fut AuthBundle<'static>,
+    ) -> BoxFuture<'fut, Result<AuthBundle<'static>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("auth-bundle/update");
+                let req = self
+                    .hclient
+                    .post(uri)
+                    .with_auth(&self.mcc)
+                    .json(body)
+                    .bs()?;
+                let res = req.send_and_expect_200().await.bs()?;
+                res.json::<AuthBundle<'static>>().await.bs()
+            }
+        })
+    }
+
+    fn github_callback<'fut>(
+        &'fut self,
+        body: &'fut GitHubCallbackArgs<'static>,
+    ) -> BoxFuture<'fut, Result<Option<GitHubCallbackResponse<'static>>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("github/callback");
+                let req = self
+                    .hclient
+                    .post(uri)
+                    .with_auth(&self.mcc)
+                    .json(body)
+                    .bs()?;
+                let res = req.send_and_expect_200().await.bs()?;
+                res.json::<Option<GitHubCallbackResponse<'static>>>()
+                    .await
+                    .bs()
+            }
+        })
+    }
+
+    fn patreon_callback<'fut>(
+        &'fut self,
+        body: &'fut PatreonCallbackArgs<'static>,
+    ) -> BoxFuture<'fut, Result<Option<PatreonCallbackResponse<'static>>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("patreon/callback");
+                let req = self
+                    .hclient
+                    .post(uri)
+                    .with_auth(&self.mcc)
+                    .json(body)
+                    .bs()?;
+                let res = req.send_and_expect_200().await.bs()?;
+                res.json::<Option<PatreonCallbackResponse<'static>>>()
+                    .await
+                    .bs()
+            }
+        })
+    }
+
+    fn patreon_refresh_credentials<'fut>(
+        &'fut self,
+        body: &'fut PatreonRefreshCredentialsArgs<'static>,
+    ) -> BoxFuture<'fut, Result<PatreonRefreshCredentials<'static>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("patreon/refresh-credentials");
+                let req = self
+                    .hclient
+                    .post(uri)
+                    .with_auth(&self.mcc)
+                    .json(body)
+                    .bs()?;
+                let res = req.send_and_expect_200().await.bs()?;
+                res.json::<PatreonRefreshCredentials<'static>>().await.bs()
+            }
+        })
+    }
+
+    fn objectstore_list_missing<'fut>(
+        &'fut self,
+        body: &'fut ListMissingArgs,
+    ) -> BoxFuture<'fut, Result<ListMissingResponse>> {
+        Box::pin({
+            async move {
+                let (_, uri) = self.prod_mom_url("objectstore/list-missing");
+                let req = self
+                    .hclient
+                    .post(uri)
+                    .with_auth(&self.mcc)
+                    .json(body)
+                    .bs()?;
+                let res = req.send_and_expect_200().await.bs()?;
+                res.json::<ListMissingResponse>().await.bs()
+            }
+        })
+    }
+
+    fn put_asset<'fut>(
+        &'fut self,
+        key: &'fut ObjectStoreKeyRef,
+        payload: Bytes,
+    ) -> BoxFuture<'fut, Result<()>> {
+        Box::pin({
+            async move {
+                let (_, uri) = self.prod_mom_url(&format!("objectstore/put/{key}"));
+                self.hclient
+                    .put(uri)
+                    .with_auth(&self.mcc)
+                    .body(payload)
+                    .send_and_expect_200()
+                    .await
+                    .bs()?;
+                Ok(())
+            }
+        })
+    }
+
+    fn put_revpak<'fut>(
+        &'fut self,
+        id: &'fut RevisionIdRef,
+        payload: Bytes,
+    ) -> BoxFuture<'fut, Result<()>> {
+        Box::pin({
+            let revision_id: &RevisionIdRef = id;
+            async move {
+                let (_, uri) = self.prod_mom_url(&format!("revision/upload/{revision_id}"));
+                info!("Uploading revision to URL: {}", uri);
+                self.hclient
+                    .put(uri)
+                    .with_auth(&self.mcc)
+                    .body(payload)
+                    .send_and_expect_200()
+                    .await
+                    .bs()?;
+                Ok(())
+            }
+        })
+    }
+
+    fn media_transcode(
+        &self,
+        params: mom::TranscodeParams,
+    ) -> BoxFuture<'_, Result<mom::TranscodeResponse>> {
+        Box::pin(async move {
+            let uri = self.config_mom_uri("media/transcode");
+            let req = self
+                .hclient
+                .post(uri)
+                .with_auth(&self.mcc)
+                .json(&params)
+                .bs()?;
+            let res = req.send().await.bs()?;
+            let response: mom::TranscodeResponse = res.json().await.bs()?;
+            Ok(response)
+        })
+    }
+
+    fn derive(&self, params: mom::DeriveParams) -> BoxFuture<'_, Result<mom::DeriveResponse>> {
+        Box::pin(async move {
+            let uri = self.config_mom_uri("derive");
+            let req = self
+                .hclient
+                .post(uri)
+                .with_auth(&self.mcc)
+                .json(&params)
+                .bs()?;
+            let res = req.send().await.bs()?;
+            let response: mom::DeriveResponse = res.json().await.bs()?;
+            Ok(response)
+        })
+    }
+
+    fn media_uploader(
+        &self,
+        listener: Box<dyn TranscodingEventListener>,
+    ) -> BoxFuture<'_, Result<Box<dyn MediaUploader>>> {
+        Box::pin(async move {
+            let base_uri = self.config_mom_uri("media/upload");
+            let uri = Uri::builder()
+                .scheme(if base_uri.scheme_str() == Some("https") {
+                    "wss"
+                } else {
+                    "ws"
+                })
+                .authority(base_uri.authority().unwrap().as_str())
+                .path_and_query(base_uri.path_and_query().unwrap().as_str())
+                .build()
+                .unwrap();
+            info!("Uploading video to: {uri}");
+
+            let ws = websock::load()
+                .websocket_connect(uri, {
+                    let mut map = HeaderMap::new();
+                    map.insert(
+                        libhttpclient::header::AUTHORIZATION,
+                        HeaderValue::from_str(&format!("Bearer {}", self.mcc.api_key())).unwrap(),
+                    );
+                    map
+                })
+                .await
+                .bs()?;
+
+            let b: Box<dyn MediaUploader> = Box::new(MediaUploaderImpl { ws, listener });
+            Ok(b)
+        })
+    }
+}
+
+#[cfg(feature = "impl")]
+struct MediaUploaderImpl {
+    ws: Box<dyn websock::WebSocketStream>,
+    listener: Box<dyn TranscodingEventListener>,
+}
+
+#[dylo::export(nonsync)]
+impl MediaUploader for MediaUploaderImpl {
+    fn with_headers(&mut self, headers: HeadersMessage) -> BoxFuture<'_, Result<()>> {
+        Box::pin(async move {
+            let msg = WebSocketMessage::Headers(headers);
+            let json = merde::json::to_string(&msg).bs()?;
+            self.ws.send_text(json).await.bs()?;
+            Ok(())
+        })
+    }
+
+    fn upload_chunk(&mut self, chunk: Bytes) -> BoxFuture<'_, Result<()>> {
+        Box::pin(async move {
+            self.ws.send_binary(chunk.to_vec()).await.bs()?;
+            Ok(())
+        })
+    }
+
+    fn done_and_download_result<'a>(
+        &'a mut self,
+        uploaded_size: usize,
+        mut chunk_receiver: Box<dyn ChunkReceiver + 'a>,
+    ) -> BoxFuture<'a, Result<()>> {
+        Box::pin(async move {
+            tracing::debug!("Sending UploadDone message with size {uploaded_size}");
+            let msg = WebSocketMessage::UploadDone(UploadDoneMessage { uploaded_size });
+            let json = merde::json::to_string(&msg).bs()?;
+            self.ws.send_text(json).await.bs()?;
+
+            let mut received_bytes = 0;
+
+            loop {
+                tracing::trace!("Waiting for next websocket message...");
+                let msg = match self.ws.receive().await {
+                    Some(frame) => frame,
+                    None => {
+                        return Err(eyre::BS::from_string(
+                            "Connection closed unexpectedly (but gracefully)".to_string(),
+                        ));
+                    }
+                }
+                .bs()?;
+                match msg {
+                    websock::Frame::Text(text) => {
+                        let msg: WebSocketMessage = merde::json::from_str(&text)
+                            .map_err(|e| e.into_static())
+                            .bs()?;
+                        match msg {
+                            WebSocketMessage::TranscodingEvent(ev) => {
+                                if let Err(e) = self.listener.on_transcoding_event(ev).await {
+                                    return Err(eyre::BS::from_string(format!(
+                                        "Could not notify progress: {e}"
+                                    )));
+                                }
+                            }
+                            WebSocketMessage::TranscodingComplete(complete) => {
+                                let size = complete.output_size;
+                                tracing::info!(
+                                    "Transcoding complete! Expecting {size} bytes of output"
+                                );
+
+                                // Start receiving binary frames and forwarding them
+                                loop {
+                                    let res = match self.ws.receive().await {
+                                        Some(res) => res,
+                                        None => {
+                                            tracing::error!(
+                                                "WebSocket connection closed unexpectedly"
+                                            );
+                                            return Err(eyre::BS::from_string(
+                                                "WebSocket connection closed unexpectedly"
+                                                    .to_string(),
+                                            ));
+                                        }
+                                    };
+                                    match res.bs()? {
+                                        websock::Frame::Binary(chunk) => {
+                                            received_bytes += chunk.len();
+                                            tracing::trace!(
+                                                "Received chunk of {} bytes ({}/{} total)",
+                                                chunk.len(),
+                                                received_bytes,
+                                                size
+                                            );
+                                            // Forward chunk using chunk receiver
+                                            chunk_receiver.on_chunk(chunk).await.bs()?;
+
+                                            if received_bytes == size {
+                                                tracing::info!(
+                                                    "Successfully received complete response ({size} bytes)"
+                                                );
+                                                return Ok(());
+                                            }
+                                        }
+                                        _ => {
+                                            return Err(eyre::BS::from_string(
+                                                "Expected binary frame".into(),
+                                            ));
+                                        }
+                                    }
+                                }
+                            }
+                            WebSocketMessage::Error(err) => {
+                                tracing::error!("Received error from transcoding server: {err}");
+                                return Err(eyre::BS::from_string(err));
+                            }
+                            _ => {
+                                return Err(eyre::BS::from_string(
+                                    "Unexpected message type".into(),
+                                ));
+                            }
+                        }
+                    }
+                    _ => {
+                        return Err(eyre::BS::from_string("Expected text message".into()));
+                    }
+                }
+            }
+        })
+    }
+}
+
+pub trait TranscodingEventListener: Send + Sync + 'static {
+    fn on_transcoding_event(&self, ev: TranscodeEvent) -> BoxFuture<'_, Result<()>>;
+}
+
+pub trait ChunkReceiver: Send + Sync {
+    fn on_chunk(&mut self, chunk: Vec<u8>) -> BoxFuture<'_, Result<()>>;
+}
+
+#[cfg(feature = "impl")]
+trait WithAuth {
+    fn with_auth(self: Box<Self>, mcc: &MomClientConfig) -> Box<dyn RequestBuilder>;
+}
+
+#[cfg(feature = "impl")]
+impl WithAuth for dyn RequestBuilder {
+    fn with_auth(self: Box<Self>, mcc: &MomClientConfig) -> Box<dyn RequestBuilder> {
+        use libhttpclient::header::HeaderValue;
+        self.header(
+            header::AUTHORIZATION,
+            HeaderValue::from_str(&format!("Bearer {}", mcc.api_key())).unwrap(),
+        )
+    }
+}

@@ -1,0 +1,17 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: result.toc
+snapshot_kind: text
+---
+[
+    TocEntry {
+        level: 1,
+        text: "Main Heading",
+        slug: "main-heading",
+    },
+    TocEntry {
+        level: 2,
+        text: "Second Heading",
+        slug: "second-heading",
+    },
+]

@@ -15,7 +15,6 @@ derivations = { version = "0.1.0", path = "../derivations" }
 http-range = { version = "0.1.5" }
 libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 mom = { version = "0.1.0", path = "../mom" }
-noteyre = { version = "0.1.0", path = "../noteyre" }
 tokio = { workspace = true }
 tracing = { workspace = true }
 websock = { version = "0.1.0", path = "../websock" }

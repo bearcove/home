@@ -1,0 +1,27 @@
+[package]
+name = "libsvg"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+quick-xml = { version = "0.37.3" }
+conflux = { path = "../../crates/conflux" }
+tokio = { workspace = true, features = ["time", "process", "sync"] }
+rand = { version = "0.8.5" }
+libc = { version = "0.2.171" }
+libimage = { version = "0.1.0", path = "../libimage" }
+which = { version = "7.0.2" }
+tempfile = { version = "3.19.1" }
+camino = { version = "1.1.9" }
+base64 = { version = "0.22.1" }
+liblightningcss = { version = "1.0.0-alpha.65", path = "../liblightningcss" }
+futures-core = "0.3.31"
+libconfig = { version = "0.1.0", path = "../libconfig" }
+bytes = "1.10.1"
+
+[dev-dependencies]
+insta = "1.42.2"
+regex = "1.11.1"

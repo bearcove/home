@@ -1,0 +1,8 @@
+---
+source: mods/markdown/src/lib.rs
+expression: output_str
+---
+<h1><a id="code-example" href="#code-example" class="anchor"></a>Code Example</h1><code data-lang="shell">$ ls -lhA
+total 100M
+-rw-rw-r-- 1 amos amos 100M Jul  2 20:49 draw.io-21.4.0-windows-installer.exe
+</code><h2><a id="after-code-block" href="#after-code-block" class="anchor"></a>After Code Block</h2>

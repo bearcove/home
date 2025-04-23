@@ -1,0 +1,19 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: result.plain_text
+snapshot_kind: text
+---
+A disaster? I think not: for I have seen $100,000 to be made in this world.
+There’s not a “thing” I have not seen.
+Can you quote me on that?
+Of course I can!
+Not plain text
+But also this is plain text. And these are plain text too.
+How about a:
+
+list
+of
+
+things
+yes?
+maybe

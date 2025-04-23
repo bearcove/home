@@ -1,0 +1,16 @@
+---
+source: mods/markdown/src/lib.rs
+expression: result.toc
+---
+[
+    TocEntry {
+        level: 1,
+        text: "Main Heading",
+        slug: "main-heading",
+    },
+    TocEntry {
+        level: 2,
+        text: "Second Heading",
+        slug: "second-heading",
+    },
+]

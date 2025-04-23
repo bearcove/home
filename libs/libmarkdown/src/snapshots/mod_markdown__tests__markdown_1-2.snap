@@ -1,0 +1,9 @@
+---
+source: mods/markdown/src/lib.rs
+expression: result.frontmatter.unwrap()
+---
+title: Test Post
+date: 2023-01-01
+draft: true
+extra:
+    author: test

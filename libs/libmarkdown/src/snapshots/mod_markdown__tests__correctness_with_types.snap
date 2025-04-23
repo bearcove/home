@@ -1,0 +1,91 @@
+---
+source: mods/markdown/src/lib.rs
+expression: result.toc
+---
+[
+    TocEntry {
+        level: 2,
+        text: "The challenges of Rust advocacy",
+        slug: "the-challenges-of-rust-advocacy",
+    },
+    TocEntry {
+        level: 2,
+        text: "Implicit contracts are everywhere",
+        slug: "implicit-contracts-are-everywhere",
+    },
+    TocEntry {
+        level: 2,
+        text: "Let's talk about HTTP headers",
+        slug: "let-s-talk-about-http-headers",
+    },
+    TocEntry {
+        level: 2,
+        text: "HTTP is only as real as you want it to be",
+        slug: "http-is-only-as-real-as-you-want-it-to-be",
+    },
+    TocEntry {
+        level: 2,
+        text: "Where have all the good http packages gone?",
+        slug: "where-have-all-the-good-http-packages-gone",
+    },
+    TocEntry {
+        level: 2,
+        text: "What are we V8ing for? Onwards!",
+        slug: "what-are-we-v8ing-for-onwards",
+    },
+    TocEntry {
+        level: 3,
+        text: "message.headers",
+        slug: "message-headers",
+    },
+    TocEntry {
+        level: 3,
+        text: "request.setHeader(name, value)",
+        slug: "request-setheader-name-value",
+    },
+    TocEntry {
+        level: 3,
+        text: "response.setHeader(name, value)",
+        slug: "response-setheader-name-value",
+    },
+    TocEntry {
+        level: 3,
+        text: "message.rawHeaders",
+        slug: "message-rawheaders",
+    },
+    TocEntry {
+        level: 3,
+        text: "socket.address()",
+        slug: "socket-address",
+    },
+    TocEntry {
+        level: 2,
+        text: "A bit of TypeScript, as a treat",
+        slug: "a-bit-of-typescript-as-a-treat",
+    },
+    TocEntry {
+        level: 2,
+        text: "Just gopher it",
+        slug: "just-gopher-it",
+    },
+    TocEntry {
+        level: 2,
+        text: "Just don't write bugs!",
+        slug: "just-don-t-write-bugs",
+    },
+    TocEntry {
+        level: 2,
+        text: "I think we were talking about HTTP?",
+        slug: "i-think-we-were-talking-about-http",
+    },
+    TocEntry {
+        level: 2,
+        text: "A look at hyper",
+        slug: "a-look-at-hyper",
+    },
+    TocEntry {
+        level: 2,
+        text: "Enough with the comparisons already",
+        slug: "enough-with-the-comparisons-already",
+    },
+]

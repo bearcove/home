@@ -1,0 +1,12 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: html
+snapshot_kind: text
+---
+<a id="hello-world" href="#hello-world" class="anchor"><h1>Hello World</h1></a>
+<p data-bo="94">This is a test.</p>
+
+<a id="subheading" href="#subheading" class="anchor"><h2>Subheading</h2></a>
+<a id="subsubheading" href="#subsubheading" class="anchor"><h3>Subsubheading</h3></a>
+<a id="now-with-some-code" href="#now-with-some-code" class="anchor"><h2>Now <code>with</code> some code</h2></a>
+<p data-bo="170">And a paragraph.</p>

@@ -1,0 +1,16 @@
+[package]
+name = "libfs"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+eyre = { version = "0.6.12", default-features = false }
+camino = { version = "1.1.9" }
+ignore = { version = "0.4.23" }
+notify = { version = "6.1.1" }
+
+[features]
+default = []

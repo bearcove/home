@@ -1,0 +1,13 @@
+[package]
+name = "libmedia"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+libconfig = { version = "0.1.0", path = "../libconfig" }
+conflux = { version = "0.1.0", path = "../../crates/conflux" }
+html-escape = { version = "0.2.13" }
+image = { version = "0.1.0", path = "../libimage" }

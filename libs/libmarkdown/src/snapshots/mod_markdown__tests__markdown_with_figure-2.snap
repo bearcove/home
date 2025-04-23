@@ -1,0 +1,12 @@
+---
+source: mods/markdown/src/lib.rs
+expression: output_str
+---
+<h1><a id="main-heading" href="#main-heading" class="anchor"></a>Main Heading</h1><figure>
+<img src="example.jpg">
+<figcaption>
+<h4>Image Title</h4>
+<a href="https://example.com">Attribution</a>
+</figcaption>
+</figure>
+<h2><a id="second-heading" href="#second-heading" class="anchor"></a>Second Heading</h2>

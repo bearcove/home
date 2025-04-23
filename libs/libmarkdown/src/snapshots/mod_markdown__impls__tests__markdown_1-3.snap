@@ -1,0 +1,27 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: result.toc
+snapshot_kind: text
+---
+[
+    TocEntry {
+        level: 1,
+        text: "Hello World",
+        slug: "hello-world",
+    },
+    TocEntry {
+        level: 2,
+        text: "Subheading",
+        slug: "subheading",
+    },
+    TocEntry {
+        level: 3,
+        text: "Subsubheading",
+        slug: "subsubheading",
+    },
+    TocEntry {
+        level: 2,
+        text: "Now with some code",
+        slug: "now-with-some-code",
+    },
+]

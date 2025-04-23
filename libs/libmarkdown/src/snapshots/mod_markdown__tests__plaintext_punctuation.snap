@@ -1,0 +1,5 @@
+---
+source: mods/markdown/src/lib.rs
+expression: result.plain_text
+---
+A disaster? I think not: for I have seen $ 100,000 to be made in this world.

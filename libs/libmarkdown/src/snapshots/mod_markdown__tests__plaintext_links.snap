@@ -1,0 +1,5 @@
+---
+source: mods/markdown/src/lib.rs
+expression: result.plain_text
+---
+The Nature weekly journal of science was first published in 1869. And after one and a half century, it has finally completed one cycle of carcinization, by publishing an article about the Rust programming language.

@@ -1,0 +1,14 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: html
+snapshot_kind: text
+---
+<a id="main-heading" href="#main-heading" class="anchor"><h1>Main Heading</h1></a>
+<figure>
+<img src="example.jpg">
+<figcaption>
+<h4>Image Title</h4>
+<a href="https://example.com">Attribution</a>
+</figcaption>
+</figure>
+<a id="second-heading" href="#second-heading" class="anchor"><h2>Second Heading</h2></a>

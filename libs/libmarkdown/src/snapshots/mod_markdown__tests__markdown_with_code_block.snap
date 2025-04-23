@@ -1,0 +1,16 @@
+---
+source: mods/markdown/src/lib.rs
+expression: result.toc
+---
+[
+    TocEntry {
+        level: 1,
+        text: "Code Example",
+        slug: "code-example",
+    },
+    TocEntry {
+        level: 2,
+        text: "After Code Block",
+        slug: "after-code-block",
+    },
+]

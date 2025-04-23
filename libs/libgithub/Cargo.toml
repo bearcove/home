@@ -1,0 +1,29 @@
+[package]
+name = "libgithub"
+edition.workspace = true
+rust-version.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+eyre = { version = "0.6.12", default-features = false }
+merde.workspace = true
+libconfig = { path = "../../libs/libconfig" }
+credentials = { path = "../../crates/credentials" }
+fs-err = { version = "3.1.0" }
+time = { version = "0.3.41" }
+tracing = { version = "0.1.41" }
+url = { version = "2.5.4" }
+futures-core = "0.3.31"
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
+autotrait = "0.1.4"

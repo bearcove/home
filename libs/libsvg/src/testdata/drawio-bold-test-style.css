@@ -1,0 +1,65 @@
+@font-face {
+  font-family: IosevkaFtl;
+  font-weight: 400;
+  src: "http://localhost:1111/nope";
+}
+@font-face {
+  font-family: IosevkaFtl;
+  font-weight: 700;
+  src: "http://localhost:1111/nope";
+}
+.a {
+  fill: rgb(255, 255, 255);
+  stroke: rgb(0, 0, 0);
+}
+.b {
+  overflow: visible;
+  text-align: left;
+}
+.c {
+  align-items: unsafe center;
+  display: flex;
+  height: 1px;
+  justify-content: unsafe center;
+  margin-left: 1px;
+  padding-top: 20px;
+  width: 158px;
+}
+.d {
+  box-sizing: border-box;
+  font-size: 0px;
+  text-align: center;
+}
+.e {
+  color: rgb(0, 0, 0);
+  display: inline-block;
+  font-family: IosevkaFtl;
+  font-size: 12px;
+  line-height: 1.2;
+  pointer-events: all;
+  white-space: normal;
+  word-wrap: normal;
+}
+.f {
+  align-items: unsafe center;
+  display: flex;
+  height: 1px;
+  justify-content: unsafe center;
+  margin-left: 1px;
+  padding-top: 100px;
+  width: 158px;
+}
+.g {
+  color: rgb(0, 0, 0);
+  display: inline-block;
+  font-family: IosevkaFtl;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+  pointer-events: all;
+  white-space: normal;
+  word-wrap: normal;
+}
+foreignObject {
+  pointer-events: none;
+}

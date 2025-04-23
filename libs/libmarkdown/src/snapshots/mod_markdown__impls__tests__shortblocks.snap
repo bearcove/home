@@ -1,0 +1,6 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: result.toc
+snapshot_kind: text
+---
+[]

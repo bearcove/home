@@ -1,0 +1,10 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: result.frontmatter.unwrap()
+snapshot_kind: text
+---
+title: Test Post
+date: 2023-01-01
+draft: true
+extra:
+    author: test

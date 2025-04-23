@@ -1,0 +1,11 @@
+---
+source: crates/mod-markdown/src/impls.rs
+expression: result.plain_text
+snapshot_kind: text
+---
+Hello World
+This is a test.
+Subheading
+Subsubheading
+Now with some code
+And a paragraph.

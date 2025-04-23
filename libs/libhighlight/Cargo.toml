@@ -1,0 +1,14 @@
+[package]
+name = "libhighlight"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+# impl dependencies
+dumbcache = { path = "../../crates/dumbcache" }
+tracing = { version = "0.1.41" }
+tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" }
+libnerdfonts = { path = "../libnerdfonts" }

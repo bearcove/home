@@ -1,0 +1,73 @@
+[package]
+name = "libcub"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+camino = { version = "1.1.9" }
+merde = { workspace = true, features = ["yaml"] }
+libmom = { path = "../libmom" }
+conflux = { path = "../../crates/conflux" }
+libmomclient = { path = "../libmomclient" }
+axum = { version = "0.7.9", default-features = false, features = [
+    "http1",
+    "tokio",
+    "ws",
+    "query",
+    "macros",
+    "form",
+] }
+tokio = { workspace = true, features = ["full"] }
+tower = { version = "0.4.13", features = ["steer"] }
+tower-cookies = { version = "0.10.0", features = ["private"] }
+tracing = { workspace = true }
+eyre = { workspace = true }
+time = { version = "0.3.41", features = ["formatting"] }
+parking_lot = { version = "0.12.3" }
+url = { version = "2.5.4", features = ["serde"] }
+derivations = { path = "../../crates/derivations" }
+libsearch = { path = "../libsearch" }
+libtemplate = { path = "../libtemplate" }
+libobjectstore = { path = "../libobjectstore" }
+libterm = { path = "../libterm" }
+nix = { version = "0.29.0", features = ["process", "signal"] }
+http = { version = "1.3.1" }
+http-body-util = { version = "0.1.3" }
+libcompress = { path = "../libcompress" }
+pin-project-lite = { version = "0.2.16" }
+rand = { version = "0.8.5" }
+strsim = { version = "0.11.1" }
+libwebpage = { path = "../libwebpage" }
+flume = { version = "0.11.1" }
+bytesize = { version = "1.3.2" }
+libimage = { path = "../libimage" }
+tempfile = { version = "3.19.1" }
+uffmpeg = { path = "../../crates/uffmpeg" }
+libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
+libpatreon = { path = "../libpatreon" }
+serde = { workspace = true, features = ["derive"] }
+content-type = { path = "../../crates/content-type" }
+itertools = { version = "0.14.0" }
+closest = { version = "0.1.0", path = "../../crates/closest" }
+ulid = { version = "1.2.1" }
+liberrhandling = { path = "../liberrhandling" }
+credentials = { path = "../../crates/credentials" }
+libc = { version = "0.2.171" }
+regex = { version = "1.11.1" }
+strip-ansi-escapes = { version = "0.2.1" }
+libcdn = { version = "0.1.0", path = "../libcdn" }
+hattip = { version = "0.1.0", path = "../../crates/hattip" }
+libapi = { version = "0.1.0", path = "../libapi" }
+libwebsock = { version = "0.1.0", path = "../libwebsock" }
+hyper = { version = "1.6.0" }
+futures-core = "0.3.31"
+cub-types = { version = "0.1.0", path = "../../crates/cub-types" }
+futures-util = { version = "0.3.31" }
+tempdir = { version = "0.3.7" }
+librevision = { version = "0.1.0", path = "../librevision" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
+open = { version = "5.3.2" }
+libgithub = { version = "0.1.0", path = "../libgithub" }
