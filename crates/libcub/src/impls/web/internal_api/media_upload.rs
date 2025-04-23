@@ -532,7 +532,7 @@ async fn json_to_socket(
     payload: &impl merde::Serialize,
 ) -> eyre::Result<()> {
     let json_string = merde::json::to_string(payload)?;
-    socket.send(ws::Message::Text(json_string)).await?;
+    socket.send(ws::Message::text(json_string)).await?;
     Ok(())
 }
 

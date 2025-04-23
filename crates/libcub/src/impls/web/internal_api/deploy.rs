@@ -161,7 +161,7 @@ async fn json_to_socket(
     payload: &(dyn merde::DynSerialize + Sync),
 ) -> eyre::Result<()> {
     let json_string = merde::json::to_string(payload)?;
-    Ok(socket.send(ws::Message::Text(json_string)).await?)
+    Ok(socket.send(ws::Message::text(json_string)).await?)
 }
 
 async fn handle_deploy_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>, web: WebConfig) {

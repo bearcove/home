@@ -32,23 +32,18 @@ struct LoginParams {
     admin_login: bool,
 }
 
-async fn serve_login(tr: CubReqImpl, params: Option<Form<LoginParams>>) -> LegacyReply {
-    let return_to: &str = params
-        .as_ref()
-        .and_then(|p| p.return_to.as_deref())
-        .unwrap_or("");
+async fn serve_login(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
+    let return_to = params.return_to.as_deref().unwrap_or("");
 
     let mut args = RenderArgs::new("login.html").with_global("return_to", return_to);
-    if let Some(params) = params {
-        if let Some(return_to) = params.return_to.as_deref() {
-            args = args.with_global("return_to", return_to);
-        }
+    if let Some(return_to) = params.return_to.as_deref() {
+        args = args.with_global("return_to", return_to);
     }
     tr.render(args)
 }
 
-fn set_return_to_cookie(cookies: &PrivateCookies<'_>, params: &Option<Form<LoginParams>>) {
-    if let Some(return_to) = params.as_ref().and_then(|p| p.return_to.as_deref()) {
+fn set_return_to_cookie(cookies: &PrivateCookies<'_>, params: &Form<LoginParams>) {
+    if let Some(return_to) = params.return_to.as_deref() {
         let mut cookie = Cookie::new("return_to", return_to.to_owned());
         cookie.set_path("/");
         cookie.set_expires(time::OffsetDateTime::now_utc() + time::Duration::minutes(30));
@@ -56,10 +51,7 @@ fn set_return_to_cookie(cookies: &PrivateCookies<'_>, params: &Option<Form<Login
     }
 }
 
-async fn serve_login_with_patreon(
-    tr: CubReqImpl,
-    params: Option<Form<LoginParams>>,
-) -> LegacyReply {
+async fn serve_login_with_patreon(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
     tracing::info!("Initiating login with Patreon");
     set_return_to_cookie(&tr.cookies, &params);
 
@@ -68,12 +60,11 @@ async fn serve_login_with_patreon(
     Redirect::to(&location).into_legacy_reply()
 }
 
-async fn serve_login_with_github(tr: CubReqImpl, params: Option<Form<LoginParams>>) -> LegacyReply {
+async fn serve_login_with_github(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
     tracing::info!("Initiating login with GitHub");
     set_return_to_cookie(&tr.cookies, &params);
 
-    let admin_login = params.as_ref().map(|p| p.admin_login).unwrap_or_default();
-    let purpose = if admin_login {
+    let purpose = if params.admin_login {
         GitHubLoginPurpose::Admin
     } else {
         GitHubLoginPurpose::Regular
@@ -153,8 +144,8 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     finish_login_callback(&tr, callback_res.map(|res| res.auth_bundle)).await
 }
 
-async fn serve_logout(tr: CubReqImpl, return_to: Option<Form<LoginParams>>) -> LegacyReply {
-    let return_to = match return_to.as_ref().and_then(|rt| rt.return_to.as_ref()) {
+async fn serve_logout(tr: CubReqImpl, return_to: Form<LoginParams>) -> LegacyReply {
+    let return_to = match &return_to.return_to {
         // avoid open redirects by prepending `/` to the return_to URL
         Some(r) => format!("/{r}"),
         None => "/".into(),

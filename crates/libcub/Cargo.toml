@@ -12,7 +12,7 @@ merde = { workspace = true, features = ["yaml"] }
 libmom = { path = "../libmom" }
 conflux = { path = "../../crates/conflux" }
 libmomclient = { path = "../libmomclient" }
-axum = { version = "0.7.9", default-features = false, features = [
+axum = { version = "0.8.3", default-features = false, features = [
     "http1",
     "tokio",
     "ws",
@@ -21,8 +21,8 @@ axum = { version = "0.7.9", default-features = false, features = [
     "form",
 ] }
 tokio = { workspace = true, features = ["full"] }
-tower = { version = "0.4.13", features = ["steer"] }
-tower-cookies = { version = "0.10.0", features = ["private"] }
+tower = { version = "0.5.2", features = ["steer"] }
+tower-cookies = { version = "0.11.0", features = ["private"] }
 tracing = { workspace = true }
 eyre = { workspace = true }
 time = { version = "0.3.41", features = ["formatting"] }

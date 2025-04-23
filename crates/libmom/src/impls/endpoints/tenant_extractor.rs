@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{async_trait, extract::FromRequestParts};
+use axum::extract::FromRequestParts;
 use config_types::TenantDomain;
 use libhttpclient::{StatusCode, request::Parts};
 use serde::Deserialize;
@@ -13,7 +13,6 @@ use crate::impls::{
 #[derive(Clone)]
 pub struct TenantExtractor(pub Arc<MomTenantState>);
 
-#[async_trait]
 impl<S> FromRequestParts<S> for TenantExtractor
 where
     S: Send + Sync,

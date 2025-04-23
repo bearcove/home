@@ -5,7 +5,7 @@ use graceful_shutdown::setup_graceful_shutdown;
 use hattip::{HBody, HError, HReply};
 use libc as _;
 
-use axum::{Router, body::Body, extract::DefaultBodyLimit};
+use axum::{Router, ServiceExt as _, body::Body, extract::DefaultBodyLimit};
 use config_types::{
     CubConfig, Environment, MOM_DEV_API_KEY, MomApiKey, TenantDomain, TenantInfo, WebConfig,
     is_development, is_production,
@@ -24,12 +24,13 @@ use node_metadata::{NodeMetadata, load_node_metadata};
 use parking_lot::RwLock;
 use reply::{LegacyHttpError, LegacyReply};
 use std::collections::HashMap;
+use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::{
     net::TcpListener,
     sync::{broadcast, mpsc},
 };
-use tower::{ServiceBuilder, steer::Steer};
+use tower::{ServiceBuilder, ServiceExt as _, steer::Steer, util::BoxCloneService};
 use tower_cookies::CookieManagerLayer;
 use tracing::{info, warn};
 use types::CubDynamicState;
@@ -405,7 +406,9 @@ async fn start_watching_revisions() -> eyre::Result<()> {
     Ok(())
 }
 
-async fn setup_app_routes(metadata: &NodeMetadata) -> eyre::Result<Router> {
+async fn setup_app_routes(
+    metadata: &NodeMetadata,
+) -> eyre::Result<BoxCloneService<axum::extract::Request, axum::response::Response, Infallible>> {
     let pod_name = std::env::var("POD_NAME").ok();
     let node_name = std::env::var("NODE_NAME").ok();
 
@@ -464,7 +467,7 @@ async fn setup_app_routes(metadata: &NodeMetadata) -> eyre::Result<Router> {
 
         Steer::new(
             services,
-            move |req: &axum::http::Request<axum::body::Body>, _services: &[_]| {
+            move |req: &axum::extract::Request, _services: &[_]| {
                 if let Some(domain) =
                     host_extract::ExtractedHost::from_headers(req.uri(), req.headers())
                         .map(|h| h.domain().to_owned())
@@ -478,8 +481,8 @@ async fn setup_app_routes(metadata: &NodeMetadata) -> eyre::Result<Router> {
         )
     };
 
-    // nasty typing hack so we don't have to name the return type
-    Ok(Router::new().fallback_service(app))
+    // box the service so we don't have to name the full Steer<..> return type
+    Ok(app.boxed_clone())
 }
 
 fn log_tenant_urls(config: &CubConfig) {

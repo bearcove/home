@@ -214,7 +214,7 @@ async fn handle_socket(mut socket: ws::WebSocket) {
     loop {
         tokio::select! {
             Ok(json_payload) = rx.recv() => {
-                let msg = ws::Message::Text(json_payload);
+                let msg = ws::Message::text(json_payload);
                 if let Err(e) = socket.send(msg).await {
                     tracing::error!("Failed to send WebSocket message: {}", e);
                     break;

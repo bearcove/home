@@ -1,5 +1,6 @@
 // video.rs
 use axum::Extension;
+use axum::body::Bytes;
 use axum::extract::ws;
 use axum::http::StatusCode;
 use eyre::eyre;
@@ -37,8 +38,8 @@ async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<MomTenantState>) {
         }
     }
 
-    // well if we can't close gracefully, we can't close gracefully.
-    _ = socket.close().await;
+    // FIXME: maybe implement graceful closing?
+    // See https://docs.rs/axum/latest/axum/extract/ws/enum.Message.html#variant.Close
 }
 
 async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -> eyre::Result<()> {
@@ -116,7 +117,9 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
     // Send the output data in slices of maximum 2MB
     const CHUNK_SIZE: usize = 2_000_000; // 2MB
     for chunk in output_data.chunks(CHUNK_SIZE) {
-        socket.send(ws::Message::Binary(chunk.to_vec())).await?;
+        socket
+            .send(ws::Message::binary(Bytes::copy_from_slice(chunk)))
+            .await?;
     }
 
     Ok(())
@@ -127,7 +130,7 @@ async fn json_to_socket(
     payload: &impl merde::Serialize,
 ) -> eyre::Result<()> {
     let json_string = merde::json::to_string(payload)?;
-    socket.send(ws::Message::Text(json_string)).await?;
+    socket.send(ws::Message::text(json_string)).await?;
     Ok(())
 }
 

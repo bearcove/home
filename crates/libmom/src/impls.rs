@@ -95,7 +95,7 @@ pub(crate) fn global_state() -> &'static MomGlobalState {
 impl MomGlobalState {
     pub(crate) fn event_to_message(event: MomEvent) -> ws::Message {
         let json_string = merde::json::to_string(&event).unwrap();
-        ws::Message::Text(json_string)
+        ws::Message::text(json_string)
     }
 
     pub(crate) fn broadcast_event(&self, event: MomEvent) -> eyre::Result<()> {

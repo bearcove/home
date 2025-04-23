@@ -5,7 +5,6 @@ use crate::impls::{
     types::DomainResolution,
 };
 use axum::{
-    async_trait,
     body::Bytes,
     extract::FromRequestParts,
     http::{StatusCode, header, request::Parts},
@@ -47,7 +46,6 @@ impl std::fmt::Debug for CubReqImpl {
     }
 }
 
-#[async_trait]
 impl<S> FromRequestParts<S> for CubReqImpl
 where
     S: Send + Sync + 'static,
@@ -398,10 +396,10 @@ impl WebSocketStream for WsWrapper {
         Box::pin(async move {
             use axum::extract::ws;
             let msg = match frame {
-                libwebsock::Frame::Text(text) => ws::Message::Text(text),
-                libwebsock::Frame::Binary(bytes) => ws::Message::Binary(bytes),
-                libwebsock::Frame::Ping(data) => ws::Message::Ping(data),
-                libwebsock::Frame::Pong(data) => ws::Message::Pong(data),
+                libwebsock::Frame::Text(text) => ws::Message::text(text),
+                libwebsock::Frame::Binary(bytes) => ws::Message::binary(bytes),
+                libwebsock::Frame::Ping(data) => ws::Message::Ping(data.into()),
+                libwebsock::Frame::Pong(data) => ws::Message::Pong(data.into()),
                 libwebsock::Frame::Close(frame) => {
                     ws::Message::Close(frame.map(|f| ws::CloseFrame {
                         code: f.code,
@@ -422,7 +420,7 @@ impl WebSocketStream for WsWrapper {
     fn send_binary(&mut self, msg: Vec<u8>) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             self.0
-                .send(axum::extract::ws::Message::Binary(msg))
+                .send(axum::extract::ws::Message::binary(msg))
                 .await
                 .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
             Ok(())
@@ -432,7 +430,7 @@ impl WebSocketStream for WsWrapper {
     fn send_text(&mut self, msg: String) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             self.0
-                .send(axum::extract::ws::Message::Text(msg))
+                .send(axum::extract::ws::Message::text(msg))
                 .await
                 .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
             Ok(())
@@ -445,14 +443,16 @@ impl WebSocketStream for WsWrapper {
             let res = match self.0.recv().await? {
                 Ok(msg) => {
                     let frame = match msg {
-                        ws::Message::Text(text) => libwebsock::Frame::Text(text),
-                        ws::Message::Binary(bytes) => libwebsock::Frame::Binary(bytes),
-                        ws::Message::Ping(bytes) => libwebsock::Frame::Ping(bytes),
-                        ws::Message::Pong(bytes) => libwebsock::Frame::Pong(bytes),
+                        ws::Message::Text(text) => {
+                            libwebsock::Frame::Text(text.as_str().to_owned())
+                        }
+                        ws::Message::Binary(bytes) => libwebsock::Frame::Binary(bytes.into()),
+                        ws::Message::Ping(bytes) => libwebsock::Frame::Ping(bytes.into()),
+                        ws::Message::Pong(bytes) => libwebsock::Frame::Pong(bytes.into()),
                         ws::Message::Close(frame) => {
                             libwebsock::Frame::Close(frame.map(|f| libwebsock::CloseFrame {
                                 code: f.code,
-                                reason: f.reason.into(),
+                                reason: f.reason.as_str().to_owned(),
                             }))
                         }
                     };

@@ -115,7 +115,7 @@ impl MsgSender<'_> {
 
         if let Err(e) = self
             .sock
-            .send(ws::Message::Text(merde::json::to_string(&msg).unwrap()))
+            .send(ws::Message::text(merde::json::to_string(&msg).unwrap()))
             .await
         {
             tracing::error!("Failed to send WebSocket message: {}", e);
