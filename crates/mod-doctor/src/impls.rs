@@ -1,10 +1,7 @@
 use std::{fmt, io::Write};
 
-use commands::check_all_commands;
-use modules::check_modules;
-
 mod commands;
-mod modules;
+use commands::check_all_commands;
 
 enum DoctorError {
     BinaryNotFound(FailedCheck),
@@ -97,7 +94,6 @@ pub(crate) async fn doctor() -> Result<(), i32> {
 
     let mut errors = Vec::new();
     errors.extend(check_all_commands().await);
-    errors.extend(check_modules().await);
 
     done.store(true, Ordering::Relaxed);
     spinner.join().unwrap();
