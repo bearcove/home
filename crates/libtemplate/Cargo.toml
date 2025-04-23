@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 conflux = { path = "../conflux" }
 mom = { path = "../mom" }
 search = { path = "../search" }
@@ -27,7 +26,6 @@ credentials = { path = "../credentials" }
 htmlrewrite = { path = "../htmlrewrite" }
 time = { version = "0.3.41", features = ["formatting", "parsing"] }
 merde = { workspace = true, features = ["time"] }
-dylo-runtime = "2.5.0"
 image = { version = "0.1.0", path = "../image" }
 media = { version = "0.1.0", path = "../media" }
 noteyre = { version = "0.1.0", path = "../noteyre" }

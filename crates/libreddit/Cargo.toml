@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 config = { path = "../config" }
 libhttpclient = { path = "../../libs/libhttpclient" }
 
@@ -15,7 +14,6 @@ libhttpclient = { path = "../../libs/libhttpclient" }
 merde = { workspace = true }
 tracing = { version = "0.1" }
 url = { version = "2.5.4" }
-dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
 futures-core = "0.3.31"
 

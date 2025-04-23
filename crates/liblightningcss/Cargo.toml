@@ -7,11 +7,9 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 
 # impl dependencies
 lightningcss = { version = "1.0.0-alpha.65", features = ["browserslist"] }
-dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]

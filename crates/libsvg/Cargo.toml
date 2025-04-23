@@ -7,8 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
-dylo-runtime = "2.5.0"
 quick-xml = { version = "0.37.3" }
 conflux = { path = "../conflux" }
 tokio = { workspace = true, features = ["time", "process", "sync"] }

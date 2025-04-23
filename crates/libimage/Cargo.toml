@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 
 # impl deps
 image = { version = "0.25.6", default-features = false, features = [
@@ -23,7 +22,6 @@ webp = { version = "0.3.0" }
 jxl-oxide = { version = "0.8.1" }
 tracing = { version = "0.1.41" }
 content-type = { path = "../content-type" }
-dylo-runtime = "2.5.0"
 merde = { workspace = true, features = ["time"] }
 jpegxl-rs = { version = "0.11.2", features = ["vendored"] }
 ordered-float = "4.6.0"

@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 camino = { version = "1.1.9", features = ["serde1"] }
 fs-err = { version = "2.11.0" }
 dotenvy = { version = "0.15.7" }
@@ -15,7 +14,6 @@ figment = { version = "0.10.19", features = ["env", "json"] }
 serde = { version = "1.0.219", features = ["derive"] }
 plait = { path = "../plait" }
 merde = { workspace = true, features = ["camino"] }
-dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
 base64 = "0.22.1"
 serde_json = { version = "1.0.140" }

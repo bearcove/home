@@ -17,8 +17,6 @@ slug = { version = "0.1.6" }
 template-types = { path = "../template-types" }
 highlight = { path = "../highlight" }
 math = { path = "../math" }
-dylo.workspace = true
-dylo-runtime = "2.5.0"
 config = { version = "0.1.0", path = "../config" }
 media = { version = "0.1.0", path = "../media" }
 noteyre = { version = "0.1.0", path = "../noteyre" }

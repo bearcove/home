@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 conflux = { path = "../conflux" }
 
 # impl deps
@@ -18,7 +17,6 @@ indicium = { version = "0.6.5", features = [
 ], default-features = false }
 tantivy = { version = "0.22.0" }
 tracing = { workspace = true }
-dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
 config = { version = "0.1.0", path = "../config" }
 percent-encoding = "2.3.1"

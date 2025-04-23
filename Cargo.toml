@@ -5,7 +5,7 @@ members = [
     "libs/libhttpclient",
     "libs/libpatreon",
 ]
-exclude = ["crates/.zed", "crates-outside-workspace/rubicon-exports"]
+exclude = []
 resolver = "3"
 
 [workspace.package]

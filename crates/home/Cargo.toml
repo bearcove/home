@@ -8,7 +8,6 @@ name = "home"
 path = "src/main.rs"
 
 [dependencies]
-dylo-runtime = { version = "2.5.1", features = ["import-globals"] }
 eyre = "0.6.12"
 tokio = { version = "1.44.1", features = ["full"] }
 libc = "0.2.171"

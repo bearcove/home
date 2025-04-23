@@ -7,7 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 futures-util = "0.3.31"
 bytes = "1"
 rubicon = "3.4.9"
@@ -21,7 +20,6 @@ config = { path = "../config" }
 merde.workspace = true
 rusqlite = { workspace = true }
 plait = { path = "../plait" }
-dylo-runtime = "2.5.0"
 futures-core = "0.3.31"
 facet.workspace = true
 

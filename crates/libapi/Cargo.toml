@@ -14,7 +14,6 @@ tracing = { workspace = true }
 # core dependencies
 hattip = { version = "0.1.0", path = "../hattip" }
 cub-types = { version = "0.1.0", path = "../cub-types" }
-dylo-runtime = "2.5.0"
 
 [features]
 default = ["impl"]

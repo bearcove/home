@@ -7,8 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
-dylo-runtime = "2.5.0"
 merde.workspace = true
 
 # impl deps

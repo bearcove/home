@@ -204,7 +204,6 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "cub-types",
- "dylo-runtime",
  "hattip",
  "reddit",
  "tracing",
@@ -695,7 +694,6 @@ dependencies = [
  "content-type",
  "cub-types",
  "derivations",
- "dylo-runtime",
  "futures-core",
  "hattip",
  "http-range",
@@ -764,7 +762,6 @@ version = "0.1.0"
 dependencies = [
  "camino",
  "clap 4.5.37",
- "dylo-runtime",
 ]
 
 [[package]]
@@ -883,7 +880,6 @@ version = "0.1.0"
 dependencies = [
  "brotli",
  "bytes",
- "dylo-runtime",
  "flate2",
 ]
 

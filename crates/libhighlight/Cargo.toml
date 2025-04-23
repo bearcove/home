@@ -7,13 +7,11 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-dylo.workspace = true
 # impl dependencies
 dumbcache = { path = "../dumbcache" }
 tracing = { version = "0.1.41" }
 tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" }
 nerdfonts = { path = "../nerdfonts" }
-dylo-runtime = "2.5.0"
 
 
 [features]
