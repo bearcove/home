@@ -19,7 +19,6 @@ use eyre::Result;
 use futures_core::future::BoxFuture;
 use hattip::{HBody, HError, HReply};
 use http::{Uri, request};
-use noteyre::BsForResults;
 use std::{sync::Arc, time::Instant};
 use template::{DataObject, DataValue, RenderTemplateArgs};
 use tower_cookies::{Cookies, PrivateCookies};

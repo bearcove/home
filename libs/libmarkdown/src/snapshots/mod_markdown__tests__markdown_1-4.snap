@@ -1,5 +1,0 @@
----
-source: mods/markdown/src/lib.rs
-expression: html
----
-<h1><a id="hello-world" href="#hello-world" class="anchor"></a>Hello World</h1><p>This is a test.</p><h2><a id="subheading" href="#subheading" class="anchor"></a>Subheading</h2><h3><a id="subsubheading" href="#subsubheading" class="anchor"></a>Subsubheading</h3><h2><a id="now-with-some-code" href="#now-with-some-code" class="anchor"></a>Now <code>with</code> some code</h2><p>And a paragraph.</p>

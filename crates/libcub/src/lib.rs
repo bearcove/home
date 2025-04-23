@@ -23,7 +23,7 @@ impl Mod for ModImpl {
         Box::pin(async {
             impls::serve(config, ln, open_behavior)
                 .await
-                .map_err(|e| noteyre::eyre!("{}", e))
+                .map_err(|e| eyre::eyre!("{}", e))
         })
     }
 }
@@ -31,7 +31,7 @@ impl Mod for ModImpl {
 #[cfg(feature = "impl")]
 mod impls;
 
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub use eyre::Result;
 
 include!(".dylo/spec.rs");
 include!(".dylo/support.rs");

@@ -8,12 +8,7 @@ crate-type = ["dylib"]
 
 [dependencies]
 # impl dependencies
-dumbcache = { path = "../dumbcache" }
+dumbcache = { path = "../../crates/dumbcache" }
 tracing = { version = "0.1.41" }
 tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" }
-nerdfonts = { path = "../nerdfonts" }
-
-
-[features]
-default = ["impl"]
-impl = []
+libnerdfonts = { path = "../libnerdfonts" }

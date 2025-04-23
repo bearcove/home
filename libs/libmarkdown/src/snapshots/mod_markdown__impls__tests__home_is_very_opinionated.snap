@@ -1,7 +1,0 @@
----
-source: crates/mod-markdown/src/impls.rs
-expression: html
-snapshot_kind: text
----
-<a id="home-is-very-opinionated" href="#home-is-very-opinionated" class="anchor"><h2>home is <em>very</em> opinionated</h2></a>
-<p data-bo="31">This is some content.</p>

@@ -7,25 +7,20 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-config = { path = "../config" }
-conflux = { path = "../conflux" }
+libconfig = { path = "../libconfig" }
+conflux = { path = "../../crates/conflux" }
 
 # impl deps
 merde = { workspace = true, features = ["json"] }
 rand = { version = "0.8.5" }
 tokio = { workspace = true, features = ["time"] }
 tracing = { version = "0.1.41" }
-credentials = { path = "../credentials" }
+credentials = { path = "../../crates/credentials" }
 mom = { path = "../mom" }
 patreon = { path = "../patreon" }
 bytes = "1.10.1"
 websock = { path = "../websock" }
 objectstore = { path = "../objectstore" }
-noteyre = { version = "0.1.0", path = "../noteyre" }
 futures-core = "0.3.31"
-libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
-libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
-
-[features]
-default = ["impl"]
-impl = []
+libgithub = { version = "0.1.0", path = "../libgithub" }
+libhttpclient = { version = "0.1.0", path = "../libhttpclient" }

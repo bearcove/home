@@ -11,7 +11,7 @@ use itertools::Itertools;
 use media::MediaMarkupOpts;
 use merde::time::Rfc3339;
 use minijinja::value::{Kwargs, Object, Value};
-use noteyre::BsForResults;
+use eyre::BsForResults;
 use rand::seq::SliceRandom;
 use search::Index;
 
@@ -65,7 +65,7 @@ impl LoadedPageVal {
         let page = page_number.unwrap_or(1) as usize;
         let zero_indexed_page_number = page
             .checked_sub(1)
-            .ok_or_else(|| noteyre::eyre!("page out of range: must be >= 1"))?;
+            .ok_or_else(|| eyre::eyre!("page out of range: must be >= 1"))?;
 
         let per_page = per_page.unwrap_or(u64::MAX) as usize;
 
@@ -91,7 +91,7 @@ impl LoadedPageVal {
                 filter = &parts_filter;
                 ListingKind::SeriesParts
             }
-            _ => noteyre::bail!("Not a listing page"),
+            _ => eyre::bail!("Not a listing page"),
         };
 
         let rv = globals.rv.as_ref();

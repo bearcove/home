@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 closest = { version = "0.1.0", path = "../closest" }
-config = { version = "0.1.0", path = "../config" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
 conflux = { version = "0.1.0", path = "../conflux" }
 content-type = { version = "0.1.0", path = "../content-type" }
 image = { version = "0.1.0", path = "../image" }

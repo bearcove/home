@@ -12,11 +12,11 @@ use conflux::DerivationHash;
 use conflux::Input;
 use conflux::{InputPath, Pak};
 use derivations::DerivationInfo;
+use eyre::BS;
 use futures_core::future::BoxFuture;
 use media_types::TargetFormat;
 use media_types::TranscodingProgress;
 use merde::CowStr;
-use noteyre::BS;
 use objectstore::ObjectStoreKey;
 use std::time::Instant;
 use std::{collections::HashMap, sync::Arc};
@@ -25,7 +25,7 @@ use std::{collections::HashMap, sync::Arc};
 #[derive(Default)]
 struct ModImpl;
 
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
 
 pub struct MomServeArgs {
     pub config: MomConfig,
@@ -331,8 +331,8 @@ merde::derive! {
 
 pub mod media_types {
     use conflux::{MediaProps, VCodec};
+    use eyre::BS;
     use image::ICodec;
-    use noteyre::BS;
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub enum TargetFormat {

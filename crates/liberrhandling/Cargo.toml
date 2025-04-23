@@ -17,7 +17,3 @@ color-eyre = { version = "0.6.3", default-features = false, features = [
     "track-caller",
 ] }
 termcolor = { version = "1.4.1" }
-
-[features]
-default = ["impl"]
-impl = []

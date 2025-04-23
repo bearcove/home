@@ -8,5 +8,5 @@ camino = "1.1.9"
 conflux = { version = "0.1.0", path = "../conflux" }
 eyre.workspace = true
 ffmpeg-sidecar = "2.0.5"
-image = { version = "0.1.0", path = "../image" }
+libimage = { version = "0.1.0", path = "../libimage" }
 tokio.workspace = true

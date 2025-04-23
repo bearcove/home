@@ -1,8 +1,8 @@
 use axum::{
     body::Body,
     http::{
-        StatusCode,
         header::{self, CONTENT_TYPE},
+        StatusCode,
     },
     response::{IntoResponse, Response},
 };
@@ -133,8 +133,8 @@ impl From<merde::MerdeError<'_>> for HttpError {
     }
 }
 
-impl From<noteyre::BS> for HttpError {
-    fn from(err: noteyre::BS) -> Self {
+impl From<eyre::BS> for HttpError {
+    fn from(err: eyre::BS) -> Self {
         Self::from_report(err.into())
     }
 }

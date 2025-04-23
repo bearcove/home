@@ -19,7 +19,6 @@ highlight = { path = "../highlight" }
 math = { path = "../math" }
 config = { version = "0.1.0", path = "../config" }
 media = { version = "0.1.0", path = "../media" }
-noteyre = { version = "0.1.0", path = "../noteyre" }
 
 [dev-dependencies]
 indoc = "2.0.6"

@@ -12,9 +12,9 @@ eyre = "0.6.12"
 tokio = { version = "1.44.1", features = ["full"] }
 libc = "0.2.171"
 errhandling = { version = "0.1.0", path = "../errhandling" }
-config = { version = "0.1.0", path = "../config" }
-clap = { path = "../clap" }
-term = { path = "../term" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
+libclap = { path = "../libclap" }
+libterm = { path = "../libterm" }
 cub = { path = "../cub" }
 mom = { path = "../mom" }
 tracingsub = { path = "../tracingsub" }

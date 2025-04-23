@@ -19,7 +19,7 @@ credentials = { path = "../credentials" }
 url = "2.5.4"
 serde = { version = "1.0" }
 rusqlite = { workspace = true }
-objectstore = { path = "../objectstore" }
+libobjectstore = { path = "../libobjectstore" }
 facet.workspace = true
 
 [features]

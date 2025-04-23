@@ -8,22 +8,16 @@ crate-type = ["dylib"]
 
 [dependencies]
 bytesize = { version = "2.0.1" }
-config = { version = "0.1.0", path = "../config" }
-conflux = { version = "0.1.0", path = "../conflux" }
-content-type = { version = "0.1.0", path = "../content-type" }
-derivations = { version = "0.1.0", path = "../derivations" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
+conflux = { version = "0.1.0", path = "../../crates/conflux" }
+content-type = { version = "0.1.0", path = "../../crates/content-type" }
+derivations = { version = "0.1.0", path = "../../crates/derivations" }
 http-range = { version = "0.1.5" }
-libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
-mom = { version = "0.1.0", path = "../mom" }
+libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
+libmom = { version = "0.1.0", path = "../libmom" }
 tokio = { workspace = true }
 tracing = { workspace = true }
-websock = { version = "0.1.0", path = "../websock" }
-
-# core dependencies
-hattip = { version = "0.1.0", path = "../hattip" }
-cub-types = { version = "0.1.0", path = "../cub-types" }
+libwebsock = { version = "0.1.0", path = "../libwebsock" }
+hattip = { version = "0.1.0", path = "../../crates/hattip" }
+libcub = { version = "0.1.0", path = "../libcub" }
 futures-core = "0.3.31"
-
-[features]
-default = ["impl"]
-impl = []

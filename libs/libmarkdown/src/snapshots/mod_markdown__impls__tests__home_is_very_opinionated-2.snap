@@ -1,7 +1,0 @@
----
-source: crates/mod-markdown/src/impls.rs
-expression: result.plain_text
-snapshot_kind: text
----
-home is very opinionated
-This is some content.

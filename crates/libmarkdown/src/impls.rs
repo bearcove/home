@@ -7,13 +7,13 @@ use std::{
 
 use bo_inserter::BoInserter;
 use conflux::{BsForResults, Href, Media};
+use eyre::{bail, eyre};
 use media::MediaMarkupOpts;
-use noteyre::{bail, eyre};
 use pulldown_cmark::{
     Alignment, CodeBlockKind, CowStr, Event, HeadingLevel, LinkType, MetadataBlockKind, Options,
     Parser, Tag, TagEnd,
 };
-use saphyr::{Yaml, yaml::YamlLoader};
+use saphyr::{yaml::YamlLoader, Yaml};
 
 use conflux::{InputPath, InputPathRef, Markdown, TocEntry};
 use math::MathMode;
@@ -192,7 +192,7 @@ impl<'a> Formatter<'a> {
         }
     }
 
-    fn writer(&mut self) -> noteyre::Result<&mut dyn std::io::Write> {
+    fn writer(&mut self) -> eyre::Result<&mut dyn std::io::Write> {
         if self.mode == FormatterMode::JustCollectDependencies {
             return Ok(&mut self.discard_writer);
         }
@@ -207,7 +207,7 @@ impl<'a> Formatter<'a> {
         Ok(self.args.w)
     }
 
-    fn push(&mut self, item: StackItem<'a>) -> noteyre::Result<PopPushKind> {
+    fn push(&mut self, item: StackItem<'a>) -> eyre::Result<PopPushKind> {
         if let Some(last_mut) = self.last_mut() {
             if let Some(substack) = last_mut.substack() {
                 substack.push(item);
@@ -288,7 +288,7 @@ impl<'a> Formatter<'a> {
         }
     }
 
-    fn write_raw_html(&mut self, text: &str) -> noteyre::Result<()> {
+    fn write_raw_html(&mut self, text: &str) -> eyre::Result<()> {
         if self.mode == FormatterMode::JustCollectDependencies {
             return Ok(());
         }
@@ -311,7 +311,7 @@ impl<'a> Formatter<'a> {
         Ok(())
     }
 
-    fn escape_and_write_html(&mut self, text: &str) -> noteyre::Result<()> {
+    fn escape_and_write_html(&mut self, text: &str) -> eyre::Result<()> {
         if self.mode == FormatterMode::JustCollectDependencies {
             return Ok(());
         }
@@ -340,7 +340,7 @@ impl<'a> Formatter<'a> {
         Ok(())
     }
 
-    fn start_code_block(&mut self, lang: CowStr<'a>, byte_offset: usize) -> noteyre::Result<()> {
+    fn start_code_block(&mut self, lang: CowStr<'a>, byte_offset: usize) -> eyre::Result<()> {
         self.push(StackItem::CodeBlock {
             lang,
             plain_text: Default::default(),
@@ -366,7 +366,7 @@ pub(crate) fn options() -> Options {
 type EvPair<'a> = (Event<'a>, Range<usize>);
 
 impl<'a> Formatter<'a> {
-    fn process_event(&mut self, ev_buf: &mut VecDeque<EvPair<'a>>) -> noteyre::Result<()> {
+    fn process_event(&mut self, ev_buf: &mut VecDeque<EvPair<'a>>) -> eyre::Result<()> {
         let ev = match ev_buf.pop_front() {
             Some(ev) => ev,
             None => return Ok(()),
@@ -1013,7 +1013,7 @@ impl<'a> Formatter<'a> {
         Ok(())
     }
 
-    fn process_image(&mut self, image_item: &ImageItem<'a>) -> noteyre::Result<()> {
+    fn process_image(&mut self, image_item: &ImageItem<'a>) -> eyre::Result<()> {
         let ImageItem {
             link_type,
             dest_url,
@@ -1074,7 +1074,7 @@ impl<'a> Formatter<'a> {
         Ok(())
     }
 
-    pub(crate) fn drain_parser(&mut self, parser: Parser<'a>) -> noteyre::Result<()> {
+    pub(crate) fn drain_parser(&mut self, parser: Parser<'a>) -> eyre::Result<()> {
         let mut ev_buf = VecDeque::new();
         let mut eof = false;
         static BUF_SIZE: usize = 4;
@@ -1122,7 +1122,7 @@ impl<'a> Formatter<'a> {
         self.result.reading_time = (prose_reading_time + code_reading_time).ceil() as i64;
     }
 
-    fn process_nested_markdown(&mut self, markdown: &Markdown) -> noteyre::Result<()> {
+    fn process_nested_markdown(&mut self, markdown: &Markdown) -> eyre::Result<()> {
         trace!("\n>>>> Nested markdown starts...");
 
         let nested_parser = Parser::new_ext(markdown.as_str(), options());
@@ -1178,7 +1178,7 @@ impl<'a> Formatter<'a> {
     }
 }
 
-fn yaml_to_data_object(yaml: &Yaml) -> noteyre::Result<DataObject> {
+fn yaml_to_data_object(yaml: &Yaml) -> eyre::Result<DataObject> {
     let mut data_object = DataObject::new();
 
     if let Yaml::Null = yaml {
@@ -1308,7 +1308,7 @@ mod tests {
             input: &str,
             _mode: math::MathMode,
             w: &mut dyn std::io::Write,
-        ) -> noteyre::Result<()> {
+        ) -> eyre::Result<()> {
             write!(w, "<span class=\"mathml\">{}</span>", input)?;
             Ok(())
         }
@@ -1320,7 +1320,7 @@ mod tests {
             &self,
             _w: &mut dyn std::io::Write,
             _args: RenderTemplateArgs<'_>,
-        ) -> noteyre::Result<()> {
+        ) -> eyre::Result<()> {
             todo!()
         }
 
@@ -1330,7 +1330,7 @@ mod tests {
             args: template_types::Shortcode<'_>,
             _rv: Arc<dyn RevisionView>,
             _web: WebConfig,
-        ) -> noteyre::Result<RenderShortcodeResult> {
+        ) -> eyre::Result<RenderShortcodeResult> {
             writeln!(w, "Before:")?;
             writeln!(w, "{}", args.body.unwrap_or_default())?;
             writeln!(w, "After (also, with args {:?})", args.args)?;
@@ -1344,7 +1344,7 @@ mod tests {
     struct DummyMedia;
 
     impl media::Mod for DummyMedia {
-        fn media_html_markup(&self, _opts: media::MediaMarkupOpts) -> noteyre::Result<String> {
+        fn media_html_markup(&self, _opts: media::MediaMarkupOpts) -> eyre::Result<String> {
             Ok("<img>".into())
         }
     }

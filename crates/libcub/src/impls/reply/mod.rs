@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    http::{HeaderName, StatusCode, header},
+    http::{header, HeaderName, StatusCode},
     response::{IntoResponse, Response},
 };
 use config::is_production;
@@ -282,12 +282,6 @@ impl_from!(objectstore::Error);
 impl<'s> From<merde::MerdeError<'s>> for LegacyHttpError {
     fn from(err: merde::MerdeError<'s>) -> Self {
         Self::from_report(err.into_static().into())
-    }
-}
-
-impl From<noteyre::BS> for LegacyHttpError {
-    fn from(err: noteyre::BS) -> Self {
-        Self::from_report(err.into())
     }
 }
 

@@ -1,5 +1,0 @@
----
-source: mods/markdown/src/lib.rs
-expression: html
----
-<p>Before:</p><p>I am not sure about that</p><p>After (also, with args {})</p>

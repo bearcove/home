@@ -8,8 +8,6 @@ crate-type = ["dylib"]
 
 [dependencies]
 clap = { path = "../clap" }
-
-# impl deps
 anstyle-parse = { version = "0.2.6" }
 coolor = { version = "0.9.0" }
 displaydoc = { version = "0.2.5" }
@@ -22,7 +20,3 @@ term_size = { version = "0.3.2" }
 termion = { version = "4.0.4" }
 tracing = { version = "0.1.41" }
 which = { version = "6.0.3" }
-
-[features]
-default = ["impl"]
-impl = []

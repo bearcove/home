@@ -2,8 +2,5 @@
 // To regenerate, run `dylo gen` in the root of the workspace directory
 // For more information, see https://github.com/bearcove/dylo
 pub trait Mod: Send + Sync + 'static {
-    fn make_collection(
-        &self,
-        args: CompileArgs,
-    ) -> noteyre::Result<Box<dyn TemplateCollection>>;
+    fn make_collection(&self, args: CompileArgs) -> eyre::Result<Box<dyn TemplateCollection>>;
 }

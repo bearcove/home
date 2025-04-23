@@ -7,14 +7,11 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-noteyre = { path = "../noteyre" }
 camino = { version = "1.1.9" }
-
-# impl deps — these are only used in `mod-cub`
 merde = { workspace = true, features = ["yaml"] }
-mom = { path = "../mom" }
-conflux = { path = "../conflux" }
-momclient = { path = "../momclient" }
+libmom = { path = "../libmom" }
+conflux = { path = "../../crates/conflux" }
+libmomclient = { path = "../libmomclient" }
 axum = { version = "0.7.9", default-features = false, features = [
     "http1",
     "tokio",
@@ -31,51 +28,46 @@ eyre = { workspace = true }
 time = { version = "0.3.41", features = ["formatting"] }
 parking_lot = { version = "0.12.3" }
 url = { version = "2.5.4", features = ["serde"] }
-derivations = { path = "../derivations" }
-search = { path = "../search" }
-template = { path = "../template" }
-objectstore = { path = "../objectstore" }
-term = { path = "../term" }
+derivations = { path = "../../crates/derivations" }
+libsearch = { path = "../libsearch" }
+libtemplate = { path = "../libtemplate" }
+libobjectstore = { path = "../libobjectstore" }
+libterm = { path = "../libterm" }
 nix = { version = "0.29.0", features = ["process", "signal"] }
 http = { version = "1.3.1" }
 http-body-util = { version = "0.1.3" }
-compress = { path = "../compress" }
+libcompress = { path = "../libcompress" }
 pin-project-lite = { version = "0.2.16" }
 rand = { version = "0.8.5" }
 strsim = { version = "0.11.1" }
-webpage = { path = "../webpage" }
+libwebpage = { path = "../libwebpage" }
 flume = { version = "0.11.1" }
 bytesize = { version = "1.3.2" }
-image = { path = "../image" }
+libimage = { path = "../libimage" }
 tempfile = { version = "3.19.1" }
-uffmpeg = { path = "../uffmpeg" }
-libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
-patreon = { path = "../patreon" }
+uffmpeg = { path = "../../crates/uffmpeg" }
+libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
+libpatreon = { path = "../libpatreon" }
 serde = { workspace = true, features = ["derive"] }
-content-type = { path = "../content-type" }
+content-type = { path = "../../crates/content-type" }
 itertools = { version = "0.14.0" }
-closest = { version = "0.1.0", path = "../closest" }
+closest = { version = "0.1.0", path = "../../crates/closest" }
 ulid = { version = "1.2.1" }
-errhandling = { version = "0.1.0", path = "../errhandling" }
-credentials = { path = "../credentials" }
+liberrhandling = { path = "../liberrhandling" }
+credentials = { path = "../../crates/credentials" }
 libc = { version = "0.2.171" }
 regex = { version = "1.11.1" }
 strip-ansi-escapes = { version = "0.2.1" }
-cdn = { version = "0.1.0", path = "../cdn" }
-hattip = { version = "0.1.0", path = "../hattip" }
-api = { version = "0.1.0", path = "../api" }
-websock = { version = "0.1.0", path = "../websock" }
+libcdn = { version = "0.1.0", path = "../libcdn" }
+hattip = { version = "0.1.0", path = "../../crates/hattip" }
+libapi = { version = "0.1.0", path = "../libapi" }
+libwebsock = { version = "0.1.0", path = "../libwebsock" }
 hyper = { version = "1.6.0" }
 futures-core = "0.3.31"
-cub-types = { version = "0.1.0", path = "../cub-types" }
+cub-types = { version = "0.1.0", path = "../../crates/cub-types" }
 futures-util = { version = "0.3.31" }
 tempdir = { version = "0.3.7" }
-revision = { version = "0.1.0", path = "../revision" }
-config = { version = "0.1.0", path = "../config" }
+librevision = { version = "0.1.0", path = "../librevision" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
 open = { version = "5.3.2" }
-libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
-
-# the `mod-cub` crate is built with `impl` enabled, which brings in the impl-only deps
-[features]
-default = ["impl"]
-impl = []
+libgithub = { version = "0.1.0", path = "../libgithub" }

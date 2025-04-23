@@ -7,11 +7,7 @@ use std::{io::Write, time::Instant};
 
 use std::fmt;
 
-use noteyre::BS;
-
 use content_type::ContentType;
-#[cfg(feature = "impl")]
-use noteyre::BsForResults;
 
 #[cfg(feature = "impl")]
 use image::{DynamicImage, ImageDecoder, Rgb, Rgba};
@@ -26,7 +22,7 @@ use rgb::FromSlice;
 #[derive(Default)]
 struct ModImpl;
 
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub use eyre::Result;
 
 #[dylo::export]
 impl Mod for ModImpl {

@@ -3,7 +3,7 @@ include!(".dylo/support.rs");
 
 use config::WebConfig;
 #[cfg(feature = "impl")]
-use noteyre::BsForResults;
+use eyre::BsForResults;
 
 use conflux::RevisionView;
 use conflux::{Completion, InputPath, LoadedPage, SearchResults, Viewer};
@@ -12,14 +12,14 @@ use conflux::{CompletionKind, Html, SearchResult};
 
 #[cfg(feature = "impl")]
 use tantivy::{
-    SnippetGenerator, TantivyDocument,
     collector::{Count, TopDocs},
     schema::{
-        INDEXED, IndexRecordOption, STORED, Schema, TEXT, TextFieldIndexing, TextOptions, Value,
+        IndexRecordOption, Schema, TextFieldIndexing, TextOptions, Value, INDEXED, STORED, TEXT,
     },
+    SnippetGenerator, TantivyDocument,
 };
 
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
 
 #[cfg(feature = "impl")]
 #[derive(Default)]
@@ -467,7 +467,7 @@ impl indicium::simple::Indexable for IndexableCompat {
     }
 }
 
-use percent_encoding::{AsciiSet, CONTROLS, percent_encode};
+use percent_encoding::{percent_encode, AsciiSet, CONTROLS};
 
 // Define the custom encode set for fragments, encoding '-' and '.'
 // Standard fragment encoding doesn't encode these, but some contexts might require it.

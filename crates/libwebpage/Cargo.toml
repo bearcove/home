@@ -8,17 +8,11 @@ crate-type = ["dylib"]
 
 [dependencies]
 merde.workspace = true
-
-# impl deps
 webpage = { version = "2.0.1", default-features = false }
 tokio = { workspace = true }
 url = { version = "2.5.4" }
 base64 = { version = "0.22.1" }
 futures-util = { version = "0.3.31" }
-image = { version = "0.1.0", path = "../image" }
+libimage = { version = "0.1.0", path = "../libimage" }
 futures-core = "0.3.31"
-libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
-
-[features]
-default = ["impl"]
-impl = []
+libhttpclient = { version = "0.1.0", path = "../libhttpclient" }

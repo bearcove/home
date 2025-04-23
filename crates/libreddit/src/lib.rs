@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 #[cfg(feature = "impl")]
 use libhttpclient::form_urlencoded;
 #[cfg(feature = "impl")]
-use noteyre::{BS, BsForResults};
+use eyre::{BS, BsForResults};
 #[cfg(feature = "impl")]
 use tracing::{debug, info, trace};
 
@@ -47,7 +47,7 @@ impl Default for ModImpl {
     }
 }
 
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
 
 #[dylo::export]
 impl Mod for ModImpl {

@@ -133,7 +133,7 @@ pub(crate) async fn serve(
     )
     .with_graceful_shutdown(quit_sig)
     .await
-    .map_err(|e| noteyre::eyre!("Failed to serve: {}", e))?;
+    .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
 
     Ok(())
 }
@@ -157,14 +157,14 @@ async fn setup_mom_client(
     let mom_client = mod_momclient
         .client(mcc.clone())
         .await
-        .map_err(|e| noteyre::eyre!("Failed to create mom client: {}", e))?;
+        .map_err(|e| eyre::eyre!("Failed to create mom client: {}", e))?;
 
     let (mev_tx, mev_rx) = tokio::sync::mpsc::channel::<MomEvent<'static>>(2);
 
     mod_momclient
         .subscribe_to_mom_events(Box::new(MomEventRelay { mev_tx }), mcc)
         .await
-        .map_err(|e| noteyre::eyre!("Failed to subscribe to mom events: {}", e))?;
+        .map_err(|e| eyre::eyre!("Failed to subscribe to mom events: {}", e))?;
 
     Ok((Arc::from(mom_client), mev_rx))
 }
@@ -313,7 +313,7 @@ async fn build_global_state(
         let (bx_rev, _) = broadcast::channel(128);
         let object_store = derivations::objectstore_for_tenant(ti, Environment::default())
             .await
-            .map_err(|e| noteyre::eyre!("Failed to get object store: {}", e))?;
+            .map_err(|e| eyre::eyre!("Failed to get object store: {}", e))?;
         let cookie_sauce = ti.tc.cookie_sauce();
         assert!(
             !cookie_sauce.is_empty(),

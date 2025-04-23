@@ -4,15 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-config = { version = "0.1.0", path = "../config" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
 conflux = { version = "0.1.0", path = "../conflux" }
 eyre.workspace = true
 futures-core = "0.3.31"
 hattip = { version = "0.1.0", path = "../hattip" }
-mom = { version = "0.1.0", path = "../mom" }
-momclient = { version = "0.1.0", path = "../momclient" }
-objectstore = { version = "0.1.0", path = "../objectstore" }
-search = { version = "0.1.0", path = "../search" }
+libmom = { version = "0.1.0", path = "../libmom" }
+libmomclient = { version = "0.1.0", path = "../libmomclient" }
+libobjectstore = { version = "0.1.0", path = "../libobjectstore" }
+libsearch = { version = "0.1.0", path = "../libsearch" }
 template-types = { version = "0.1.0", path = "../template-types" }
 time = "0.3.41"
-websock = { version = "0.1.0", path = "../websock" }
+libwebsock = { version = "0.1.0", path = "../libwebsock" }

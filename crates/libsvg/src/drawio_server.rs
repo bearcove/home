@@ -1,13 +1,13 @@
 use std::process::Stdio;
 
 use bytes::Bytes;
-use noteyre::bail;
+use eyre::bail;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::Command;
 
 use crate::DrawioToSvgOptions;
 
-pub async fn drawio_to_svg(input: Bytes, opts: DrawioToSvgOptions) -> noteyre::Result<Vec<u8>> {
+pub async fn drawio_to_svg(input: Bytes, opts: DrawioToSvgOptions) -> eyre::Result<Vec<u8>> {
     let mut cmd = Command::new("home-drawio");
     cmd.arg("convert");
     if opts.minify {

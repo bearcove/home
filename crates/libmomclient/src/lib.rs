@@ -17,7 +17,7 @@ use std::{sync::Arc, time::Instant};
 use tracing::info;
 
 #[cfg(feature = "impl")]
-use noteyre::BsForResults;
+use eyre::BsForResults;
 
 use bytes::Bytes;
 use conflux::RevisionIdRef;
@@ -46,7 +46,7 @@ pub trait MomEventListener: Send + 'static {
 #[derive(Default)]
 struct ModImpl;
 
-pub type Result<T, E = noteyre::BS> = std::result::Result<T, E>;
+pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
 
 #[dylo::export]
 impl Mod for ModImpl {
@@ -147,7 +147,7 @@ impl Mod for ModImpl {
                             let ev = match ev {
                                 websock::Frame::Text(ev) => ev,
                                 _ => {
-                                    return Err(noteyre::BS::from_string(
+                                    return Err(eyre::BS::from_string(
                                         "Expected text frame".into(),
                                     ));
                                 }
@@ -526,7 +526,7 @@ impl MediaUploader for MediaUploaderImpl {
                 let msg = match self.ws.receive().await {
                     Some(frame) => frame,
                     None => {
-                        return Err(noteyre::BS::from_string(
+                        return Err(eyre::BS::from_string(
                             "Connection closed unexpectedly (but gracefully)".to_string(),
                         ));
                     }
@@ -540,7 +540,7 @@ impl MediaUploader for MediaUploaderImpl {
                         match msg {
                             WebSocketMessage::TranscodingEvent(ev) => {
                                 if let Err(e) = self.listener.on_transcoding_event(ev).await {
-                                    return Err(noteyre::BS::from_string(format!(
+                                    return Err(eyre::BS::from_string(format!(
                                         "Could not notify progress: {e}"
                                     )));
                                 }
@@ -559,7 +559,7 @@ impl MediaUploader for MediaUploaderImpl {
                                             tracing::error!(
                                                 "WebSocket connection closed unexpectedly"
                                             );
-                                            return Err(noteyre::BS::from_string(
+                                            return Err(eyre::BS::from_string(
                                                 "WebSocket connection closed unexpectedly"
                                                     .to_string(),
                                             ));
@@ -585,7 +585,7 @@ impl MediaUploader for MediaUploaderImpl {
                                             }
                                         }
                                         _ => {
-                                            return Err(noteyre::BS::from_string(
+                                            return Err(eyre::BS::from_string(
                                                 "Expected binary frame".into(),
                                             ));
                                         }
@@ -594,17 +594,17 @@ impl MediaUploader for MediaUploaderImpl {
                             }
                             WebSocketMessage::Error(err) => {
                                 tracing::error!("Received error from transcoding server: {err}");
-                                return Err(noteyre::BS::from_string(err));
+                                return Err(eyre::BS::from_string(err));
                             }
                             _ => {
-                                return Err(noteyre::BS::from_string(
+                                return Err(eyre::BS::from_string(
                                     "Unexpected message type".into(),
                                 ));
                             }
                         }
                     }
                     _ => {
-                        return Err(noteyre::BS::from_string("Expected text message".into()));
+                        return Err(eyre::BS::from_string("Expected text message".into()));
                     }
                 }
             }

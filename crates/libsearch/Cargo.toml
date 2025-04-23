@@ -7,9 +7,7 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-conflux = { path = "../conflux" }
-
-# impl deps
+conflux = { path = "../../crates/conflux" }
 eyre = { workspace = true }
 html-escape = { version = "0.2.13" }
 indicium = { version = "0.6.5", features = [
@@ -17,10 +15,5 @@ indicium = { version = "0.6.5", features = [
 ], default-features = false }
 tantivy = { version = "0.22.0" }
 tracing = { workspace = true }
-noteyre = { version = "0.1.0", path = "../noteyre" }
-config = { version = "0.1.0", path = "../config" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
 percent-encoding = "2.3.1"
-
-[features]
-default = ["impl"]
-impl = []

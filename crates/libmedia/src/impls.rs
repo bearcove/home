@@ -1,4 +1,4 @@
-use conflux::{BS, BsForResults, MediaKind};
+use conflux::{BsForResults, MediaKind, BS};
 use html_escape::encode_double_quoted_attribute;
 use image::ICodec;
 
@@ -12,7 +12,7 @@ fn is_codec_included_in_markup(ic: ICodec) -> bool {
 }
 
 /// Generate markup for a media file
-pub fn media_markup(opts: MediaMarkupOpts<'_>) -> noteyre::Result<String> {
+pub fn media_markup(opts: MediaMarkupOpts<'_>) -> eyre::Result<String> {
     use std::fmt::Write;
     let tc = &opts.rv.rev().bs()?.ti.tc;
     let mut w = String::new();

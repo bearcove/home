@@ -7,9 +7,4 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-noteyre = { version = "0.1.0", path = "../noteyre" }
 pulldown-latex = { version = "0.7.1" }
-
-[features]
-default = ["impl"]
-impl = []
