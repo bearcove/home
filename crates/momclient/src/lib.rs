@@ -7,7 +7,7 @@ include!(".dylo/support.rs");
 use config::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use futures_core::future::BoxFuture;
 use std::str::FromStr;
-use httpclient::{HeaderMap, HeaderValue, Uri, header::self};
+use libhttpclient::{HeaderMap, HeaderValue, Uri, header::self};
 use bytes::Bytes;
 use conflux::RevisionIdRef;
 use credentials::AuthBundle;

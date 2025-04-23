@@ -14,6 +14,7 @@ noteyre = { path = "../noteyre" }
 # impl deps — these are only used in `mod-cub`
 merde = { workspace = true, features = ["yaml"] }
 tokio = { workspace = true, features = ["full"] }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 futures-core = "0.3.31"
 config = { version = "0.1.0", path = "../config" }
 libgithub = { version = "0.1.0", path = "../../libs/libgithub" }

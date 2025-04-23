@@ -9,7 +9,7 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 #[cfg(feature = "impl")]
-use httpclient::form_urlencoded;
+use libhttpclient::form_urlencoded;
 #[cfg(feature = "impl")]
 use noteyre::{BS, BsForResults};
 #[cfg(feature = "impl")]
@@ -17,7 +17,7 @@ use tracing::{debug, info, trace};
 
 use config::RedditSecrets;
 #[cfg(feature = "impl")]
-use httpclient::HttpClient;
+use libhttpclient::HttpClient;
 #[cfg(feature = "impl")]
 use merde::CowStr;
 #[cfg(feature = "impl")]
@@ -41,7 +41,7 @@ struct ModImpl {
 impl Default for ModImpl {
     fn default() -> Self {
         Self {
-            client: httpclient::load().client(),
+            client: libhttpclient::load().client(),
             cached_token: Mutex::new(None),
         }
     }
@@ -77,7 +77,7 @@ impl Mod for ModImpl {
                     info!("no reddit token in cache");
                 }
 
-                let api_uri = httpclient::Uri::builder()
+                let api_uri = libhttpclient::Uri::builder()
                     .scheme("https")
                     .authority("www.reddit.com")
                     .path_and_query(
@@ -136,7 +136,7 @@ impl Mod for ModImpl {
                 *self.cached_token.lock().unwrap() = Some(access_token.clone());
             }
 
-            let api_uri = httpclient::Uri::builder()
+            let api_uri = libhttpclient::Uri::builder()
                 .scheme("https")
                 .authority("oauth.reddit.com")
                 .path_and_query(

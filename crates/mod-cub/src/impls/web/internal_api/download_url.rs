@@ -25,7 +25,7 @@ pub(crate) async fn download_url(
     };
 
     let uri = url.parse::<Uri>().unwrap();
-    let client = httpclient::load().client();
+    let client = libhttpclient::load().client();
     let response = match client
         .get(uri)
         .browser_like_user_agent()

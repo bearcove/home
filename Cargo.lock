@@ -690,6 +690,7 @@ dependencies = [
  "dylo-runtime",
  "futures-core",
  "hattip",
+ "libhttpclient",
 ]
 
 [[package]]
@@ -1190,6 +1191,8 @@ dependencies = [
  "config",
  "dylo-runtime",
  "futures-core",
+ "libgithub",
+ "libhttpclient",
  "merde",
  "noteyre",
  "tokio",
@@ -1425,6 +1428,7 @@ dependencies = [
  "dylo-runtime",
  "futures-core",
  "http",
+ "libhttpclient",
 ]
 
 [[package]]
@@ -2065,7 +2069,7 @@ dependencies = [
  "dylo-runtime",
  "eyre",
  "futures-core",
- "httpclient",
+ "libhttpclient",
  "merde",
 ]
 
@@ -2399,18 +2403,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
 
 [[package]]
-name = "httpclient"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "dylo-runtime",
- "form_urlencoded",
- "futures-core",
- "http",
- "merde",
-]
-
-[[package]]
 name = "httpdate"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2459,7 +2451,6 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots",
 ]
 
 [[package]]
@@ -3807,7 +3798,7 @@ dependencies = [
  "futures-core",
  "hattip",
  "http-range",
- "httpclient",
+ "libhttpclient",
  "mom",
  "noteyre",
  "tokio",
@@ -3882,15 +3873,15 @@ dependencies = [
  "flume",
  "futures-core",
  "futures-util",
- "github",
  "hattip",
  "http",
  "http-body-util",
- "httpclient",
  "hyper",
  "image 0.1.0",
  "itertools 0.14.0",
  "libc",
+ "libgithub",
+ "libhttpclient",
  "merde",
  "mom",
  "momclient",
@@ -3944,8 +3935,8 @@ dependencies = [
  "highlight",
  "htmlrewrite",
  "http",
- "httpclient",
  "image 0.1.0",
+ "libhttpclient",
  "lightningcss 0.1.0",
  "markdown",
  "math",
@@ -4027,22 +4018,6 @@ dependencies = [
  "dylo",
  "dylo-runtime",
  "lol_html",
-]
-
-[[package]]
-name = "mod-httpclient"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "dylo",
- "dylo-runtime",
- "form_urlencoded",
- "futures-core",
- "futures-util",
- "http",
- "merde",
- "reqwest",
- "tokio-proxy",
 ]
 
 [[package]]
@@ -4140,11 +4115,11 @@ dependencies = [
  "ffmpeg-sidecar",
  "futures-core",
  "futures-util",
- "github",
- "httpclient",
  "image 0.1.0",
  "inflight",
  "itertools 0.14.0",
+ "libgithub",
+ "libhttpclient",
  "merde",
  "nix 0.29.0",
  "noteyre",
@@ -4178,8 +4153,8 @@ dependencies = [
  "dylo",
  "dylo-runtime",
  "futures-core",
- "github",
- "httpclient",
+ "libgithub",
+ "libhttpclient",
  "merde",
  "mom",
  "noteyre",
@@ -4223,8 +4198,8 @@ dependencies = [
  "eyre",
  "fs-err 3.1.0",
  "futures-core",
- "httpclient",
  "jsonapi",
+ "libhttpclient",
  "merde",
  "serde",
  "serde_json",
@@ -4241,7 +4216,7 @@ dependencies = [
  "dylo",
  "dylo-runtime",
  "futures-core",
- "httpclient",
+ "libhttpclient",
  "merde",
  "noteyre",
  "tracing",
@@ -4401,8 +4376,8 @@ dependencies = [
  "dylo-runtime",
  "futures-core",
  "futures-util",
- "httpclient",
  "image 0.1.0",
+ "libhttpclient",
  "merde",
  "tokio",
  "url 2.5.4",
@@ -4419,7 +4394,7 @@ dependencies = [
  "futures-util",
  "hickory-resolver",
  "http",
- "httpclient",
+ "libhttpclient",
  "rubicon",
  "rustls",
  "tokio",
@@ -4440,6 +4415,8 @@ dependencies = [
  "futures-core",
  "image 0.1.0",
  "itertools 0.14.0",
+ "libgithub",
+ "libhttpclient",
  "merde",
  "noteyre",
  "objectstore",
@@ -4458,8 +4435,8 @@ dependencies = [
  "credentials",
  "dylo-runtime",
  "futures-core",
- "github",
- "httpclient",
+ "libgithub",
+ "libhttpclient",
  "merde",
  "mom",
  "noteyre",
@@ -4948,7 +4925,7 @@ dependencies = [
  "dylo-runtime",
  "eyre",
  "futures-core",
- "httpclient",
+ "libhttpclient",
  "merde",
 ]
 
@@ -5715,6 +5692,7 @@ dependencies = [
  "config",
  "dylo-runtime",
  "futures-core",
+ "libhttpclient",
  "noteyre",
 ]
 
@@ -5850,7 +5828,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams",
  "web-sys",
- "webpki-roots",
  "windows-registry",
 ]
 
@@ -5873,6 +5850,7 @@ dependencies = [
  "dylo-runtime",
  "eyre",
  "facet-json",
+ "facet-pretty",
  "futures-core",
 ]
 
@@ -6184,6 +6162,7 @@ dependencies = [
  "conflux",
  "dylo-runtime",
  "noteyre",
+ "percent-encoding 2.3.1",
 ]
 
 [[package]]
@@ -6909,6 +6888,7 @@ dependencies = [
  "dylo-runtime",
  "mom",
  "noteyre",
+ "percent-encoding 2.3.1",
  "search",
 ]
 
@@ -8125,6 +8105,7 @@ dependencies = [
  "dylo-runtime",
  "futures-core",
  "image 0.1.0",
+ "libhttpclient",
  "merde",
 ]
 
@@ -8158,7 +8139,7 @@ dependencies = [
  "futures-util",
  "hickory-resolver",
  "http",
- "httpclient",
+ "libhttpclient",
  "rubicon",
  "rustls",
  "tokio",

@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 dylo.workspace = true
 config = { path = "../config" }
-httpclient = { path = "../httpclient", features = ["json"], optional = true }
+libhttpclient = { path = "../../libs/libhttpclient" }
 
 # impl deps
 merde = { workspace = true, optional = true }
@@ -21,4 +21,4 @@ futures-core = "0.3.31"
 
 [features]
 default = ["impl"]
-impl = ["dep:merde", "dep:tracing", "dep:url", "dep:httpclient"]
+impl = ["dep:merde", "dep:tracing", "dep:url"]

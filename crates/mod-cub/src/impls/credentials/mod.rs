@@ -82,7 +82,7 @@ async fn refresh_credentials(creds: &AuthBundle<'_>) -> eyre::Result<AuthBundle<
 }
 
 async fn refresh_patreon_credentials(patreon_id: String) -> eyre::Result<AuthBundle<'static>> {
-    let client = httpclient::load().client();
+    let client = libhttpclient::load().client();
 
     let mom_base_url = &global_state().config.mom_base_url;
     let res = client

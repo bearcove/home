@@ -2,25 +2,25 @@ use std::{sync::Arc, time::Duration};
 
 use base64::Engine as _;
 use futures_util::StreamExt;
-use httpclient::{
-    header::{HeaderName, HeaderValue},
-    Method, Response,
-};
 use image::ICodec;
+use libhttpclient::{
+    Method, Response,
+    header::{HeaderName, HeaderValue},
+};
 use tokio::time::timeout;
 use webpage::HTML;
 
 use crate::{Image, WebpageInfo};
 
 pub(crate) async fn get_webpage_info(
-    client: Arc<dyn httpclient::HttpClient>,
+    client: Arc<dyn libhttpclient::HttpClient>,
     url: String,
 ) -> Result<WebpageInfo, String> {
     let url = url::Url::parse(&url).map_err(|e| e.to_string())?;
     let base_url = format!("{}://{}", url.scheme(), url.host_str().unwrap_or(""));
 
-    let uri = httpclient::Uri::try_from(url.as_str()).map_err(|e| e.to_string())?;
-    use httpclient::header;
+    let uri = libhttpclient::Uri::try_from(url.as_str()).map_err(|e| e.to_string())?;
+    use libhttpclient::header;
 
     let request = client
         .request(Method::GET, uri)
@@ -78,7 +78,7 @@ pub(crate) async fn get_webpage_info(
 pub(crate) async fn add_image_maybe(
     info: &mut WebpageInfo,
     html: &HTML,
-    client: &dyn httpclient::HttpClient,
+    client: &dyn libhttpclient::HttpClient,
 ) {
     let img = match html.opengraph.images.first() {
         Some(img) => img,
@@ -100,7 +100,7 @@ pub(crate) async fn add_image_maybe(
     };
 
     let res = match client
-        .request(Method::GET, url.parse::<httpclient::Uri>().unwrap())
+        .request(Method::GET, url.parse::<libhttpclient::Uri>().unwrap())
         .browser_like_user_agent()
         .send()
         .await

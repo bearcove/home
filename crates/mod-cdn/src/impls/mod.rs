@@ -8,7 +8,7 @@ use content_type::ContentType;
 use cub_types::CubReq;
 use derivations::DerivationInfo;
 use hattip::http::Uri;
-use httpclient::HttpClient;
+use libhttpclient::HttpClient;
 use mom::{DeriveParams, DeriveResponse};
 use noteyre::{BS, BsForResults};
 use tracing::{debug, trace, warn};
@@ -266,7 +266,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> noteyre::Result<Byt
 }
 
 static VITE_HTTP_CLIENT: LazyLock<Arc<dyn HttpClient>> =
-    LazyLock::new(|| Arc::from(httpclient::load().client()));
+    LazyLock::new(|| Arc::from(libhttpclient::load().client()));
 
 async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
     let port = rcx.tenant_ref().vite_port().await.map_err(|e| {
@@ -389,8 +389,8 @@ async fn do_ws_proxy(
     mut downstream: Box<dyn WebSocketStream>,
 ) -> noteyre::Result<()> {
     enum Event {
-        FromUpstream(Option<Result<Frame, httpclient::Error>>),
-        FromDownstream(Option<Result<Frame, httpclient::Error>>),
+        FromUpstream(Option<Result<Frame, libhttpclient::Error>>),
+        FromDownstream(Option<Result<Frame, libhttpclient::Error>>),
     }
 
     loop {

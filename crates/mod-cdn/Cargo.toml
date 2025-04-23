@@ -15,7 +15,7 @@ content-type = { version = "0.1.0", path = "../content-type", optional = true }
 derivations = { version = "0.1.0", path = "../derivations", optional = true }
 dylo = { workspace = true, optional = true }
 http-range = { version = "0.1.5", optional = true }
-httpclient = { version = "0.1.0", path = "../httpclient", optional = true }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 mom = { version = "0.1.0", path = "../mom", optional = true }
 noteyre = { version = "0.1.0", path = "../noteyre", optional = true }
 tokio = { workspace = true, optional = true }
@@ -38,7 +38,6 @@ impl = [
     "dep:derivations",
     "dep:dylo",
     "dep:http-range",
-    "dep:httpclient",
     "dep:mom",
     "dep:noteyre",
     "dep:tokio",

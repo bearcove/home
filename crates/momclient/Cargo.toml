@@ -10,7 +10,6 @@ crate-type = ["rlib"]
 [dependencies]
 config = { path = "../config" }
 conflux = { path = "../conflux", features = [] }
-httpclient = { path = "../httpclient", features = ["json"] }
 
 # impl deps
 merde = { workspace = true, features = ["json"] }
@@ -23,6 +22,7 @@ dylo-runtime = "2.5.0"
 noteyre = { version = "0.1.0", path = "../noteyre" }
 futures-core = "0.3.31"
 libgithub = { version = "0.1.0", path = "../../libs/libgithub" }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 
 [features]
 default = []

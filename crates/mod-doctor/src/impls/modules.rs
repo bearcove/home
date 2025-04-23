@@ -48,7 +48,7 @@ pub async fn check_modules() -> Vec<DoctorError> {
         reddit,
         cdn,
         markdown,
-        httpclient,
+        libhttpclient,
         webpage,
         fs,
         media,

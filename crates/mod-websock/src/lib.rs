@@ -12,7 +12,7 @@ use rustls as _;
 
 use futures_core::future::BoxFuture;
 
-pub use httpclient::Error;
+pub use libhttpclient::Error;
 
 #[cfg(feature = "impl")]
 #[derive(Default)]

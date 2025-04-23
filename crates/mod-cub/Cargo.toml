@@ -51,7 +51,7 @@ bytesize = { version = "1.3.2", optional = true }
 image = { path = "../image", optional = true }
 tempfile = { version = "3.19.1", optional = true }
 uffmpeg = { path = "../uffmpeg", optional = true }
-httpclient = { path = "../httpclient", optional = true }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 patreon = { path = "../patreon", optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 content-type = { path = "../content-type", optional = true }
@@ -109,7 +109,6 @@ impl = [
     "dep:image",
     "dep:tempfile",
     "dep:uffmpeg",
-    "dep:httpclient",
 
     "dep:patreon",
     "dep:serde",

@@ -33,18 +33,17 @@ merde::derive! {
 
 #[cfg(feature = "impl")]
 struct ModImpl {
-    client: Arc<dyn httpclient::HttpClient>,
+    client: Arc<dyn libhttpclient::HttpClient>,
 }
 
 #[cfg(feature = "impl")]
 impl Default for ModImpl {
     fn default() -> Self {
         Self {
-            client: httpclient::load().client().into(),
+            client: libhttpclient::load().client().into(),
         }
     }
 }
-
 
 #[dylo::export]
 impl Mod for ModImpl {

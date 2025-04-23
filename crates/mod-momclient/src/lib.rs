@@ -5,7 +5,7 @@ use config::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use futures_core::future::BoxFuture;
 use std::str::FromStr;
 
-use httpclient::{
+use libhttpclient::{
     HeaderMap, HeaderValue, Uri,
     header::{self},
 };
@@ -22,9 +22,9 @@ use noteyre::BsForResults;
 use bytes::Bytes;
 use conflux::RevisionIdRef;
 use credentials::AuthBundle;
-#[cfg(feature = "impl")]
-use httpclient::{HttpClient, RequestBuilder};
 use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
+#[cfg(feature = "impl")]
+use libhttpclient::{HttpClient, RequestBuilder};
 #[allow(unused_imports)]
 use mom::{
     ListMissingArgs, ListMissingResponse, MomEvent,
@@ -55,7 +55,7 @@ impl Mod for ModImpl {
         mcc: MomClientConfig,
     ) -> BoxFuture<'static, Result<Box<dyn MomClient>>> {
         Box::pin(async move {
-            let hclient = httpclient::load().client();
+            let hclient = libhttpclient::load().client();
             let hclient: Arc<dyn HttpClient> = Arc::from(hclient);
 
             let mclient = MomClientImpl { hclient, mcc };
@@ -103,7 +103,7 @@ impl Mod for ModImpl {
                             mod_websock.websocket_connect(uri.clone(), {
                                 let mut map = HeaderMap::new();
                                 map.insert(
-                                    httpclient::header::AUTHORIZATION,
+                                    libhttpclient::header::AUTHORIZATION,
                                     HeaderValue::from_str(&format!("Bearer {}", mcc.api_key()))
                                         .unwrap(),
                                 );
@@ -470,7 +470,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 .websocket_connect(uri, {
                     let mut map = HeaderMap::new();
                     map.insert(
-                        httpclient::header::AUTHORIZATION,
+                        libhttpclient::header::AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", self.mcc.api_key())).unwrap(),
                     );
                     map
@@ -628,7 +628,7 @@ trait WithAuth {
 #[cfg(feature = "impl")]
 impl WithAuth for dyn RequestBuilder {
     fn with_auth(self: Box<Self>, mcc: &MomClientConfig) -> Box<dyn RequestBuilder> {
-        use httpclient::header::HeaderValue;
+        use libhttpclient::header::HeaderValue;
         self.header(
             header::AUTHORIZATION,
             HeaderValue::from_str(&format!("Bearer {}", mcc.api_key())).unwrap(),

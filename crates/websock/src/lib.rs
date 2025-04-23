@@ -9,7 +9,7 @@ use http::{HeaderMap, Uri};
 use rubicon as _;
 use tokio_proxy as _;
 use futures_core::future::BoxFuture;
-pub use httpclient::Error;
+pub use libhttpclient::Error;
 #[derive(Debug)]
 pub struct CloseFrame {
     pub code: u16,

@@ -5,7 +5,7 @@ use conflux::{AbsoluteUrl, Href, LoadedPage, Route};
 use cub_types::CubTenant;
 use futures_util::SinkExt;
 use http::Uri;
-use httpclient::{HttpClient, StatusCode};
+use libhttpclient::{HttpClient, StatusCode};
 use url::Url;
 
 use crate::impls::{CubTenantImpl, cub_req::CubReqImpl, global_state};
@@ -183,7 +183,7 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
     let (task_tx, task_rx) = flume::unbounded::<Task>();
     let (res_tx, res_rx) = flume::unbounded::<Result>();
 
-    let client = httpclient::load().client();
+    let client = libhttpclient::load().client();
     let client: Arc<dyn HttpClient> = Arc::from(client);
 
     // Start four workers

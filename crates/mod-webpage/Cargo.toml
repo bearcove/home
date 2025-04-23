@@ -19,15 +19,8 @@ base64 = { version = "0.22.1", optional = true }
 futures-util = { version = "0.3.31", optional = true }
 image = { version = "0.1.0", path = "../image" }
 futures-core = "0.3.31"
-httpclient = { version = "0.1.0", path = "../httpclient", optional = true }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 
 [features]
 default = ["impl"]
-impl = [
-    "dep:webpage",
-    "dep:tokio",
-    "dep:url",
-    "dep:base64",
-    "dep:futures-util",
-    "dep:httpclient",
-]
+impl = ["dep:webpage", "dep:tokio", "dep:url", "dep:base64", "dep:futures-util"]

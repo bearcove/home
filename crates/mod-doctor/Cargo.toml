@@ -36,7 +36,7 @@ objectstore = { path = "../objectstore", optional = true }
 reddit = { path = "../reddit", optional = true }
 cdn = { path = "../cdn", optional = true }
 markdown = { path = "../markdown", optional = true }
-httpclient = { path = "../httpclient", optional = true }
+libhttpclient = { version = "0.1.0", path = "../../libs/libhttpclient" }
 webpage = { path = "../webpage", optional = true }
 fs = { path = "../fs", optional = true }
 media = { path = "../media", optional = true }
@@ -75,7 +75,6 @@ impl = [
     "dep:reddit",
     "dep:cdn",
     "dep:markdown",
-    "dep:httpclient",
     "dep:webpage",
     "dep:fs",
     "dep:media",
