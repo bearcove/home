@@ -3168,6 +3168,7 @@ dependencies = [
 name = "libcompress"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "brotli",
  "bytes",
  "flate2",
@@ -3258,6 +3259,7 @@ dependencies = [
 name = "libdoctor"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "futures-core",
  "http",
  "tokio",

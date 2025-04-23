@@ -5,7 +5,6 @@ use commands::check_all_commands;
 
 enum DoctorError {
     BinaryNotFound(FailedCheck),
-    ModuleLoadFailed { name: String, error: String },
 }
 
 impl DoctorError {
@@ -15,7 +14,6 @@ impl DoctorError {
                 Gravity::Needed => true,
                 Gravity::Recommended => false,
             },
-            DoctorError::ModuleLoadFailed { .. } => true,
         }
     }
 }
@@ -60,13 +58,6 @@ impl fmt::Display for DoctorError {
                 failed_check.required_bin.purpose,
                 failed_check.required_bin.notes
             ),
-            DoctorError::ModuleLoadFailed { name, error } => {
-                write!(
-                    f,
-                    "\x1b[31mFailed to load module '\x1b[1m{}\x1b[0m\x1b[31m': {}\x1b[0m",
-                    name, error
-                )
-            }
         }
     }
 }

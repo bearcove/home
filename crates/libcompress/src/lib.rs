@@ -1,5 +1,4 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+use autotrait::autotrait;
 
 /// The result of a compression operation
 pub struct CompressResult {
@@ -7,9 +6,12 @@ pub struct CompressResult {
     pub payload: bytes::Bytes,
 }
 
-#[cfg(feature = "impl")]
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -34,7 +36,7 @@ impl From<std::io::Error> for Error {
     }
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn compress(&self, input: bytes::Bytes, accept_encoding: &str) -> Result<CompressResult> {
         use encodings::*;
@@ -58,7 +60,7 @@ impl Mod for ModImpl {
                 return Ok(CompressResult {
                     content_encoding: None,
                     payload: input,
-                })
+                });
             }
         };
         match chosen_encoding {
@@ -95,7 +97,6 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 pub(crate) mod encodings {
     use std::{
         collections::{HashMap, HashSet},

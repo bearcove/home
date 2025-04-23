@@ -1,13 +1,16 @@
+use autotrait::autotrait;
 use futures_core::future::BoxFuture;
 
-#[cfg(feature = "impl")]
 mod impls;
 
-#[cfg(feature = "impl")]
-#[derive(Default)]
-struct ModImpl {}
+struct ModImpl;
 
-#[dylo::export]
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     /// Load all modules once to make sure that they actually work
     fn run(&self) -> BoxFuture<'static, ()> {
@@ -19,6 +22,3 @@ impl Mod for ModImpl {
         })
     }
 }
-
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
