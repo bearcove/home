@@ -58,7 +58,7 @@ credentials = { path = "../../crates/credentials" }
 libc = { version = "0.2.171" }
 regex = { version = "1.11.1" }
 strip-ansi-escapes = { version = "0.2.1" }
-libcdn = { version = "0.1.0", path = "../libcdn" }
+
 hattip = { version = "0.1.0", path = "../../crates/hattip" }
 libapi = { version = "0.1.0", path = "../libapi" }
 libwebsock = { version = "0.1.0", path = "../libwebsock" }

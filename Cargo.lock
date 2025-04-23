@@ -64,7 +64,7 @@ version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "once_cell",
  "version_check",
 ]
@@ -76,7 +76,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
 dependencies = [
  "cfg-if",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "once_cell",
  "serde",
  "version_check",
@@ -198,17 +198,6 @@ name = "anyhow"
 version = "1.0.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
-
-[[package]]
-name = "api"
-version = "0.1.0"
-dependencies = [
- "cub-types",
- "hattip",
- "reddit",
- "tracing",
- "url 2.5.4",
-]
 
 [[package]]
 name = "arbitrary"
@@ -413,12 +402,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "b-x"
-version = "1.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "923209a879e32845b5647df3483bf473185766087ea3a08d5016388f6f106aaf"
-
-[[package]]
 name = "backtrace"
 version = "0.3.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -524,9 +507,9 @@ dependencies = [
 
 [[package]]
 name = "brotli-decompressor"
-version = "4.0.2"
+version = "4.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74fa05ad7d803d413eb8380983b092cbbaf9a85f151b871360e7b00cd7060b37"
+checksum = "a334ef7c9e23abf0ce748e8cd309037da93e606ad52eb372e4ce327a0dcfbdfd"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -685,27 +668,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cdn"
-version = "0.1.0"
-dependencies = [
- "bytesize 2.0.1",
- "config",
- "conflux",
- "content-type",
- "cub-types",
- "derivations",
- "futures-core",
- "hattip",
- "http-range",
- "libhttpclient",
- "mom",
- "eyre",
- "tokio",
- "tracing",
- "websock",
-]
-
-[[package]]
 name = "census"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -754,14 +716,6 @@ checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
  "crypto-common",
  "inout",
-]
-
-[[package]]
-name = "clap"
-version = "0.1.0"
-dependencies = [
- "camino",
- "clap 4.5.37",
 ]
 
 [[package]]
@@ -875,51 +829,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "compress"
-version = "0.1.0"
-dependencies = [
- "brotli",
- "bytes",
- "flate2",
-]
-
-[[package]]
-name = "config"
-version = "0.1.0"
-dependencies = [
- "base64",
- "camino",
- "dotenvy",
- "dylo-runtime",
- "facet",
- "facet-json",
- "facet-pretty",
- "figment",
- "fs-err 2.11.0",
- "merde",
- "eyre",
- "owo-colors 4.2.0",
- "plait",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "conflux"
 version = "0.1.0"
 dependencies = [
  "bytes",
  "camino",
  "closest",
- "config",
  "content-type",
  "credentials",
  "facet",
- "image 0.1.0",
+ "libconfig",
+ "libimage",
+ "libobjectstore",
  "merde",
  "minijinja",
- "eyre",
- "objectstore",
  "plait",
  "rusqlite",
  "serde",
@@ -1074,8 +997,8 @@ dependencies = [
 name = "credentials"
 version = "0.1.0"
 dependencies = [
- "merde",
  "eyre",
+ "merde",
  "serde",
  "time",
 ]
@@ -1203,86 +1126,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "cub"
-version = "0.1.0"
-dependencies = [
- "api",
- "axum",
- "bytesize 1.3.3",
- "camino",
- "cdn",
- "closest",
- "compress",
- "config",
- "conflux",
- "content-type",
- "credentials",
- "cub-types",
- "derivations",
- "dylo-runtime",
- "errhandling",
- "eyre",
- "flume",
- "futures-core",
- "futures-util",
- "hattip",
- "http",
- "http-body-util",
- "hyper",
- "image 0.1.0",
- "itertools 0.14.0",
- "libc",
- "libgithub",
- "libhttpclient",
- "merde",
- "mom",
- "momclient",
- "nix 0.29.0",
- "eyre",
- "objectstore",
- "open",
- "parking_lot",
- "patreon",
- "pin-project-lite",
- "rand 0.8.5",
- "regex 1.11.1",
- "revision",
- "search",
- "serde",
- "strip-ansi-escapes",
- "strsim",
- "tempdir",
- "tempfile",
- "template",
- "term",
- "time",
- "tokio",
- "tower 0.4.13",
- "tower-cookies",
- "tracing",
- "uffmpeg",
- "ulid",
- "url 2.5.4",
- "webpage 0.1.0",
- "websock",
-]
-
-[[package]]
 name = "cub-types"
 version = "0.1.0"
 dependencies = [
- "config",
  "conflux",
  "eyre",
  "futures-core",
  "hattip",
- "mom",
- "momclient",
- "objectstore",
- "search",
+ "libconfig",
+ "libmom",
+ "libmomclient",
+ "libobjectstore",
+ "libsearch",
+ "libwebsock",
  "template-types",
  "time",
- "websock",
 ]
 
 [[package]]
@@ -1391,12 +1249,11 @@ name = "derivations"
 version = "0.1.0"
 dependencies = [
  "closest",
- "config",
  "conflux",
  "content-type",
- "image 0.1.0",
- "eyre",
- "objectstore",
+ "libconfig",
+ "libimage",
+ "libobjectstore",
  "seahash",
  "tokio",
 ]
@@ -1445,9 +1302,9 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.19"
+version = "0.99.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3da29a38df43d6f156149c9b43ded5e018ddff2a855cf2cfd62e8cd7d079c69f"
+checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
 dependencies = [
  "convert_case 0.4.0",
  "proc-macro2",
@@ -1491,16 +1348,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 
 [[package]]
-name = "doctor"
-version = "0.1.0"
-dependencies = [
- "dylo-runtime",
- "futures-core",
- "http",
- "tokio",
-]
-
-[[package]]
 name = "dotenvy"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1533,21 +1380,6 @@ version = "0.1.0"
 dependencies = [
  "ahash 0.8.11",
  "rand 0.8.5",
-]
-
-[[package]]
-name = "dylo"
-version = "1.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4ee95ef3ff86306ed0252939ae689a718c1908c975121c9ae83b2dc720651c9"
-
-[[package]]
-name = "dylo-runtime"
-version = "2.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76aefb7a56b18ce9fd6bd9bf1cbd3e6594295f8779d9855b946c14add959b0f6"
-dependencies = [
- "rubicon",
 ]
 
 [[package]]
@@ -1619,17 +1451,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
 
 [[package]]
-name = "errhandling"
-version = "0.1.0"
-dependencies = [
- "color-backtrace",
- "color-eyre",
- "dylo-runtime",
- "eyre",
- "termcolor",
-]
-
-[[package]]
 name = "errno"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1661,11 +1482,11 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4effef5cda58e3ac0eca104902d72eab3a846490784071ded6bc2d4dac5a480c"
+checksum = "d463cdbfd164edf1bba30df23cf639dc6fbd000a03311f5f8dcfeff08299eb03"
 dependencies = [
- "facet-core",
+ "facet-core 0.11.0",
  "facet-derive",
 ]
 
@@ -1676,34 +1497,44 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d19ab200f37e8c2144ee62c22b8303e4dfbc98d20e210c4cefc0a616a99be379"
 dependencies = [
  "bitflags 2.9.0",
+ "impls",
+]
+
+[[package]]
+name = "facet-core"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f5905953877795d96aef172f2206950339e350f9862c0b1c0d15b781c7a97c0"
+dependencies = [
+ "bitflags 2.9.0",
  "camino",
  "impls",
 ]
 
 [[package]]
 name = "facet-derive"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67fd8a3e3b2cff5e205183715ec52abc7ee36edbc5c12129c83c130814706978"
+checksum = "c1e70487e8dfa130f15b682d12a5a72ea05d49be05fdd3d5a2515b7bac6b707a"
 dependencies = [
- "facet-core",
+ "facet-core 0.11.0",
  "facet-derive-emit",
 ]
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "927368f3a5c41915cad97c43c10b1d3cf3c5f68b05200b829ed245272e4cccdf"
+checksum = "ef4e65d115e0ba547d9ff23808dce39b9147c89608c45494a3054d48cec2dae4"
 dependencies = [
  "facet-derive-parse",
 ]
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1131699e66bb7557f70b3fa60c0060ffd5b47248dcdc8e520e6897a8fd73bef0"
+checksum = "2a4a06efa3e0b08f2aff06def429a0a06b304379167be9491e24bad0f282c19d"
 dependencies = [
  "unsynn",
 ]
@@ -1715,7 +1546,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ac7b0f594e075d7742ec2dd1a4d4d70fdccedb97a2d409c2bdf3694f1a30aee"
 dependencies = [
  "ariadne",
- "facet-core",
+ "facet-core 0.10.1",
  "facet-reflect",
  "log",
  "owo-colors 4.2.0",
@@ -1727,19 +1558,19 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61779191385b18d97815892155687b114e850d3d75362f7b95b12c1608f78581"
 dependencies = [
- "facet-core",
+ "facet-core 0.10.1",
  "facet-reflect",
  "yansi",
 ]
 
 [[package]]
 name = "facet-reflect"
-version = "0.10.3"
+version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e22562ba0bca8e3a87f22d9580e83f06d8ca34bb4472919774f1b9784071f51"
+checksum = "897aee2fc70e2a538ca9dcf0e31d6523995ab3b2edaba8e23175966fd5b7ffe5"
 dependencies = [
  "bitflags 2.9.0",
- "facet-core",
+ "facet-core 0.11.0",
  "owo-colors 4.2.0",
 ]
 
@@ -1891,17 +1722,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13624c2627564efccf4934284bdd98cbaa14e79b0b5a141218e507b3a823456"
 dependencies = [
  "percent-encoding 2.3.1",
-]
-
-[[package]]
-name = "fs"
-version = "0.1.0"
-dependencies = [
- "camino",
- "dylo-runtime",
- "eyre",
- "ignore",
- "notify",
 ]
 
 [[package]]
@@ -2093,9 +1913,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.15"
+version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
+checksum = "335ff9f135e4384c8150d6f27c6daed433577f86b4750418338c01a1a2528592"
 dependencies = [
  "cfg-if",
  "js-sys",
@@ -2312,17 +2132,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "highlight"
-version = "0.1.0"
-dependencies = [
- "dumbcache",
- "dylo-runtime",
- "nerdfonts",
- "tracing",
- "tree-sitter-collection",
-]
-
-[[package]]
 name = "hkdf"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2354,24 +2163,23 @@ name = "home"
 version = "4.0.0"
 dependencies = [
  "camino",
- "clap 0.1.0",
- "config",
- "cub",
- "doctor",
- "dylo-runtime",
- "errhandling",
  "eyre",
  "fastrand",
  "http",
  "libc",
- "mom",
+ "libclap",
+ "libconfig",
+ "libcub",
+ "libdoctor",
+ "liberrhandling",
+ "libmom",
+ "libterm",
+ "libtracingsub",
  "owo-colors 4.2.0",
  "rubicon-imports",
  "serde_json",
- "term",
  "tokio",
  "tracing",
- "tracingsub",
 ]
 
 [[package]]
@@ -2413,14 +2221,6 @@ name = "htmlescape"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9025058dae765dee5070ec375f591e2ba14638c63feff74f13805a72e523163"
-
-[[package]]
-name = "htmlrewrite"
-version = "0.1.0"
-dependencies = [
- "dylo-runtime",
- "lol_html",
-]
 
 [[package]]
 name = "http"
@@ -2753,27 +2553,6 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.1.0"
-dependencies = [
- "content-type",
- "dylo-runtime",
- "fs-err 3.1.0",
- "image 0.25.6",
- "jpegxl-rs",
- "jxl-oxide",
- "merde",
- "eyre",
- "num_cpus",
- "ordered-float",
- "ravif",
- "rgb",
- "tempfile",
- "tracing",
- "webp",
-]
-
-[[package]]
-name = "image"
 version = "0.25.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db35664ce6b9810857a38a906215e75a9c879f0696556a39f59c62829710251a"
@@ -3032,9 +2811,9 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "jiff"
-version = "0.2.8"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5ad87c89110f55e4cd4dc2893a9790820206729eaf221555f742d540b0724a0"
+checksum = "5a064218214dc6a10fbae5ec5fa888d80c45d611aba169222fc272072bf7aef6"
 dependencies = [
  "jiff-static",
  "log",
@@ -3045,9 +2824,9 @@ dependencies = [
 
 [[package]]
 name = "jiff-static"
-version = "0.2.8"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d076d5b64a7e2fe6f0743f02c43ca4a6725c0f904203bfe276a5b3e793103605"
+checksum = "199b7932d97e325aff3a7030e141eafe7f2c6268e1d1b24859b753a627f45254"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3073,7 +2852,7 @@ dependencies = [
  "byteorder",
  "derive_builder",
  "half",
- "image 0.25.6",
+ "image",
  "jpegxl-sys",
  "thiserror 2.0.12",
 ]
@@ -3340,10 +3119,169 @@ dependencies = [
 ]
 
 [[package]]
+name = "libapi"
+version = "0.1.0"
+dependencies = [
+ "cub-types",
+ "hattip",
+ "libreddit",
+ "tracing",
+ "url 2.5.4",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.172"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
+
+[[package]]
+name = "libcdn"
+version = "0.1.0"
+dependencies = [
+ "bytesize 2.0.1",
+ "conflux",
+ "content-type",
+ "derivations",
+ "futures-core",
+ "hattip",
+ "http-range",
+ "libconfig",
+ "libcub",
+ "libhttpclient",
+ "libmom",
+ "libwebsock",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "libclap"
+version = "0.1.0"
+dependencies = [
+ "autotrait",
+ "camino",
+ "clap",
+]
+
+[[package]]
+name = "libcompress"
+version = "0.1.0"
+dependencies = [
+ "brotli",
+ "bytes",
+ "flate2",
+]
+
+[[package]]
+name = "libconfig"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "camino",
+ "dotenvy",
+ "facet",
+ "facet-json",
+ "facet-pretty",
+ "figment",
+ "fs-err 2.11.0",
+ "merde",
+ "owo-colors 4.2.0",
+ "plait",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "libcub"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "bytesize 1.3.3",
+ "camino",
+ "closest",
+ "conflux",
+ "content-type",
+ "credentials",
+ "cub-types",
+ "derivations",
+ "eyre",
+ "flume",
+ "futures-core",
+ "futures-util",
+ "hattip",
+ "http",
+ "http-body-util",
+ "hyper",
+ "itertools 0.14.0",
+ "libapi",
+ "libc",
+ "libcompress",
+ "libconfig",
+ "liberrhandling",
+ "libgithub",
+ "libhttpclient",
+ "libimage",
+ "libmom",
+ "libmomclient",
+ "libobjectstore",
+ "libpatreon",
+ "librevision",
+ "libsearch",
+ "libtemplate",
+ "libterm",
+ "libwebpage",
+ "libwebsock",
+ "merde",
+ "nix 0.29.0",
+ "open",
+ "parking_lot",
+ "pin-project-lite",
+ "rand 0.8.5",
+ "regex 1.11.1",
+ "serde",
+ "strip-ansi-escapes",
+ "strsim",
+ "tempdir",
+ "tempfile",
+ "time",
+ "tokio",
+ "tower 0.4.13",
+ "tower-cookies",
+ "tracing",
+ "uffmpeg",
+ "ulid",
+ "url 2.5.4",
+]
+
+[[package]]
+name = "libdoctor"
+version = "0.1.0"
+dependencies = [
+ "futures-core",
+ "http",
+ "tokio",
+]
+
+[[package]]
+name = "liberrhandling"
+version = "0.1.0"
+dependencies = [
+ "color-backtrace",
+ "color-eyre",
+ "eyre",
+ "termcolor",
+]
+
+[[package]]
+name = "libfs"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "eyre",
+ "ignore",
+ "notify",
+]
 
 [[package]]
 name = "libfuzzer-sys"
@@ -3360,16 +3298,33 @@ name = "libgithub"
 version = "0.1.0"
 dependencies = [
  "autotrait",
- "config",
  "credentials",
  "eyre",
  "fs-err 3.1.0",
  "futures-core",
+ "libconfig",
  "libhttpclient",
  "merde",
  "time",
  "tracing",
  "url 2.5.4",
+]
+
+[[package]]
+name = "libhighlight"
+version = "0.1.0"
+dependencies = [
+ "dumbcache",
+ "nerdfonts",
+ "tracing",
+ "tree-sitter-collection",
+]
+
+[[package]]
+name = "libhtmlrewrite"
+version = "0.1.0"
+dependencies = [
+ "lol_html",
 ]
 
 [[package]]
@@ -3387,14 +3342,185 @@ dependencies = [
 ]
 
 [[package]]
+name = "libimage"
+version = "0.1.0"
+dependencies = [
+ "content-type",
+ "fs-err 3.1.0",
+ "image",
+ "jpegxl-rs",
+ "jxl-oxide",
+ "merde",
+ "num_cpus",
+ "ordered-float",
+ "ravif",
+ "rgb",
+ "tempfile",
+ "tracing",
+ "webp",
+]
+
+[[package]]
+name = "liblightningcss"
+version = "0.1.0"
+dependencies = [
+ "lightningcss",
+]
+
+[[package]]
 name = "libm"
-version = "0.2.11"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8355be11b20d696c8f18f6cc018c4e372165b1fa8126cef092399c9951984ffa"
+checksum = "c9627da5196e5d8ed0b0495e61e518847578da83483c37288316d9b2e03a7f72"
+
+[[package]]
+name = "libmarkdown"
+version = "0.1.0"
+dependencies = [
+ "conflux",
+ "html-escape",
+ "indoc",
+ "insta",
+ "libconfig",
+ "libhighlight",
+ "libmath",
+ "libmedia",
+ "pulldown-cmark",
+ "saphyr",
+ "slug",
+ "template-types",
+]
+
+[[package]]
+name = "libmath"
+version = "0.1.0"
+dependencies = [
+ "pulldown-latex",
+]
+
+[[package]]
+name = "libmedia"
+version = "0.1.0"
+dependencies = [
+ "conflux",
+ "html-escape",
+ "libconfig",
+ "libimage",
+]
+
+[[package]]
+name = "libmom"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "bytesize 1.3.3",
+ "camino",
+ "conflux",
+ "content-type",
+ "credentials",
+ "derivations",
+ "eyre",
+ "ffmpeg-sidecar",
+ "futures-core",
+ "futures-util",
+ "inflight",
+ "itertools 0.14.0",
+ "libconfig",
+ "liberrhandling",
+ "libgithub",
+ "libhttpclient",
+ "libimage",
+ "libobjectstore",
+ "libpatreon",
+ "libsvg",
+ "libterm",
+ "merde",
+ "nix 0.29.0",
+ "owo-colors 4.2.0",
+ "parking_lot",
+ "r2d2",
+ "r2d2_sqlite",
+ "rusqlite",
+ "serde",
+ "tempfile",
+ "time",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "uffmpeg",
+ "url 2.5.4",
+]
+
+[[package]]
+name = "libmomclient"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "conflux",
+ "credentials",
+ "futures-core",
+ "libconfig",
+ "libgithub",
+ "libhttpclient",
+ "libmom",
+ "libobjectstore",
+ "libpatreon",
+ "libwebsock",
+ "merde",
+ "rand 0.8.5",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "libobjectstore"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "facet",
+ "futures-core",
+ "futures-util",
+ "libconfig",
+ "merde",
+ "object_store",
+ "plait",
+ "rubicon",
+ "rusqlite",
+ "tokio",
+ "tracing",
+]
 
 [[package]]
 name = "libpatreon"
 version = "0.1.0"
+dependencies = [
+ "credentials",
+ "eyre",
+ "fs-err 3.1.0",
+ "futures-core",
+ "jsonapi",
+ "libconfig",
+ "libhttpclient",
+ "merde",
+ "serde",
+ "serde_json",
+ "time",
+ "tracing",
+ "url 2.5.4",
+]
+
+[[package]]
+name = "libreddit"
+version = "0.1.0"
+dependencies = [
+ "futures-core",
+ "libconfig",
+ "libhttpclient",
+ "merde",
+ "tracing",
+ "url 2.5.4",
+]
 
 [[package]]
 name = "libredox"
@@ -3408,6 +3534,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "librevision"
+version = "0.1.0"
+dependencies = [
+ "atomicwrites",
+ "camino",
+ "closest",
+ "conflux",
+ "content-type",
+ "cub-types",
+ "derivations",
+ "eyre",
+ "facet-json",
+ "facet-pretty",
+ "futures-core",
+ "itertools 0.14.0",
+ "libconfig",
+ "liberrhandling",
+ "libfs",
+ "libimage",
+ "libmarkdown",
+ "libsearch",
+ "libsvg",
+ "libtemplate",
+ "merde",
+ "rayon",
+ "redb",
+ "seahash",
+ "time",
+ "tokio",
+ "tracing",
+ "uffmpeg",
+ "ulid",
+ "wildmatch",
+]
+
+[[package]]
+name = "libsearch"
+version = "0.1.0"
+dependencies = [
+ "conflux",
+ "eyre",
+ "html-escape",
+ "indicium",
+ "libconfig",
+ "percent-encoding 2.3.1",
+ "tantivy",
+ "tracing",
+]
+
+[[package]]
 name = "libsqlite3-sys"
 version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3415,6 +3591,84 @@ checksum = "2e99fb7a497b1e3339bc746195567ed8d3e24945ecd636e3619d20b9de9e9149"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "libsvg"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "bytes",
+ "camino",
+ "conflux",
+ "futures-core",
+ "insta",
+ "libc",
+ "libconfig",
+ "libimage",
+ "liblightningcss",
+ "quick-xml 0.37.4",
+ "rand 0.8.5",
+ "regex 1.11.1",
+ "tempfile",
+ "tokio",
+ "which 7.0.3",
+]
+
+[[package]]
+name = "libtemplate"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "closest",
+ "conflux",
+ "credentials",
+ "form_urlencoded",
+ "html-escape",
+ "insta",
+ "itertools 0.13.0",
+ "libconfig",
+ "libhighlight",
+ "libhtmlrewrite",
+ "libimage",
+ "libmarkdown",
+ "libmedia",
+ "libmom",
+ "libsearch",
+ "merde",
+ "minijinja",
+ "percent-encoding 2.3.1",
+ "rand 0.8.5",
+ "serde_json",
+ "time",
+ "urlencoding",
+]
+
+[[package]]
+name = "libterm"
+version = "0.1.0"
+dependencies = [
+ "anstyle-parse",
+ "coolor",
+ "displaydoc",
+ "fs-err 2.11.0",
+ "libclap",
+ "nix 0.29.0",
+ "owo-colors 4.2.0",
+ "portable-pty",
+ "shell-quote",
+ "term_size",
+ "termion",
+ "tracing",
+ "which 6.0.3",
+]
+
+[[package]]
+name = "libtracingsub"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3428,11 +3682,34 @@ dependencies = [
 ]
 
 [[package]]
-name = "lightningcss"
+name = "libwebpage"
 version = "0.1.0"
 dependencies = [
- "dylo-runtime",
- "lightningcss 1.0.0-alpha.65",
+ "base64",
+ "futures-core",
+ "futures-util",
+ "libhttpclient",
+ "libimage",
+ "merde",
+ "tokio",
+ "url 2.5.4",
+ "webpage",
+]
+
+[[package]]
+name = "libwebsock"
+version = "0.1.0"
+dependencies = [
+ "futures-core",
+ "futures-util",
+ "hickory-resolver",
+ "http",
+ "libhttpclient",
+ "rubicon",
+ "rustls",
+ "tokio",
+ "tokio-tungstenite 0.23.1",
+ "tracing",
 ]
 
 [[package]]
@@ -3449,7 +3726,7 @@ dependencies = [
  "cssparser-color",
  "dashmap",
  "data-encoding",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "indexmap",
  "itertools 0.10.5",
  "lazy_static",
@@ -3507,12 +3784,6 @@ dependencies = [
  "autocfg",
  "scopeguard",
 ]
-
-[[package]]
-name = "lockfree-object-pool"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9374ef4228402d4b7e403e5838cb880d9ee663314b0a900d5a6aabf0c213552e"
 
 [[package]]
 name = "log"
@@ -3600,24 +3871,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
 
 [[package]]
-name = "markdown"
-version = "0.1.0"
-dependencies = [
- "config",
- "conflux",
- "dylo-runtime",
- "highlight",
- "html-escape",
- "math",
- "media",
- "eyre",
- "pulldown-cmark",
- "saphyr",
- "slug",
- "template-types",
-]
-
-[[package]]
 name = "markup5ever"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3656,15 +3909,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e7465ac9959cc2b1404e8e2367b43684a6d13790fe23056cc8c6c5a6b7bcb94"
 
 [[package]]
-name = "math"
-version = "0.1.0"
-dependencies = [
- "dylo-runtime",
- "eyre",
- "pulldown-latex",
-]
-
-[[package]]
 name = "maybe-rayon"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3692,18 +3936,6 @@ checksum = "dbefd235b0aadd181626f281e1d684e116972988c14c264e42069d5e8a5775cc"
 dependencies = [
  "instant",
  "log",
-]
-
-[[package]]
-name = "media"
-version = "0.1.0"
-dependencies = [
- "config",
- "conflux",
- "dylo-runtime",
- "html-escape",
- "image 0.1.0",
- "eyre",
 ]
 
 [[package]]
@@ -3861,659 +4093,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libapi"
-version = "0.1.0"
-dependencies = [
- "cub-types",
- "dylo",
- "dylo-runtime",
- "hattip",
- "reddit",
- "tracing",
- "url 2.5.4",
-]
-
-[[package]]
-name = "libcdn"
-version = "0.1.0"
-dependencies = [
- "bytesize 2.0.1",
- "config",
- "conflux",
- "content-type",
- "cub-types",
- "derivations",
- "dylo",
- "dylo-runtime",
- "futures-core",
- "hattip",
- "http-range",
- "libhttpclient",
- "mom",
- "eyre",
- "tokio",
- "tracing",
- "websock",
-]
-
-[[package]]
-name = "libclap"
-version = "0.1.0"
-dependencies = [
- "camino",
- "clap 4.5.37",
- "dylo",
- "dylo-runtime",
-]
-
-[[package]]
-name = "libcompress"
-version = "0.1.0"
-dependencies = [
- "brotli",
- "bytes",
- "dylo",
- "dylo-runtime",
- "flate2",
-]
-
-[[package]]
-name = "libconfig"
-version = "0.1.0"
-dependencies = [
- "base64",
- "camino",
- "dotenvy",
- "dylo",
- "dylo-runtime",
- "facet",
- "facet-json",
- "facet-pretty",
- "figment",
- "fs-err 2.11.0",
- "merde",
- "eyre",
- "owo-colors 4.2.0",
- "plait",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "libcub"
-version = "0.1.0"
-dependencies = [
- "api",
- "axum",
- "bytesize 1.3.3",
- "camino",
- "cdn",
- "closest",
- "compress",
- "config",
- "conflux",
- "content-type",
- "credentials",
- "cub-types",
- "derivations",
- "dylo",
- "dylo-runtime",
- "errhandling",
- "eyre",
- "flume",
- "futures-core",
- "futures-util",
- "hattip",
- "http",
- "http-body-util",
- "hyper",
- "image 0.1.0",
- "itertools 0.14.0",
- "libc",
- "libgithub",
- "libhttpclient",
- "merde",
- "mom",
- "momclient",
- "nix 0.29.0",
- "eyre",
- "objectstore",
- "open",
- "parking_lot",
- "patreon",
- "pin-project-lite",
- "rand 0.8.5",
- "regex 1.11.1",
- "revision",
- "search",
- "serde",
- "strip-ansi-escapes",
- "strsim",
- "tempdir",
- "tempfile",
- "template",
- "term",
- "time",
- "tokio",
- "tower 0.4.13",
- "tower-cookies",
- "tracing",
- "uffmpeg",
- "ulid",
- "url 2.5.4",
- "webpage 0.1.0",
- "websock",
-]
-
-[[package]]
-name = "libdoctor"
-version = "0.1.0"
-dependencies = [
- "dylo",
- "dylo-runtime",
- "futures-core",
- "http",
- "tokio",
-]
-
-[[package]]
-name = "liberrhandling"
-version = "0.1.0"
-dependencies = [
- "color-backtrace",
- "color-eyre",
- "dylo",
- "dylo-runtime",
- "eyre",
- "termcolor",
-]
-
-[[package]]
-name = "libfs"
-version = "0.1.0"
-dependencies = [
- "camino",
- "dylo",
- "dylo-runtime",
- "eyre",
- "ignore",
- "notify",
-]
-
-[[package]]
-name = "libhighlight"
-version = "0.1.0"
-dependencies = [
- "dumbcache",
- "dylo",
- "dylo-runtime",
- "nerdfonts",
- "tracing",
- "tree-sitter-collection",
-]
-
-[[package]]
-name = "libhtmlrewrite"
-version = "0.1.0"
-dependencies = [
- "dylo",
- "dylo-runtime",
- "lol_html",
-]
-
-[[package]]
-name = "libimage"
-version = "0.1.0"
-dependencies = [
- "content-type",
- "dylo",
- "dylo-runtime",
- "fs-err 3.1.0",
- "image 0.25.6",
- "jpegxl-rs",
- "jxl-oxide",
- "merde",
- "eyre",
- "num_cpus",
- "ordered-float",
- "ravif",
- "rgb",
- "tempfile",
- "tracing",
- "webp",
-]
-
-[[package]]
-name = "liblightningcss"
-version = "0.1.0"
-dependencies = [
- "dylo",
- "dylo-runtime",
- "lightningcss 1.0.0-alpha.65",
-]
-
-[[package]]
-name = "libmarkdown"
-version = "0.1.0"
-dependencies = [
- "config",
- "conflux",
- "dylo",
- "dylo-runtime",
- "highlight",
- "html-escape",
- "indoc",
- "insta",
- "math",
- "media",
- "eyre",
- "pulldown-cmark",
- "saphyr",
- "slug",
- "template-types",
-]
-
-[[package]]
-name = "libmath"
-version = "0.1.0"
-dependencies = [
- "dylo",
- "dylo-runtime",
- "eyre",
- "pulldown-latex",
-]
-
-[[package]]
-name = "libmedia"
-version = "0.1.0"
-dependencies = [
- "config",
- "conflux",
- "dylo",
- "dylo-runtime",
- "html-escape",
- "image 0.1.0",
- "eyre",
-]
-
-[[package]]
-name = "libmom"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "bytesize 1.3.3",
- "camino",
- "config",
- "conflux",
- "content-type",
- "credentials",
- "derivations",
- "dylo",
- "dylo-runtime",
- "errhandling",
- "eyre",
- "ffmpeg-sidecar",
- "futures-core",
- "futures-util",
- "image 0.1.0",
- "inflight",
- "itertools 0.14.0",
- "libgithub",
- "libhttpclient",
- "merde",
- "nix 0.29.0",
- "noteyre",
- "objectstore",
- "owo-colors 4.2.0",
- "parking_lot",
- "patreon",
- "r2d2",
- "r2d2_sqlite",
- "rusqlite",
- "serde",
- "svg",
- "tempfile",
- "term",
- "time",
- "tokio",
- "tokio-stream",
- "tracing",
- "uffmpeg",
- "url 2.5.4",
-]
-
-[[package]]
-name = "libmomclient"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "config",
- "conflux",
- "credentials",
- "dylo",
- "dylo-runtime",
- "futures-core",
- "libgithub",
- "libhttpclient",
- "merde",
- "mom",
- "noteyre",
- "objectstore",
- "patreon",
- "rand 0.8.5",
- "tokio",
- "tracing",
- "websock",
-]
-
-[[package]]
-name = "libobjectstore"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "config",
- "dylo",
- "dylo-runtime",
- "facet",
- "futures-core",
- "futures-util",
- "merde",
- "object_store",
- "plait",
- "rubicon",
- "rusqlite",
- "tokio",
- "tokio-proxy",
- "tracing",
-]
-
-[[package]]
-name = "libpatreon"
-version = "0.1.0"
-dependencies = [
- "config",
- "credentials",
- "dylo",
- "dylo-runtime",
- "eyre",
- "fs-err 3.1.0",
- "futures-core",
- "jsonapi",
- "libhttpclient",
- "merde",
- "serde",
- "serde_json",
- "time",
- "tracing",
- "url 2.5.4",
-]
-
-[[package]]
-name = "libreddit"
-version = "0.1.0"
-dependencies = [
- "config",
- "dylo",
- "dylo-runtime",
- "futures-core",
- "libhttpclient",
- "merde",
- "noteyre",
- "tracing",
- "url 2.5.4",
-]
-
-[[package]]
-name = "librevision"
-version = "0.1.0"
-dependencies = [
- "atomicwrites",
- "camino",
- "closest",
- "config",
- "conflux",
- "content-type",
- "cub-types",
- "derivations",
- "dylo",
- "dylo-runtime",
- "errhandling",
- "eyre",
- "facet-json",
- "facet-pretty",
- "fs",
- "futures-core",
- "image 0.1.0",
- "itertools 0.14.0",
- "markdown",
- "merde",
- "noteyre",
- "rayon",
- "redb",
- "seahash",
- "search",
- "svg",
- "template",
- "time",
- "tokio",
- "tracing",
- "uffmpeg",
- "ulid",
- "wildmatch",
-]
-
-[[package]]
-name = "libsearch"
-version = "0.1.0"
-dependencies = [
- "config",
- "conflux",
- "dylo",
- "dylo-runtime",
- "eyre",
- "html-escape",
- "indicium",
- "noteyre",
- "percent-encoding 2.3.1",
- "tantivy",
- "tracing",
-]
-
-[[package]]
-name = "libsvg"
-version = "0.1.0"
-dependencies = [
- "base64",
- "bytes",
- "camino",
- "config",
- "conflux",
- "dylo",
- "dylo-runtime",
- "futures-core",
- "image 0.1.0",
- "insta",
- "libc",
- "lightningcss 1.0.0-alpha.65",
- "noteyre",
- "quick-xml 0.37.4",
- "rand 0.8.5",
- "regex 1.11.1",
- "tempfile",
- "tokio",
- "which 7.0.3",
-]
-
-[[package]]
-name = "libtemplate"
-version = "0.1.0"
-dependencies = [
- "camino",
- "closest",
- "config",
- "conflux",
- "credentials",
- "dylo",
- "dylo-runtime",
- "form_urlencoded",
- "highlight",
- "html-escape",
- "htmlrewrite",
- "image 0.1.0",
- "insta",
- "itertools 0.13.0",
- "markdown",
- "media",
- "merde",
- "minijinja",
- "mom",
- "noteyre",
- "percent-encoding 2.3.1",
- "rand 0.8.5",
- "search",
- "serde_json",
- "time",
- "urlencoding",
-]
-
-[[package]]
-name = "libterm"
-version = "0.1.0"
-dependencies = [
- "anstyle-parse",
- "clap 0.1.0",
- "coolor",
- "displaydoc",
- "dylo",
- "dylo-runtime",
- "fs-err 2.11.0",
- "nix 0.29.0",
- "owo-colors 4.2.0",
- "portable-pty",
- "shell-quote",
- "term_size",
- "termion",
- "tracing",
- "which 6.0.3",
-]
-
-[[package]]
-name = "libtracingsub"
-version = "0.1.0"
-dependencies = [
- "dylo",
- "dylo-runtime",
- "env_logger",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "libwebpage"
-version = "0.1.0"
-dependencies = [
- "base64",
- "dylo",
- "dylo-runtime",
- "futures-core",
- "futures-util",
- "image 0.1.0",
- "libhttpclient",
- "merde",
- "tokio",
- "url 2.5.4",
- "webpage 2.0.1",
-]
-
-[[package]]
-name = "libwebsock"
-version = "0.1.0"
-dependencies = [
- "dylo",
- "dylo-runtime",
- "futures-core",
- "futures-util",
- "hickory-resolver",
- "http",
- "libhttpclient",
- "rubicon",
- "rustls",
- "tokio",
- "tokio-proxy",
- "tokio-tungstenite 0.23.1",
- "tracing",
-]
-
-[[package]]
-name = "mom"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "bytesize 1.3.3",
- "camino",
- "config",
- "conflux",
- "content-type",
- "credentials",
- "derivations",
- "dylo-runtime",
- "errhandling",
- "eyre",
- "ffmpeg-sidecar",
- "futures-core",
- "futures-util",
- "image 0.1.0",
- "inflight",
- "itertools 0.14.0",
- "libgithub",
- "libhttpclient",
- "merde",
- "nix 0.29.0",
- "noteyre",
- "objectstore",
- "owo-colors 4.2.0",
- "parking_lot",
- "patreon",
- "r2d2",
- "r2d2_sqlite",
- "rusqlite",
- "serde",
- "svg",
- "tempfile",
- "term",
- "time",
- "tokio",
- "tokio-stream",
- "tracing",
- "uffmpeg",
- "url 2.5.4",
-]
-
-[[package]]
-name = "momclient"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "config",
- "conflux",
- "credentials",
- "dylo-runtime",
- "futures-core",
- "libgithub",
- "libhttpclient",
- "merde",
- "mom",
- "noteyre",
- "objectstore",
- "patreon",
- "rand 0.8.5",
- "tokio",
- "tracing",
- "websock",
-]
-
-[[package]]
 name = "mp4parse"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4545,7 +4124,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a51313c5820b0b02bd422f4b44776fbf47961755c74ce64afc73bfad10226c3"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
 ]
 
 [[package]]
@@ -4636,13 +4215,6 @@ name = "noop_proc_macro"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0676bb32a98c1a483ce53e500a81ad9c3d5b3f7c920c28c24e9cb0980d0b5bc8"
-
-[[package]]
-name = "noteyre"
-version = "0.1.0"
-dependencies = [
- "b-x",
-]
 
 [[package]]
 name = "notify"
@@ -4783,26 +4355,6 @@ dependencies = [
  "tracing",
  "url 2.5.4",
  "walkdir",
-]
-
-[[package]]
-name = "objectstore"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "config",
- "dylo-runtime",
- "facet",
- "futures-core",
- "futures-util",
- "merde",
- "object_store",
- "plait",
- "rubicon",
- "rusqlite",
- "tokio",
- "tokio-proxy",
- "tracing",
 ]
 
 [[package]]
@@ -4984,26 +4536,6 @@ name = "pathdiff"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
-
-[[package]]
-name = "patreon"
-version = "0.1.0"
-dependencies = [
- "config",
- "credentials",
- "dylo-runtime",
- "eyre",
- "fs-err 3.1.0",
- "futures-core",
- "jsonapi",
- "libhttpclient",
- "merde",
- "serde",
- "serde_json",
- "time",
- "tracing",
- "url 2.5.4",
-]
 
 [[package]]
 name = "pbkdf2"
@@ -5441,13 +4973,13 @@ dependencies = [
 
 [[package]]
 name = "quinn-proto"
-version = "0.11.10"
+version = "0.11.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b820744eb4dc9b57a3398183639c511b5a26d2ed702cedd3febaa1393caa22cc"
+checksum = "bcbafbbdbb0f638fe3f35f3c56739f77a8a1d070cb25603226c83339b391472b"
 dependencies = [
  "bytes",
  "getrandom 0.3.2",
- "rand 0.9.0",
+ "rand 0.9.1",
  "ring",
  "rustc-hash 2.1.1",
  "rustls",
@@ -5556,13 +5088,12 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
+checksum = "9fbfd9d094a40bf3ae768db9361049ace4c0e04a4fd6b359518bd7b73a73dd97"
 dependencies = [
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
- "zerocopy 0.8.24",
 ]
 
 [[package]]
@@ -5625,7 +5156,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
 ]
 
 [[package]]
@@ -5754,25 +5285,11 @@ dependencies = [
 
 [[package]]
 name = "redb"
-version = "2.4.0"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea0a72cd7140de9fc3e318823b883abf819c20d478ec89ce880466dc2ef263c6"
+checksum = "34bc6763177194266fc3773e2b2bb3693f7b02fdf461e285aa33202e3164b74e"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "reddit"
-version = "0.1.0"
-dependencies = [
- "config",
- "dylo-runtime",
- "futures-core",
- "libhttpclient",
- "merde",
- "noteyre",
- "tracing",
- "url 2.5.4",
 ]
 
 [[package]]
@@ -5920,44 +5437,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "revision"
-version = "0.1.0"
-dependencies = [
- "atomicwrites",
- "camino",
- "closest",
- "config",
- "conflux",
- "content-type",
- "cub-types",
- "derivations",
- "dylo-runtime",
- "errhandling",
- "eyre",
- "facet-json",
- "facet-pretty",
- "fs",
- "futures-core",
- "image 0.1.0",
- "itertools 0.14.0",
- "markdown",
- "merde",
- "noteyre",
- "rayon",
- "redb",
- "seahash",
- "search",
- "svg",
- "template",
- "time",
- "tokio",
- "tracing",
- "uffmpeg",
- "ulid",
- "wildmatch",
-]
-
-[[package]]
 name = "rgb"
 version = "0.8.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5974,7 +5453,7 @@ checksum = "a4689e6c2294d81e88dc6261c768b63bc4fcdb852be6d1352498b114f61383b7"
 dependencies = [
  "cc",
  "cfg-if",
- "getrandom 0.2.15",
+ "getrandom 0.2.16",
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
@@ -6025,11 +5504,6 @@ name = "rubicon"
 version = "3.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df530fafa5c66f7f964f24310867c75ad19d3869bcc86f5befdcc41eafa3ac9d"
-dependencies = [
- "libc",
- "paste",
- "rustc_version",
-]
 
 [[package]]
 name = "rubicon-imports"
@@ -6256,22 +5730,6 @@ name = "seahash"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
-
-[[package]]
-name = "search"
-version = "0.1.0"
-dependencies = [
- "config",
- "conflux",
- "dylo-runtime",
- "eyre",
- "html-escape",
- "indicium",
- "noteyre",
- "percent-encoding 2.3.1",
- "tantivy",
- "tracing",
-]
 
 [[package]]
 name = "security-framework"
@@ -6517,9 +5975,9 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "signal-hook-registry"
-version = "1.4.2"
+version = "1.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
+checksum = "9203b8055f63a2a00e2f593bb0510367fe707d7ff1e5c872de2f537b339e5410"
 dependencies = [
  "libc",
 ]
@@ -6710,28 +6168,6 @@ name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
-
-[[package]]
-name = "svg"
-version = "0.1.0"
-dependencies = [
- "base64",
- "bytes",
- "camino",
- "config",
- "conflux",
- "dylo-runtime",
- "futures-core",
- "image 0.1.0",
- "libc",
- "lightningcss 1.0.0-alpha.65",
- "noteyre",
- "quick-xml 0.37.4",
- "rand 0.8.5",
- "tempfile",
- "tokio",
- "which 7.0.3",
-]
 
 [[package]]
 name = "syn"
@@ -6997,36 +6433,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "template"
-version = "0.1.0"
-dependencies = [
- "camino",
- "closest",
- "config",
- "conflux",
- "credentials",
- "dylo-runtime",
- "form_urlencoded",
- "highlight",
- "html-escape",
- "htmlrewrite",
- "image 0.1.0",
- "itertools 0.13.0",
- "markdown",
- "media",
- "merde",
- "minijinja",
- "mom",
- "noteyre",
- "percent-encoding 2.3.1",
- "rand 0.8.5",
- "search",
- "serde_json",
- "time",
- "urlencoding",
-]
-
-[[package]]
 name = "template-types"
 version = "0.1.0"
 dependencies = [
@@ -7043,26 +6449,6 @@ dependencies = [
  "futf",
  "mac",
  "utf-8",
-]
-
-[[package]]
-name = "term"
-version = "0.1.0"
-dependencies = [
- "anstyle-parse",
- "clap 0.1.0",
- "coolor",
- "displaydoc",
- "dylo-runtime",
- "fs-err 2.11.0",
- "nix 0.29.0",
- "owo-colors 4.2.0",
- "portable-pty",
- "shell-quote",
- "term_size",
- "termion",
- "tracing",
- "which 6.0.3",
 ]
 
 [[package]]
@@ -7265,15 +6651,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tokio-proxy"
-version = "0.1.0"
-dependencies = [
- "eyre",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "tokio-rustls"
 version = "0.26.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7324,9 +6701,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-util"
-version = "0.7.14"
+version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b9590b93e6fcc1739458317cccd391ad3955e2bde8913edf6f95f9e65a8f034"
+checksum = "66a539a9ad6d5d281510d5bd368c973d636c02dbf8a67300bfb6b950696ad7df"
 dependencies = [
  "bytes",
  "futures-core",
@@ -7477,15 +6854,6 @@ dependencies = [
  "thread_local 1.1.8",
  "tracing-core",
  "tracing-log",
-]
-
-[[package]]
-name = "tracingsub"
-version = "0.1.0"
-dependencies = [
- "dylo-runtime",
- "env_logger",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -7868,7 +7236,7 @@ dependencies = [
  "conflux",
  "eyre",
  "ffmpeg-sidecar",
- "image 0.1.0",
+ "libimage",
  "tokio",
 ]
 
@@ -7878,7 +7246,7 @@ version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "470dbf6591da1b39d43c14523b2b469c86879a53e8b758c8e090a470fe7b1fbe"
 dependencies = [
- "rand 0.9.0",
+ "rand 0.9.1",
  "web-time",
 ]
 
@@ -8045,7 +7413,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
 dependencies = [
  "getrandom 0.3.2",
- "rand 0.9.0",
+ "rand 0.9.1",
  "serde",
 ]
 
@@ -8249,24 +7617,8 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f53152f51fb5af0c08484c33d16cca96175881d1f3dec068c23b31a158c2d99"
 dependencies = [
- "image 0.25.6",
+ "image",
  "libwebp-sys",
-]
-
-[[package]]
-name = "webpage"
-version = "0.1.0"
-dependencies = [
- "base64",
- "dylo-runtime",
- "futures-core",
- "futures-util",
- "image 0.1.0",
- "libhttpclient",
- "merde",
- "tokio",
- "url 2.5.4",
- "webpage 2.0.1",
 ]
 
 [[package]]
@@ -8288,24 +7640,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2210b291f7ea53617fbafcc4939f10914214ec15aace5ba62293a668f322c5c9"
 dependencies = [
  "rustls-pki-types",
-]
-
-[[package]]
-name = "websock"
-version = "0.1.0"
-dependencies = [
- "dylo-runtime",
- "futures-core",
- "futures-util",
- "hickory-resolver",
- "http",
- "libhttpclient",
- "rubicon",
- "rustls",
- "tokio",
- "tokio-proxy",
- "tokio-tungstenite 0.23.1",
- "tracing",
 ]
 
 [[package]]
@@ -8933,15 +8267,13 @@ dependencies = [
 
 [[package]]
 name = "zopfli"
-version = "0.8.1"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5019f391bac5cf252e93bbcc53d039ffd62c7bfb7c150414d61369afe57e946"
+checksum = "edfc5ee405f504cd4984ecc6f14d02d55cfda60fa4b689434ef4102aae150cd7"
 dependencies = [
  "bumpalo",
  "crc32fast",
- "lockfree-object-pool",
  "log",
- "once_cell",
  "simd-adler32",
 ]
 

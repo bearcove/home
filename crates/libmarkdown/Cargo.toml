@@ -15,10 +15,10 @@ pulldown-cmark = { version = "0.11.3", features = ["simd"] }
 saphyr = { version = "0.0.1", default-features = false }
 slug = { version = "0.1.6" }
 template-types = { path = "../template-types" }
-highlight = { path = "../highlight" }
-math = { path = "../math" }
-config = { version = "0.1.0", path = "../config" }
-media = { version = "0.1.0", path = "../media" }
+libhighlight = { path = "../libhighlight" }
+libmath = { path = "../libmath" }
+libconfig = { version = "0.1.0", path = "../libconfig" }
+libmedia = { version = "0.1.0", path = "../libmedia" }
 
 [dev-dependencies]
 indoc = "2.0.6"

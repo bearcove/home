@@ -11,4 +11,4 @@ crate-type = ["dylib"]
 dumbcache = { path = "../../crates/dumbcache" }
 tracing = { version = "0.1.41" }
 tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" }
-libnerdfonts = { path = "../libnerdfonts" }
+nerdfonts = { path = "../nerdfonts" }

@@ -1,10 +1,5 @@
 [workspace]
-members = [
-    "crates/*",
-    "libs/libgithub",
-    "libs/libhttpclient",
-    "libs/libpatreon",
-]
+members = ["crates/*"]
 exclude = []
 resolver = "3"
 
@@ -43,4 +38,8 @@ eyre = "0.6.12"
 tracing = { version = "0.1.41", default-features = false, features = ["std"] }
 minijinja = { version = "2.8.0" }
 
-facet = { version = "0.9.6", features = ["camino"] }
+facet = { version = "0.9.7", features = ["camino"] }
+facet-core = "0.11.4"
+facet-json = "0.11.4"
+facet-pretty = "0.13.3"
+facet-reflect = "0.10.8"

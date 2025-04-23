@@ -17,7 +17,7 @@ which = { version = "7.0.2" }
 tempfile = { version = "3.19.1" }
 camino = { version = "1.1.9" }
 base64 = { version = "0.22.1" }
-liblightningcss = { version = "1.0.0-alpha.65", path = "../liblightningcss" }
+liblightningcss = { path = "../liblightningcss" }
 futures-core = "0.3.31"
 libconfig = { version = "0.1.0", path = "../libconfig" }
 bytes = "1.10.1"

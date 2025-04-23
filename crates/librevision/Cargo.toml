@@ -15,11 +15,11 @@ conflux = { version = "0.1.0", path = "../../crates/conflux" }
 content-type = { version = "0.1.0", path = "../content-type" }
 cub-types = { version = "0.1.0", path = "../cub-types" }
 derivations = { version = "0.1.0", path = "../derivations" }
-errhandling = { version = "0.1.0", path = "../errhandling" }
+liberrhandling = { version = "0.1.0", path = "../liberrhandling" }
 eyre.workspace = true
 facet-json = "0.11.1"
 facet-pretty = "0.13.0"
-fs = { version = "0.1.0", path = "../fs" }
+libfs = { version = "0.1.0", path = "../libfs" }
 futures-core = "0.3.31"
 libimage = { version = "0.1.0", path = "../libimage" }
 itertools = { version = "0.14.0" }

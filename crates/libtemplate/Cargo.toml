@@ -20,7 +20,7 @@ urlencoding = { version = "2.1.3" }
 minijinja = { version = "2.8.0", features = ["loader", "debug"] }
 libconfig = { path = "../libconfig" }
 libhighlight = { path = "../libhighlight" }
-libcredentials = { path = "../libcredentials" }
+credentials = { path = "../credentials" }
 libhtmlrewrite = { path = "../libhtmlrewrite" }
 time = { version = "0.3.41", features = ["formatting", "parsing"] }
 merde = { workspace = true, features = ["time"] }

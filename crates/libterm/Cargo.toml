@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-clap = { path = "../clap" }
+libclap = { path = "../libclap" }
 anstyle-parse = { version = "0.2.6" }
 coolor = { version = "0.9.0" }
 displaydoc = { version = "0.2.5" }

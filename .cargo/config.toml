@@ -73,7 +73,6 @@ eyre = { git = "https://github.com/bearcove/eyre", branch = "release-0.6-rubicon
 
 # minijinja = { path = "../minijinja/minijinja" }
 
-
 # facet = { path = "../facet/facet" }
 # facet-core = { path = "../facet/facet-core" }
 # facet-json = { path = "../facet/facet-json" }
