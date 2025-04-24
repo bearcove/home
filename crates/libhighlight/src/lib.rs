@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use autotrait::autotrait;
+use highlight_types::HighlightCodeParams;
 use std::sync::LazyLock;
 use tree_sitter_collection::tree_sitter_highlight::{
     self, Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
@@ -121,16 +122,6 @@ impl From<tree_sitter_collection::tree_sitter::QueryError> for Error {
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-pub struct HighlightCodeParams<'a> {
-    /// the code to highlight
-    pub source: &'a str,
-    /// something like "rust" or "go" — whatever was
-    /// in the fenced code block. it can be empty.
-    pub tag: &'a str,
-    /// written as `data-bo`
-    pub byte_offset: usize,
-}
 
 #[autotrait]
 impl Mod for ModImpl {

@@ -21,6 +21,9 @@ libconfig = { version = "0.1.0", path = "../libconfig" }
 libmedia = { version = "0.1.0", path = "../libmedia" }
 autotrait = "0.1.10"
 eyre.workspace = true
+highlight-types = { version = "0.1.0", path = "../highlight-types" }
+config-types = { version = "0.1.0", path = "../config-types" }
+markdown-types = { version = "0.1.0", path = "../markdown-types" }
 
 [dev-dependencies]
 indoc = "2.0.6"

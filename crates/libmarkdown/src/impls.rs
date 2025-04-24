@@ -17,8 +17,8 @@ use saphyr::{Yaml, yaml::YamlLoader};
 
 use conflux::{InputPath, InputPathRef, Markdown, TocEntry};
 use libmath::MathMode;
-use libtemplate::{DataObject, DataValue};
 use slug::slugify;
+use template_types::{DataObject, DataValue};
 
 mod argparse;
 use argparse::parse_emphasis_shortcode;
@@ -161,9 +161,9 @@ pub(crate) struct Formatter<'a> {
     pub(crate) args: ProcessMarkdownArgs<'a>,
     pub(crate) result: ProcessMarkdownResult,
 
-    pub(crate) highlight: &'static dyn highlight::Mod,
-    pub(crate) math: &'static dyn math::Mod,
-    pub(crate) media: &'static dyn media::Mod,
+    pub(crate) highlight: &'static dyn libhighlight::Mod,
+    pub(crate) math: &'static dyn libmath::Mod,
+    pub(crate) media: &'static dyn libmedia::Mod,
 
     pub(crate) mode: FormatterMode,
 
@@ -899,7 +899,7 @@ impl<'a> Formatter<'a> {
                     let w = self.writer()?;
                     highlight.highlight_code(
                         w,
-                        highlight::HighlightCodeParams {
+                        highlight_types::HighlightCodeParams {
                             source: &plain_text,
                             tag: &lang,
                             byte_offset,

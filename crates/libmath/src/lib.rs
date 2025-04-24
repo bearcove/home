@@ -1,7 +1,11 @@
 use autotrait::autotrait;
 
 #[derive(Default)]
-struct ModImpl {}
+struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 /// The mode for LaTeX/MathML rendering
 pub enum MathMode {

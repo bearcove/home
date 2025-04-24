@@ -32,7 +32,7 @@ struct ModImpl;
 
 #[dylo::export]
 impl Mod for ModImpl {
-    fn make_collection(&self, args: CompileArgs) -> noteyre::Result<Box<dyn TemplateCollection>> {
+    fn make_collection(&self, args: CompileArgs) -> eyre::Result<Box<dyn TemplateCollection>> {
         let mut environment = Environment::new();
 
         environment.set_debug(true);
@@ -66,7 +66,7 @@ impl TemplateCollection for TemplateCollectionImpl {
         &self,
         w: &mut dyn std::io::Write,
         args: RenderTemplateArgs<'_>,
-    ) -> noteyre::Result<()> {
+    ) -> eyre::Result<()> {
         let template_name = args.template_name;
         let template = self
             .environment
@@ -99,7 +99,7 @@ impl TemplateCollection for TemplateCollectionImpl {
         sc: Shortcode<'_>,
         rv: Arc<dyn RevisionView>,
         web: WebConfig,
-    ) -> noteyre::Result<RenderShortcodeResult> {
+    ) -> eyre::Result<RenderShortcodeResult> {
         let template_name = format!("shortcodes/{}.html", sc.name);
         let template_input_path = InputPath::new(format!("/templates/{template_name}.jinja"));
         let template_input = rv.rev().bs()?.inputs().get(&template_input_path).cloned().ok_or_else(|| {
@@ -200,7 +200,7 @@ impl TemplateCollection for () {
         &self,
         _w: &mut dyn std::io::Write,
         _args: RenderTemplateArgs<'_>,
-    ) -> noteyre::Result<()> {
+    ) -> eyre::Result<()> {
         Err(eyre!("no template collection"))
     }
 
@@ -210,7 +210,7 @@ impl TemplateCollection for () {
         _args: Shortcode<'_>,
         _rv: Arc<dyn RevisionView>,
         _web: WebConfig,
-    ) -> noteyre::Result<RenderShortcodeResult> {
+    ) -> eyre::Result<RenderShortcodeResult> {
         Err(eyre!("no template collection"))
     }
 }

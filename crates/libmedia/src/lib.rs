@@ -6,7 +6,11 @@ use image_types::LogicalPixels;
 mod impls;
 
 #[derive(Default)]
-struct ModImpl {}
+struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 pub struct MediaMarkupOpts<'a> {
     pub path: &'a InputPathRef,

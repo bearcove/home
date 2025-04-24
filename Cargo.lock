@@ -2142,6 +2142,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "highlight-types"
+version = "0.1.0"
+
+[[package]]
 name = "hkdf"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3343,6 +3347,7 @@ version = "0.1.0"
 dependencies = [
  "autotrait",
  "dumbcache",
+ "highlight-types",
  "nerdfonts",
  "tracing",
  "tree-sitter-collection",
@@ -3412,8 +3417,10 @@ name = "libmarkdown"
 version = "0.1.0"
 dependencies = [
  "autotrait",
+ "config-types",
  "conflux",
  "eyre",
+ "highlight-types",
  "html-escape",
  "indoc",
  "insta",
@@ -3421,6 +3428,7 @@ dependencies = [
  "libhighlight",
  "libmath",
  "libmedia",
+ "markdown-types",
  "pulldown-cmark",
  "saphyr",
  "slug",
@@ -3931,6 +3939,15 @@ name = "mac"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
+
+[[package]]
+name = "markdown-types"
+version = "0.1.0"
+dependencies = [
+ "config-types",
+ "conflux",
+ "template-types",
+]
 
 [[package]]
 name = "markup5ever"
