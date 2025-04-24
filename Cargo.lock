@@ -3465,6 +3465,7 @@ name = "libmom"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "autotrait",
  "axum",
  "bytesize 1.3.3",
  "camino",
@@ -3489,6 +3490,7 @@ dependencies = [
  "libsvg",
  "libterm",
  "merde",
+ "mom-types",
  "nix 0.29.0",
  "objectstore-types",
  "owo-colors 4.2.0",

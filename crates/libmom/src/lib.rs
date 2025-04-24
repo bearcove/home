@@ -1,3 +1,4 @@
+use autotrait::autotrait;
 use camino::Utf8PathBuf;
 use config_types::{MomConfig, TenantConfig, TenantDomain, TenantInfo, WebConfig};
 use conflux::{Derivation, DerivationHash, Input, InputPath, Pak};
@@ -10,7 +11,7 @@ use std::{collections::HashMap, time::Instant};
 #[derive(Default)]
 struct ModImpl;
 
-pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
+pub use eyre::Result;
 
 pub struct MomServeArgs {
     pub config: MomConfig,
@@ -21,7 +22,7 @@ pub struct MomServeArgs {
 
 #[autotrait]
 impl Mod for ModImpl {
-    fn serve(&self, args: MomServeArgs) -> BoxFuture<Result<(), BS>> {
+    fn serve(&self, args: MomServeArgs) -> BoxFuture<Result<()>> {
         Box::pin(impls::serve(args))
     }
 }
