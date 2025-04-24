@@ -53,3 +53,5 @@ owo-colors = "4.2.0"
 itertools = "0.14.0"
 libgithub = { version = "0.1.0", path = "../libgithub" }
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
+config-types = { version = "0.1.0", path = "../config-types" }
+objectstore-types = { version = "0.1.0", path = "../objectstore-types" }

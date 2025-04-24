@@ -688,7 +688,7 @@ pub(crate) mod impls {
     pub(crate) fn write_code_start(
         w: &mut dyn io::Write,
         params: &HighlightCodeParams,
-    ) -> Result<()> {
+    ) -> eyre::Result<()> {
         let lang = match params.tag {
             "term" => Some(Lang {
                 conf: None,
@@ -735,12 +735,12 @@ pub(crate) mod impls {
         Ok(())
     }
 
-    pub(crate) fn write_code_end(w: &mut dyn io::Write) -> Result<()> {
+    pub(crate) fn write_code_end(w: &mut dyn io::Write) -> eyre::Result<()> {
         write!(w, "</code></figure>")?;
         Ok(())
     }
 
-    pub(crate) fn write_code_escaped(w: &mut dyn io::Write, input: &str) -> Result<()> {
+    pub(crate) fn write_code_escaped(w: &mut dyn io::Write, input: &str) -> eyre::Result<()> {
         let mut start: Option<usize> = None;
 
         tracing::trace!("Escaping code: {input:?}");

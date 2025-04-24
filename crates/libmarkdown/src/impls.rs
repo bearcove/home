@@ -1273,7 +1273,7 @@ mod tests {
             &self,
             mut w: &mut dyn std::io::Write,
             params: HighlightCodeParams<'_>,
-        ) -> highlight_types::Result<()> {
+        ) -> eyre::Result<()> {
             write!(
                 w,
                 "<code data-lang={:?} data-bo={}>",
@@ -1291,11 +1291,11 @@ mod tests {
 
     struct DummyMath;
 
-    impl math::Mod for DummyMath {
+    impl libmath::Mod for DummyMath {
         fn render_math(
             &self,
             input: &str,
-            _mode: math::MathMode,
+            _mode: libmath::MathMode,
             w: &mut dyn std::io::Write,
         ) -> eyre::Result<()> {
             write!(w, "<span class=\"mathml\">{}</span>", input)?;
@@ -1332,8 +1332,8 @@ mod tests {
 
     struct DummyMedia;
 
-    impl media::Mod for DummyMedia {
-        fn media_html_markup(&self, _opts: media::MediaMarkupOpts) -> eyre::Result<String> {
+    impl libmedia::Mod for DummyMedia {
+        fn media_html_markup(&self, _opts: libmedia::MediaMarkupOpts) -> eyre::Result<String> {
             Ok("<img>".into())
         }
     }
@@ -1345,7 +1345,7 @@ mod tests {
             math: &DummyMath,
             media: &DummyMedia,
         };
-        use config::camino::Utf8PathBuf;
+        use camino::Utf8PathBuf;
 
         let result = mod_instance
             .process_markdown_to_writer(ProcessMarkdownArgs {

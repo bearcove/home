@@ -24,6 +24,7 @@ eyre.workspace = true
 highlight-types = { version = "0.1.0", path = "../highlight-types" }
 config-types = { version = "0.1.0", path = "../config-types" }
 markdown-types = { version = "0.1.0", path = "../markdown-types" }
+camino = "1.1.9"
 
 [dev-dependencies]
 indoc = "2.0.6"

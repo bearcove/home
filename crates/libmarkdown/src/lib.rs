@@ -1,12 +1,7 @@
-use std::{collections::HashSet, sync::Arc};
-
 use autotrait::autotrait;
-use config_types::{TenantInfo, WebConfig};
-use conflux::{Href, InputPath, InputPathRef, MarkdownRef, RevisionView, Toc};
 use impls::{FormatterMode, options};
 use markdown_types::{CollectDependenciesResult, ProcessMarkdownArgs, ProcessMarkdownResult};
 use pulldown_cmark::Parser;
-use template_types::TemplateCollection;
 
 mod impls;
 
