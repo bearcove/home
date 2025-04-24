@@ -14,6 +14,7 @@ tracing = { workspace = true }
 # core dependencies
 hattip = { version = "0.1.0", path = "../hattip" }
 cub-types = { version = "0.1.0", path = "../cub-types" }
+autotrait = "0.1.11"
 
 [features]
 default = ["impl"]

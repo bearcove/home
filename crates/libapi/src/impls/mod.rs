@@ -25,7 +25,7 @@ pub(crate) async fn serve_comments(rcx: Box<dyn CubReq>) -> HReply {
         status_code: StatusCode::INTERNAL_SERVER_ERROR,
         msg: "Failed to get reddit secrets".into(),
     })?;
-    let submission_url_res = reddit::load().get_submission(reddit_secrets, url).await;
+    let submission_url_res = libreddit::load().get_submission(reddit_secrets, url).await;
     let redirect_url = match submission_url_res {
         Err(e) => {
             tracing::warn!("Reddit API error: {}", e);

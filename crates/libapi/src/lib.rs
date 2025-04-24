@@ -1,8 +1,13 @@
+use autotrait::autotrait;
 use cub_types::CubReq;
 use hattip::prelude::*;
 
 #[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 mod impls;
 
