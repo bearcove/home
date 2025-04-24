@@ -45,8 +45,8 @@ impl Mod for ModImpl {
         if let Some(config_path) = config_path {
             eprintln!("Loading config from {}", config_path);
 
-            let file_contents = fs_err::read_to_string(config_path).bs()?;
-            let config: CubConfig = serde_json::from_str(&file_contents).bs()?;
+            let file_contents = fs_err::read_to_string(config_path)?;
+            let config: CubConfig = serde_json::from_str(&file_contents)?;
             return Ok(CubConfigBundle {
                 cc: config,
                 // those will be loaded from mom
@@ -70,7 +70,7 @@ impl Mod for ModImpl {
                 .collect::<Vec<String>>()
                 .join(", ")
         );
-        let cc: CubConfig = serde_json::from_str("{}").bs()?;
+        let cc: CubConfig = serde_json::from_str("{}")?;
         let mut bundle = CubConfigBundle {
             cc,
             tenants: HashMap::new(),
@@ -91,12 +91,12 @@ impl Mod for ModImpl {
                 std::process::exit(1);
             }
 
-            let config_contents = fs_err::read_to_string(&public_config_path).bs()?;
-            let config: RevisionConfig = facet_json::from_str(&config_contents)
-                .map_err(|e| BS::from_string(e.to_string()))?;
+            let config_contents = fs_err::read_to_string(&public_config_path)?;
+            let config: RevisionConfig =
+                facet_json::from_str(&config_contents).map_err(|e| eyre::eyre!("{e}"))?;
             eprintln!("Got config {}", config.pretty());
 
-            let base_dir = root.canonicalize_utf8().bs()?;
+            let base_dir = root.canonicalize_utf8()?;
             let tenant = TenantDomain::new(config.id);
             let tc = TenantConfig {
                 name: tenant.clone(),
@@ -112,10 +112,9 @@ impl Mod for ModImpl {
 
     fn load_mom_config(&self, config_path: &Utf8Path) -> Result<MomConfig> {
         eprintln!("Reading config from {}", config_path.blue());
-        let config_path = config_path.canonicalize_utf8().bs()?;
+        let config_path = config_path.canonicalize_utf8()?;
 
-        let config: MomConfig =
-            serde_json::from_str(&fs_err::read_to_string(config_path).bs()?).bs()?;
+        let config: MomConfig = serde_json::from_str(&fs_err::read_to_string(config_path)?)?;
         Ok(config)
     }
 }
@@ -228,16 +227,15 @@ impl CubConfig {
 }
 
 /// tenant-specific configuration that's common betweeen mom and cub
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TenantConfig {
     /// tenant name (and domain name)
-    #[cfg_attr(feature = "serde", serde(default = "serde_defaults::tenant_name"))]
+    #[serde(default = "serde_defaults::tenant_name")]
     pub name: TenantDomain,
 
     /// domain aliases for redirecting old domains to the current domain
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub domain_aliases: Vec<TenantDomain>,
 
     /// used to access S3 bucket for assets etc.
@@ -313,39 +311,39 @@ impl TenantConfig {
         }
     }
 
-    pub fn secrets(&self) -> noteyre::Result<&TenantSecrets> {
+    pub fn secrets(&self) -> eyre::Result<&TenantSecrets> {
         if let Some(secrets) = &self.secrets {
             Ok(secrets)
         } else {
-            noteyre::bail!("Tenant secrets not specified for tenant {}", self.name)
+            eyre::bail!("Tenant secrets not specified for tenant {}", self.name)
         }
     }
 
-    pub fn patreon_secrets(&self) -> noteyre::Result<&PatreonSecrets> {
+    pub fn patreon_secrets(&self) -> eyre::Result<&PatreonSecrets> {
         self.secrets().and_then(|secrets| {
             if let Some(ref patreon) = secrets.patreon {
                 Ok(patreon)
             } else {
-                noteyre::bail!("Patreon secrets not specified for tenant {}", self.name)
+                eyre::bail!("Patreon secrets not specified for tenant {}", self.name)
             }
         })
     }
 
-    pub fn github_secrets(&self) -> noteyre::Result<&GitHubSecrets> {
+    pub fn github_secrets(&self) -> eyre::Result<&GitHubSecrets> {
         self.secrets().and_then(|secrets| {
             if let Some(ref github) = secrets.github {
                 Ok(github)
             } else {
-                noteyre::bail!("GitHub secrets not specified for tenant {}", self.name)
+                eyre::bail!("GitHub secrets not specified for tenant {}", self.name)
             }
         })
     }
 
-    pub fn object_storage(&self) -> noteyre::Result<&ObjectStorageConfig> {
+    pub fn object_storage(&self) -> eyre::Result<&ObjectStorageConfig> {
         if let Some(object_storage) = &self.object_storage {
             Ok(object_storage)
         } else {
-            noteyre::bail!(
+            eyre::bail!(
                 "Object storage config not specified for tenant {}",
                 self.name
             )
@@ -525,7 +523,6 @@ merde::derive! {
     }
 }
 
-#[cfg(feature = "serde")]
 mod serde_defaults {
     use crate::{MOM_DEV_API_KEY, TenantDomain};
 
@@ -557,8 +554,8 @@ mod serde_defaults {
     }
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[derive(Clone)]
 pub struct ObjectStorageConfig {
     pub bucket: S3BucketName,
@@ -571,8 +568,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct ObjectStorageConfig { bucket, region, endpoint }
 }
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[derive(Clone)]
 pub struct TenantSecrets {
     pub aws: AwsSecrets,
@@ -584,9 +581,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TenantSecrets { aws, patreon, github }
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AwsSecrets {
     pub access_key_id: String,
     pub secret_access_key: String,
@@ -596,9 +592,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct AwsSecrets { access_key_id, secret_access_key }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Environment {
     Development,
     Production,
@@ -648,9 +643,8 @@ impl std::fmt::Display for Environment {
     }
 }
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PatreonSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
@@ -699,11 +693,10 @@ merde::derive! {
 
 pub const MOM_DEV_API_KEY: &MomApiKeyRef = MomApiKeyRef::from_static("mom_KEY_IN_DEV");
 
-#[derive(Clone, Facet)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(deny_unknown_fields))]
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ScopedMomApiKey {
-    #[cfg_attr(feature = "serde", serde(default))]
+    #[serde(default)]
     pub tenants: Vec<TenantDomain>,
 }
 

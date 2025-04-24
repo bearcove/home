@@ -95,15 +95,14 @@ impl CacheBuster for Revision {
 
         let asset_route = rev
             .asset_routes
-            .get_or_help(ResourceKind::AssetRoute, asset_path)
-            .bs()?;
+            .get_or_help(ResourceKind::AssetRoute, asset_path)?;
 
         Ok(asset_route.to_cdn_url_string(&rev.ti.tc, web))
     }
 
     fn media(&self, path: &InputPathRef) -> Result<&Media> {
-        let rev = self.rev().bs()?;
-        rev.media.get_or_help(ResourceKind::Media, path).bs()
+        let rev = self.rev()?;
+        rev.media.get_or_help(ResourceKind::Media, path)
     }
 }
 

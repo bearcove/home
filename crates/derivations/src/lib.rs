@@ -24,8 +24,7 @@ impl<'a> DerivationInfo<'a> {
     ) -> eyre::Result<DerivationInfo<'a>> {
         let input = pak
             .inputs
-            .get_or_help(closest::ResourceKind::Input, &derivation.input)
-            .bs()?;
+            .get_or_help(closest::ResourceKind::Input, &derivation.input)?;
         Ok(DerivationInfo { input, derivation })
     }
 

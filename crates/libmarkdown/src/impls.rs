@@ -13,7 +13,7 @@ use pulldown_cmark::{
     Alignment, CodeBlockKind, CowStr, Event, HeadingLevel, LinkType, MetadataBlockKind, Options,
     Parser, Tag, TagEnd,
 };
-use saphyr::{yaml::YamlLoader, Yaml};
+use saphyr::{Yaml, yaml::YamlLoader};
 
 use conflux::{InputPath, InputPathRef, Markdown, TocEntry};
 use math::MathMode;
@@ -617,7 +617,7 @@ impl<'a> Formatter<'a> {
                     Some((StackItem::ShortPlus { plain_text }, _)) => {
                         // parse shortcode arguments as YAML
                         trace!("Parsing shortcode arguments as YAML: {plain_text:?}");
-                        let yaml_values = YamlLoader::load_from_str(&plain_text).bs()?;
+                        let yaml_values = YamlLoader::load_from_str(&plain_text)?;
                         if yaml_values.len() != 1 {
                             bail!("Expected 1 YAML value, got {yaml_values:?}");
                         }
@@ -644,20 +644,16 @@ impl<'a> Formatter<'a> {
                             self.insert_shortcode_globals(&mut shortcode_args);
                             let mut buffer = Vec::new();
 
-                            let render_res = self
-                                .args
-                                .templates
-                                .render_shortcode_to(
-                                    &mut BoInserter::new(&mut buffer, range.start),
-                                    template_types::Shortcode {
-                                        name: shortcode_name,
-                                        args: shortcode_args,
-                                        body: None,
-                                    },
-                                    self.args.rv.clone(),
-                                    self.args.web,
-                                )
-                                .bs()?;
+                            let render_res = self.args.templates.render_shortcode_to(
+                                &mut BoInserter::new(&mut buffer, range.start),
+                                template_types::Shortcode {
+                                    name: shortcode_name,
+                                    args: shortcode_args,
+                                    body: None,
+                                },
+                                self.args.rv.clone(),
+                                self.args.web,
+                            )?;
 
                             // eprintln!(
                             //     "Assets looked up in shortcode {:?}: {:?}",
@@ -749,20 +745,16 @@ impl<'a> Formatter<'a> {
                                 // so we can split the "before body" and "after body" parts, write the
                                 // "before body" part now, and write the "after body" part later
                                 let mut buffer = Vec::new();
-                                let render_res = self
-                                    .args
-                                    .templates
-                                    .render_shortcode_to(
-                                        &mut BoInserter::new(&mut buffer, range.start),
-                                        template_types::Shortcode {
-                                            name: &shortcode_name,
-                                            args: shortcode_args,
-                                            body: Some("___BODY_MARKER___"),
-                                        },
-                                        self.args.rv.clone(),
-                                        self.args.web,
-                                    )
-                                    .bs()?;
+                                let render_res = self.args.templates.render_shortcode_to(
+                                    &mut BoInserter::new(&mut buffer, range.start),
+                                    template_types::Shortcode {
+                                        name: &shortcode_name,
+                                        args: shortcode_args,
+                                        body: Some("___BODY_MARKER___"),
+                                    },
+                                    self.args.rv.clone(),
+                                    self.args.web,
+                                )?;
                                 // eprintln!(
                                 //     "Assets looked up in shortcode {:?}: {:?}",
                                 //     render_res.shortcode_input_path, render_res.assets_looked_up
@@ -905,16 +897,14 @@ impl<'a> Formatter<'a> {
                     let highlight = self.highlight;
                     let (lang, plain_text, byte_offset) = assert_pop!(self, (StackItem::CodeBlock { lang, plain_text, byte_offset }, _) => (lang, plain_text, byte_offset));
                     let w = self.writer()?;
-                    highlight
-                        .highlight_code(
-                            w,
-                            highlight::HighlightCodeParams {
-                                source: &plain_text,
-                                tag: &lang,
-                                byte_offset,
-                            },
-                        )
-                        .bs()?;
+                    highlight.highlight_code(
+                        w,
+                        highlight::HighlightCodeParams {
+                            source: &plain_text,
+                            tag: &lang,
+                            byte_offset,
+                        },
+                    )?;
                 }
                 TagEnd::HtmlBlock => {
                     assert_pop!(self, (StackItem::HtmlBlock, _) => ());
@@ -990,13 +980,11 @@ impl<'a> Formatter<'a> {
             }
             Event::InlineMath(math) => {
                 self.math
-                    .render_math(math, MathMode::Inline, self.writer()?)
-                    .bs()?;
+                    .render_math(math, MathMode::Inline, self.writer()?)?;
             }
             Event::DisplayMath(math) => {
                 self.math
-                    .render_math(math, MathMode::Block, self.writer()?)
-                    .bs()?;
+                    .render_math(math, MathMode::Block, self.writer()?)?;
             }
             Event::Code(code) => {
                 self.writer()?.write_all(b"<code>")?;

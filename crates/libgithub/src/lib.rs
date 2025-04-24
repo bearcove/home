@@ -5,9 +5,9 @@ use futures_core::future::BoxFuture;
 use libhttpclient::HttpClient;
 use std::collections::HashSet;
 
-use config::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::AuthBundle;
 use eyre::Result;
+use libconfig::{RevisionConfig, TenantConfig, WebConfig};
 use merde::CowStr;
 
 mod impls;

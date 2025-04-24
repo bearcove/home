@@ -240,7 +240,7 @@ impl CubReqImpl {
                 web: self.web(),
             },
         )?;
-        let rendered = String::from_utf8(buffer).bs()?;
+        let rendered = String::from_utf8(buffer)?;
         let env = Environment::default();
         let web = global_state().web;
 

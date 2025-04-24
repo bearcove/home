@@ -97,7 +97,7 @@ impl LoadedPageVal {
         let rv = globals.rv.as_ref();
         let pages = rv
             .rev()
-            .bs()?
+            ?
             .pages
             .values()
             .filter(|p| p.is_listed(&viewer))

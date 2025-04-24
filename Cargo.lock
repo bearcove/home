@@ -3479,6 +3479,7 @@ dependencies = [
 name = "libobjectstore"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "bytes",
  "facet",
  "futures-core",

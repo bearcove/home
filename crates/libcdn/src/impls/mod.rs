@@ -193,7 +193,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
             let disk_path = mappings.to_disk_path(&di.input.path)?;
             // TODO: don't buffer the whole file in memory
             let bytes = tokio::fs::read(&disk_path).await?;
-            tenant.store().put(&input_key, bytes.into()).await.bs()?;
+            tenant.store().put(&input_key, bytes.into()).await?;
         } else {
             tracing::info!(%input_key, object_store = %tenant.store().desc(), "Input is already in object storage");
         }
@@ -255,7 +255,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     }
 
     // according to mom, it's now available in the object store, fetch it
-    let res = tenant.store().get(&cache_key).await.bs()?;
+    let res = tenant.store().get(&cache_key).await?;
     return res.bytes().await.map_err(|e| {
         BS::from_string(format!(
             "failed to fetch bytes from upstream for cache key '{}': {}",

@@ -12,11 +12,11 @@ use conflux::{CompletionKind, Html, SearchResult};
 
 #[cfg(feature = "impl")]
 use tantivy::{
+    SnippetGenerator, TantivyDocument,
     collector::{Count, TopDocs},
     schema::{
-        IndexRecordOption, Schema, TextFieldIndexing, TextOptions, Value, INDEXED, STORED, TEXT,
+        INDEXED, IndexRecordOption, STORED, Schema, TEXT, TextFieldIndexing, TextOptions, Value,
     },
-    SnippetGenerator, TantivyDocument,
 };
 
 pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
@@ -161,7 +161,7 @@ impl IndexImpl {
         let page = page_number.saturating_sub(1);
         let offset = page * per_page;
 
-        let num_results = searcher.search(&query, &Count).bs()?;
+        let num_results = searcher.search(&query, &Count)?;
         let mut results = SearchResults {
             results: Default::default(),
             terms: Default::default(),
@@ -184,24 +184,22 @@ impl IndexImpl {
             "page = {page}, offset = {offset}, per_page = {per_page}, num_results = {num_results}"
         );
 
-        let top_docs = searcher
-            .search(&query, &TopDocs::with_limit(per_page).and_offset(offset))
-            .bs()?;
+        let top_docs =
+            searcher.search(&query, &TopDocs::with_limit(per_page).and_offset(offset))?;
 
         tracing::debug!("num top docs = {}", top_docs.len());
 
-        let mut title_snippet_generator =
-            SnippetGenerator::create(&searcher, &*query, title).bs()?;
+        let mut title_snippet_generator = SnippetGenerator::create(&searcher, &*query, title)?;
         title_snippet_generator.set_max_num_chars(150);
 
-        let mut body_snippet_generator = SnippetGenerator::create(&searcher, &*query, body).bs()?;
+        let mut body_snippet_generator = SnippetGenerator::create(&searcher, &*query, body)?;
         body_snippet_generator.set_max_num_chars(350);
 
         let path = self.schema.get_field("path").unwrap();
-        let rev = rv.rev().bs()?;
+        let rev = rv.rev()?;
 
         for (_score, doc_address) in top_docs {
-            let doc: TantivyDocument = searcher.doc(doc_address).bs()?;
+            let doc: TantivyDocument = searcher.doc(doc_address)?;
 
             let doc_path = doc.get_first(path).unwrap();
             let doc_path = InputPath::new(doc_path.as_str().unwrap().to_owned());
@@ -467,7 +465,7 @@ impl indicium::simple::Indexable for IndexableCompat {
     }
 }
 
-use percent_encoding::{percent_encode, AsciiSet, CONTROLS};
+use percent_encoding::{AsciiSet, CONTROLS, percent_encode};
 
 // Define the custom encode set for fragments, encoding '-' and '.'
 // Standard fragment encoding doesn't encode these, but some contexts might require it.

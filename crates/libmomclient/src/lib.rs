@@ -154,8 +154,7 @@ impl Mod for ModImpl {
                             };
 
                             let ev = merde::json::from_str_owned::<MomEvent>(&ev)
-                                .map_err(|e| e.into_static())
-                                .bs()?;
+                                .map_err(|e| e.into_static())?;
                             let elapsed = before_recv.elapsed();
                             tracing::debug!(?ev, ?elapsed, "Got event from mom");
 
@@ -281,14 +280,9 @@ impl MomTenantClient for MomTenantClientImpl {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("auth-bundle/update");
-                let req = self
-                    .hclient
-                    .post(uri)
-                    .with_auth(&self.mcc)
-                    .json(body)
-                    .bs()?;
-                let res = req.send_and_expect_200().await.bs()?;
-                res.json::<AuthBundle<'static>>().await.bs()
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<AuthBundle<'static>>().await
             }
         })
     }
@@ -300,13 +294,8 @@ impl MomTenantClient for MomTenantClientImpl {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("github/callback");
-                let req = self
-                    .hclient
-                    .post(uri)
-                    .with_auth(&self.mcc)
-                    .json(body)
-                    .bs()?;
-                let res = req.send_and_expect_200().await.bs()?;
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
                 res.json::<Option<GitHubCallbackResponse<'static>>>()
                     .await
                     .bs()
@@ -321,13 +310,8 @@ impl MomTenantClient for MomTenantClientImpl {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("patreon/callback");
-                let req = self
-                    .hclient
-                    .post(uri)
-                    .with_auth(&self.mcc)
-                    .json(body)
-                    .bs()?;
-                let res = req.send_and_expect_200().await.bs()?;
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
                 res.json::<Option<PatreonCallbackResponse<'static>>>()
                     .await
                     .bs()
@@ -342,14 +326,9 @@ impl MomTenantClient for MomTenantClientImpl {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("patreon/refresh-credentials");
-                let req = self
-                    .hclient
-                    .post(uri)
-                    .with_auth(&self.mcc)
-                    .json(body)
-                    .bs()?;
-                let res = req.send_and_expect_200().await.bs()?;
-                res.json::<PatreonRefreshCredentials<'static>>().await.bs()
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<PatreonRefreshCredentials<'static>>().await
             }
         })
     }
@@ -361,14 +340,9 @@ impl MomTenantClient for MomTenantClientImpl {
         Box::pin({
             async move {
                 let (_, uri) = self.prod_mom_url("objectstore/list-missing");
-                let req = self
-                    .hclient
-                    .post(uri)
-                    .with_auth(&self.mcc)
-                    .json(body)
-                    .bs()?;
-                let res = req.send_and_expect_200().await.bs()?;
-                res.json::<ListMissingResponse>().await.bs()
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<ListMissingResponse>().await
             }
         })
     }
@@ -386,8 +360,7 @@ impl MomTenantClient for MomTenantClientImpl {
                     .with_auth(&self.mcc)
                     .body(payload)
                     .send_and_expect_200()
-                    .await
-                    .bs()?;
+                    .await?;
                 Ok(())
             }
         })
@@ -408,8 +381,7 @@ impl MomTenantClient for MomTenantClientImpl {
                     .with_auth(&self.mcc)
                     .body(payload)
                     .send_and_expect_200()
-                    .await
-                    .bs()?;
+                    .await?;
                 Ok(())
             }
         })
@@ -421,14 +393,9 @@ impl MomTenantClient for MomTenantClientImpl {
     ) -> BoxFuture<'_, Result<mom::TranscodeResponse>> {
         Box::pin(async move {
             let uri = self.config_mom_uri("media/transcode");
-            let req = self
-                .hclient
-                .post(uri)
-                .with_auth(&self.mcc)
-                .json(&params)
-                .bs()?;
-            let res = req.send().await.bs()?;
-            let response: mom::TranscodeResponse = res.json().await.bs()?;
+            let req = self.hclient.post(uri).with_auth(&self.mcc).json(&params)?;
+            let res = req.send().await?;
+            let response: mom::TranscodeResponse = res.json().await?;
             Ok(response)
         })
     }
@@ -436,14 +403,9 @@ impl MomTenantClient for MomTenantClientImpl {
     fn derive(&self, params: mom::DeriveParams) -> BoxFuture<'_, Result<mom::DeriveResponse>> {
         Box::pin(async move {
             let uri = self.config_mom_uri("derive");
-            let req = self
-                .hclient
-                .post(uri)
-                .with_auth(&self.mcc)
-                .json(&params)
-                .bs()?;
-            let res = req.send().await.bs()?;
-            let response: mom::DeriveResponse = res.json().await.bs()?;
+            let req = self.hclient.post(uri).with_auth(&self.mcc).json(&params)?;
+            let res = req.send().await?;
+            let response: mom::DeriveResponse = res.json().await?;
             Ok(response)
         })
     }
@@ -475,8 +437,7 @@ impl MomTenantClient for MomTenantClientImpl {
                     );
                     map
                 })
-                .await
-                .bs()?;
+                .await?;
 
             let b: Box<dyn MediaUploader> = Box::new(MediaUploaderImpl { ws, listener });
             Ok(b)
@@ -495,15 +456,15 @@ impl MediaUploader for MediaUploaderImpl {
     fn with_headers(&mut self, headers: HeadersMessage) -> BoxFuture<'_, Result<()>> {
         Box::pin(async move {
             let msg = WebSocketMessage::Headers(headers);
-            let json = merde::json::to_string(&msg).bs()?;
-            self.ws.send_text(json).await.bs()?;
+            let json = merde::json::to_string(&msg)?;
+            self.ws.send_text(json).await?;
             Ok(())
         })
     }
 
     fn upload_chunk(&mut self, chunk: Bytes) -> BoxFuture<'_, Result<()>> {
         Box::pin(async move {
-            self.ws.send_binary(chunk.to_vec()).await.bs()?;
+            self.ws.send_binary(chunk.to_vec()).await?;
             Ok(())
         })
     }
@@ -516,8 +477,8 @@ impl MediaUploader for MediaUploaderImpl {
         Box::pin(async move {
             tracing::debug!("Sending UploadDone message with size {uploaded_size}");
             let msg = WebSocketMessage::UploadDone(UploadDoneMessage { uploaded_size });
-            let json = merde::json::to_string(&msg).bs()?;
-            self.ws.send_text(json).await.bs()?;
+            let json = merde::json::to_string(&msg)?;
+            self.ws.send_text(json).await?;
 
             let mut received_bytes = 0;
 
@@ -530,13 +491,11 @@ impl MediaUploader for MediaUploaderImpl {
                             "Connection closed unexpectedly (but gracefully)".to_string(),
                         ));
                     }
-                }
-                .bs()?;
+                }?;
                 match msg {
                     websock::Frame::Text(text) => {
-                        let msg: WebSocketMessage = merde::json::from_str(&text)
-                            .map_err(|e| e.into_static())
-                            .bs()?;
+                        let msg: WebSocketMessage =
+                            merde::json::from_str(&text).map_err(|e| e.into_static())?;
                         match msg {
                             WebSocketMessage::TranscodingEvent(ev) => {
                                 if let Err(e) = self.listener.on_transcoding_event(ev).await {
@@ -565,7 +524,7 @@ impl MediaUploader for MediaUploaderImpl {
                                             ));
                                         }
                                     };
-                                    match res.bs()? {
+                                    match res? {
                                         websock::Frame::Binary(chunk) => {
                                             received_bytes += chunk.len();
                                             tracing::trace!(
@@ -575,7 +534,7 @@ impl MediaUploader for MediaUploaderImpl {
                                                 size
                                             );
                                             // Forward chunk using chunk receiver
-                                            chunk_receiver.on_chunk(chunk).await.bs()?;
+                                            chunk_receiver.on_chunk(chunk).await?;
 
                                             if received_bytes == size {
                                                 tracing::info!(

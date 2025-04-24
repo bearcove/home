@@ -21,3 +21,4 @@ rusqlite = { workspace = true }
 plait = { path = "../plait" }
 futures-core = "0.3.31"
 facet.workspace = true
+autotrait = "0.1.6"

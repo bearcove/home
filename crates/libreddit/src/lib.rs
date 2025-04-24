@@ -9,9 +9,9 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 #[cfg(feature = "impl")]
-use libhttpclient::form_urlencoded;
-#[cfg(feature = "impl")]
 use eyre::{BS, BsForResults};
+#[cfg(feature = "impl")]
+use libhttpclient::form_urlencoded;
 #[cfg(feature = "impl")]
 use tracing::{debug, info, trace};
 
@@ -124,7 +124,7 @@ impl Mod for ModImpl {
                     impl (Deserialize) for struct RedditAccessToken<'s> { access_token, expires_in }
                 );
 
-                let token = res.json::<RedditAccessToken>().await.bs()?;
+                let token = res.json::<RedditAccessToken>().await?;
                 trace!(?token, "got reddit token");
 
                 let expires_at = Instant::now() + Duration::from_secs(token.expires_in);
@@ -154,8 +154,7 @@ impl Mod for ModImpl {
                 .polite_user_agent()
                 .bearer_auth(&access_token.token)
                 .send()
-                .await
-                .bs()?;
+                .await?;
 
             let status = res.status();
             if !status.is_success() {
@@ -205,7 +204,7 @@ impl Mod for ModImpl {
                 impl (Serialize, Deserialize) for struct LinkData<'s> { subreddit, permalink }
             }
 
-            let info = res.json::<Info>().await.bs()?;
+            let info = res.json::<Info>().await?;
 
             debug!("info = {:#?}", info);
 
