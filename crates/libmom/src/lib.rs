@@ -1,6 +1,3 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
 use camino::Utf8PathBuf;
 use config::MomConfig;
 use config::TenantConfig;
@@ -21,7 +18,6 @@ use objectstore::ObjectStoreKey;
 use std::time::Instant;
 use std::{collections::HashMap, sync::Arc};
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
@@ -34,14 +30,13 @@ pub struct MomServeArgs {
     pub listener: tokio::net::TcpListener,
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn serve(&self, args: MomServeArgs) -> BoxFuture<Result<(), BS>> {
         Box::pin(impls::serve(args))
     }
 }
 
-#[cfg(feature = "impl")]
 pub(crate) mod impls;
 
 #[derive(Clone)]

@@ -3,7 +3,6 @@ use tokio::net::TcpListener;
 use config::CubConfig;
 use futures_core::future::BoxFuture;
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
@@ -12,7 +11,7 @@ pub enum OpenBehavior {
     DontOpen,
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn serve(
         &self,
@@ -28,10 +27,6 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 mod impls;
 
 pub use eyre::Result;
-
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");

@@ -12,4 +12,4 @@ dumbcache = { path = "../../crates/dumbcache" }
 tracing = { version = "0.1.41" }
 tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" }
 nerdfonts = { path = "../nerdfonts" }
-autotrait = "0.1.8"
+autotrait = "0.1.9"

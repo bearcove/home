@@ -292,9 +292,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "autotrait"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51893dc903aede15a9ba4e2c1655260cbb3f0799b91ebea7d2663547eba1f412"
+checksum = "ca5a3f84817ff8e2288690379d13b53760d22d911ddfb6befabc69dcb03b2fe7"
 dependencies = [
  "unsynn",
 ]
@@ -833,6 +833,7 @@ name = "config-types"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "eyre",
  "facet",
  "merde",
  "plait",
@@ -846,8 +847,10 @@ dependencies = [
  "bytes",
  "camino",
  "closest",
+ "config-types",
  "content-type",
  "credentials",
+ "eyre",
  "facet",
  "image-types",
  "libconfig",
@@ -855,6 +858,7 @@ dependencies = [
  "libobjectstore",
  "merde",
  "minijinja",
+ "objectstore-types",
  "plait",
  "rusqlite",
  "serde",
@@ -1261,11 +1265,15 @@ name = "derivations"
 version = "0.1.0"
 dependencies = [
  "closest",
+ "config-types",
  "conflux",
  "content-type",
+ "eyre",
+ "image-types",
  "libconfig",
  "libimage",
  "libobjectstore",
+ "objectstore-types",
  "seahash",
  "tokio",
 ]
@@ -3192,6 +3200,7 @@ dependencies = [
  "autotrait",
  "base64",
  "camino",
+ "config-types",
  "dotenvy",
  "eyre",
  "facet",
@@ -3315,6 +3324,7 @@ name = "libgithub"
 version = "0.1.0"
 dependencies = [
  "autotrait",
+ "config-types",
  "credentials",
  "eyre",
  "fs-err 3.1.0",
@@ -3503,12 +3513,14 @@ version = "0.1.0"
 dependencies = [
  "autotrait",
  "bytes",
+ "config-types",
  "facet",
  "futures-core",
  "futures-util",
  "libconfig",
  "merde",
  "object_store",
+ "objectstore-types",
  "plait",
  "rubicon",
  "rusqlite",
@@ -3521,6 +3533,7 @@ name = "libpatreon"
 version = "0.1.0"
 dependencies = [
  "autotrait",
+ "config-types",
  "credentials",
  "eyre",
  "fs-err 3.1.0",
@@ -3541,6 +3554,7 @@ name = "libreddit"
 version = "0.1.0"
 dependencies = [
  "autotrait",
+ "config-types",
  "eyre",
  "futures-core",
  "libconfig",
@@ -3601,6 +3615,8 @@ dependencies = [
 name = "libsearch"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
+ "config-types",
  "conflux",
  "eyre",
  "html-escape",
@@ -3625,16 +3641,21 @@ dependencies = [
 name = "libsvg"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "base64",
  "bytes",
  "camino",
+ "config-types",
  "conflux",
+ "eyre",
  "futures-core",
+ "image-types",
  "insta",
  "libc",
  "libconfig",
  "libimage",
  "liblightningcss",
+ "lightningcss",
  "quick-xml 0.37.4",
  "rand 0.8.5",
  "regex 1.11.1",
@@ -3719,6 +3740,7 @@ dependencies = [
  "base64",
  "futures-core",
  "futures-util",
+ "image-types",
  "libhttpclient",
  "libimage",
  "merde",

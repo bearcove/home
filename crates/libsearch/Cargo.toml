@@ -17,3 +17,5 @@ tantivy = { version = "0.22.0" }
 tracing = { workspace = true }
 libconfig = { version = "0.1.0", path = "../libconfig" }
 percent-encoding = "2.3.1"
+config-types = { version = "0.1.0", path = "../config-types" }
+autotrait = "0.1.9"

@@ -1,5 +1,5 @@
 use content_type::ContentType;
-use libimage::{ICodec, IntrinsicPixels, LogicalPixels, PixelDensity};
+use image_types::{ICodec, IntrinsicPixels, LogicalPixels, PixelDensity};
 
 use crate::{
     ContentTypeCodecRef, FfmpegChannels, FfmpegCodec, FfmpegCodecRef, FfmpegPixelFormat, InputPath,

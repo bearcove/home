@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
+use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::{AuthBundle, Profile, Tier, UserInfo};
 use eyre::Result;
-use libconfig::{RevisionConfig, TenantConfig, WebConfig};
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
 use merde::{CowStr, IntoStatic, Map};
 use time::OffsetDateTime;

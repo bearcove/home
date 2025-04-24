@@ -2,11 +2,11 @@ use std::{sync::Arc, time::Duration};
 
 use base64::Engine as _;
 use futures_util::StreamExt;
+use image_types::ICodec;
 use libhttpclient::{
     Method, Response,
     header::{HeaderName, HeaderValue},
 };
-use libimage::ICodec;
 use tokio::time::timeout;
 use webpage::HTML;
 

@@ -12,3 +12,7 @@ libimage = { version = "0.1.0", path = "../libimage" }
 libobjectstore = { version = "0.1.0", path = "../libobjectstore" }
 seahash = "4.1.0"
 tokio.workspace = true
+objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
+image-types = { version = "0.1.0", path = "../image-types" }
+config-types = { version = "0.1.0", path = "../config-types" }
+eyre.workspace = true

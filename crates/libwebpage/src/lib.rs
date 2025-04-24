@@ -1,7 +1,7 @@
 use autotrait::autotrait;
 use futures_core::future::BoxFuture;
 // TODO: move me to `image-types` or something to avoid rebuilds
-use libimage::IntrinsicPixels;
+use image_types::IntrinsicPixels;
 use std::sync::{Arc, LazyLock};
 
 #[derive(Debug, Clone)]

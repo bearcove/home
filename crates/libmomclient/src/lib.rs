@@ -1,6 +1,3 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
 use config::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use futures_core::future::BoxFuture;
 use std::str::FromStr;
@@ -9,21 +6,16 @@ use libhttpclient::{
     HeaderMap, HeaderValue, Uri,
     header::{self},
 };
-#[cfg(feature = "impl")]
 use merde::IntoStatic;
-#[cfg(feature = "impl")]
 use std::{sync::Arc, time::Instant};
-#[cfg(feature = "impl")]
 use tracing::info;
 
-#[cfg(feature = "impl")]
 use eyre::BsForResults;
 
 use bytes::Bytes;
 use conflux::RevisionIdRef;
 use credentials::AuthBundle;
 use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
-#[cfg(feature = "impl")]
 use libhttpclient::{HttpClient, RequestBuilder};
 #[allow(unused_imports)]
 use mom::{
@@ -42,13 +34,12 @@ pub trait MomEventListener: Send + 'static {
     fn on_event<'fut>(&'fut self, event: MomEvent<'static>) -> BoxFuture<'fut, ()>;
 }
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
 pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn client(
         &'static self,
@@ -213,13 +204,12 @@ impl MomClientConfig {
     }
 }
 
-#[cfg(feature = "impl")]
 struct MomClientImpl {
     hclient: Arc<dyn HttpClient>,
     mcc: MomClientConfig,
 }
 
-#[dylo::export]
+#[autotrait]
 impl MomClient for MomClientImpl {
     fn mom_tenant_client(&self, tenant_name: config::TenantDomain) -> Box<dyn MomTenantClient> {
         Box::new(MomTenantClientImpl {
@@ -230,18 +220,15 @@ impl MomClient for MomClientImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct MomTenantClientImpl {
     mcc: MomClientConfig,
     base_path: String,
     hclient: Arc<dyn HttpClient>,
 }
 
-#[cfg(feature = "impl")]
 impl MomTenantClientImpl {
     /// Makes a URL for the mom server, for login/auth purposes
     /// note: path is a relative path, like `objectstore/list-missing` (no leading slash)
-    #[cfg(feature = "impl")]
     fn config_mom_uri(&self, relative_path: &str) -> Uri {
         let base_url = Uri::from_str(&self.mcc.base_url).unwrap();
         let full_path = format!("{}/{}", self.base_path, relative_path);
@@ -255,7 +242,6 @@ impl MomTenantClientImpl {
 
     /// Makes a URL for the mom server, for revision/asset uploads
     /// note: path is a relative path, like `objectstore/list-missing` (no leading slash)
-    #[cfg(feature = "impl")]
     fn prod_mom_url(&self, relative_path: &str) -> (String, Uri) {
         use config::is_development;
 
@@ -271,7 +257,7 @@ impl MomTenantClientImpl {
     }
 }
 
-#[dylo::export]
+#[autotrait]
 impl MomTenantClient for MomTenantClientImpl {
     fn update_auth_bundle<'fut>(
         &'fut self,
@@ -296,9 +282,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("github/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<Option<GitHubCallbackResponse<'static>>>()
-                    .await
-                    .bs()
+                res.json::<Option<GitHubCallbackResponse<'static>>>().await
             }
         })
     }
@@ -312,9 +296,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("patreon/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<Option<PatreonCallbackResponse<'static>>>()
-                    .await
-                    .bs()
+                res.json::<Option<PatreonCallbackResponse<'static>>>().await
             }
         })
     }
@@ -445,13 +427,12 @@ impl MomTenantClient for MomTenantClientImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct MediaUploaderImpl {
     ws: Box<dyn websock::WebSocketStream>,
     listener: Box<dyn TranscodingEventListener>,
 }
 
-#[dylo::export(nonsync)]
+#[autotrait]
 impl MediaUploader for MediaUploaderImpl {
     fn with_headers(&mut self, headers: HeadersMessage) -> BoxFuture<'_, Result<()>> {
         Box::pin(async move {
@@ -579,12 +560,10 @@ pub trait ChunkReceiver: Send + Sync {
     fn on_chunk(&mut self, chunk: Vec<u8>) -> BoxFuture<'_, Result<()>>;
 }
 
-#[cfg(feature = "impl")]
 trait WithAuth {
     fn with_auth(self: Box<Self>, mcc: &MomClientConfig) -> Box<dyn RequestBuilder>;
 }
 
-#[cfg(feature = "impl")]
 impl WithAuth for dyn RequestBuilder {
     fn with_auth(self: Box<Self>, mcc: &MomClientConfig) -> Box<dyn RequestBuilder> {
         use libhttpclient::header::HeaderValue;

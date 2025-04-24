@@ -1,15 +1,15 @@
 use std::{borrow::Cow, sync::Arc};
 
 use closest::GetOrHelp;
-use config::{Environment, TenantInfo, WebConfig};
+use config_types::{Environment, TenantInfo, WebConfig};
 use conflux::{
-    ACodec, BS, BsForResults, Derivation, DerivationBitmap, DerivationHash, DerivationKind,
-    DerivationVideo, DerivationVideoThumbnail, Input, Pak, PathMappings, PipelineHashRef, Route,
-    VCodec, VContainer,
+    ACodec, Derivation, DerivationBitmap, DerivationHash, DerivationKind, DerivationVideo,
+    DerivationVideoThumbnail, Input, Pak, PathMappings, PipelineHashRef, Route, VCodec, VContainer,
 };
 use content_type::ContentType;
-use image::ICodec;
-use objectstore::{Bytes, LayeredBuilder, ObjectStore, ObjectStoreKey, derivation_key};
+use image_types::ICodec;
+use libobjectstore::{Bytes, LayeredBuilder, ObjectStore, derivation_key};
+use objectstore_types::ObjectStoreKey;
 
 #[derive(Debug)]
 pub struct DerivationInfo<'a> {
@@ -39,7 +39,7 @@ impl<'a> DerivationInfo<'a> {
         web: WebConfig,
     ) -> eyre::Result<Bytes> {
         let e = match object_store.get(&self.input.key()).await {
-            Ok(res) => return res.bytes().await.bs(),
+            Ok(res) => return Ok(res.bytes().await?),
             Err(e) => e,
         };
         if e.is_not_found() && web.env.is_dev() {
@@ -49,24 +49,24 @@ impl<'a> DerivationInfo<'a> {
                 Ok(disk_path) => match tokio::fs::read(&disk_path).await {
                     Ok(bytes) => return Ok(bytes.into()),
                     Err(read_err) => {
-                        return Err(BS::from_string(format!(
+                        eyre::bail!(
                             "Failed to fetch original: not found in object store and also not found on disk at {disk_path}. Error: {read_err}"
-                        )));
+                        );
                     }
                 },
                 Err(path_err) => {
-                    return Err(BS::from_string(format!(
+                    eyre::bail!(
                         "Failed to fetch original: not found in object store and couldn't map to disk path. Error: {path_err}"
-                    )));
+                    );
                 }
             }
         }
 
-        Err(BS::from_string(format!(
+        eyre::bail!(
             "Failed to fetch original for key '{}': {}",
             self.input.key(),
             e
-        )))
+        )
     }
 }
 
@@ -124,7 +124,7 @@ impl DerivationInfo<'_> {
     }
 
     /// Where the output should be stored in the tenant's object store
-    pub fn key(&self, env: config::Environment) -> ObjectStoreKey {
+    pub fn key(&self, env: config_types::Environment) -> ObjectStoreKey {
         derivation_key(env, self.hash().as_str(), self.content_type().ext())
     }
 
@@ -255,7 +255,7 @@ pub async fn objectstore_for_tenant(
     ti: &TenantInfo,
     env: Environment,
 ) -> eyre::Result<Arc<dyn ObjectStore>> {
-    let objectstore = objectstore::load();
+    let objectstore = libobjectstore::load();
 
     let disk_path = ti.internal_dir().join("object-cache");
     if !disk_path.exists() {

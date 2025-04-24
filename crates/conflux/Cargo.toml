@@ -22,6 +22,9 @@ rusqlite = { workspace = true }
 libobjectstore = { path = "../libobjectstore" }
 facet.workspace = true
 image-types = { version = "0.1.0", path = "../image-types" }
+objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
+eyre.workspace = true
+config-types = { version = "0.1.0", path = "../config-types" }
 
 [features]
 default = []

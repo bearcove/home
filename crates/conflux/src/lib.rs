@@ -19,7 +19,7 @@ use objectstore_types::ObjectStoreKey;
 pub use time::OffsetDateTime;
 
 use closest::{GetOrHelp, ResourceKind};
-use config::{FontStyle, FontWeight, RevisionConfig, TenantConfig, TenantInfo, WebConfig};
+use config_types::{FontStyle, FontWeight, RevisionConfig, TenantConfig, TenantInfo, WebConfig};
 use plait::plait;
 
 mod av;
@@ -103,7 +103,7 @@ impl CacheBuster for Revision {
 
     fn media(&self, path: &InputPathRef) -> Result<&Media> {
         let rev = self.rev()?;
-        rev.media.get_or_help(ResourceKind::Media, path)
+        Ok(rev.media.get_or_help(ResourceKind::Media, path)?)
     }
 }
 
@@ -611,15 +611,9 @@ fn test_to_route_path() {
 
 plait! {
     with crates {
-        #[cfg(feature = "serde")]
         serde
-
-        #[cfg(feature = "rusqlite")]
         rusqlite
-
-        #[cfg(feature = "minijinja")]
         minijinja
-
         merde
     }
 
@@ -744,7 +738,6 @@ impl From<AbsoluteUrl> for Href {
 
 macro_rules! impl_safe_minjinja_value_and_from {
     ($type:ty) => {
-        #[cfg(feature = "minijinja")]
         impl From<$type> for minijinja::value::Value {
             fn from(value: $type) -> Self {
                 minijinja::value::Value::from_safe_string(value.as_str().to_owned())

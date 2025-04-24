@@ -1,16 +1,12 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
-#[cfg(feature = "impl")]
 mod drawio_server;
 
+use autotrait::autotrait;
 use futures_core::future::BoxFuture;
 
 use bytes::Bytes;
 use conflux::{Dimensions, SvgFontFaceCollection};
 pub use eyre::Result;
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
@@ -22,7 +18,7 @@ pub struct DrawioToSvgOptions {
 /// Options when cleaning up an SVG
 pub struct SvgCleanupOptions {}
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn drawio_to_svg(
         &self,
@@ -49,7 +45,5 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 pub mod char_usage;
-#[cfg(feature = "impl")]
 pub mod impls;

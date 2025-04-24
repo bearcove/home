@@ -5,7 +5,6 @@ use conflux::{InputPath, PathMappings, Revision};
 use cub_types::{CubRevisionState, IndexedRevision, PathMetadata};
 use futures_core::future::BoxFuture;
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
@@ -15,7 +14,7 @@ pub struct RevisionSpec {
     pub mappings: PathMappings,
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn load_initial_revision(
         &self,
@@ -70,7 +69,6 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 mod impls;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -119,6 +117,3 @@ impl std::fmt::Display for RevisionKind {
         }
     }
 }
-
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");

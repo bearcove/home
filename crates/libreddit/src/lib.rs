@@ -9,7 +9,7 @@ pub use eyre::Result;
 use libhttpclient::form_urlencoded;
 use tracing::{debug, info, trace};
 
-use libconfig::RedditSecrets;
+use config_types::RedditSecrets;
 use libhttpclient::HttpClient;
 use merde::CowStr;
 use url::Url;

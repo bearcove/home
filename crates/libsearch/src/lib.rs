@@ -1,16 +1,10 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
-use config::WebConfig;
-#[cfg(feature = "impl")]
-use eyre::BsForResults;
+use autotrait::autotrait;
+use config_types::WebConfig;
 
 use conflux::RevisionView;
 use conflux::{Completion, InputPath, LoadedPage, SearchResults, Viewer};
-#[cfg(feature = "impl")]
 use conflux::{CompletionKind, Html, SearchResult};
 
-#[cfg(feature = "impl")]
 use tantivy::{
     SnippetGenerator, TantivyDocument,
     collector::{Count, TopDocs},
@@ -19,13 +13,12 @@ use tantivy::{
     },
 };
 
-pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
+pub use eyre::Result;
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn indexer(&self) -> Box<dyn Indexer> {
         let mut schema_builder = Schema::builder();
@@ -58,7 +51,6 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct IndexerImpl {
     isi: indicium::simple::SearchIndex<InputPath>,
     schema: Schema,
@@ -68,7 +60,7 @@ struct IndexerImpl {
 
 // TODO: fallible ops
 
-#[dylo::export]
+#[autotrait]
 impl Indexer for IndexerImpl {
     fn insert(&mut self, key: InputPath, page: &LoadedPage) {
         self.isi.insert(
@@ -114,7 +106,6 @@ impl Indexer for IndexerImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct IndexImpl {
     isi: indicium::simple::SearchIndex<InputPath>,
     schema: Schema,
@@ -122,7 +113,6 @@ struct IndexImpl {
     index_reader: tantivy::IndexReader,
 }
 
-#[cfg(feature = "impl")]
 impl IndexImpl {
     fn search_inner(
         &self,
@@ -419,7 +409,7 @@ impl IndexImpl {
     }
 }
 
-#[dylo::export]
+#[autotrait]
 impl Index for IndexImpl {
     fn autocomplete(
         &self,
@@ -455,10 +445,8 @@ impl Index for IndexImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct IndexableCompat(Vec<String>);
 
-#[cfg(feature = "impl")]
 impl indicium::simple::Indexable for IndexableCompat {
     fn strings(&self) -> Vec<String> {
         self.0.clone()

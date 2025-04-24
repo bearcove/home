@@ -1,9 +1,9 @@
 use autotrait::autotrait;
+use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::AuthBundle;
 use eyre::Context as _;
 use eyre::Result;
 use futures_core::future::BoxFuture;
-use libconfig::{RevisionConfig, TenantConfig, WebConfig};
 use libhttpclient::{HttpClient, Uri};
 use merde::CowStr;
 use merde::IntoStatic;

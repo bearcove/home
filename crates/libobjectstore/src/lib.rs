@@ -3,9 +3,10 @@ pub use bytes::Bytes;
 
 use futures_core::future::{BoxFuture, LocalBoxFuture};
 use futures_util::stream::BoxStream;
+use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
 use std::{borrow::Cow, ops::Range, sync::Arc};
 
-use libconfig::{AwsSecrets, Environment, ObjectStorageConfig};
+use config_types::{AwsSecrets, Environment, ObjectStorageConfig};
 
 use futures_util::stream::StreamExt;
 use object_store::aws::AmazonS3Builder;

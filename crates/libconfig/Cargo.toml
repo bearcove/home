@@ -20,5 +20,6 @@ owo-colors = { version = "4.2.0" }
 facet.workspace = true
 facet-json = "0.12.1"
 facet-pretty = "0.15.0"
-autotrait = "0.1.8"
+autotrait = "0.1.9"
 eyre.workspace = true
+config-types = { version = "0.1.0", path = "../config-types" }
