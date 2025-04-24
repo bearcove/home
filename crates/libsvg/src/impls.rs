@@ -83,9 +83,9 @@ pub async fn inject_font_faces(
             }
             Ok(Event::Eof) => break,
             Ok(event) => {
-                writer.write_event(event).bs()?;
+                writer.write_event(event)?;
             }
-            Err(e) => return Err(e).bs(),
+            Err(e) => return Err(e.into()),
         }
     }
 
@@ -109,13 +109,13 @@ pub(crate) fn cleanup_svg(input: &[u8], _opts: SvgCleanupOptions) -> eyre::Resul
 
                 // Check for width/height/viewBox
                 for attr in new_elem.attributes() {
-                    let attr = attr.bs()?;
+                    let attr = attr?;
                     match attr.key.as_ref() {
                         b"width" => {
-                            width = Some(std::str::from_utf8(&attr.value).bs()?.to_string());
+                            width = Some(std::str::from_utf8(&attr.value)?.to_string());
                         }
                         b"height" => {
-                            height = Some(std::str::from_utf8(&attr.value).bs()?.to_string());
+                            height = Some(std::str::from_utf8(&attr.value)?.to_string());
                         }
                         b"viewBox" => {
                             has_viewbox = true;
@@ -134,11 +134,11 @@ pub(crate) fn cleanup_svg(input: &[u8], _opts: SvgCleanupOptions) -> eyre::Resul
                     }
                 }
 
-                writer.write_event(Event::Start(new_elem)).bs()?;
+                writer.write_event(Event::Start(new_elem))?;
             }
             Ok(Event::Eof) => break,
-            Ok(event) => writer.write_event(event).bs()?,
-            Err(e) => return Err(e).bs(),
+            Ok(event) => writer.write_event(event)?,
+            Err(e) => return Err(e.into()),
         }
         buf.clear();
     }
@@ -176,8 +176,7 @@ impl FontSubsetter {
         let font_path = self.tmp_dir.path().join(font_file_name);
         trace!("Writing font to {}", font_path.display());
         tokio::fs::write(&font_path, &data).await?;
-        self.known_fonts
-            .insert(font_name, font_path.try_into().bs()?);
+        self.known_fonts.insert(font_name, font_path.try_into()?);
         Ok(())
     }
 
@@ -200,7 +199,7 @@ impl FontSubsetter {
             .path()
             .join(format!("{}.subset.woff2", font_name));
 
-        let pyftsubset_path = which::which("pyftsubset").bs()?;
+        let pyftsubset_path = which::which("pyftsubset")?;
 
         let mut child = tokio::process::Command::new(pyftsubset_path)
             .arg(font_path.as_str())
@@ -212,17 +211,16 @@ impl FontSubsetter {
             .arg("--no-notdef-outline")
             .arg("--name-IDs=")
             .arg("--no-name-legacy")
-            .spawn()
-            .bs()?;
+            .spawn()?;
 
-        let status = child.wait().await.bs()?;
+        let status = child.wait().await?;
         if !status.success() {
             return Err(eyre::eyre!("pyftsubset failed with status: {}", status));
         }
 
-        let output = tokio::fs::read(&subset_path).await.bs()?;
+        let output = tokio::fs::read(&subset_path).await;
         let _ = tokio::fs::remove_file(&subset_path).await;
-        Ok(output)
+        Ok(output?)
     }
 }
 
@@ -297,11 +295,11 @@ pub fn svg_dimensions(input: &[u8]) -> Option<Dimensions> {
     }
     None
 }
+
 #[cfg(test)]
 mod test {
-
     use base64::Engine;
-    use config::{FontStyle, FontWeight};
+    use config_types::{FontStyle, FontWeight};
     use conflux::{InputHash, SvgFontFace};
     use tokio::io::AsyncBufReadExt;
 

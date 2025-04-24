@@ -1,6 +1,13 @@
-use std::sync::Arc;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
-use conflux::{LoadedPage, RevisionView, RouteRef};
+use config_types::WebConfig;
+use conflux::{InputPath, LoadedPage, RevisionView, RouteRef};
+use credentials::UserInfo;
+use libsearch::Index;
+use mom_types::GlobalStateView;
 
 pub trait TemplateCollection {
     fn render_template_to(
@@ -52,6 +59,13 @@ pub struct RenderTemplateArgs<'a> {
     pub additional_globals: DataObject,
 }
 
+#[derive(PartialEq, Eq, Debug)]
+pub struct Shortcode<'a> {
+    pub name: &'a str,
+    pub body: Option<&'a str>,
+    pub args: DataObject,
+}
+
 pub type DataObject = HashMap<String, DataValue>;
 
 #[derive(PartialEq, Eq, Debug)]
@@ -83,4 +97,12 @@ impl From<bool> for DataValue {
     fn from(b: bool) -> Self {
         Self::Boolean(b)
     }
+}
+
+pub struct RenderShortcodeResult {
+    /// for dependency tracking
+    pub shortcode_input_path: InputPath,
+
+    /// for dependency tracking
+    pub assets_looked_up: HashSet<InputPath>,
 }

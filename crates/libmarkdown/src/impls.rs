@@ -6,9 +6,9 @@ use std::{
 };
 
 use bo_inserter::BoInserter;
-use conflux::{BsForResults, Href, Media};
+use conflux::{Href, Media};
 use eyre::{bail, eyre};
-use media::MediaMarkupOpts;
+use libmedia::MediaMarkupOpts;
 use pulldown_cmark::{
     Alignment, CodeBlockKind, CowStr, Event, HeadingLevel, LinkType, MetadataBlockKind, Options,
     Parser, Tag, TagEnd,
@@ -16,9 +16,9 @@ use pulldown_cmark::{
 use saphyr::{Yaml, yaml::YamlLoader};
 
 use conflux::{InputPath, InputPathRef, Markdown, TocEntry};
-use math::MathMode;
+use libmath::MathMode;
+use libtemplate::{DataObject, DataValue};
 use slug::slugify;
-use template_types::{DataObject, DataValue};
 
 mod argparse;
 use argparse::parse_emphasis_shortcode;

@@ -3411,7 +3411,9 @@ checksum = "c9627da5196e5d8ed0b0495e61e518847578da83483c37288316d9b2e03a7f72"
 name = "libmarkdown"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "conflux",
+ "eyre",
  "html-escape",
  "indoc",
  "insta",
@@ -3436,8 +3438,12 @@ dependencies = [
 name = "libmedia"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
+ "config-types",
  "conflux",
+ "eyre",
  "html-escape",
+ "image-types",
  "libconfig",
  "libimage",
 ]
@@ -4144,6 +4150,16 @@ dependencies = [
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "mom-types"
+version = "0.1.0"
+dependencies = [
+ "config-types",
+ "facet",
+ "merde",
+ "serde",
 ]
 
 [[package]]
@@ -6502,8 +6518,12 @@ dependencies = [
 name = "template-types"
 version = "0.1.0"
 dependencies = [
+ "config-types",
  "conflux",
+ "credentials",
  "eyre",
+ "libsearch",
+ "mom-types",
 ]
 
 [[package]]
@@ -7302,6 +7322,7 @@ dependencies = [
  "conflux",
  "eyre",
  "ffmpeg-sidecar",
+ "image-types",
  "libimage",
  "tokio",
 ]

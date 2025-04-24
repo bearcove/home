@@ -1,5 +1,5 @@
 [package]
-name = "template-types"
+name = "mom-types"
 edition.workspace = true
 rust-version.workspace = true
 version.workspace = true
@@ -14,8 +14,6 @@ categories.workspace = true
 
 [dependencies]
 config-types = { version = "0.1.0", path = "../config-types" }
-conflux = { version = "0.1.0", path = "../conflux" }
-credentials = { version = "0.1.0", path = "../credentials" }
-eyre.workspace = true
-libsearch = { version = "0.1.0", path = "../libsearch" }
-mom-types = { version = "0.1.0", path = "../mom-types" }
+facet.workspace = true
+merde.workspace = true
+serde = { workspace = true, features = ["derive"] }

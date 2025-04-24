@@ -212,7 +212,7 @@ pub fn analyze_char_usage(input: &[u8]) -> eyre::Result<HashMap<Typo, HashSet<ch
                 if let Some(StackItem::StyleElement { markup }) = popped {
                     // Parse the CSS using Lightning CSS
                     let parsed_css = StyleSheet::parse(&markup, ParserOptions::default())
-                        .map_err(|e| BS::from_string(format!("CSS parsing error: {e}")))?;
+                        .map_err(|e| eyre::eyre!("CSS parsing error: {e}"))?;
 
                     // Create a hash map to store class names and their corresponding font properties
                     let mut class_styles: ClassStyles = Default::default();
@@ -241,9 +241,9 @@ pub fn analyze_char_usage(input: &[u8]) -> eyre::Result<HashMap<Typo, HashSet<ch
                                                                     PrinterOptions::default(),
                                                                 )
                                                                 .map_err(|e| {
-                                                                    BS::from_string(format!(
+                                                                    eyre::eyre!(
                                                                         "CSS printing error: {e}"
-                                                                    ))
+                                                                    )
                                                                 })?,
                                                         );
                                                 }
@@ -294,7 +294,7 @@ pub fn analyze_char_usage(input: &[u8]) -> eyre::Result<HashMap<Typo, HashSet<ch
             }
             Ok(Event::Eof) => break,
             Ok(_) => {}
-            Err(e) => return Err(e),
+            Err(e) => return Err(e.into()),
         }
     }
 

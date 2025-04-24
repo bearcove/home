@@ -39,16 +39,6 @@ impl Mod for ModImpl {
 
 pub(crate) mod impls;
 
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-pub struct Sponsors<'s> {
-    pub sponsors: Vec<CowStr<'s>>,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Sponsors<'s> { sponsors }
-}
-
 #[derive(Debug, Clone)]
 pub struct ListMissingArgs {
     /// queries if ObjectStoreKey is in object storage, if
@@ -164,16 +154,6 @@ merde::derive! {
 impl std::fmt::Debug for TenantInitialState<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TenantInitialState").finish_non_exhaustive()
-    }
-}
-
-pub trait GlobalStateView: Send + Sync + 'static {
-    fn gsv_sponsors(&self) -> Arc<Sponsors<'static>> {
-        unimplemented!()
-    }
-
-    fn gsv_ti(&self) -> Arc<TenantInfo> {
-        unimplemented!()
     }
 }
 

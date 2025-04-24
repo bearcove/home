@@ -7,7 +7,7 @@ use ffmpeg_sidecar::{
     event::{Stream, StreamTypeSpecificData},
     metadata::FfmpegMetadata,
 };
-use image::{ICodec, IntrinsicPixels, PixelDensity};
+use image_types::{ICodec, IntrinsicPixels, PixelDensity};
 use tokio::task::spawn_blocking;
 
 pub fn ffmpeg_metadata_to_media_props(meta: FfmpegMetadata) -> MediaProps {
