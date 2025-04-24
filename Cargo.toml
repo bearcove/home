@@ -30,7 +30,7 @@ lto = "off"
 split-debuginfo = "unpacked"
 
 [workspace.dependencies]
-tokio = { version = "=1.44.1", features = ["full"] }
+tokio = { version = "=1.44.2", features = ["full"] }
 serde = { version = "1.0.219", features = ["derive"] }
 merde = { version = "10.0.6", features = ["full"] }
 rusqlite = { version = "0.32.1", default-features = false, features = ["time"] }
