@@ -1,18 +1,21 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+use autotrait::autotrait;
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     /// Truncate HTML to a given number of paragraphs
     ///
     /// @arg max: The number of characters to keep - this *will* go over that
     /// because it operates on paragraphs
     fn truncate_html(&self, input: &str, max: u64) -> String {
-        use lol_html::{element, html_content::TextType, text, HtmlRewriter, Settings};
+        use lol_html::{HtmlRewriter, Settings, element, html_content::TextType, text};
 
         let mut output: Vec<u8> = Vec::new();
         let output_sink = |c: &[u8]| {

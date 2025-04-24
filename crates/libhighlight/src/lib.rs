@@ -1,9 +1,28 @@
 use std::{collections::HashMap, sync::Arc};
 
 use autotrait::autotrait;
+use std::sync::LazyLock;
 use tree_sitter_collection::tree_sitter_highlight::{
     self, Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
 };
+
+struct ModImpl {
+    langs: HashMap<&'static str, Arc<Lang>>,
+    cache: Option<dumbcache::Cache>,
+}
+
+static MOD: LazyLock<ModImpl> = LazyLock::new(ModImpl::default);
+
+pub fn load() -> &'static dyn Mod {
+    &*MOD
+}
+
+struct Lang {
+    conf: Option<HighlightConfiguration>,
+    name: &'static str,
+    // see https://www.nerdfonts.com/cheat-sheet and `build.rs`
+    icon: &'static str,
+}
 
 const HIGHLIGHT_NAMES: &[&str] = &[
     "attribute",
@@ -42,18 +61,6 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "punctuation.special",
     "text.strikethrough",
 ];
-
-struct ModImpl {
-    langs: HashMap<&'static str, Arc<Lang>>,
-    cache: Option<dumbcache::Cache>,
-}
-
-struct Lang {
-    conf: Option<HighlightConfiguration>,
-    name: &'static str,
-    // see https://www.nerdfonts.com/cheat-sheet and `build.rs`
-    icon: &'static str,
-}
 
 #[derive(Debug)]
 pub enum Error {
