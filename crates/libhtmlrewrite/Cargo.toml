@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
-autotrait = "0.1.6"
+autotrait = "0.1.7"
 
 # impl deps
 lol_html = { version = "1.2.1" }

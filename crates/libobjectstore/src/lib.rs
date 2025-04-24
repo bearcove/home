@@ -1,6 +1,5 @@
+use autotrait::autotrait;
 pub use bytes::Bytes;
-use rubicon as _;
-use tokio_proxy as _;
 
 use futures_core::future::BoxFuture;
 use futures_util::stream::BoxStream;
@@ -129,11 +128,14 @@ impl<'a, M: Mod + ?Sized> LayeredBuilder<'a, M> {
     }
 }
 
-#[cfg(feature = "impl")]
-#[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     fn s3(
         &self,
@@ -184,7 +186,6 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 fn to_spec_error(e: object_store::Error) -> Error {
     Error {
         kind: match &e {
@@ -195,7 +196,6 @@ fn to_spec_error(e: object_store::Error) -> Error {
     }
 }
 
-#[cfg(feature = "impl")]
 fn from_spec_put_opts(opts: PutOptions) -> object_store::PutOptions {
     let mut out = object_store::PutOptions::default();
     if let Some(content_type) = opts.content_type {
@@ -207,7 +207,6 @@ fn from_spec_put_opts(opts: PutOptions) -> object_store::PutOptions {
     out
 }
 
-#[cfg(feature = "impl")]
 fn from_spec_put_multipart_opts(opts: PutMultipartOpts) -> object_store::PutMultipartOpts {
     let mut out = object_store::PutMultipartOpts::default();
     if let Some(content_type) = opts.content_type {
@@ -219,7 +218,6 @@ fn from_spec_put_multipart_opts(opts: PutMultipartOpts) -> object_store::PutMult
     out
 }
 
-#[cfg(feature = "impl")]
 fn from_spec_getrange(range: GetRange) -> object_store::GetRange {
     match range {
         GetRange::Bounded(range) => object_store::GetRange::Bounded(range.start..range.end),
@@ -228,7 +226,6 @@ fn from_spec_getrange(range: GetRange) -> object_store::GetRange {
     }
 }
 
-#[cfg(feature = "impl")]
 fn from_spec_get_options(opts: GetOptions) -> object_store::GetOptions {
     let mut out = object_store::GetOptions::default();
     if let Some(range) = opts.range {
@@ -238,7 +235,6 @@ fn from_spec_get_options(opts: GetOptions) -> object_store::GetOptions {
     out
 }
 
-#[cfg(feature = "impl")]
 fn to_spec_put_result(res: object_store::PutResult) -> PutResult {
     PutResult {
         e_tag: res.e_tag,
@@ -246,13 +242,12 @@ fn to_spec_put_result(res: object_store::PutResult) -> PutResult {
     }
 }
 
-#[cfg(feature = "impl")]
 struct ObjectStoreWrapper {
     desc: String,
     inner: Box<dyn object_store::ObjectStore + Send + Sync>,
 }
 
-#[dylo::export]
+#[autotrait]
 impl ObjectStore for ObjectStoreWrapper {
     fn put_opts(
         &self,
@@ -319,10 +314,9 @@ impl dyn ObjectStore {
     }
 }
 
-#[cfg(feature = "impl")]
 struct MultipartUploadWrapper(Box<dyn object_store::MultipartUpload>);
 
-#[dylo::export(nonsync)]
+#[autotrait(!Sync)]
 impl MultipartUpload for MultipartUploadWrapper {
     fn put_part(&mut self, data: Bytes) -> BoxFuture<'static, Result<()>> {
         let fut = self.0.put_part(data.into());
@@ -332,7 +326,7 @@ impl MultipartUpload for MultipartUploadWrapper {
         })
     }
 
-    fn complete(mut self) -> BoxFuture<'static, Result<PutResult>> {
+    fn complete(mut self: Box<Self>) -> BoxFuture<'static, Result<PutResult>> {
         Box::pin(async move {
             let result = self.0.complete().await.map_err(to_spec_error)?;
             Ok(to_spec_put_result(result))
@@ -340,18 +334,15 @@ impl MultipartUpload for MultipartUploadWrapper {
     }
 }
 
-#[cfg(feature = "impl")]
 struct Layer {
     name: String,
     store: Arc<dyn ObjectStore>,
 }
 
-#[cfg(feature = "impl")]
 pub(crate) struct LayeredStore {
     stores: Vec<Layer>,
 }
 
-#[cfg(feature = "impl")]
 impl fmt::Debug for LayeredStore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("LayeredStore")
@@ -367,14 +358,12 @@ impl fmt::Debug for LayeredStore {
     }
 }
 
-#[cfg(feature = "impl")]
 impl fmt::Display for LayeredStore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-#[cfg(feature = "impl")]
 impl ObjectStore for LayeredStore {
     fn put_opts(
         &self,
@@ -547,24 +536,20 @@ impl ObjectStore for LayeredStore {
     }
 }
 
-#[cfg(feature = "impl")]
 #[derive(Debug)]
 struct LayeredNotFound;
 
-#[cfg(feature = "impl")]
 impl std::error::Error for LayeredNotFound {}
 
-#[cfg(feature = "impl")]
 impl fmt::Display for LayeredNotFound {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Object not found in any layer of the LayeredStore")
     }
 }
 
-#[cfg(feature = "impl")]
 struct GetResultWrapper(object_store::GetResult);
 
-#[dylo::export(nonsync)]
+#[autotrait(!Sync)]
 impl GetResult for GetResultWrapper {
     fn size(&self) -> usize {
         self.0.meta.size
