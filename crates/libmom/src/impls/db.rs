@@ -1,7 +1,7 @@
 mod migrations;
 
 use camino::Utf8Path;
-use config::TenantInfo;
+use config_types::TenantInfo;
 use eyre::Result;
 use migrations::{SqlMigration, all_migrations};
 use r2d2_sqlite::SqliteConnectionManager;

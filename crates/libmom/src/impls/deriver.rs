@@ -1,10 +1,10 @@
-use config::Environment;
+use config_types::Environment;
 use conflux::{DerivationKind, VCodec, VContainer};
 use derivations::DerivationInfo;
 use eyre::{Context as _, eyre};
-use image::ICodec;
+use image_types::ICodec;
+use libsvg::{DrawioToSvgOptions, SvgCleanupOptions};
 use std::{sync::Arc, time::Instant};
-use svg::{DrawioToSvgOptions, SvgCleanupOptions};
 use tempfile::TempDir;
 use tokio::sync::{SemaphorePermit, mpsc};
 use tokio_stream::StreamExt as _;
@@ -99,7 +99,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
         DerivationKind::Bitmap(bitmap) => {
             let input_codec = ICodec::try_from(input.content_type)?;
             // Transcode image using image module
-            image::load().transcode(&input_bytes, input_codec, bitmap.ic, bitmap.width)?
+            libimage::load().transcode(&input_bytes, input_codec, bitmap.ic, bitmap.width)?
         }
         DerivationKind::Video(video) => {
             // Transcode video
@@ -180,7 +180,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
         }
         DerivationKind::DrawioRender(d) => {
             // Convert drawio to SVG
-            let svg = svg::load();
+            let svg = libsvg::load();
             let svg_data = svg
                 .drawio_to_svg(input_bytes.into(), DrawioToSvgOptions { minify: true })
                 .await?;
@@ -188,7 +188,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
                 .await?
         }
         DerivationKind::SvgCleanup(_) => {
-            let svg = svg::load();
+            let svg = libsvg::load();
             svg.cleanup_svg(&input_bytes[..], SvgCleanupOptions {})?
         }
     };
@@ -339,7 +339,7 @@ async fn transcode_media(
             DetailedTranscodeEvent::Done => {
                 if let Some(postprocess) = target_format.postprocess() {
                     let input_payload = tokio::fs::read(&output_path).await?;
-                    let image = image::load();
+                    let image = libimage::load();
                     let output_payload = image.transcode(
                         &input_payload[..],
                         postprocess.src_ic,

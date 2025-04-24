@@ -5,7 +5,7 @@ use axum::extract::ws;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{Router, extract::FromRequestParts};
-use config::{MomApiKeyRef, TenantDomain, is_development};
+use config_types::{MomApiKeyRef, TenantDomain, is_development};
 use futures_util::SinkExt;
 use tenant_extractor::TenantExtractor;
 use tokio::signal::unix::SignalKind;

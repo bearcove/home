@@ -5,6 +5,7 @@ use conflux::{Derivation, DerivationHash, Input, InputPath, Pak};
 use derivations::DerivationInfo;
 use futures_core::future::BoxFuture;
 use media_types::{TargetFormat, TranscodingProgress};
+use mom_types::Sponsors;
 use objectstore_types::ObjectStoreKey;
 use std::{collections::HashMap, time::Instant};
 
@@ -296,8 +297,7 @@ merde::derive! {
 
 pub mod media_types {
     use conflux::{MediaProps, VCodec};
-    use eyre::BS;
-    use image::ICodec;
+    use image_types::ICodec;
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub enum TargetFormat {
@@ -359,28 +359,26 @@ pub mod media_types {
     }
 
     impl TryFrom<VCodec> for TargetFormat {
-        type Error = BS;
+        type Error = eyre::Report;
 
         fn try_from(value: VCodec) -> Result<Self, Self::Error> {
             match value {
                 VCodec::VP9 => Ok(TargetFormat::VP9),
                 VCodec::AV1 => Ok(TargetFormat::AV1),
-                format => Err(BS::from_string(format!("Refusing to encode to {format:?}"))),
+                format => eyre::bail!("Refusing to encode to {format:?}"),
             }
         }
     }
 
     impl TryFrom<ICodec> for TargetFormat {
-        type Error = BS;
+        type Error = eyre::Report;
 
         fn try_from(value: ICodec) -> Result<Self, Self::Error> {
             match value {
                 ICodec::AVIF => Ok(TargetFormat::ThumbAVIF),
                 ICodec::WEBP => Ok(TargetFormat::ThumbWEBP),
                 ICodec::JXL => Ok(TargetFormat::ThumbJXL),
-                format => Err(BS::from_string(format!(
-                    "Refusing to grab thumbnail in format {format:?}"
-                ))),
+                format => eyre::bail!("Refusing to grab thumbnail in format {format:?}"),
             }
         }
     }

@@ -178,7 +178,7 @@ pub(crate) async fn patreon_refresh_credentials_inner(
     patreon_id: String,
 ) -> Result<AuthBundle<'static>, eyre::Report> {
     let pool = &ts.pool;
-    let mod_patreon = patreon::load();
+    let mod_patreon = libpatreon::load();
 
     let pat_creds = pool
         .fetch_patreon_credentials(&patreon_id)?
@@ -292,7 +292,7 @@ pub(crate) async fn load_revision_from_db(
     Ok(Some(revision))
 }
 
-pub async fn serve(args: MomServeArgs) -> noteyre::Result<()> {
+pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
     let MomServeArgs {
         config,
         web,
@@ -306,7 +306,7 @@ pub async fn serve(args: MomServeArgs) -> noteyre::Result<()> {
         drop(rx_event);
 
         let mut gs = MomGlobalState {
-            client: Arc::from(httpclient::load().client()),
+            client: Arc::from(libhttpclient::load().client()),
             bx_event: tx_event,
             tenants: Default::default(),
             config: Arc::new(config),
@@ -450,5 +450,5 @@ pub async fn serve(args: MomServeArgs) -> noteyre::Result<()> {
     }
 
     debug!("🐻 mom is now serving on {} 💅", listener.local_addr()?);
-    endpoints::serve(listener).await.bs()
+    endpoints::serve(listener).await
 }

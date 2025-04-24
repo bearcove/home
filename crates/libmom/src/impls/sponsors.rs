@@ -5,10 +5,8 @@ use libgithub::GitHubCredentials;
 use libhttpclient::HttpClient;
 use merde::{CowStr, IntoStatic};
 
-use crate::{
-    Sponsors,
-    impls::{MomTenantState, global_state},
-};
+use crate::impls::{MomTenantState, global_state};
+use mom_types::Sponsors;
 
 pub(crate) async fn get_sponsors(ts: &MomTenantState) -> eyre::Result<Sponsors<'static>> {
     let client = global_state().client.clone();
@@ -31,7 +29,7 @@ async fn patreon_list_sponsors(
     ts: &MomTenantState,
     client: &dyn HttpClient,
 ) -> eyre::Result<HashSet<CowStr<'static>>> {
-    let patreon = patreon::load();
+    let patreon = libpatreon::load();
     let rc = ts.rc()?;
     patreon.list_sponsors(&rc, client, &ts.pool).await
 }

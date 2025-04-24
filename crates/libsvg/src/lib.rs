@@ -10,6 +10,10 @@ pub use eyre::Result;
 #[derive(Default)]
 struct ModImpl;
 
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
+
 /// Options when converting a .drawio file to SVG
 pub struct DrawioToSvgOptions {
     pub minify: bool,

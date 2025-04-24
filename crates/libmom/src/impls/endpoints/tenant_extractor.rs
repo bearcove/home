@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{async_trait, extract::FromRequestParts};
-use config::TenantDomain;
+use config_types::TenantDomain;
 use libhttpclient::{StatusCode, request::Parts};
 use serde::Deserialize;
 

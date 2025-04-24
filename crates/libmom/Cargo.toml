@@ -57,3 +57,4 @@ config-types = { version = "0.1.0", path = "../config-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 autotrait = "0.1.10"
 mom-types = { version = "0.1.0", path = "../mom-types" }
+image-types = { version = "0.1.0", path = "../image-types" }

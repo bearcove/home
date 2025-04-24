@@ -1,16 +1,16 @@
 use axum::{
     body::Body,
     http::{
-        header::{self, CONTENT_TYPE},
         StatusCode,
+        header::{self, CONTENT_TYPE},
     },
     response::{IntoResponse, Response},
 };
 use content_type::ContentType;
 use eyre::Report;
+use libterm::FormatAnsiStyle;
 use merde::{DynSerialize, IntoStatic as _};
 use std::{borrow::Cow, sync::Arc};
-use term::FormatAnsiStyle;
 use tracing::error;
 
 pub(crate) type Reply = Result<Response, HttpError>;
@@ -71,7 +71,7 @@ impl HttpError {
             }
         }
 
-        let maybe_bt = errhandling::load().format_backtrace_to_terminal_colors(err);
+        let maybe_bt = liberrhandling::load().format_backtrace_to_terminal_colors(err);
 
         let trace_content = {
             let mut err_string = String::new();
@@ -92,7 +92,8 @@ impl HttpError {
                 }
             }
 
-            let err_string_colored = term::load().format_ansi(&err_string, FormatAnsiStyle::Html);
+            let err_string_colored =
+                libterm::load().format_ansi(&err_string, FormatAnsiStyle::Html);
             let backtrace = maybe_bt.unwrap_or_default();
 
             format!(
@@ -124,18 +125,12 @@ impl_from!(axum::http::uri::InvalidUri);
 impl_from!(url::ParseError);
 impl_from!(r2d2::Error);
 impl_from!(rusqlite::Error);
-impl_from!(objectstore::Error);
+impl_from!(libobjectstore::Error);
 impl_from!(std::str::Utf8Error);
 
 impl From<merde::MerdeError<'_>> for HttpError {
     fn from(err: merde::MerdeError<'_>) -> Self {
         Self::from_report(err.into_static().into())
-    }
-}
-
-impl From<eyre::BS> for HttpError {
-    fn from(err: eyre::BS) -> Self {
-        Self::from_report(err.into())
     }
 }
 

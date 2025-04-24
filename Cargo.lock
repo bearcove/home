@@ -3478,6 +3478,7 @@ dependencies = [
  "ffmpeg-sidecar",
  "futures-core",
  "futures-util",
+ "image-types",
  "inflight",
  "itertools 0.14.0",
  "libconfig",

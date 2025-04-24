@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use axum::routing::get;
-use config::is_development;
+use config_types::is_development;
 use libhttpclient::Uri;
 
 use crate::impls::{MomTenantState, global_state};
@@ -15,12 +15,12 @@ use axum::{
 };
 use credentials::AuthBundle;
 use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse, GitHubCredentials};
-use merde::IntoStatic;
-use objectstore::{ObjectStoreKey, ObjectStoreKeyRef};
-use patreon::{
+use libpatreon::{
     ForcePatreonRefresh, PatreonCallbackArgs, PatreonCallbackResponse, PatreonCredentials,
     PatreonRefreshCredentials, PatreonRefreshCredentialsArgs, PatreonStore,
 };
+use merde::IntoStatic;
+use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
 
 use crate::impls::site::{HttpError, IntoReply, MerdeJson, Reply};
 
@@ -53,7 +53,7 @@ async fn patreon_callback(
     let body = std::str::from_utf8(&body[..])?;
     let args: PatreonCallbackArgs = merde::json::from_str(body)?;
 
-    let mod_patreon = patreon::load();
+    let mod_patreon = libpatreon::load();
     let pool = &ts.pool;
 
     let creds = mod_patreon
@@ -208,7 +208,7 @@ async fn auth_bundle_update(
     let new_auth_bundle: AuthBundle = if let Some(patreon_id) =
         auth_bundle.user_info.profile.patreon_id
     {
-        let mod_patreon = patreon::load();
+        let mod_patreon = libpatreon::load();
         let pat_creds = {
             let conn = ts.pool.get()?;
             get_patreon_credentials(&conn, &patreon_id)?
@@ -286,7 +286,7 @@ async fn objectstore_list_missing(
             mark_these_as_uploaded: Some(had_those_locally.clone()),
         };
         let tenant_name = &ts.ti.tc.name;
-        let production_uri = config::production_mom_url().parse::<Uri>().unwrap();
+        let production_uri = config_types::production_mom_url().parse::<Uri>().unwrap();
 
         let uri = Uri::builder()
             .scheme(production_uri.scheme().unwrap().clone())

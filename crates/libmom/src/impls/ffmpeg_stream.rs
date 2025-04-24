@@ -6,7 +6,7 @@ use ffmpeg_sidecar::{
     event::{FfmpegEvent, LogLevel},
 };
 use futures_util::Stream;
-use image::{ICodec, IntrinsicPixels, PixelDensity};
+use image_types::{ICodec, IntrinsicPixels, PixelDensity};
 use nix::{
     sys::signal::{self, Signal},
     unistd::Pid,
