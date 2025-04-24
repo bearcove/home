@@ -1,7 +1,7 @@
 use autotrait::autotrait;
 pub use bytes::Bytes;
 
-use futures_core::future::BoxFuture;
+use futures_core::future::{BoxFuture, LocalBoxFuture};
 use futures_util::stream::BoxStream;
 use std::{borrow::Cow, ops::Range, sync::Arc};
 
@@ -316,9 +316,9 @@ impl dyn ObjectStore {
 
 struct MultipartUploadWrapper(Box<dyn object_store::MultipartUpload>);
 
-#[autotrait(!Sync)]
+#[autotrait(!Send)]
 impl MultipartUpload for MultipartUploadWrapper {
-    fn put_part(&mut self, data: Bytes) -> BoxFuture<'static, Result<()>> {
+    fn put_part(&mut self, data: Bytes) -> LocalBoxFuture<'static, Result<()>> {
         let fut = self.0.put_part(data.into());
         Box::pin(async move {
             fut.await.map_err(to_spec_error)?;
@@ -326,7 +326,7 @@ impl MultipartUpload for MultipartUploadWrapper {
         })
     }
 
-    fn complete(mut self: Box<Self>) -> BoxFuture<'static, Result<PutResult>> {
+    fn complete(mut self: Box<Self>) -> LocalBoxFuture<'static, Result<PutResult>> {
         Box::pin(async move {
             let result = self.0.complete().await.map_err(to_spec_error)?;
             Ok(to_spec_put_result(result))
@@ -549,7 +549,7 @@ impl fmt::Display for LayeredNotFound {
 
 struct GetResultWrapper(object_store::GetResult);
 
-#[autotrait(!Sync)]
+#[autotrait(!Send)]
 impl GetResult for GetResultWrapper {
     fn size(&self) -> usize {
         self.0.meta.size

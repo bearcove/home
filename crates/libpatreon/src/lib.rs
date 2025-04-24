@@ -1,34 +1,23 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
-use config::{RevisionConfig, TenantConfig, WebConfig};
+use autotrait::autotrait;
 use credentials::AuthBundle;
-#[cfg(feature = "impl")]
 use eyre::Context as _;
 use eyre::Result;
 use futures_core::future::BoxFuture;
+use libconfig::{RevisionConfig, TenantConfig, WebConfig};
 use libhttpclient::{HttpClient, Uri};
 use merde::CowStr;
-#[cfg(feature = "impl")]
 use merde::IntoStatic;
 use std::collections::HashSet;
-#[cfg(feature = "impl")]
 use url::Url;
 
-#[cfg(feature = "impl")]
 use std::collections::HashMap;
 
-#[cfg(feature = "impl")]
 mod jsonapi_ext;
-#[cfg(feature = "impl")]
 use jsonapi_ext::*;
 
-#[cfg(feature = "impl")]
 mod model;
-#[cfg(feature = "impl")]
 use model::*;
 
-#[cfg(feature = "impl")]
 fn patreon_refresh_interval() -> time::Duration {
     if test_patreon_renewal() {
         return time::Duration::seconds(10);
@@ -36,11 +25,10 @@ fn patreon_refresh_interval() -> time::Duration {
     time::Duration::days(1)
 }
 
-#[cfg(feature = "impl")]
 #[derive(Default)]
 pub struct ModImpl;
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn make_login_url(&self, web: WebConfig, tc: &TenantConfig) -> Result<String> {
         let patreon_secrets = tc.patreon_secrets()?;
@@ -294,19 +282,9 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 impl ModImpl {
     fn make_patreon_callback_url(&self, tc: &TenantConfig, web: WebConfig) -> String {
-        let name = &tc.name;
-        let base_url = match web.env {
-            config::Environment::Production => {
-                format!("https://{name}")
-            }
-            config::Environment::Development => {
-                let port = web.port;
-                format!("http://{name}.snug.blog:{port}")
-            }
-        };
+        let base_url = tc.web_base_url(web);
         format!("{base_url}/login/patreon/callback")
     }
 
@@ -511,7 +489,6 @@ impl ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 fn creator_tier_name() -> Option<String> {
     let path = std::path::Path::new("/tmp/home-creator-tier-override");
     match fs_err::read_to_string(path) {
