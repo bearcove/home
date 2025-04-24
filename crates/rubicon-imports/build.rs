@@ -105,56 +105,6 @@ impl BuildInfo {
         self.profile.artifact_dir(&self.workspace_target_dir)
     }
 
-    fn rubicon_exports_artifact_dir(&self) -> Utf8PathBuf {
-        self.profile.artifact_dir(&self.out_dir)
-    }
-    /// Builds librubicon-exports and places it in the workspace's artifact directory, so that
-    /// we may link against it when building the main project.
-    fn build_rubicon_exports(&self) {
-        let mut cmd = Command::new(&self.cargo);
-        cmd.arg("build")
-            .arg("--manifest-path")
-            .arg(self.rubicon_exports_dir.join("Cargo.toml"))
-            .env("CARGO_TARGET_DIR", &self.out_dir);
-
-        println!(
-            "cargo:rerun-if-changed={}",
-            self.rubicon_exports_dir.join("Cargo.toml")
-        );
-        println!(
-            "cargo:rerun-if-changed={}",
-            self.rubicon_exports_dir.join("src").join("lib.rs")
-        );
-
-        if self.profile == Profile::Release {
-            cmd.arg("--release");
-        }
-
-        eprintln!("building rubicon-exports: {cmd:?}");
-        let status = cmd.status().expect("Failed to execute cargo build");
-        if !status.success() {
-            panic!("cargo build failed with status: \x1b[31m{}\x1b[0m", status);
-        }
-
-        let dylib_name = format!("librubicon_exports.{}", DYLIB_EXTENSION);
-        let artifact_dir = self.rubicon_exports_artifact_dir();
-        println!("cargo:rustc-link-search=native={artifact_dir}");
-
-        let dylib_path = artifact_dir.join(&dylib_name);
-
-        eprintln!("expecting dylib at: \x1b[32m{:?}\x1b[0m", dylib_path);
-        if !dylib_path.exists() {
-            panic!(
-                "rubicon-exports dylib not found at expected path: \x1b[31m{:?}\x1b[0m",
-                dylib_path
-            );
-        }
-
-        // Copy the dylib to the workspace's target directory
-        let workspace_dylib_path = self.workspace_artifact_dir().join(&dylib_name);
-        copy_file(&dylib_path, &workspace_dylib_path);
-    }
-
     /// Copies `libstd-HASH.{dylib,so,etc.}` into the workspace's artifact directory ($TARGET/$PROFILE).
     /// This will allow running home without `cargo run` — `.cargo/config.toml` sets the RPATH on macOS & Linux
     /// to look for libs there (including libstd).
@@ -198,17 +148,10 @@ fn main() {
     let build_info = Box::leak(Box::new(build_info));
     println!("{:?}", build_info);
 
-    let rubicon_exports_handle = std::thread::spawn(|| {
-        build_info.build_rubicon_exports();
-    });
-
     let copy_libstd_handle = std::thread::spawn(|| {
         build_info.copy_libstd();
     });
 
-    rubicon_exports_handle
-        .join()
-        .expect("Rubicon exports thread panicked");
     copy_libstd_handle
         .join()
         .expect("Libstd symlink thread panicked");

@@ -1482,29 +1482,19 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.9.7"
+version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d463cdbfd164edf1bba30df23cf639dc6fbd000a03311f5f8dcfeff08299eb03"
+checksum = "36b55e98a6cc63c843db91f6db4be9f47067b9bd07d93560da0ba4c0f55f20fd"
 dependencies = [
- "facet-core 0.11.0",
+ "facet-core",
  "facet-derive",
 ]
 
 [[package]]
 name = "facet-core"
-version = "0.10.1"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d19ab200f37e8c2144ee62c22b8303e4dfbc98d20e210c4cefc0a616a99be379"
-dependencies = [
- "bitflags 2.9.0",
- "impls",
-]
-
-[[package]]
-name = "facet-core"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f5905953877795d96aef172f2206950339e350f9862c0b1c0d15b781c7a97c0"
+checksum = "5227e1c925a1f21ea3ebff90e08af0b34b59975171cf00fcee36b917941d1ac0"
 dependencies = [
  "bitflags 2.9.0",
  "camino",
@@ -1513,40 +1503,40 @@ dependencies = [
 
 [[package]]
 name = "facet-derive"
-version = "0.9.7"
+version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1e70487e8dfa130f15b682d12a5a72ea05d49be05fdd3d5a2515b7bac6b707a"
+checksum = "9982f286c2121f36d6921c7ecedde49158a5ba8eef622a4fd777ff502c1348e3"
 dependencies = [
- "facet-core 0.11.0",
+ "facet-core",
  "facet-derive-emit",
 ]
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef4e65d115e0ba547d9ff23808dce39b9147c89608c45494a3054d48cec2dae4"
+checksum = "2ed20e29f8aa502cf1263eb040e3442ef84636e89a88ee8dffcda336a1152a38"
 dependencies = [
  "facet-derive-parse",
 ]
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a4a06efa3e0b08f2aff06def429a0a06b304379167be9491e24bad0f282c19d"
+checksum = "71ea122ff95ac65c86bf18d0ba7f04f087ef5dd20f7dc76cb5bd69cbb14bd8ad"
 dependencies = [
  "unsynn",
 ]
 
 [[package]]
 name = "facet-json"
-version = "0.11.1"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ac7b0f594e075d7742ec2dd1a4d4d70fdccedb97a2d409c2bdf3694f1a30aee"
+checksum = "0fcfedeee77d2aa2ccd9a50d562b2ae363aa366e759cd206bcb8ecdc9dacc711"
 dependencies = [
  "ariadne",
- "facet-core 0.10.1",
+ "facet-core",
  "facet-reflect",
  "log",
  "owo-colors 4.2.0",
@@ -1554,23 +1544,23 @@ dependencies = [
 
 [[package]]
 name = "facet-pretty"
-version = "0.13.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61779191385b18d97815892155687b114e850d3d75362f7b95b12c1608f78581"
+checksum = "632cd18a4d6557d6f7a57f6a5ab2336b17fd7f2c5e6093caf0c790fc1dc5d16a"
 dependencies = [
- "facet-core 0.10.1",
+ "facet-core",
  "facet-reflect",
  "yansi",
 ]
 
 [[package]]
 name = "facet-reflect"
-version = "0.10.4"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "897aee2fc70e2a538ca9dcf0e31d6523995ab3b2edaba8e23175966fd5b7ffe5"
+checksum = "6bf4267181ad45e95484b0cce1807c5973039e3d4dcacb55ab74f73293b1a3a8"
 dependencies = [
  "bitflags 2.9.0",
- "facet-core 0.11.0",
+ "facet-core",
  "owo-colors 4.2.0",
 ]
 
