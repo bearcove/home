@@ -19,5 +19,5 @@ shell-quote = { version = "0.6.1" }
 term_size = { version = "0.3.2" }
 termion = { version = "4.0.4" }
 tracing = { version = "0.1.41" }
-which = { version = "6.0.3" }
+which = { version = "7.0.0" }
 autotrait = "0.1.11"

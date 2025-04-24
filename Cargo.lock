@@ -2152,15 +2152,6 @@ dependencies = [
 
 [[package]]
 name = "home"
-version = "0.5.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "589533453244b0995c858700322199b2becb13b627df2851f64a2775d024abcf"
-dependencies = [
- "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "home"
 version = "4.0.0"
 dependencies = [
  "camino",
@@ -3680,7 +3671,7 @@ dependencies = [
  "regex 1.11.1",
  "tempfile",
  "tokio",
- "which 7.0.3",
+ "which",
 ]
 
 [[package]]
@@ -3735,7 +3726,7 @@ dependencies = [
  "term_size",
  "termion",
  "tracing",
- "which 6.0.3",
+ "which",
 ]
 
 [[package]]
@@ -7676,18 +7667,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2210b291f7ea53617fbafcc4939f10914214ec15aace5ba62293a668f322c5c9"
 dependencies = [
  "rustls-pki-types",
-]
-
-[[package]]
-name = "which"
-version = "6.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4ee928febd44d98f2f459a4a79bd4d928591333a494a10a868418ac1b39cf1f"
-dependencies = [
- "either",
- "home 0.5.11",
- "rustix 0.38.44",
- "winsafe",
 ]
 
 [[package]]
