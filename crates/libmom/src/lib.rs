@@ -1,8 +1,11 @@
 use autotrait::autotrait;
 use futures_core::future::BoxFuture;
 
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 pub use eyre::Result;
 use mom_types::MomServeArgs;

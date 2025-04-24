@@ -2179,6 +2179,7 @@ name = "home"
 version = "4.0.0"
 dependencies = [
  "camino",
+ "config-types",
  "eyre",
  "fastrand",
  "http",
@@ -2191,6 +2192,7 @@ dependencies = [
  "libmom",
  "libterm",
  "libtracingsub",
+ "mom-types",
  "owo-colors 4.2.0",
  "serde_json",
  "tokio",

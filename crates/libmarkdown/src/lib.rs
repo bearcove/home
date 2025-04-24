@@ -17,7 +17,7 @@ impl Default for ModImpl {
 
 use std::sync::LazyLock;
 
-static MOD: LazyLock<ModImpl> = LazyLock::new(|| ModImpl::default());
+static MOD: LazyLock<ModImpl> = LazyLock::new(ModImpl::default);
 
 pub fn load() -> &'static dyn Mod {
     &*MOD

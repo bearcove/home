@@ -7,7 +7,7 @@
     "rust-analyzer": {
       "initialization_options": {
         "check": {
-          "command": "check"
+          "command": "clippy"
         },
         "cargo": {
           "features": []
