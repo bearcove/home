@@ -1,19 +1,20 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+use autotrait::autotrait;
+use lightningcss::{
+    printer::PrinterOptions,
+    stylesheet::{MinifyOptions, ParserOptions, StyleSheet},
+    targets::Browsers,
+};
 
-#[cfg(feature = "impl")]
-#[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
-impl Mod for ModImpl {
-    fn minify(&self, unminified: &str) -> Result<String, String> {
-        use lightningcss::{
-            printer::PrinterOptions,
-            stylesheet::{MinifyOptions, ParserOptions, StyleSheet},
-            targets::Browsers,
-        };
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
+#[autotrait]
+impl Mod for ModImpl {
+    fn minify(&self, unminified: &str) -> eyre::Result<String, String> {
         let mut stylesheet = StyleSheet::parse(unminified, ParserOptions::default())
             .map_err(|e| format!("error parsing CSS: {e}"))?;
 

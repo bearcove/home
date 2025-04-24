@@ -3372,6 +3372,8 @@ dependencies = [
 name = "liblightningcss"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
+ "eyre",
  "lightningcss",
 ]
 
@@ -3657,6 +3659,7 @@ name = "libterm"
 version = "0.1.0"
 dependencies = [
  "anstyle-parse",
+ "autotrait",
  "coolor",
  "displaydoc",
  "fs-err 2.11.0",
@@ -3675,6 +3678,7 @@ dependencies = [
 name = "libtracingsub"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "env_logger",
  "tracing-subscriber",
 ]
@@ -3693,6 +3697,7 @@ dependencies = [
 name = "libwebpage"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "base64",
  "futures-core",
  "futures-util",
@@ -3708,6 +3713,7 @@ dependencies = [
 name = "libwebsock"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "futures-core",
  "futures-util",
  "hickory-resolver",

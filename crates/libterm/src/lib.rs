@@ -1,11 +1,12 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+use autotrait::autotrait;
+use libclap::TermArgs;
 
-use clap::TermArgs;
-
-#[cfg(feature = "impl")]
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum FormatAnsiStyle {
@@ -13,7 +14,7 @@ pub enum FormatAnsiStyle {
     Html,
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn css(&self) -> String {
         use std::fmt::Write;
@@ -434,5 +435,4 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 pub(crate) mod impls;

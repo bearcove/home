@@ -1,22 +1,21 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
+use autotrait::autotrait;
 use std::net::IpAddr;
 
 use http::{HeaderMap, Uri};
 use rubicon as _;
-use tokio_proxy as _;
 
-#[cfg(feature = "impl")]
 use rustls as _;
 
 use futures_core::future::BoxFuture;
 
 pub use libhttpclient::Error;
 
-#[cfg(feature = "impl")]
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
 #[derive(Debug)]
 pub struct CloseFrame {
@@ -33,7 +32,7 @@ pub enum Frame {
     Close(Option<CloseFrame>),
 }
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn websocket_connect(
         &self,
@@ -151,28 +150,24 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 use tokio_tungstenite::{
     MaybeTlsStream,
     tungstenite::{client::IntoClientRequest, protocol::WebSocketConfig},
 };
 
-#[cfg(feature = "impl")]
 type Wss = tokio_tungstenite::WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>;
 
-#[cfg(feature = "impl")]
 struct WebSocketStreamImpl {
     inner: Wss,
 }
 
-#[cfg(feature = "impl")]
 impl WebSocketStreamImpl {
     fn new(inner: Wss) -> Self {
         Self { inner }
     }
 }
 
-#[dylo::export(nonsync)]
+#[autotrait(!Send)]
 impl WebSocketStream for WebSocketStreamImpl {
     fn send(&mut self, frame: Frame) -> BoxFuture<'_, Result<(), Error>> {
         use futures_util::SinkExt;

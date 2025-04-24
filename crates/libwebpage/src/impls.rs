@@ -2,11 +2,11 @@ use std::{sync::Arc, time::Duration};
 
 use base64::Engine as _;
 use futures_util::StreamExt;
-use image::ICodec;
 use libhttpclient::{
     Method, Response,
     header::{HeaderName, HeaderValue},
 };
+use libimage::ICodec;
 use tokio::time::timeout;
 use webpage::HTML;
 
@@ -154,7 +154,7 @@ pub(crate) async fn add_image_maybe(
         }
     };
 
-    let mod_img = image::load();
+    let mod_img = libimage::load();
     let (width, height) = match mod_img.dimensions(&bytes, iformat) {
         Ok(dims) => dims,
         Err(e) => {

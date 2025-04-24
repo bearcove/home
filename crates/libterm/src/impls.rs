@@ -972,7 +972,7 @@ impl Performer {
     }
 }
 
-#[cfg(all(test, feature = "impl"))]
+#[cfg(test)]
 mod tests {
     use crate::{FormatAnsiStyle, Mod, ModImpl};
 

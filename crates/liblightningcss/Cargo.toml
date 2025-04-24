@@ -7,6 +7,8 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
+autotrait = "0.1.6"
+eyre.workspace = true
 
 # impl dependencies
 lightningcss = { version = "1.0.0-alpha.65", features = ["browserslist"] }

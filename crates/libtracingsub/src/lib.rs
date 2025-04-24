@@ -1,11 +1,13 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+use autotrait::autotrait;
 
-#[cfg(feature = "impl")]
-#[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     fn install(&self) {
         use std::str::FromStr;

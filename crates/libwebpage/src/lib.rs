@@ -1,11 +1,8 @@
-#[cfg(feature = "impl")]
-use std::sync::Arc;
-
+use autotrait::autotrait;
 use futures_core::future::BoxFuture;
-use image::IntrinsicPixels;
-
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
+// TODO: move me to `image-types` or something to avoid rebuilds
+use libimage::IntrinsicPixels;
+use std::sync::{Arc, LazyLock};
 
 #[derive(Debug, Clone)]
 pub struct Image {
@@ -31,12 +28,10 @@ merde::derive! {
     impl (Serialize) for struct Image { url, width, height, data_url }
 }
 
-#[cfg(feature = "impl")]
 struct ModImpl {
     client: Arc<dyn libhttpclient::HttpClient>,
 }
 
-#[cfg(feature = "impl")]
 impl Default for ModImpl {
     fn default() -> Self {
         Self {
@@ -45,7 +40,13 @@ impl Default for ModImpl {
     }
 }
 
-#[dylo::export]
+static MOD: LazyLock<ModImpl> = LazyLock::new(ModImpl::default);
+
+pub fn load() -> &'static dyn Mod {
+    &*MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     fn webpage_info(&self, url: String) -> BoxFuture<'static, Result<WebpageInfo, String>> {
         let client = self.client.clone();
@@ -53,5 +54,4 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 mod impls;
