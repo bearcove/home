@@ -1,9 +1,8 @@
 {
-    "version": 3,
-    "org": "bearcove",
-    "name": "home",
-    "cargo": {
-        "bins": ["home"],
-        "dylo": true
-    }
+  "version": 3,
+  "org": "bearcove",
+  "name": "home",
+  "cargo": {
+    "bins": ["home"]
+  }
 }
