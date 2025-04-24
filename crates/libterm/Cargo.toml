@@ -11,7 +11,7 @@ libclap = { path = "../libclap" }
 anstyle-parse = { version = "0.2.6" }
 coolor = { version = "0.9.0" }
 displaydoc = { version = "0.2.5" }
-fs-err = { version = "2.11.0" }
+fs-err = { version = "3.0.0" }
 nix = { version = "0.29.0", features = ["process"] }
 owo-colors = { version = "4.2.0" }
 portable-pty = { version = "0.8.1" }
