@@ -3168,9 +3168,11 @@ dependencies = [
 name = "libconfig"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "base64",
  "camino",
  "dotenvy",
+ "eyre",
  "facet",
  "facet-json",
  "facet-pretty",
