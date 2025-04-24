@@ -3,9 +3,19 @@ mtime-on-use = true
 binary-dep-depinfo = true
 checksum-freshness = true
 feature-unification = true
+codegen-backend = true
+
+[profile.dev]
+codegen-backend = "cranelift"
 
 [resolver]
 feature-unification = "workspace"
+
+[target."any()"]
+rustflags = [
+    # (Nightly) Make the current crate share its generic instantiations
+    "-Zshare-generics=y",
+]
 
 [patch.crates-io]
 # facet = { path = "../facet/facet" }
