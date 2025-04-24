@@ -19,7 +19,7 @@ libhighlight = { path = "../libhighlight" }
 libmath = { path = "../libmath" }
 libconfig = { version = "0.1.0", path = "../libconfig" }
 libmedia = { version = "0.1.0", path = "../libmedia" }
-autotrait = "0.1.10"
+autotrait = "0.1.11"
 eyre.workspace = true
 highlight-types = { version = "0.1.0", path = "../highlight-types" }
 config-types = { version = "0.1.0", path = "../config-types" }

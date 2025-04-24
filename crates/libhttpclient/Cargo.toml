@@ -16,7 +16,7 @@ categories.workspace = true
 crate-type = ["dylib"]
 
 [dependencies]
-autotrait = "0.1.10"
+autotrait = "0.1.11"
 bytes = "1.10.1"
 form_urlencoded = "1.2.1"
 futures-core = "0.3.31"

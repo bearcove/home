@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use closest::{GetOrHelp, ResourceKind};
-use config::WebConfig;
+use config_types::WebConfig;
 use conflux::{InputPath, InputPathRef, RevisionView, RouteRef, Viewer};
 use itertools::Itertools;
 use minijinja::{Environment, Error, Value, value::Kwargs};
@@ -9,11 +9,8 @@ use rand::seq::SliceRandom;
 use time::OffsetDateTime;
 
 use crate::{
-    GlobalsVal,
-    conversions::ToMinijinaResult,
-    template_types::{
-        Listing, ListingKind, LoadedPageVal, MediaVal, RevisionViewHolder, SearchResultsVal, ToVal,
-    },
+    GlobalsVal, Listing, ListingKind, LoadedPageVal, MediaVal, RevisionViewHolder,
+    SearchResultsVal, ToVal, conversions::ToMinijinaResult,
 };
 
 fn urlencode(input: String) -> String {
@@ -71,7 +68,7 @@ pub fn get_web_config(state: &minijinja::State) -> Result<WebConfig, Error> {
                 "web_port not found or not a number",
             )
         })?;
-    let env = config::Environment::default();
+    let env = config_types::Environment::default();
     Ok(WebConfig { port, env })
 }
 

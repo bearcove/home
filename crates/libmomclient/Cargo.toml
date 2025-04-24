@@ -24,3 +24,7 @@ libobjectstore = { path = "../libobjectstore" }
 futures-core = "0.3.31"
 libgithub = { version = "0.1.0", path = "../libgithub" }
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
+config-types = { version = "0.1.0", path = "../config-types" }
+eyre.workspace = true
+objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
+autotrait = "0.1.11"

@@ -1,4 +1,6 @@
-use config::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
+use autotrait::autotrait;
+use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
+use eyre::bail;
 use futures_core::future::BoxFuture;
 use std::str::FromStr;
 
@@ -10,34 +12,36 @@ use merde::IntoStatic;
 use std::{sync::Arc, time::Instant};
 use tracing::info;
 
-use eyre::BsForResults;
-
 use bytes::Bytes;
 use conflux::RevisionIdRef;
 use credentials::AuthBundle;
 use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
 use libhttpclient::{HttpClient, RequestBuilder};
-#[allow(unused_imports)]
-use mom::{
+use libmom::{
     ListMissingArgs, ListMissingResponse, MomEvent,
     media_types::{
         HeadersMessage, TranscodeEvent, TranscodingProgress, UploadDoneMessage, WebSocketMessage,
     },
 };
-use objectstore::ObjectStoreKeyRef;
-use patreon::{
+use libpatreon::{
     PatreonCallbackArgs, PatreonCallbackResponse, PatreonRefreshCredentials,
     PatreonRefreshCredentialsArgs,
 };
+use objectstore_types::ObjectStoreKeyRef;
 
 pub trait MomEventListener: Send + 'static {
     fn on_event<'fut>(&'fut self, event: MomEvent<'static>) -> BoxFuture<'fut, ()>;
 }
 
+pub use eyre::Result;
+
 #[derive(Default)]
 struct ModImpl;
 
-pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
 #[autotrait]
 impl Mod for ModImpl {
@@ -87,7 +91,7 @@ impl Mod for ModImpl {
                         }
 
                         let before = Instant::now();
-                        let mod_websock = websock::load();
+                        let mod_websock = libwebsock::load();
 
                         let mut ws = match tokio::time::timeout(
                             std::time::Duration::from_secs(3),
@@ -136,11 +140,9 @@ impl Mod for ModImpl {
                             };
 
                             let ev = match ev {
-                                websock::Frame::Text(ev) => ev,
+                                libwebsock::Frame::Text(ev) => ev,
                                 _ => {
-                                    return Err(eyre::BS::from_string(
-                                        "Expected text frame".into(),
-                                    ));
+                                    bail!("Expected text frame")
                                 }
                             };
 
@@ -211,7 +213,10 @@ struct MomClientImpl {
 
 #[autotrait]
 impl MomClient for MomClientImpl {
-    fn mom_tenant_client(&self, tenant_name: config::TenantDomain) -> Box<dyn MomTenantClient> {
+    fn mom_tenant_client(
+        &self,
+        tenant_name: config_types::TenantDomain,
+    ) -> Box<dyn MomTenantClient> {
         Box::new(MomTenantClientImpl {
             base_path: format!("/tenant/{tenant_name}"),
             hclient: self.hclient.clone(),
@@ -243,7 +248,7 @@ impl MomTenantClientImpl {
     /// Makes a URL for the mom server, for revision/asset uploads
     /// note: path is a relative path, like `objectstore/list-missing` (no leading slash)
     fn prod_mom_url(&self, relative_path: &str) -> (String, Uri) {
-        use config::is_development;
+        use config_types::is_development;
 
         let base_url = if is_development() {
             production_mom_url().to_string()
@@ -410,7 +415,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 .unwrap();
             info!("Uploading video to: {uri}");
 
-            let ws = websock::load()
+            let ws = libwebsock::load()
                 .websocket_connect(uri, {
                     let mut map = HeaderMap::new();
                     map.insert(
@@ -428,7 +433,7 @@ impl MomTenantClient for MomTenantClientImpl {
 }
 
 struct MediaUploaderImpl {
-    ws: Box<dyn websock::WebSocketStream>,
+    ws: Box<dyn libwebsock::WebSocketStream>,
     listener: Box<dyn TranscodingEventListener>,
 }
 
