@@ -17,7 +17,7 @@ pub enum ResourceKind {
 
 impl ResourceKind {
     pub fn as_snake_case(&self) -> String {
-        let debug_str = format!("{:?}", self);
+        let debug_str = format!("{self:?}");
         debug_str
             .chars()
             .enumerate()
