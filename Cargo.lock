@@ -2160,6 +2160,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "home"
+version = "4.0.0"
+dependencies = [
+ "camino",
+ "config-types",
+ "eyre",
+ "fastrand",
+ "http",
+ "libc",
+ "libclap",
+ "libconfig",
+ "libcub",
+ "libdoctor",
+ "liberrhandling",
+ "libmom",
+ "libterm",
+ "libtracingsub",
+ "mom-types",
+ "owo-colors 4.2.0",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "hostname"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3312,31 +3337,6 @@ dependencies = [
  "nerdfonts",
  "tracing",
  "tree-sitter-collection",
-]
-
-[[package]]
-name = "libhome"
-version = "4.0.0"
-dependencies = [
- "camino",
- "config-types",
- "eyre",
- "fastrand",
- "http",
- "libc",
- "libclap",
- "libconfig",
- "libcub",
- "libdoctor",
- "liberrhandling",
- "libmom",
- "libterm",
- "libtracingsub",
- "mom-types",
- "owo-colors 4.2.0",
- "serde_json",
- "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -7685,7 +7685,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4ee928febd44d98f2f459a4a79bd4d928591333a494a10a868418ac1b39cf1f"
 dependencies = [
  "either",
- "home",
+ "home 0.5.11",
  "rustix 0.38.44",
  "winsafe",
 ]
