@@ -28,7 +28,7 @@ ordered-float = "4.6.0"
 tempfile = { version = "3.19.1" }
 fs-err = { version = "3.1.0" }
 num_cpus = { version = "1.16.0" }
-autotrait = "0.1.9"
+autotrait = "0.1.10"
 eyre.workspace = true
 image-types = { version = "0.1.0", path = "../image-types" }
 

@@ -13,5 +13,5 @@ html-escape = { version = "0.2.13" }
 libimage = { version = "0.1.0", path = "../libimage" }
 config-types = { version = "0.1.0", path = "../config-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
-autotrait = "0.1.9"
+autotrait = "0.1.10"
 eyre.workspace = true

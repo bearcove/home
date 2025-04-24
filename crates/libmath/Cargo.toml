@@ -7,4 +7,6 @@ edition = "2024"
 crate-type = ["dylib"]
 
 [dependencies]
+autotrait = "0.1.10"
+eyre.workspace = true
 pulldown-latex = { version = "0.7.1" }

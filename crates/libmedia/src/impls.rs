@@ -1,6 +1,7 @@
-use conflux::{BS, BsForResults, MediaKind};
+use conflux::MediaKind;
+use eyre::eyre;
 use html_escape::encode_double_quoted_attribute;
-use image::ICodec;
+use image_types::ICodec;
 
 use crate::MediaMarkupOpts;
 
@@ -70,10 +71,10 @@ pub fn media_markup(opts: MediaMarkupOpts<'_>) -> eyre::Result<String> {
                 .iter()
                 .find(|v| v.ic == ICodec::JXL && v.max_width.is_none())
                 .ok_or_else(|| {
-                    BS::from_string(format!(
+                    eyre!(
                         "No JXL variant with None width available for media: {:?}",
                         opts.media
-                    ))
+                    )
                 })?;
 
             let (_preferred_density, preferred_route) = jxl_variant

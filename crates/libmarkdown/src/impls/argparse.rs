@@ -312,7 +312,7 @@ pub(crate) fn parse_emphasis_shortcode(input: &str) -> eyre::Result<(String, Dat
 
 #[cfg(test)]
 mod tests {
-    use template::DataValue;
+    use template_types::DataValue;
 
     use super::*;
 

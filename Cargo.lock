@@ -292,9 +292,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "autotrait"
-version = "0.1.9"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca5a3f84817ff8e2288690379d13b53760d22d911ddfb6befabc69dcb03b2fe7"
+checksum = "753cdd3fe9f27ff9bc7d0729899912deefd38594138806ec7181f6d1fff9fa0c"
 dependencies = [
  "unsynn",
 ]
@@ -3431,6 +3431,8 @@ dependencies = [
 name = "libmath"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
+ "eyre",
  "pulldown-latex",
 ]
 

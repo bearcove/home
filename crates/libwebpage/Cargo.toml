@@ -16,5 +16,5 @@ futures-util = { version = "0.3.31" }
 libimage = { version = "0.1.0", path = "../libimage" }
 futures-core = "0.3.31"
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
-autotrait = "0.1.9"
+autotrait = "0.1.10"
 image-types = { version = "0.1.0", path = "../image-types" }
