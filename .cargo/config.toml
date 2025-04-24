@@ -3,10 +3,6 @@ mtime-on-use = true
 binary-dep-depinfo = true
 checksum-freshness = true
 feature-unification = true
-codegen-backend = true
-
-[profile.dev]
-codegen-backend = "cranelift"
 
 [resolver]
 feature-unification = "workspace"
