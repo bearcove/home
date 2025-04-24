@@ -3368,6 +3368,7 @@ version = "0.1.0"
 dependencies = [
  "autotrait",
  "bytes",
+ "eyre",
  "form_urlencoded",
  "futures-core",
  "futures-util",

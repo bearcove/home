@@ -36,6 +36,18 @@ impl std::fmt::Display for Error {
     }
 }
 
+impl From<eyre::Error> for Error {
+    fn from(err: eyre::Error) -> Self {
+        Error::Any(err.to_string())
+    }
+}
+
+impl From<merde::MerdeError<'_>> for Error {
+    fn from(err: merde::MerdeError<'_>) -> Self {
+        Error::Any(err.to_string())
+    }
+}
+
 impl std::error::Error for Error {}
 
 #[derive(Clone)]

@@ -5,7 +5,7 @@ use futures_core::future::BoxFuture;
 use mom_types::{
     DeriveParams, DeriveResponse, ListMissingArgs, ListMissingResponse, MomEvent, TranscodeParams,
     TranscodeResponse,
-    media_types::{HeadersMessage, UploadDoneMessage, WebSocketMessage},
+    media_types::{HeadersMessage, TranscodeEvent, UploadDoneMessage, WebSocketMessage},
 };
 use std::str::FromStr;
 
@@ -272,7 +272,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("auth-bundle/update");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<AuthBundle<'static>>().await
+                Ok(res.json::<AuthBundle<'static>>().await?)
             }
         })
     }
@@ -286,7 +286,9 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("github/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<Option<GitHubCallbackResponse<'static>>>().await
+                Ok(res
+                    .json::<Option<GitHubCallbackResponse<'static>>>()
+                    .await?)
             }
         })
     }
@@ -300,7 +302,9 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("patreon/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<Option<PatreonCallbackResponse<'static>>>().await
+                Ok(res
+                    .json::<Option<PatreonCallbackResponse<'static>>>()
+                    .await?)
             }
         })
     }
@@ -314,7 +318,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("patreon/refresh-credentials");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<PatreonRefreshCredentials<'static>>().await
+                Ok(res.json::<PatreonRefreshCredentials<'static>>().await?)
             }
         })
     }
@@ -328,7 +332,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let (_, uri) = self.prod_mom_url("objectstore/list-missing");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                res.json::<ListMissingResponse>().await
+                Ok(res.json::<ListMissingResponse>().await?)
             }
         })
     }
@@ -383,7 +387,7 @@ impl MomTenantClient for MomTenantClientImpl {
         })
     }
 
-    fn derive(&self, params: DeriveParams) -> BoxFuture<'_, Result<mom::DeriveResponse>> {
+    fn derive(&self, params: DeriveParams) -> BoxFuture<'_, Result<DeriveResponse>> {
         Box::pin(async move {
             let uri = self.config_mom_uri("derive");
             let req = self.hclient.post(uri).with_auth(&self.mcc).json(&params)?;
@@ -433,7 +437,7 @@ struct MediaUploaderImpl {
     listener: Box<dyn TranscodingEventListener>,
 }
 
-#[autotrait]
+#[autotrait(!Sync)]
 impl MediaUploader for MediaUploaderImpl {
     fn with_headers(&mut self, headers: HeadersMessage) -> BoxFuture<'_, Result<()>> {
         Box::pin(async move {
@@ -519,26 +523,22 @@ impl MediaUploader for MediaUploaderImpl {
                                             }
                                         }
                                         _ => {
-                                            return Err(eyre::BS::from_string(
-                                                "Expected binary frame".into(),
-                                            ));
+                                            bail!("Expected binary frame");
                                         }
                                     }
                                 }
                             }
                             WebSocketMessage::Error(err) => {
                                 tracing::error!("Received error from transcoding server: {err}");
-                                return Err(eyre::BS::from_string(err));
+                                bail!("{err}");
                             }
                             _ => {
-                                return Err(eyre::BS::from_string(
-                                    "Unexpected message type".into(),
-                                ));
+                                bail!("Unexpected message type");
                             }
                         }
                     }
                     _ => {
-                        return Err(eyre::BS::from_string("Expected text message".into()));
+                        bail!("Expected text message");
                     }
                 }
             }
