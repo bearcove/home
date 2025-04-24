@@ -1495,11 +1495,11 @@ dependencies = [
 [[package]]
 name = "eyre"
 version = "0.6.12"
-source = "git+https://github.com/bearcove/eyre?branch=release-0.6-rubicon-3.x#48fbf526ff148477e5b72bb06d02c19f4bef25dd"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cd915d99f24784cdc19fd37ef22b97e3ff0ae756c7e492e9fbfe897d61e2aec"
 dependencies = [
  "indenter",
  "once_cell",
- "rubicon",
 ]
 
 [[package]]
@@ -2172,31 +2172,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589533453244b0995c858700322199b2becb13b627df2851f64a2775d024abcf"
 dependencies = [
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "home"
-version = "4.0.0"
-dependencies = [
- "camino",
- "config-types",
- "eyre",
- "fastrand",
- "http",
- "libc",
- "libclap",
- "libconfig",
- "libcub",
- "libdoctor",
- "liberrhandling",
- "libmom",
- "libterm",
- "libtracingsub",
- "mom-types",
- "owo-colors 4.2.0",
- "serde_json",
- "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -3371,6 +3346,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "libhome"
+version = "4.0.0"
+dependencies = [
+ "camino",
+ "config-types",
+ "eyre",
+ "fastrand",
+ "http",
+ "libc",
+ "libclap",
+ "libconfig",
+ "libcub",
+ "libdoctor",
+ "liberrhandling",
+ "libmom",
+ "libterm",
+ "libtracingsub",
+ "mom-types",
+ "owo-colors 4.2.0",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "libhtmlrewrite"
 version = "0.1.0"
 dependencies = [
@@ -3889,7 +3889,8 @@ checksum = "23fb14cb19457329c82206317a5663005a4d404783dc74f4252769b0d5f42856"
 [[package]]
 name = "lock_api"
 version = "0.4.12"
-source = "git+https://github.com/bearcove/parking_lot?branch=rubicon-3.x#a0d85789adc63a0a02c7532ced15e6d545e2fa11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07af8b9cdd281b7915f413fa73f29ebd5d55d0d3f0155584dade1ff18cea1b17"
 dependencies = [
  "autocfg",
  "scopeguard",
@@ -4660,22 +4661,22 @@ dependencies = [
 [[package]]
 name = "parking_lot"
 version = "0.12.3"
-source = "git+https://github.com/bearcove/parking_lot?branch=rubicon-3.x#a0d85789adc63a0a02c7532ced15e6d545e2fa11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1bf18183cf54e8d6059647fc3063646a1801cf30896933ec2311622cc4b9a27"
 dependencies = [
  "lock_api",
  "parking_lot_core",
- "rubicon",
 ]
 
 [[package]]
 name = "parking_lot_core"
 version = "0.9.10"
-source = "git+https://github.com/bearcove/parking_lot?branch=rubicon-3.x#a0d85789adc63a0a02c7532ced15e6d545e2fa11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e401f977ab385c9e4e3ab30627d6f26d00e2c73eef317493c4ec6d468726cf8"
 dependencies = [
  "cfg-if",
  "libc",
  "redox_syscall",
- "rubicon",
  "smallvec",
  "windows-targets 0.52.6",
 ]
@@ -6767,7 +6768,8 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "tokio"
 version = "1.44.1"
-source = "git+https://github.com/bearcove/tokio?rev=b71a2f9a#b71a2f9a25f103809eaca3b249e99bc0fab5409d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f382da615b842244d4b8738c82ed1275e6c5dd90c459a30941cd07080b06c91a"
 dependencies = [
  "backtrace",
  "bytes",
@@ -6775,7 +6777,6 @@ dependencies = [
  "mio 1.0.3",
  "parking_lot",
  "pin-project-lite",
- "rubicon",
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
@@ -6785,7 +6786,8 @@ dependencies = [
 [[package]]
 name = "tokio-macros"
 version = "2.5.0"
-source = "git+https://github.com/bearcove/tokio?rev=b71a2f9a#b71a2f9a25f103809eaca3b249e99bc0fab5409d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6956,11 +6958,11 @@ checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
 [[package]]
 name = "tracing"
 version = "0.1.41"
-source = "git+https://github.com/bearcove/tracing?branch=v0.1.x-rubicon-3.x-redux#5c687c7fc7e847954d3145587a2994f05480c6e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "784e0ac535deb450455cbfa28a6f0df145ea1bb7ae51b821cf5e7927fdcfbdd0"
 dependencies = [
  "log",
  "pin-project-lite",
- "rubicon",
  "tracing-attributes",
  "tracing-core",
 ]
@@ -6968,7 +6970,8 @@ dependencies = [
 [[package]]
 name = "tracing-attributes"
 version = "0.1.28"
-source = "git+https://github.com/bearcove/tracing?branch=v0.1.x-rubicon-3.x-redux#5c687c7fc7e847954d3145587a2994f05480c6e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "395ae124c09f9e6918a2310af6038fba074bcf474ac352496d5910dd59a2226d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6978,17 +6981,18 @@ dependencies = [
 [[package]]
 name = "tracing-core"
 version = "0.1.33"
-source = "git+https://github.com/bearcove/tracing?branch=v0.1.x-rubicon-3.x-redux#5c687c7fc7e847954d3145587a2994f05480c6e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e672c95779cf947c5311f83787af4fa8fffd12fb27e4993211a84bdfd9610f9c"
 dependencies = [
  "once_cell",
- "rubicon",
  "valuable",
 ]
 
 [[package]]
 name = "tracing-log"
 version = "0.2.0"
-source = "git+https://github.com/bearcove/tracing?branch=v0.1.x-rubicon-3.x-redux#5c687c7fc7e847954d3145587a2994f05480c6e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
 dependencies = [
  "log",
  "once_cell",
@@ -6998,7 +7002,8 @@ dependencies = [
 [[package]]
 name = "tracing-subscriber"
 version = "0.3.19"
-source = "git+https://github.com/bearcove/tracing?branch=v0.1.x-rubicon-3.x-redux#5c687c7fc7e847954d3145587a2994f05480c6e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8189decb5ac0fa7bc8b96b7cb9b2701d60d48805aca84a238004d665fcc4008"
 dependencies = [
  "nu-ansi-term",
  "sharded-slab",
@@ -7802,7 +7807,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4ee928febd44d98f2f459a4a79bd4d928591333a494a10a868418ac1b39cf1f"
 dependencies = [
  "either",
- "home 0.5.11",
+ "home",
  "rustix 0.38.44",
  "winsafe",
 ]

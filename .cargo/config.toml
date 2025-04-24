@@ -8,70 +8,9 @@ feature-unification = true
 feature-unification = "workspace"
 
 [target.'cfg(any())']
-rustflags = [
-    # generic flags
-    "-Cprefer-dynamic",
-]
-
-[target.'cfg(any(target_os = "linux"))']
-rustflags = [
-    # Linux-specific flags
-    "-Cprefer-dynamic",
-    "-Clink-arg=-Wl,-rpath,$ORIGIN/../libexec,-rpath,$ORIGIN/",
-]
-
-[target.'cfg(any(target_os = "macos"))']
-rustflags = [
-    # macOS-specific flags
-    "-Cprefer-dynamic",
-    "-Clink-arg=-undefined",
-    "-Clink-arg=dynamic_lookup",
-    "-Clink-arg=-Wl,-rpath,@executable_path/../libexec,-rpath,@executable_path/",
-]
+rustflags = ["-Cprefer-dynamic"]
 
 [patch.crates-io]
-
-### GIT PATCHES
-
-tracing-subscriber = { git = "https://github.com/bearcove/tracing", branch = "v0.1.x-rubicon-3.x-redux" }
-tracing-core = { git = "https://github.com/bearcove/tracing", branch = "v0.1.x-rubicon-3.x-redux" }
-tracing-log = { git = "https://github.com/bearcove/tracing", branch = "v0.1.x-rubicon-3.x-redux" }
-tracing = { git = "https://github.com/bearcove/tracing", branch = "v0.1.x-rubicon-3.x-redux" }
-
-# branch = "rubicon-3.x-1.44"
-tokio = { git = "https://github.com/bearcove/tokio", rev = "b71a2f9a" }
-
-parking_lot = { git = "https://github.com/bearcove/parking_lot", branch = "rubicon-3.x" }
-parking_lot_core = { git = "https://github.com/bearcove/parking_lot", branch = "rubicon-3.x" }
-lock_api = { git = "https://github.com/bearcove/parking_lot", branch = "rubicon-3.x" }
-
-eyre = { git = "https://github.com/bearcove/eyre", branch = "release-0.6-rubicon-3.x" }
-
-# rubicon = { git = "https://github.com/bearcove/rubicon", branch = "not-dylib" }
-
-## cf. https://github.com/time-rs/time/pull/700
-# time = { git = "https://github.com/time-rs/time", rev = "2e68a36abc0d8cdc12638c0ed47b80cc9c07b7ab" }
-
-### LOCAL PATCHES
-
-# tracing-subscriber = { path = "../tracing/tracing-subscriber" }
-# tracing-core = { path = "../tracing/tracing-core" }
-# tracing-log = { path = "../tracing/tracing-log" }
-# tracing = { path = "../tracing/tracing" }
-
-# tokio = { path = "../tokio/tokio" }
-
-# parking_lot = { path = "../parking_lot" }
-# parking_lot_core = { path = "../parking_lot/core" }
-# lock_api = { path = "../parking_lot/lock_api" }
-
-# rubicon = { path = "../rubicon/rubicon" }
-
-# merde = { path = "../merde/merde" }
-
-# b-x = { path = "../loona/crates/b-x" }
-
-# minijinja = { path = "../minijinja/minijinja" }
 
 # facet = { path = "../facet/facet" }
 # facet-core = { path = "../facet/facet-core" }
