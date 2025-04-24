@@ -18,7 +18,7 @@ use axum::{
 };
 use camino::Utf8PathBuf;
 use closest::{GetOrHelp, ResourceKind};
-use config::is_development;
+use config_types::is_development;
 use conflux::{CacheBuster, InputPathRef};
 use content_type::ContentType;
 use cub_types::{CubReq, CubTenant};
@@ -26,7 +26,7 @@ use http::{
     StatusCode,
     header::{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS},
 };
-use objectstore::ObjectStoreKey;
+use objectstore_types::ObjectStoreKey;
 
 pub(crate) fn web_routes() -> Router {
     Router::new()

@@ -1,10 +1,10 @@
 use axum::http::StatusCode;
 use conflux::InputPathRef;
 use cub_types::{CubReq, CubTenant as _};
+use libwebpage::WebpageInfo;
 use rand::seq::SliceRandom as _;
 use std::collections::{HashMap, HashSet};
 use std::sync::{LazyLock, Mutex};
-use webpage::WebpageInfo;
 
 use crate::impls::cub_req::CubReqImpl;
 use crate::impls::global_state;
@@ -142,7 +142,7 @@ pub(crate) async fn serve_link_preview(
     }
 
     tracing::info!("Fetching webpage info for {href}");
-    let webpage = webpage::load();
+    let webpage = libwebpage::load();
 
     let info_future = webpage.webpage_info(href.clone());
     let info = match info_future.await {

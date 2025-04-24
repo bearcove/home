@@ -15,13 +15,13 @@ use tower::{Layer, Service};
 
 #[derive(Clone)]
 pub(crate) struct CompressionLayer {
-    compress: &'static dyn compress::Mod,
+    compress: &'static dyn libcompress::Mod,
 }
 
 impl Default for CompressionLayer {
     fn default() -> Self {
         Self {
-            compress: compress::load(),
+            compress: libcompress::load(),
         }
     }
 }
@@ -40,7 +40,7 @@ impl<S> Layer<S> for CompressionLayer {
 #[derive(Clone)]
 pub(crate) struct CompressionService<S> {
     inner: S,
-    compress: &'static dyn compress::Mod,
+    compress: &'static dyn libcompress::Mod,
 }
 
 impl<S> Service<Request<Body>> for CompressionService<S>
@@ -78,7 +78,7 @@ where
 struct CompressContext {
     res: Response<Body>,
     accept_encoding: Option<HeaderValue>,
-    compress: &'static dyn compress::Mod,
+    compress: &'static dyn libcompress::Mod,
 }
 
 impl CompressContext {

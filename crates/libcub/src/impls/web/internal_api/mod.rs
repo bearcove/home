@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     routing::{get, post},
 };
-use config::is_development;
+use config_types::is_development;
 
 use crate::impls::reply::{IntoLegacyReply, LegacyHttpError, LegacyReply};
 
@@ -67,7 +67,7 @@ async fn livereload_js() -> LegacyReply {
 }
 
 async fn ansi_css() -> LegacyReply {
-    let code = term::load().css();
+    let code = libterm::load().css();
 
     Ok(http::Response::builder()
         .status(StatusCode::OK)

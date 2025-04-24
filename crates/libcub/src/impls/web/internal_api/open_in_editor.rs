@@ -2,7 +2,7 @@ use crate::impls::{
     cub_req::CubReqImpl,
     reply::{IntoLegacyReply, LegacyHttpError, LegacyReply},
 };
-use config::is_development;
+use config_types::is_development;
 use conflux::{InputPath, PathMappings};
 use cub_types::CubReq;
 use eyre::Context as _;

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use config::{Environment, TenantDomain, TenantInfo, WebConfig};
+use config_types::{Environment, TenantDomain, TenantInfo, WebConfig};
 use http::Uri;
 use regex;
 use tokio::io::{AsyncBufReadExt, BufReader};

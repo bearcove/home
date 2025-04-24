@@ -11,7 +11,7 @@ use axum::{
     http::{StatusCode, header, request::Parts},
     response::IntoResponse as _,
 };
-use config::{Environment, WebConfig};
+use config_types::{Environment, WebConfig};
 use conflux::{AccessOverride, CacheBuster, InputPathRef, LoadedPage, Route, Viewer};
 use content_type::ContentType;
 use cub_types::{CubReq, CubTenant};
@@ -19,11 +19,11 @@ use eyre::Result;
 use futures_core::future::BoxFuture;
 use hattip::{HBody, HError, HReply};
 use http::{Uri, request};
+use libwebsock::WebSocketStream;
 use std::{sync::Arc, time::Instant};
-use template::{DataObject, DataValue, RenderTemplateArgs};
+use template_types::{DataObject, DataValue, RenderTemplateArgs};
 use tower_cookies::{Cookies, PrivateCookies};
 use url::form_urlencoded;
-use websock::WebSocketStream;
 
 use super::{
     CubTenantImpl, credentials::authbundle_load_from_cookies, global_state::global_state,
@@ -382,7 +382,7 @@ impl CubReq for CubReqImpl {
         })
     }
 
-    fn reddit_secrets(&self) -> eyre::Result<&config::RedditSecrets> {
+    fn reddit_secrets(&self) -> eyre::Result<&config_types::RedditSecrets> {
         global_state()
             .config
             .reddit_secrets
@@ -395,61 +395,63 @@ impl CubReq for CubReqImpl {
 struct WsWrapper(axum::extract::ws::WebSocket);
 
 impl WebSocketStream for WsWrapper {
-    fn send(&mut self, frame: websock::Frame) -> BoxFuture<'_, Result<(), websock::Error>> {
+    fn send(&mut self, frame: libwebsock::Frame) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             use axum::extract::ws;
             let msg = match frame {
-                websock::Frame::Text(text) => ws::Message::Text(text),
-                websock::Frame::Binary(bytes) => ws::Message::Binary(bytes),
-                websock::Frame::Ping(data) => ws::Message::Ping(data),
-                websock::Frame::Pong(data) => ws::Message::Pong(data),
-                websock::Frame::Close(frame) => ws::Message::Close(frame.map(|f| ws::CloseFrame {
-                    code: f.code,
-                    reason: f.reason.into(),
-                })),
+                libwebsock::Frame::Text(text) => ws::Message::Text(text),
+                libwebsock::Frame::Binary(bytes) => ws::Message::Binary(bytes),
+                libwebsock::Frame::Ping(data) => ws::Message::Ping(data),
+                libwebsock::Frame::Pong(data) => ws::Message::Pong(data),
+                libwebsock::Frame::Close(frame) => {
+                    ws::Message::Close(frame.map(|f| ws::CloseFrame {
+                        code: f.code,
+                        reason: f.reason.into(),
+                    }))
+                }
             };
 
             self.0
                 .send(msg)
                 .await
-                .map_err(|e| websock::Error::Any(e.to_string()))?;
+                .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
 
             Ok(())
         })
     }
 
-    fn send_binary(&mut self, msg: Vec<u8>) -> BoxFuture<'_, Result<(), websock::Error>> {
+    fn send_binary(&mut self, msg: Vec<u8>) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             self.0
                 .send(axum::extract::ws::Message::Binary(msg))
                 .await
-                .map_err(|e| websock::Error::Any(e.to_string()))?;
+                .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
             Ok(())
         })
     }
 
-    fn send_text(&mut self, msg: String) -> BoxFuture<'_, Result<(), websock::Error>> {
+    fn send_text(&mut self, msg: String) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             self.0
                 .send(axum::extract::ws::Message::Text(msg))
                 .await
-                .map_err(|e| websock::Error::Any(e.to_string()))?;
+                .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
             Ok(())
         })
     }
 
-    fn receive(&mut self) -> BoxFuture<'_, Option<Result<websock::Frame, websock::Error>>> {
+    fn receive(&mut self) -> BoxFuture<'_, Option<Result<libwebsock::Frame, libwebsock::Error>>> {
         Box::pin(async move {
             use axum::extract::ws;
             let res = match self.0.recv().await? {
                 Ok(msg) => {
                     let frame = match msg {
-                        ws::Message::Text(text) => websock::Frame::Text(text),
-                        ws::Message::Binary(bytes) => websock::Frame::Binary(bytes),
-                        ws::Message::Ping(bytes) => websock::Frame::Ping(bytes),
-                        ws::Message::Pong(bytes) => websock::Frame::Pong(bytes),
+                        ws::Message::Text(text) => libwebsock::Frame::Text(text),
+                        ws::Message::Binary(bytes) => libwebsock::Frame::Binary(bytes),
+                        ws::Message::Ping(bytes) => libwebsock::Frame::Ping(bytes),
+                        ws::Message::Pong(bytes) => libwebsock::Frame::Pong(bytes),
                         ws::Message::Close(frame) => {
-                            websock::Frame::Close(frame.map(|f| websock::CloseFrame {
+                            libwebsock::Frame::Close(frame.map(|f| libwebsock::CloseFrame {
                                 code: f.code,
                                 reason: f.reason.into(),
                             }))
@@ -457,7 +459,7 @@ impl WebSocketStream for WsWrapper {
                     };
                     Ok(frame)
                 }
-                Err(e) => Err(websock::Error::Any(e.to_string())),
+                Err(e) => Err(libwebsock::Error::Any(e.to_string())),
             };
             Some(res)
         })

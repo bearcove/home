@@ -1,14 +1,15 @@
-use config::{
+use config_types::{
     CubConfig, TenantConfig, TenantDomain, TenantInfo, WebConfig, is_development, is_production,
 };
 use conflux::{RevisionError, RevisionId};
 use cub_types::{CubRevisionState, CubTenant, IndexedRevision};
 use hattip::prelude::BoxFuture;
-use mom::{GlobalStateView, Sponsors};
-use momclient::{MomClient, MomTenantClient};
-use objectstore::ObjectStore;
+use libmomclient::{MomClient, MomTenantClient};
+use libobjectstore::ObjectStore;
+use mom_types::{GlobalStateView, Sponsors};
 use parking_lot::RwLock;
 use std::{collections::HashMap, sync::Arc};
+use template_types::TemplateCollection;
 use tokio::sync::broadcast;
 use tower_cookies::Key;
 
@@ -103,7 +104,7 @@ pub struct CubTenantImpl {
     // FIXME: should not be static — that means we leak it
     pub cookie_key: &'static Key,
     pub sponsors: RwLock<Arc<Sponsors<'static>>>,
-    pub ti: Arc<config::TenantInfo>,
+    pub ti: Arc<TenantInfo>,
     pub store: Arc<dyn ObjectStore>,
     pub bx_rev: broadcast::Sender<RevisionBroadcastEvent>,
     pub rev_state: RwLock<CubRevisionState>,
@@ -128,7 +129,7 @@ impl CubTenant for CubTenantImpl {
             let info = self.ti.clone();
             tokio::task::spawn(async move {
                 let before_save = std::time::Instant::now();
-                revision::load()
+                librevision::load()
                     .save_pak_to_disk_as_active(&pak, &info)
                     .await
                     .unwrap();
@@ -166,8 +167,9 @@ impl CubTenant for CubTenantImpl {
 
     /// Broadcast an error
     fn broadcast_error(&self, e: RevisionError) {
-        let err_for_clients =
-            conflux::RevisionError(term::load().format_ansi(&e.0, term::FormatAnsiStyle::Html));
+        let err_for_clients = conflux::RevisionError(
+            libterm::load().format_ansi(&e.0, libterm::FormatAnsiStyle::Html),
+        );
 
         match self
             .bx_rev
@@ -213,12 +215,12 @@ impl CubTenant for CubTenantImpl {
     }
 
     /// Get search index
-    fn index(&self) -> Result<Arc<dyn search::Index>, conflux::RevisionError> {
+    fn index(&self) -> Result<Arc<dyn libsearch::Index>, conflux::RevisionError> {
         self.revstate().index().map(Arc::clone)
     }
 
     /// Get templates
-    fn templates(&self) -> Result<Arc<dyn template::TemplateCollection>, conflux::RevisionError> {
+    fn templates(&self) -> Result<Arc<dyn TemplateCollection>, conflux::RevisionError> {
         self.revstate().templates().map(Arc::clone)
     }
 }

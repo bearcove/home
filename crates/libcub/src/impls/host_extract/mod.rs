@@ -4,7 +4,7 @@ use axum::http::{
 };
 
 use super::{DomainResolution, global_state};
-use config::TenantDomain;
+use config_types::TenantDomain;
 
 const X_FORWARDED_HOST_HEADER_KEY: &str = "X-Forwarded-Host";
 

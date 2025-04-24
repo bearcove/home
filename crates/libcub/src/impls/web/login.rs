@@ -6,6 +6,7 @@ use crate::impls::{
 use axum::{Form, Router, response::Redirect, routing::get};
 use cub_types::{CubReq, CubTenant};
 use libgithub::GitHubLoginPurpose;
+use libpatreon::PatreonCallbackArgs;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies};
@@ -62,7 +63,7 @@ async fn serve_login_with_patreon(
     tracing::info!("Initiating login with Patreon");
     set_return_to_cookie(&tr.cookies, &params);
 
-    let patreon = patreon::load();
+    let patreon = libpatreon::load();
     let location = patreon.make_login_url(tr.web(), tr.tenant.tc())?;
     Redirect::to(&location).into_legacy_reply()
 }
@@ -112,7 +113,7 @@ async fn serve_patreon_callback_inner(
     tr: &CubReqImpl,
 ) -> eyre::Result<Option<AuthBundle<'static>>> {
     let tcli = tr.tenant.tcli();
-    let callback_args = patreon::PatreonCallbackArgs {
+    let callback_args = PatreonCallbackArgs {
         raw_query: tr.raw_query().to_owned().into(),
     };
     let res = tcli.patreon_callback(&callback_args).await?;

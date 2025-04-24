@@ -1,10 +1,15 @@
+use autotrait::autotrait;
 use tokio::net::TcpListener;
 
-use config::CubConfig;
+use config_types::CubConfig;
 use futures_core::future::BoxFuture;
 
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    static INSTANCE: ModImpl = ModImpl;
+    &INSTANCE
+}
 
 pub enum OpenBehavior {
     OpenOnStart,

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use config::{WebConfig, is_development};
+use config_types::{WebConfig, is_development};
 use conflux::{Pak, PathMappings};
 use cub_types::CubTenant;
-use mom::MomEvent;
+use mom_types::{MomEvent, Sponsors, TenantEventPayload};
 use tokio::sync::mpsc;
 
 use super::{global_state, types::CubTenantImpl};
@@ -46,20 +46,20 @@ pub(crate) fn spawn_mom_event_handler(
 
 async fn handle_tenant_event(
     ts: Arc<CubTenantImpl>,
-    payload: mom::TenantEventPayload<'static>,
+    payload: mom_types::TenantEventPayload<'static>,
     web: WebConfig,
 ) {
     match payload {
-        mom::TenantEventPayload::SponsorsUpdated(sponsors) => {
+        TenantEventPayload::SponsorsUpdated(sponsors) => {
             handle_sponsors_updated(ts, sponsors);
         }
-        mom::TenantEventPayload::RevisionChanged(pak) => {
+        TenantEventPayload::RevisionChanged(pak) => {
             handle_revision_changed(ts, pak, web).await;
         }
     }
 }
 
-fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: mom::Sponsors<'static>) {
+fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: Sponsors<'static>) {
     *ts.sponsors.write() = Arc::new(sponsors);
 }
 
@@ -72,7 +72,7 @@ async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak<'static>>,
     let rev = {
         let prev_rev = ts.rev().ok();
         let mappings = PathMappings::from_ti(ts.ti());
-        let mod_revision = revision::load();
+        let mod_revision = librevision::load();
         match mod_revision
             .load_pak(
                 *pak,

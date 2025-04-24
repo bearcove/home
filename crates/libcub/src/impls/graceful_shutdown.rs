@@ -1,4 +1,4 @@
-use config::Environment;
+use config_types::Environment;
 use tokio::signal::unix::SignalKind;
 use tracing::{error, warn};
 

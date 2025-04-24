@@ -1,4 +1,4 @@
-use config::is_production;
+use config_types::is_production;
 use merde::IntoStatic as _;
 use tracing::warn;
 

@@ -1,19 +1,18 @@
 use axum::{
     body::Body,
-    http::{header, HeaderName, StatusCode},
+    http::{HeaderName, StatusCode, header},
     response::{IntoResponse, Response},
 };
-use config::is_production;
+use config_types::is_production;
 use conflux::RevisionError;
 use content_type::ContentType;
-use errhandling;
 use eyre::Report;
 use http::header::CONTENT_TYPE;
+use libterm::FormatAnsiStyle;
 use merde::{DynSerialize, IntoStatic};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::borrow::Cow;
-use term::FormatAnsiStyle;
 use tracing::error;
 use ulid::Ulid;
 
@@ -88,7 +87,7 @@ impl LegacyHttpError {
             }
         }
 
-        let maybe_bt = errhandling::load().format_backtrace_to_terminal_colors(&err);
+        let maybe_bt = liberrhandling::load().format_backtrace_to_terminal_colors(&err);
 
         let mut trace_content = {
             let mut err_string = String::new();
@@ -109,7 +108,7 @@ impl LegacyHttpError {
                 }
             }
 
-            let term = term::load();
+            let term = libterm::load();
             let mut err_string = term.format_ansi(&err_string, FormatAnsiStyle::Html);
 
             // Replace markdown-style links with HTML anchor tags
@@ -145,7 +144,7 @@ impl LegacyHttpError {
             "😩", "😭", "😢", "😖", "😣", "😞", "😓", "😔", "☹️", "😧", "🥺", "🤕",
         ];
         let sadmoji = *sadmojis.choose(&mut thread_rng()).unwrap();
-        let color_css = term::load().css();
+        let color_css = libterm::load().css();
 
         let body = format!(
             r#"
@@ -277,7 +276,9 @@ impl_from!(axum::http::Error);
 impl_from!(axum::http::header::InvalidHeaderValue);
 impl_from!(axum::http::uri::InvalidUri);
 impl_from!(url::ParseError);
-impl_from!(objectstore::Error);
+impl_from!(libobjectstore::Error);
+impl_from!(std::str::Utf8Error);
+impl_from!(std::string::FromUtf8Error);
 
 impl<'s> From<merde::MerdeError<'s>> for LegacyHttpError {
     fn from(err: merde::MerdeError<'s>) -> Self {

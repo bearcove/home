@@ -1,13 +1,14 @@
 use crate::impls::{CubTenantImpl, cub_req::CubReqImpl, global_state};
 use axum::extract::ws;
 use camino::Utf8PathBuf;
-use config::{TenantDomain, WebConfig};
+use config_types::{TenantDomain, WebConfig};
 use conflux::{InputPath, Pak, PathMappings};
 use cub_types::{CubTenant, PathMetadata};
-use momclient::MomTenantClient;
-use revision::{InputEvent, RevisionKind, RevisionSpec};
+use libmomclient::MomTenantClient;
+use librevision::{InputEvent, RevisionKind, RevisionSpec};
+use libterm::FormatAnsiStyle;
+use mom_types::ListMissingArgs;
 use std::{collections::VecDeque, sync::Arc, time::Instant};
-use term::FormatAnsiStyle;
 use tokio::io::AsyncBufReadExt;
 
 pub(super) async fn serve(
@@ -267,7 +268,7 @@ async fn run_vite_build_and_update_revision(
         .current_dir(&base_dir);
 
     // Get the term module to use for ANSI->HTML conversion
-    let term_mod = term::load();
+    let term_mod = libterm::load();
 
     // Start the command
     let mut child = command
@@ -420,7 +421,7 @@ async fn run_vite_build_and_update_revision(
     let spec = RevisionSpec { kind, mappings };
 
     // Create the new revision
-    let revision_result = revision::load().make_revision(ti, spec, web).await;
+    let revision_result = librevision::load().make_revision(ti, spec, web).await;
     let indexed_rev = match revision_result {
         Ok(rev) => rev,
         Err(e) => {
@@ -478,7 +479,7 @@ async fn handle_deploy_socket_inner(
 
     tracing::info!("[{tenant_name}] Listing missing assets...");
     let missing_assets = tcli
-        .objectstore_list_missing(&mom::ListMissingArgs {
+        .objectstore_list_missing(&ListMissingArgs {
             objects_to_query: rev
                 .pak
                 .inputs
@@ -553,7 +554,7 @@ async fn handle_deploy_socket_inner(
                 };
                 let read_time = before_read.elapsed();
 
-                let expected_hash = revision::load().input_hash_from_contents(&payload);
+                let expected_hash = librevision::load().input_hash_from_contents(&payload);
                 if expected_hash != input.hash {
                     return Err(eyre::eyre!(
                         "Hash mismatch for input {} (did things change on disk while we were deploying?): expected {:?}, got {:?}",
@@ -628,7 +629,7 @@ async fn handle_deploy_socket_inner(
         ));
     }
 
-    let mod_revision = revision::load();
+    let mod_revision = librevision::load();
     let revpak = mod_revision.serialize_pak(&rev.pak);
     let revpak_size = revpak.len();
     let formatted_size = bytesize::to_string(revpak_size as u64, true);

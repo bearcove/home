@@ -2,15 +2,15 @@ use std::sync::Arc;
 
 use axum::extract::ws;
 use camino::{Utf8Path, Utf8PathBuf};
-use config::is_development;
+use config_types::is_development;
 use conflux::{InputPath, MediaProps, PathMappings};
 use cub_types::CubTenant;
 use eyre::eyre;
 use futures_core::future::BoxFuture;
-use image::ICodec;
+use image_types::ICodec;
+use libmomclient::TranscodingEventListener;
 use merde::IntoStatic;
-use mom::media_types::{self, TargetFormat, TranscodingProgress};
-use momclient::TranscodingEventListener;
+use mom_types::media_types::{self, TargetFormat, TranscodingProgress};
 use tempfile::TempDir;
 use tokio::{
     fs,
@@ -282,7 +282,7 @@ async fn handle_ws_inner(
             };
             json_to_socket(socket, &WebSocketMessage::MediaIdentified(props)).await?;
 
-            let image = image::load();
+            let image = libimage::load();
             let input_bytes = tokio::fs::read(&input_path).await?;
             let output_bytes = image.transcode(&input_bytes, src_ic, ICodec::JXL, None)?;
             tokio::fs::write(&temp_output_path, output_bytes).await?;
@@ -296,7 +296,7 @@ async fn handle_ws_inner(
                 fn on_transcoding_event(
                     &self,
                     ev: media_types::TranscodeEvent,
-                ) -> BoxFuture<'_, momclient::Result<()>> {
+                ) -> BoxFuture<'_, libmomclient::Result<()>> {
                     Box::pin(async move {
                         _ = self.tx.send(ev).await;
                         Ok(())
@@ -359,12 +359,11 @@ async fn handle_ws_inner(
                     file: tokio::fs::File,
                 }
 
-                impl momclient::ChunkReceiver for ChunkReceiver {
+                impl libmomclient::ChunkReceiver for ChunkReceiver {
                     fn on_chunk(
                         &mut self,
                         chunk: Vec<u8>,
-                    ) -> futures_core::future::BoxFuture<'_, momclient::Result<()>>
-                    {
+                    ) -> futures_core::future::BoxFuture<'_, eyre::Result<()>> {
                         Box::pin(async move {
                             tracing::info!("Received chunk of size {} bytes", chunk.len());
                             self.file.write_all(&chunk).await?;

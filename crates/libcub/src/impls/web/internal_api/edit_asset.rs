@@ -1,4 +1,4 @@
-use config::is_development;
+use config_types::is_development;
 use conflux::{InputPath, PathMappings};
 use eyre::Context as _;
 use http::StatusCode;

@@ -72,3 +72,9 @@ libconfig = { version = "0.1.0", path = "../libconfig" }
 open = { version = "5.3.2" }
 libgithub = { version = "0.1.0", path = "../libgithub" }
 libcdn = { version = "0.1.0", path = "../libcdn" }
+config-types = { version = "0.1.0", path = "../config-types" }
+autotrait = "0.1.12"
+template-types = { version = "0.1.0", path = "../template-types" }
+mom-types = { version = "0.1.0", path = "../mom-types" }
+image-types = { version = "0.1.0", path = "../image-types" }
+objectstore-types = { version = "0.1.0", path = "../objectstore-types" }

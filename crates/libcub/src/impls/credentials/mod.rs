@@ -1,7 +1,7 @@
-use config::Environment;
+use config_types::Environment;
 use http::Uri;
+use libpatreon::{PatreonRefreshCredentials, PatreonRefreshCredentialsArgs};
 use merde::IntoStatic;
-use patreon::{PatreonRefreshCredentials, PatreonRefreshCredentialsArgs};
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies, cookie::SameSite};
 use tracing::{debug, warn};

@@ -1,5 +1,5 @@
 use axum::response::IntoResponse as _;
-use config::is_development;
+use config_types::is_development;
 use http::{StatusCode, Uri};
 use std::collections::HashMap;
 

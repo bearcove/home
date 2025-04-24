@@ -6,7 +6,7 @@ use hattip::{HBody, HError, HReply};
 use libc as _;
 
 use axum::{Router, body::Body, extract::DefaultBodyLimit};
-use config::{
+use config_types::{
     CubConfig, Environment, MOM_DEV_API_KEY, MomApiKey, TenantDomain, TenantInfo, WebConfig,
     is_development, is_production,
 };
@@ -16,13 +16,13 @@ use layers::{
     compression::CompressionLayer, domain_redirect::DomainRedirectLayer,
     strip_slash_if_404::StripSlashIf404Layer,
 };
-use mom::{MomEvent, Sponsors};
+use libmomclient::{MomClient, MomClientConfig, MomEventListener};
+use librevision::{RevisionKind, RevisionSpec};
 use mom_event_handler::spawn_mom_event_handler;
-use momclient::{MomClient, MomClientConfig, MomEventListener};
+use mom_types::{MomEvent, Sponsors};
 use node_metadata::{NodeMetadata, load_node_metadata};
 use parking_lot::RwLock;
 use reply::{LegacyHttpError, LegacyReply};
-use revision::{RevisionKind, RevisionSpec};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::{
@@ -83,7 +83,7 @@ pub(crate) async fn serve(
                 Ok(key) => key.into(),
                 Err(_) => MOM_DEV_API_KEY.to_owned(),
             };
-            let client = momclient::load()
+            let client = libmomclient::load()
                 .client(MomClientConfig {
                     base_url,
                     api_key: Some(api_key),
@@ -153,7 +153,7 @@ impl MomEventListener for MomEventRelay {
 async fn setup_mom_client(
     mcc: MomClientConfig,
 ) -> eyre::Result<(Arc<dyn MomClient>, mpsc::Receiver<MomEvent<'static>>)> {
-    let mod_momclient = momclient::load();
+    let mod_momclient = libmomclient::load();
     let mom_client = mod_momclient
         .client(mcc.clone())
         .await
@@ -178,7 +178,7 @@ async fn process_mom_good_morning(
     HashMap<TenantDomain, CubRevisionState>,
     HashMap<TenantDomain, Sponsors<'static>>,
 )> {
-    let mod_revision = revision::load();
+    let mod_revision = librevision::load();
     let mut revs_per_ts: HashMap<TenantDomain, CubRevisionState> = Default::default();
     let mut sponsors_per_ts: HashMap<TenantDomain, Sponsors<'static>> = Default::default();
 
@@ -212,7 +212,7 @@ async fn process_mom_good_morning(
                 cc.tenant_data_dir
                     .as_ref()
                     .expect("tenant data dir should be set")
-                    .join(tn.to_string())
+                    .join(tn.as_str())
             },
             tc: tis.tc,
         });
@@ -401,7 +401,9 @@ async fn start_watching_revisions() -> eyre::Result<()> {
             .collect::<Vec<_>>()
     };
     for ts in tenant_arcs {
-        revision::load().start_watching(ts.clone(), gs.web).await?;
+        librevision::load()
+            .start_watching(ts.clone(), gs.web)
+            .await?;
     }
     Ok(())
 }
