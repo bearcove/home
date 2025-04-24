@@ -1,0 +1,20 @@
+[package]
+name = "config-types"
+edition.workspace = true
+rust-version.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+camino = { version = "1.1.9", features = ["serde1"] }
+facet.workspace = true
+merde.workspace = true
+plait = { version = "0.1.0", path = "../plait" }
+serde.workspace = true

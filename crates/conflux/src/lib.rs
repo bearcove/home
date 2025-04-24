@@ -12,9 +12,10 @@ use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
 use content_type::ContentType;
 use credentials::UserInfo;
-use image::{ICodec, IntrinsicPixels};
+use image_types::{ICodec, IntrinsicPixels};
+use libobjectstore::input_key;
 use merde::{CowStr, time::Rfc3339};
-use objectstore::{ObjectStoreKey, input_key};
+use objectstore_types::ObjectStoreKey;
 pub use time::OffsetDateTime;
 
 use closest::{GetOrHelp, ResourceKind};

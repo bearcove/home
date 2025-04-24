@@ -829,6 +829,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "config-types"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "facet",
+ "merde",
+ "plait",
+ "serde",
+]
+
+[[package]]
 name = "conflux"
 version = "0.1.0"
 dependencies = [
@@ -838,6 +849,7 @@ dependencies = [
  "content-type",
  "credentials",
  "facet",
+ "image-types",
  "libconfig",
  "libimage",
  "libobjectstore",
@@ -2560,6 +2572,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "image-types"
+version = "0.1.0"
+dependencies = [
+ "content-type",
+ "eyre",
+ "merde",
+ "ordered-float 5.0.0",
+]
+
+[[package]]
 name = "image-webp"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3347,11 +3369,12 @@ dependencies = [
  "eyre",
  "fs-err 3.1.0",
  "image",
+ "image-types",
  "jpegxl-rs",
  "jxl-oxide",
  "merde",
  "num_cpus",
- "ordered-float",
+ "ordered-float 4.6.0",
  "ravif",
  "rgb",
  "tempfile",
@@ -3998,7 +4021,7 @@ dependencies = [
  "camino",
  "compact_bytes",
  "compact_str",
- "ordered-float",
+ "ordered-float 4.6.0",
  "rusqlite",
  "serde",
  "time",
@@ -4367,6 +4390,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "objectstore-types"
+version = "0.1.0"
+dependencies = [
+ "facet",
+ "merde",
+ "plait",
+ "rusqlite",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4444,6 +4477,15 @@ name = "ordered-float"
 version = "4.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bb71e1b3fa6ca1c61f383464aaf2bb0e2f8e772a1f01d486832464de363b951"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "ordered-float"
+version = "5.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2c1f9f56e534ac6a9b8a4600bdf0f530fb393b5f393e7b4d03489c3cf0c3f01"
 dependencies = [
  "num-traits",
 ]

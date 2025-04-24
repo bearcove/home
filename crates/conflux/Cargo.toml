@@ -21,6 +21,7 @@ serde = { version = "1.0" }
 rusqlite = { workspace = true }
 libobjectstore = { path = "../libobjectstore" }
 facet.workspace = true
+image-types = { version = "0.1.0", path = "../image-types" }
 
 [features]
 default = []

@@ -12,16 +12,6 @@ use object_store::aws::AmazonS3Builder;
 use object_store::path::Path;
 use std::fmt;
 
-plait::plait! {
-    with crates {
-        merde
-        rusqlite
-    }
-
-    /// The key of an object in the object store
-    pub struct ObjectStoreKey => &ObjectStoreKeyRef;
-}
-
 /// Options for a put request
 #[derive(Default, Clone)]
 pub struct PutOptions {
@@ -549,7 +539,7 @@ impl fmt::Display for LayeredNotFound {
 
 struct GetResultWrapper(object_store::GetResult);
 
-#[autotrait(!Send)]
+#[autotrait(!Sync)]
 impl GetResult for GetResultWrapper {
     fn size(&self) -> usize {
         self.0.meta.size
