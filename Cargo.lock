@@ -3347,6 +3347,7 @@ version = "0.1.0"
 dependencies = [
  "autotrait",
  "dumbcache",
+ "eyre",
  "highlight-types",
  "nerdfonts",
  "tracing",

@@ -23,6 +23,7 @@ pub struct ProcessMarkdownArgs<'a> {
 }
 
 /// The result of processing markdown
+#[derive(Default)]
 pub struct ProcessMarkdownResult {
     // the YAML frontmatter, to be parsed later
     pub frontmatter: Option<String>,

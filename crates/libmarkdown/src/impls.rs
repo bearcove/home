@@ -1260,19 +1260,20 @@ mod tests {
     use crate::{Mod, ModImpl};
 
     use super::*;
-    use config::{Environment, TenantConfig, TenantInfo, WebConfig};
+    use config_types::{Environment, TenantConfig, TenantInfo, WebConfig};
     use conflux::{MarkdownRef, RevisionView};
+    use highlight_types::HighlightCodeParams;
     use indoc::indoc;
     use template_types::{RenderShortcodeResult, RenderTemplateArgs, TemplateCollection};
 
     struct DummyHighlight;
 
-    impl highlight::Mod for DummyHighlight {
+    impl libhighlight::Mod for DummyHighlight {
         fn highlight_code(
             &self,
             mut w: &mut dyn std::io::Write,
-            params: highlight::HighlightCodeParams<'_>,
-        ) -> highlight::Result<()> {
+            params: HighlightCodeParams<'_>,
+        ) -> highlight_types::Result<()> {
             write!(
                 w,
                 "<code data-lang={:?} data-bo={}>",

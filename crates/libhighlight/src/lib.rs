@@ -4,7 +4,7 @@ use autotrait::autotrait;
 use highlight_types::HighlightCodeParams;
 use std::sync::LazyLock;
 use tree_sitter_collection::tree_sitter_highlight::{
-    self, Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
+    Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
 };
 
 struct ModImpl {
@@ -63,66 +63,6 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "text.strikethrough",
 ];
 
-#[derive(Debug)]
-pub enum Error {
-    /// any error, tbh
-    Any(String),
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Any(s) => write!(f, "{s}"),
-        }
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl From<std::io::Error> for Error {
-    fn from(value: std::io::Error) -> Self {
-        Self::Any(value.to_string())
-    }
-}
-
-impl From<tree_sitter_highlight::Error> for Error {
-    fn from(value: tree_sitter_highlight::Error) -> Self {
-        Self::Any(value.to_string())
-    }
-}
-
-impl From<String> for Error {
-    fn from(value: String) -> Self {
-        Self::Any(value)
-    }
-}
-
-impl From<&'static str> for Error {
-    fn from(value: &'static str) -> Self {
-        Self::Any(value.to_string())
-    }
-}
-
-impl From<std::str::Utf8Error> for Error {
-    fn from(value: std::str::Utf8Error) -> Self {
-        Self::Any(value.to_string())
-    }
-}
-
-impl From<std::string::FromUtf8Error> for Error {
-    fn from(value: std::string::FromUtf8Error) -> Self {
-        Self::Any(value.to_string())
-    }
-}
-
-impl From<tree_sitter_collection::tree_sitter::QueryError> for Error {
-    fn from(value: tree_sitter_collection::tree_sitter::QueryError) -> Self {
-        Self::Any(value.to_string())
-    }
-}
-
-pub type Result<T, E = Error> = std::result::Result<T, E>;
-
 #[autotrait]
 impl Mod for ModImpl {
     /// Get a string containing all nerdfont icons for all language types
@@ -138,7 +78,7 @@ impl Mod for ModImpl {
         &self,
         w: &mut dyn std::io::Write,
         params: HighlightCodeParams<'_>,
-    ) -> Result<()> {
+    ) -> eyre::Result<()> {
         use impls::*;
 
         let cache_key = format!("{}:::{}", params.tag, params.source);
@@ -740,7 +680,6 @@ impl Default for ModImpl {
 pub(crate) mod impls {
     use crate::HighlightCodeParams;
     use crate::Lang;
-    use crate::Result;
 
     use std::io;
 

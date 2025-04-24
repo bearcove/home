@@ -14,3 +14,4 @@ tree-sitter-collection = { git = "https://github.com/bearcove/home-tree-sitter" 
 nerdfonts = { path = "../nerdfonts" }
 autotrait = "0.1.10"
 highlight-types = { version = "0.1.0", path = "../highlight-types" }
+eyre.workspace = true
