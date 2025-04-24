@@ -19,6 +19,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Set default rustup toolchain
+        run: |
+          rustup default nightly-2025-04-23
+          rustc --version
       - name: Restore cache
         uses: actions/cache@v3
         with:
