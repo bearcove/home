@@ -13,7 +13,7 @@ use super::global_state;
 
 static COOKIE_NAME: &str = "home-credentials";
 
-pub fn auth_bundle_as_cookie(ab: &AuthBundle<'_>) -> Cookie<'static> {
+pub fn auth_bundle_as_cookie(ab: &AuthBundle) -> Cookie<'static> {
     let mut cookie = Cookie::new(COOKIE_NAME, merde::json::to_string(ab).unwrap());
     auth_bundle_configure_cookie(&mut cookie);
     cookie.set_expires(Some(
@@ -37,9 +37,7 @@ fn auth_bundle_configure_cookie(cookie: &mut Cookie) {
     cookie.set_path("/");
 }
 
-pub async fn authbundle_load_from_cookies(
-    cookies: &PrivateCookies<'_>,
-) -> Option<AuthBundle<'static>> {
+pub async fn authbundle_load_from_cookies(cookies: &PrivateCookies<'_>) -> Option<AuthBundle> {
     let cookie = cookies.get(COOKIE_NAME)?;
 
     let creds: AuthBundle = match merde::json::from_str(cookie.value()) {
@@ -71,7 +69,7 @@ pub async fn authbundle_load_from_cookies(
     Some(creds.into_static())
 }
 
-async fn refresh_credentials(creds: &AuthBundle<'_>) -> eyre::Result<AuthBundle<'static>> {
+async fn refresh_credentials(creds: &AuthBundle) -> eyre::Result<AuthBundle> {
     let patreon_id = creds
         .user_info
         .profile
@@ -81,15 +79,13 @@ async fn refresh_credentials(creds: &AuthBundle<'_>) -> eyre::Result<AuthBundle<
     refresh_patreon_credentials(patreon_id.to_string()).await
 }
 
-async fn refresh_patreon_credentials(patreon_id: String) -> eyre::Result<AuthBundle<'static>> {
+async fn refresh_patreon_credentials(patreon_id: String) -> eyre::Result<AuthBundle> {
     let client = libhttpclient::load().client();
 
     let mom_base_url = &global_state().config.mom_base_url;
     let res = client
         .post(Uri::try_from(&format!("{mom_base_url}/patreon/refresh-credentials")).unwrap())
-        .json(&PatreonRefreshCredentialsArgs {
-            patreon_id: patreon_id.into(),
-        })?
+        .json(&PatreonRefreshCredentialsArgs { patreon_id })?
         .send()
         .await?;
 

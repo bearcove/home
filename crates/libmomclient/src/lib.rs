@@ -29,7 +29,7 @@ use libpatreon::{
 use objectstore_types::ObjectStoreKeyRef;
 
 pub trait MomEventListener: Send + 'static {
-    fn on_event<'fut>(&'fut self, event: MomEvent<'static>) -> BoxFuture<'fut, ()>;
+    fn on_event<'fut>(&'fut self, event: MomEvent) -> BoxFuture<'fut, ()>;
 }
 
 pub use eyre::Result;
@@ -264,60 +264,56 @@ impl MomTenantClientImpl {
 impl MomTenantClient for MomTenantClientImpl {
     fn update_auth_bundle<'fut>(
         &'fut self,
-        body: &'fut AuthBundle<'static>,
-    ) -> BoxFuture<'fut, Result<AuthBundle<'static>>> {
+        body: &'fut AuthBundle,
+    ) -> BoxFuture<'fut, Result<AuthBundle>> {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("auth-bundle/update");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<AuthBundle<'static>>().await?)
+                Ok(res.json::<AuthBundle>().await?)
             }
         })
     }
 
     fn github_callback<'fut>(
         &'fut self,
-        body: &'fut GitHubCallbackArgs<'static>,
-    ) -> BoxFuture<'fut, Result<Option<GitHubCallbackResponse<'static>>>> {
+        body: &'fut GitHubCallbackArgs,
+    ) -> BoxFuture<'fut, Result<Option<GitHubCallbackResponse>>> {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("github/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res
-                    .json::<Option<GitHubCallbackResponse<'static>>>()
-                    .await?)
+                Ok(res.json::<Option<GitHubCallbackResponse>>().await?)
             }
         })
     }
 
     fn patreon_callback<'fut>(
         &'fut self,
-        body: &'fut PatreonCallbackArgs<'static>,
-    ) -> BoxFuture<'fut, Result<Option<PatreonCallbackResponse<'static>>>> {
+        body: &'fut PatreonCallbackArgs,
+    ) -> BoxFuture<'fut, Result<Option<PatreonCallbackResponse>>> {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("patreon/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res
-                    .json::<Option<PatreonCallbackResponse<'static>>>()
-                    .await?)
+                Ok(res.json::<Option<PatreonCallbackResponse>>().await?)
             }
         })
     }
 
     fn patreon_refresh_credentials<'fut>(
         &'fut self,
-        body: &'fut PatreonRefreshCredentialsArgs<'static>,
-    ) -> BoxFuture<'fut, Result<PatreonRefreshCredentials<'static>>> {
+        body: &'fut PatreonRefreshCredentialsArgs,
+    ) -> BoxFuture<'fut, Result<PatreonRefreshCredentials>> {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("patreon/refresh-credentials");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<PatreonRefreshCredentials<'static>>().await?)
+                Ok(res.json::<PatreonRefreshCredentials>().await?)
             }
         })
     }

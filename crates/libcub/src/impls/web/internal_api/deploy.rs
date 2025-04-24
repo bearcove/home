@@ -207,9 +207,7 @@ async fn run_vite_build_and_update_revision(
             socket,
             &DeployMessage::LogMessage(LogMessage {
                 level: Level::Error,
-                message: format!(
-                    "svelte-check failed. Aborting deploy. Error: {error_output}"
-                ),
+                message: format!("svelte-check failed. Aborting deploy. Error: {error_output}"),
             }),
         )
         .await?;
@@ -528,7 +526,7 @@ async fn handle_deploy_socket_inner(
         tokio::spawn(async move {
             async fn handle_task(
                 key: InputPath,
-                curr_pak: &Pak<'static>,
+                curr_pak: &Pak,
                 tcli: &dyn MomTenantClient,
                 mappings: &PathMappings,
             ) -> eyre::Result<()> {

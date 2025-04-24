@@ -4,7 +4,7 @@ use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::{AuthBundle, Profile, Tier, UserInfo};
 use eyre::Result;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
-use merde::{CowStr, IntoStatic, Map};
+use merde::{IntoStatic, Map};
 use time::OffsetDateTime;
 use tracing::debug;
 
@@ -15,8 +15,8 @@ impl ModImpl {
         &self,
         tc: &TenantConfig,
         web: WebConfig,
-        args: &GitHubCallbackArgs<'_>,
-    ) -> eyre::Result<Option<GitHubCredentials<'static>>> {
+        args: &GitHubCallbackArgs,
+    ) -> eyre::Result<Option<GitHubCredentials>> {
         let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
             .find(|(key, _)| key == "code")
             .map(|(_, value)| value.into_owned())
@@ -57,85 +57,84 @@ impl ModImpl {
         &self,
         _tc: &TenantConfig,
         client: &dyn HttpClient,
-        github_creds: &GitHubCredentials<'_>,
-    ) -> eyre::Result<HashSet<CowStr<'static>>> {
-        let mut credited_patrons: HashSet<CowStr<'static>> = Default::default();
-
+        github_creds: &GitHubCredentials,
+    ) -> eyre::Result<HashSet<String>> {
+        let mut credited_patrons: HashSet<String> = Default::default();
         let query = include_str!("github_sponsors.graphql");
 
-        struct GraphqlQuery<'s> {
-            query: CowStr<'s>,
-            variables: Variables<'s>,
+        struct GraphqlQuery {
+            query: String,
+            variables: Variables,
         }
         merde::derive!(
-            impl (Serialize, ) for struct GraphqlQuery<'s> { query, variables }
+            impl (Serialize, ) for struct GraphqlQuery { query, variables }
         );
 
-        struct GraphqlResponse<'s> {
-            data: Option<GraphqlResponseData<'s>>,
-            errors: Option<Vec<GraphqlError<'s>>>,
+        struct GraphqlResponse {
+            data: Option<GraphqlResponseData>,
+            errors: Option<Vec<GraphqlError>>,
         }
         merde::derive!(
-            impl (Deserialize) for struct GraphqlResponse<'s> { data, errors }
+            impl (Deserialize) for struct GraphqlResponse { data, errors }
         );
 
         #[derive(Debug)]
-        struct GraphqlError<'s> {
+        struct GraphqlError {
             #[allow(dead_code)]
-            message: CowStr<'s>,
+            message: String,
         }
         merde::derive!(
-            impl (Deserialize) for struct GraphqlError<'s> { message }
+            impl (Deserialize) for struct GraphqlError { message }
         );
 
-        struct GraphqlResponseData<'s> {
-            viewer: Viewer<'s>,
+        struct GraphqlResponseData {
+            viewer: Viewer,
         }
         merde::derive!(
-            impl (Deserialize) for struct GraphqlResponseData<'s> { viewer }
+            impl (Deserialize) for struct GraphqlResponseData { viewer }
         );
 
-        struct Viewer<'s> {
-            sponsors: Sponsors<'s>,
+        struct Viewer {
+            sponsors: Sponsors,
         }
         merde::derive!(
-            impl (Deserialize) for struct Viewer<'s> { sponsors }
-        );
-
-        #[allow(non_snake_case)]
-        struct Sponsors<'s> {
-            pageInfo: PageInfo<'s>,
-            nodes: Vec<Node<'s>>,
-        }
-        merde::derive!(
-            impl (Deserialize) for struct Sponsors<'s> { pageInfo, nodes }
+            impl (Deserialize) for struct Viewer { sponsors }
         );
 
         #[allow(non_snake_case)]
-        struct PageInfo<'s> {
-            endCursor: Option<CowStr<'s>>,
+        struct Sponsors {
+            pageInfo: PageInfo,
+            nodes: Vec<Node>,
         }
         merde::derive!(
-            impl (Deserialize) for struct PageInfo<'s> { endCursor }
+            impl (Deserialize) for struct Sponsors { pageInfo, nodes }
         );
 
         #[allow(non_snake_case)]
-        struct Node<'s> {
-            login: CowStr<'s>,
-            name: Option<CowStr<'s>>,
-            sponsorshipForViewerAsSponsorable: Option<SponsorshipForViewerAsSponsorable<'s>>,
+        struct PageInfo {
+            endCursor: Option<String>,
         }
         merde::derive!(
-            impl (Deserialize) for struct Node<'s> { login, name, sponsorshipForViewerAsSponsorable }
+            impl (Deserialize) for struct PageInfo { endCursor }
         );
 
         #[allow(non_snake_case)]
-        struct SponsorshipForViewerAsSponsorable<'s> {
-            privacyLevel: CowStr<'s>,
+        struct Node {
+            login: String,
+            name: Option<String>,
+            sponsorshipForViewerAsSponsorable: Option<SponsorshipForViewerAsSponsorable>,
+        }
+        merde::derive!(
+            impl (Deserialize) for struct Node { login, name, sponsorshipForViewerAsSponsorable }
+        );
+
+        #[allow(non_snake_case)]
+        struct SponsorshipForViewerAsSponsorable {
+            privacyLevel: String,
             tier: GitHubTier,
         }
         merde::derive!(
-            impl (Deserialize) for struct SponsorshipForViewerAsSponsorable<'s> { privacyLevel, tier }
+            impl (Deserialize) for struct SponsorshipForViewerAsSponsorable { privacyLevel, tier }
         );
 
         #[allow(non_snake_case)]
@@ -148,12 +147,12 @@ impl ModImpl {
         );
 
         #[derive(Debug)]
-        struct Variables<'s> {
+        struct Variables {
             first: u32,
-            after: Option<CowStr<'s>>,
+            after: Option<String>,
         }
         merde::derive!(
-            impl (Serialize, ) for struct Variables<'s> { first, after }
+            impl (Serialize, ) for struct Variables { first, after }
         );
 
         let mut query = GraphqlQuery {
@@ -245,7 +244,7 @@ impl ModImpl {
                     }
 
                     let name = sponsor.name.as_ref().unwrap_or(&sponsor.login);
-                    credited_patrons.insert(CowStr::from(name.trim()).into_static());
+                    credited_patrons.insert(name.trim().to_string());
                 }
             }
 
@@ -267,40 +266,39 @@ impl ModImpl {
         &self,
         rc: &RevisionConfig,
         web: WebConfig,
-        github_creds: &GitHubCredentials<'static>,
-    ) -> Result<(GitHubCredentials<'static>, AuthBundle<'static>)> {
-        struct GraphqlQuery<'s> {
-            query: CowStr<'s>,
-            variables: Map<'s>,
+        github_creds: &GitHubCredentials,
+    ) -> Result<(GitHubCredentials, AuthBundle)> {
+        struct GraphqlQuery {
+            query: String,
+            variables: Map<'static>,
         }
         merde::derive!(
-            impl (Serialize, ) for struct GraphqlQuery<'s> { query, variables }
+            impl (Serialize, ) for struct GraphqlQuery { query, variables }
         );
 
-        struct GraphqlResponse<'s> {
-            data: GraphqlResponseData<'s>,
+        struct GraphqlResponse {
+            data: GraphqlResponseData,
         }
         merde::derive!(
-            impl (Deserialize) for struct GraphqlResponse<'s> { data }
+            impl (Deserialize) for struct GraphqlResponse { data }
         );
 
-        struct GraphqlResponseData<'s> {
-            viewer: Viewer<'s>,
+        struct GraphqlResponseData {
+            viewer: Viewer,
             user: User,
         }
         merde::derive!(
-            impl (Deserialize) for struct GraphqlResponseData<'s> { viewer, user }
+            impl (Deserialize) for struct GraphqlResponseData { viewer, user }
         );
-
         #[allow(non_snake_case)]
-        struct Viewer<'s> {
+        struct Viewer {
             databaseId: i64,
-            login: CowStr<'s>,
-            name: Option<CowStr<'s>>,
-            avatarUrl: CowStr<'s>,
+            login: String,
+            name: Option<String>,
+            avatarUrl: String,
         }
         merde::derive!(
-            impl (Deserialize) for struct Viewer<'s> { databaseId, login, name, avatarUrl }
+            impl (Deserialize) for struct Viewer { databaseId, login, name, avatarUrl }
         );
 
         #[allow(non_snake_case)]
@@ -399,9 +397,7 @@ impl ModImpl {
                     .iter()
                     .any(|id| id == viewer_github_user_id.as_str())
                 {
-                    creator_tier_name().map(|title| Tier {
-                        title: title.into(),
-                    })
+                    creator_tier_name().map(|title| Tier { title })
                 } else {
                     None
                 }
@@ -421,7 +417,7 @@ impl ModImpl {
                 profile: Profile {
                     full_name: full_name.to_owned(),
                     patreon_id: None,
-                    github_id: Some(viewer_github_user_id.clone().into()),
+                    github_id: Some(viewer_github_user_id.clone()),
                     thumb_url: viewer.avatarUrl.to_owned(),
                 },
                 tier,

@@ -58,11 +58,11 @@ pub(crate) struct MomGlobalState {
 pub(crate) struct MomTenantState {
     pub(crate) pool: Pool,
 
-    pub(crate) patreon_creds_inflight: InflightSlots<String, AuthBundle<'static>>,
-    pub(crate) sponsors_inflight: InflightSlots<(), Sponsors<'static>>,
-    pub(crate) sponsors: Arc<Mutex<Option<Sponsors<'static>>>>,
+    pub(crate) patreon_creds_inflight: InflightSlots<String, AuthBundle>,
+    pub(crate) sponsors_inflight: InflightSlots<(), Sponsors>,
+    pub(crate) sponsors: Arc<Mutex<Option<Sponsors>>>,
 
-    pub(crate) pak: Arc<Mutex<Option<Pak<'static>>>>,
+    pub(crate) pak: Arc<Mutex<Option<Pak>>>,
 
     pub(crate) object_store: Arc<dyn ObjectStore>,
 
@@ -93,12 +93,12 @@ pub(crate) fn global_state() -> &'static MomGlobalState {
 }
 
 impl MomGlobalState {
-    pub(crate) fn event_to_message(event: MomEvent<'static>) -> ws::Message {
+    pub(crate) fn event_to_message(event: MomEvent) -> ws::Message {
         let json_string = merde::json::to_string(&event).unwrap();
         ws::Message::Text(json_string)
     }
 
-    pub(crate) fn broadcast_event(&self, event: MomEvent<'static>) -> eyre::Result<()> {
+    pub(crate) fn broadcast_event(&self, event: MomEvent) -> eyre::Result<()> {
         let ev_debug = format!("{event:?}");
         let event = merde::json::to_string(&event)?;
         match self.bx_event.send(event) {
@@ -111,7 +111,7 @@ impl MomGlobalState {
 }
 
 impl MomTenantState {
-    pub(crate) fn broadcast_event(&self, payload: TenantEventPayload<'static>) -> eyre::Result<()> {
+    pub(crate) fn broadcast_event(&self, payload: TenantEventPayload) -> eyre::Result<()> {
         global_state().broadcast_event(MomEvent::TenantEvent(TenantEvent {
             tenant_name: self.ti.tc.name.clone(),
             payload,
@@ -136,7 +136,7 @@ impl PatreonStore for Pool {
     fn fetch_patreon_credentials(
         &self,
         patreon_id: &str,
-    ) -> eyre::Result<Option<PatreonCredentials<'static>>> {
+    ) -> eyre::Result<Option<PatreonCredentials>> {
         let conn = self.get()?;
         let mut stmt = conn.prepare(
             "
@@ -177,7 +177,7 @@ impl PatreonStore for Pool {
 pub(crate) async fn patreon_refresh_credentials_inner(
     ts: Arc<MomTenantState>,
     patreon_id: String,
-) -> Result<AuthBundle<'static>, eyre::Report> {
+) -> Result<AuthBundle, eyre::Report> {
     let pool = &ts.pool;
     let mod_patreon = libpatreon::load();
 
@@ -205,10 +205,7 @@ pub(crate) async fn patreon_refresh_credentials_inner(
     Ok(site_creds)
 }
 
-pub(crate) fn save_sponsors_to_db(
-    ts: &MomTenantState,
-    sponsors: Sponsors<'static>,
-) -> eyre::Result<()> {
+pub(crate) fn save_sponsors_to_db(ts: &MomTenantState, sponsors: Sponsors) -> eyre::Result<()> {
     let conn = ts.pool.get()?;
 
     // delete old entries
@@ -226,9 +223,7 @@ pub(crate) fn save_sponsors_to_db(
     Ok(())
 }
 
-pub(crate) fn load_sponsors_from_db(
-    ts: &MomTenantState,
-) -> eyre::Result<Option<Sponsors<'static>>> {
+pub(crate) fn load_sponsors_from_db(ts: &MomTenantState) -> eyre::Result<Option<Sponsors>> {
     let conn = ts.pool.get()?;
     let mut stmt = conn.prepare(
         "
@@ -247,9 +242,7 @@ pub(crate) fn load_sponsors_from_db(
         Err(e) => Err(e.into()),
     }
 }
-pub(crate) async fn load_revision_from_db(
-    ts: &MomTenantState,
-) -> eyre::Result<Option<Pak<'static>>> {
+pub(crate) async fn load_revision_from_db(ts: &MomTenantState) -> eyre::Result<Option<Pak>> {
     debug!("Loading latest revision from database");
     let (id, object_key) = {
         let conn = ts.pool.get()?;

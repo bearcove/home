@@ -471,7 +471,7 @@ impl From<LoadedPageVal> for Value {
 
 pub(crate) struct GlobalsVal {
     pub(crate) page: Option<Arc<LoadedPage>>,
-    pub(crate) user_info: Option<UserInfo<'static>>,
+    pub(crate) user_info: Option<UserInfo>,
     pub(crate) additional_globals: DataObject,
     pub(crate) raw_query: String,
     pub(crate) url_params: HashMap<String, String>,

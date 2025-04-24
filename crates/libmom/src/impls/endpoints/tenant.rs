@@ -147,7 +147,7 @@ async fn github_callback(
 fn get_patreon_credentials(
     conn: &rusqlite::Connection,
     patreon_id: &str,
-) -> Result<PatreonCredentials<'static>, HttpError> {
+) -> Result<PatreonCredentials, HttpError> {
     let pat_creds_payload: String = conn
         .query_row(
             "SELECT data FROM patreon_credentials WHERE patreon_id = ?1",
@@ -174,7 +174,7 @@ fn get_patreon_credentials(
 fn get_github_credentials(
     conn: &rusqlite::Connection,
     github_id: &str,
-) -> Result<GitHubCredentials<'static>, HttpError> {
+) -> Result<GitHubCredentials, HttpError> {
     let github_creds: String = conn
         .query_row(
             "SELECT data FROM github_credentials WHERE github_id = ?1",
@@ -262,9 +262,7 @@ async fn objectstore_list_missing(
             .map(|_| "?")
             .collect::<Vec<_>>()
             .join(",");
-        let query = format!(
-            "SELECT key FROM objectstore_entries WHERE key IN ({placeholders})"
-        );
+        let query = format!("SELECT key FROM objectstore_entries WHERE key IN ({placeholders})");
 
         let mut stmt = conn.prepare(&query)?;
         let rows = stmt.query_map(rusqlite::params_from_iter(key_chunk), |row| {

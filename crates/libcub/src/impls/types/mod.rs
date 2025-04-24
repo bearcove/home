@@ -103,7 +103,7 @@ impl CubGlobalState {
 pub struct CubTenantImpl {
     // FIXME: should not be static — that means we leak it
     pub cookie_key: &'static Key,
-    pub sponsors: RwLock<Arc<Sponsors<'static>>>,
+    pub sponsors: RwLock<Arc<Sponsors>>,
     pub ti: Arc<TenantInfo>,
     pub store: Arc<dyn ObjectStore>,
     pub bx_rev: broadcast::Sender<RevisionBroadcastEvent>,
@@ -182,7 +182,7 @@ impl CubTenant for CubTenantImpl {
         }
     }
 
-    fn sponsors(&self) -> Arc<Sponsors<'static>> {
+    fn sponsors(&self) -> Arc<Sponsors> {
         self.sponsors.read().clone()
     }
 
@@ -230,7 +230,7 @@ impl GlobalStateView for CubTenantImpl {
         CubTenant::ti(self).clone()
     }
 
-    fn gsv_sponsors(&self) -> Arc<Sponsors<'static>> {
+    fn gsv_sponsors(&self) -> Arc<Sponsors> {
         CubTenant::sponsors(self)
     }
 }

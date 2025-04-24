@@ -8,7 +8,6 @@ use std::collections::HashSet;
 use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::AuthBundle;
 use eyre::Result;
-use merde::CowStr;
 
 mod impls;
 
@@ -46,8 +45,8 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         web: WebConfig,
-        args: &'fut GitHubCallbackArgs<'_>,
-    ) -> BoxFuture<'fut, Result<Option<GitHubCredentials<'static>>>> {
+        args: &'fut GitHubCallbackArgs,
+    ) -> BoxFuture<'fut, Result<Option<GitHubCredentials>>> {
         Box::pin(async move { self.handle_oauth_callback_unboxed(tc, web, args).await })
     }
 
@@ -55,8 +54,8 @@ impl Mod for ModImpl {
         &'fut self,
         rc: &'fut RevisionConfig,
         web: WebConfig,
-        github_creds: GitHubCredentials<'static>,
-    ) -> BoxFuture<'fut, Result<(GitHubCredentials<'static>, AuthBundle<'static>)>> {
+        github_creds: GitHubCredentials,
+    ) -> BoxFuture<'fut, Result<(GitHubCredentials, AuthBundle)>> {
         Box::pin(async move {
             self.to_site_credentials_unboxed(rc, web, &github_creds)
                 .await
@@ -67,45 +66,44 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         client: &'fut dyn HttpClient,
-        github_creds: &'fut GitHubCredentials<'fut>,
-    ) -> BoxFuture<'fut, Result<HashSet<CowStr<'static>>>> {
+        github_creds: &'fut GitHubCredentials,
+    ) -> BoxFuture<'fut, Result<HashSet<String>>> {
         Box::pin(async move { self.list_sponsors_unboxed(tc, client, github_creds).await })
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct GitHubCallbackArgs<'s> {
-    pub raw_query: CowStr<'s>,
+pub struct GitHubCallbackArgs {
+    pub raw_query: String,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubCallbackArgs<'s> { raw_query }
+    impl (Serialize, Deserialize) for struct GitHubCallbackArgs { raw_query }
 }
 
 #[derive(Debug, Clone)]
-pub struct GitHubCallbackResponse<'s> {
-    pub auth_bundle: AuthBundle<'s>,
-    pub github_credentials: GitHubCredentials<'s>,
+pub struct GitHubCallbackResponse {
+    pub auth_bundle: AuthBundle,
+    pub github_credentials: GitHubCredentials,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubCallbackResponse<'s> { auth_bundle, github_credentials }
+    impl (Serialize, Deserialize) for struct GitHubCallbackResponse { auth_bundle, github_credentials }
 }
 
 #[derive(Debug, Clone)]
-pub struct GitHubCredentials<'s> {
+pub struct GitHubCredentials {
     /// example: "ajba90sd098w0e98f0w9e8g90a8ed098wgfae_w"
-    pub access_token: CowStr<'s>,
+    pub access_token: String,
     /// example: "read:user"
-    pub scope: CowStr<'s>,
+    pub scope: String,
     /// example: "bearer"
-    pub token_type: Option<CowStr<'s>>,
+    pub token_type: Option<String>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubCredentials<'s> { access_token, scope, token_type }
+    impl (Serialize, Deserialize) for struct GitHubCredentials { access_token, scope, token_type }
 }
-
 /// The purpose of the login (to determine the OAuth scopes needed for the login)
 pub enum GitHubLoginPurpose {
     // admin login

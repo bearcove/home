@@ -78,7 +78,7 @@ pub async fn make_revision(
     let mut prev_rev: Option<Arc<Revision>> = None;
 
     let rev_kind_start = Instant::now();
-    let (mut pak, events): (Pak<'static>, VecDeque<InputEvent>) = match kind {
+    let (mut pak, events): (Pak, VecDeque<InputEvent>) = match kind {
         RevisionKind::FromScratch => {
             let from_scratch_start = Instant::now();
             let pak = revision_new();
@@ -337,7 +337,7 @@ pub async fn make_revision(
 }
 
 struct MakeContext {
-    pak: Pak<'static>,
+    pak: Pak,
     ti: Arc<TenantInfo>,
     events: VecDeque<InputEvent>,
     modified: HashSet<InputPath>,
@@ -539,27 +539,15 @@ async fn gather_svg_font_face_collection(
 }
 
 pub(crate) enum AddAction {
-    InsertInput {
-        path: InputPath,
-        input: Input,
-    },
-    InsertPage {
-        path: InputPath,
-        page: Page<'static>,
-    },
-    InsertMediaProps {
-        path: InputPath,
-        props: MediaProps,
-    },
-    InsertTemplate {
-        path: InputPath,
-        template: Template<'static>,
-    },
+    InsertInput { path: InputPath, input: Input },
+    InsertPage { path: InputPath, page: Page },
+    InsertMediaProps { path: InputPath, props: MediaProps },
+    InsertTemplate { path: InputPath, template: Template },
     Error(eyre::Report),
 }
 
 impl AddAction {
-    fn apply(self, pak: &mut Pak<'_>) -> eyre::Result<()> {
+    fn apply(self, pak: &mut Pak) -> eyre::Result<()> {
         match self {
             AddAction::InsertInput { path, input } => {
                 pak.inputs.insert(path, input);
@@ -626,7 +614,7 @@ async fn revision_added(
                 page: Page {
                     hash,
                     path: path.to_owned(),
-                    markup: String::from_utf8(contents)?.into(),
+                    markup: String::from_utf8(contents)?,
                     deps: Default::default(),
                 },
             })
@@ -746,7 +734,7 @@ async fn revision_added(
                 path: path.to_owned(),
                 template: Template {
                     path: path.to_owned(),
-                    markup: String::from_utf8(contents)?.into(),
+                    markup: String::from_utf8(contents)?,
                 },
             })
             .await?;
@@ -762,7 +750,7 @@ async fn revision_added(
 /// Signals this Revision that a file has been modified
 async fn revision_modified(
     tx: &mpsc::Sender<AddAction>,
-    revision: &mut Pak<'_>,
+    revision: &mut Pak,
     path: InputPath,
     metadata: PathMetadata,
     mappings: PathMappings,
@@ -779,10 +767,7 @@ async fn revision_modified(
 }
 
 /// Signals this Revision that a file has been removed
-pub(crate) async fn revision_removed(
-    revision: &mut Pak<'_>,
-    path: &InputPathRef,
-) -> eyre::Result<()> {
+pub(crate) async fn revision_removed(revision: &mut Pak, path: &InputPathRef) -> eyre::Result<()> {
     revision.inputs.remove(path);
     revision.pages.remove(path);
     revision.templates.remove(path);
@@ -792,7 +777,7 @@ pub(crate) async fn revision_removed(
 }
 
 /// Create a new empty revision
-pub fn revision_new() -> Pak<'static> {
+pub fn revision_new() -> Pak {
     Pak {
         id: generate_rev_id(),
         inputs: Default::default(),

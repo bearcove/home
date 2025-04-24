@@ -10,13 +10,13 @@ use crate::impls::{
 };
 
 /// The userinfo after updating it
-struct UpdatedUserInfo<'s> {
+struct UpdatedUserInfo {
     viewer: Viewer,
-    user_info: UserInfo<'s>,
+    user_info: UserInfo,
 }
 
 merde::derive!(
-    impl (Serialize, Deserialize) for struct UpdatedUserInfo<'s> { viewer, user_info }
+    impl (Serialize, Deserialize) for struct UpdatedUserInfo { viewer, user_info }
 );
 
 /// Does another GitHub/Patreon API call to re-check someone's tier.

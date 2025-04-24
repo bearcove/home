@@ -86,10 +86,7 @@ async fn serve_patreon_callback(tr: CubReqImpl) -> LegacyReply {
     finish_login_callback(&tr, serve_patreon_callback_inner(&tr).await?).await
 }
 
-async fn finish_login_callback(
-    tr: &CubReqImpl,
-    auth_bundle: Option<AuthBundle<'static>>,
-) -> LegacyReply {
+async fn finish_login_callback(tr: &CubReqImpl, auth_bundle: Option<AuthBundle>) -> LegacyReply {
     // if None, the oauth flow was cancelled
     if let Some(auth_bundle) = auth_bundle {
         let session_cookie = auth_bundle_as_cookie(&auth_bundle);
@@ -109,9 +106,7 @@ async fn finish_login_callback(
     Redirect::to(&location).into_legacy_reply()
 }
 
-async fn serve_patreon_callback_inner(
-    tr: &CubReqImpl,
-) -> eyre::Result<Option<AuthBundle<'static>>> {
+async fn serve_patreon_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<AuthBundle>> {
     let tcli = tr.tenant.tcli();
     let callback_args = PatreonCallbackArgs {
         raw_query: tr.raw_query().to_owned().into(),
@@ -124,7 +119,7 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     let ts = tr.tenant.clone();
     let tcli = tr.tenant.tcli();
     let callback_args = libgithub::GitHubCallbackArgs {
-        raw_query: tr.raw_query().to_owned().into(),
+        raw_query: tr.raw_query().to_owned(),
     };
     let callback_res = tcli.github_callback(&callback_args).await?;
 

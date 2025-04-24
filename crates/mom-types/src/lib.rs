@@ -2,7 +2,6 @@ use camino::Utf8PathBuf;
 use conflux::{Derivation, DerivationHash, Input, InputPath, Pak};
 use derivations::DerivationInfo;
 use media_types::{TargetFormat, TranscodingProgress};
-use merde::CowStr;
 use objectstore_types::ObjectStoreKey;
 use serde::Serialize;
 use std::{collections::HashMap, sync::Arc, time::Instant};
@@ -10,7 +9,7 @@ use std::{collections::HashMap, sync::Arc, time::Instant};
 use config_types::{MomConfig, TenantConfig, TenantDomain, TenantInfo, WebConfig};
 
 pub trait GlobalStateView: Send + Sync + 'static {
-    fn gsv_sponsors(&self) -> Arc<Sponsors<'static>> {
+    fn gsv_sponsors(&self) -> Arc<Sponsors> {
         unimplemented!()
     }
 
@@ -20,12 +19,12 @@ pub trait GlobalStateView: Send + Sync + 'static {
 }
 
 #[derive(Clone, Serialize)]
-pub struct Sponsors<'s> {
-    pub sponsors: Vec<CowStr<'s>>,
+pub struct Sponsors {
+    pub sponsors: Vec<String>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Sponsors<'s> { sponsors }
+    impl (Serialize, Deserialize) for struct Sponsors { sponsors }
 }
 
 #[derive(Debug, Clone)]
@@ -402,13 +401,13 @@ merde::derive! {
 }
 
 #[derive(Debug)]
-pub enum MomEvent<'s> {
-    GoodMorning(GoodMorning<'s>),
-    TenantEvent(TenantEvent<'s>),
+pub enum MomEvent {
+    GoodMorning(GoodMorning),
+    TenantEvent(TenantEvent),
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for enum MomEvent<'s>
+    impl (Serialize, Deserialize) for enum MomEvent
     externally_tagged
     {
         "GoodMorning" => GoodMorning,
@@ -417,21 +416,21 @@ merde::derive! {
 }
 
 #[derive(Debug)]
-pub struct TenantEvent<'s> {
+pub struct TenantEvent {
     pub tenant_name: TenantDomain,
-    pub payload: TenantEventPayload<'s>,
+    pub payload: TenantEventPayload,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct TenantEvent<'s> { tenant_name, payload }
+    impl (Serialize, Deserialize) for struct TenantEvent { tenant_name, payload }
 }
 
-pub enum TenantEventPayload<'s> {
-    RevisionChanged(Box<Pak<'s>>),
-    SponsorsUpdated(Sponsors<'s>),
+pub enum TenantEventPayload {
+    RevisionChanged(Box<Pak>),
+    SponsorsUpdated(Sponsors),
 }
 
-impl std::fmt::Debug for TenantEventPayload<'_> {
+impl std::fmt::Debug for TenantEventPayload {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             TenantEventPayload::RevisionChanged(revision) => write!(
@@ -453,7 +452,7 @@ impl std::fmt::Debug for TenantEventPayload<'_> {
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for enum TenantEventPayload<'s>
+    impl (Serialize, Deserialize) for enum TenantEventPayload
     externally_tagged
     {
         "RevisionChanged" => RevisionChanged,
@@ -462,20 +461,20 @@ merde::derive! {
 }
 
 #[derive(Debug)]
-pub struct GoodMorning<'s> {
-    pub initial_states: HashMap<TenantDomain, TenantInitialState<'s>>,
+pub struct GoodMorning {
+    pub initial_states: HashMap<TenantDomain, TenantInitialState>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct GoodMorning<'s> { initial_states }
+    impl (Serialize, Deserialize) for struct GoodMorning { initial_states }
 }
 
-pub struct TenantInitialState<'s> {
+pub struct TenantInitialState {
     /// The revision to serve (if any)
-    pub pak: Option<Pak<'s>>,
+    pub pak: Option<Pak>,
 
     /// The sponsors for this tenant
-    pub sponsors: Option<Sponsors<'s>>,
+    pub sponsors: Option<Sponsors>,
 
     /// The configuration for this tenant
     pub tc: TenantConfig,
@@ -485,10 +484,10 @@ pub struct TenantInitialState<'s> {
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct TenantInitialState<'s> { pak, sponsors, tc, base_dir }
+    impl (Serialize, Deserialize) for struct TenantInitialState { pak, sponsors, tc, base_dir }
 }
 
-impl std::fmt::Debug for TenantInitialState<'_> {
+impl std::fmt::Debug for TenantInitialState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TenantInitialState").finish_non_exhaustive()
     }

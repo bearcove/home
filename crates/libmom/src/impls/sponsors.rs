@@ -3,12 +3,12 @@ use std::collections::HashSet;
 use futures_util::TryFutureExt;
 use libgithub::GitHubCredentials;
 use libhttpclient::HttpClient;
-use merde::{CowStr, IntoStatic};
+use merde::IntoStatic;
 
 use crate::impls::{MomTenantState, global_state};
 use mom_types::Sponsors;
 
-pub(crate) async fn get_sponsors(ts: &MomTenantState) -> eyre::Result<Sponsors<'static>> {
+pub(crate) async fn get_sponsors(ts: &MomTenantState) -> eyre::Result<Sponsors> {
     let client = global_state().client.clone();
 
     let (gh_sponsors, patreon_sponsors) = futures_util::future::try_join(
@@ -28,7 +28,7 @@ pub(crate) async fn get_sponsors(ts: &MomTenantState) -> eyre::Result<Sponsors<'
 async fn patreon_list_sponsors(
     ts: &MomTenantState,
     client: &dyn HttpClient,
-) -> eyre::Result<HashSet<CowStr<'static>>> {
+) -> eyre::Result<HashSet<String>> {
     let patreon = libpatreon::load();
     let rc = ts.rc()?;
     patreon.list_sponsors(&rc, client, &ts.pool).await
@@ -37,7 +37,7 @@ async fn patreon_list_sponsors(
 async fn github_list_sponsors(
     ts: &MomTenantState,
     client: &dyn HttpClient,
-) -> eyre::Result<HashSet<CowStr<'static>>> {
+) -> eyre::Result<HashSet<String>> {
     let github_credentials: String = {
         let conn = ts.pool.get()?;
         let mut stmt = conn.prepare(

@@ -41,13 +41,13 @@ impl Mod for ModImpl {
         impls::make::input_hash_from_contents(contents)
     }
 
-    fn serialize_pak(&self, pak: &conflux::Pak<'_>) -> Vec<u8> {
+    fn serialize_pak(&self, pak: &conflux::Pak) -> Vec<u8> {
         impls::serialize_pak(pak)
     }
 
     fn load_pak<'fut>(
         &'fut self,
-        pak: conflux::Pak<'static>,
+        pak: conflux::Pak,
         ti: Arc<TenantInfo>,
         prev_rev: Option<&'fut conflux::Revision>,
         mappings: PathMappings,
@@ -66,7 +66,7 @@ impl Mod for ModImpl {
 
     fn save_pak_to_disk_as_active<'fut>(
         &'fut self,
-        pak: &'fut conflux::Pak<'_>,
+        pak: &'fut conflux::Pak,
         ti: &'fut TenantInfo,
     ) -> BoxFuture<'fut, eyre::Result<()>> {
         Box::pin(impls::save_pak_to_disk_as_active(pak, ti))

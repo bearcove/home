@@ -37,7 +37,7 @@ pub struct CubReqImpl {
     pub tenant: Arc<CubTenantImpl>,
     pub path: Route,
     pub cookies: PrivateCookies<'static>,
-    pub auth_bundle: Option<AuthBundle<'static>>,
+    pub auth_bundle: Option<AuthBundle>,
     pub parts: request::Parts,
 }
 

@@ -52,7 +52,7 @@ impl Mod for ModImpl {
         tc: &'fut TenantConfig,
         web: WebConfig,
         args: &'fut PatreonCallbackArgs<'_>,
-    ) -> BoxFuture<'fut, Result<Option<PatreonCredentials<'static>>>> {
+    ) -> BoxFuture<'fut, Result<Option<PatreonCredentials>>> {
         Box::pin(async move {
             let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
                 .find(|(key, _)| key == "code")
@@ -104,10 +104,10 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         rc: &'fut RevisionConfig,
-        creds: PatreonCredentials<'static>,
+        creds: PatreonCredentials,
         store: &'fut dyn PatreonStore,
         mode: ForcePatreonRefresh,
-    ) -> BoxFuture<'fut, Result<(PatreonCredentials<'static>, AuthBundle<'static>)>> {
+    ) -> BoxFuture<'fut, Result<(PatreonCredentials, AuthBundle)>> {
         Box::pin(async move {
             let res = match mode {
                 ForcePatreonRefresh::DontForceRefresh => self.to_auth_bundle_once(rc, &creds).await,
@@ -168,7 +168,7 @@ impl Mod for ModImpl {
         rc: &'fut RevisionConfig,
         client: &'fut dyn HttpClient,
         store: &'fut dyn PatreonStore,
-    ) -> BoxFuture<'fut, Result<HashSet<CowStr<'static>>>> {
+    ) -> BoxFuture<'fut, Result<HashSet<String>>> {
         Box::pin(async move {
             let patreon_campaign_id = rc
                 .patreon_campaign_ids
@@ -182,7 +182,7 @@ impl Mod for ModImpl {
                 .fetch_patreon_credentials(creator_patreon_user_id)?
                 .ok_or_else(|| eyre::eyre!("creator needs to log in with Patreon first"))?;
 
-            let mut credited_patrons: HashSet<CowStr<'static>> = Default::default();
+            let mut credited_patrons: HashSet<String> = Default::default();
 
             let credited_tiers: HashSet<String> = ["Silver", "Gold"]
                 .into_iter()
@@ -248,9 +248,8 @@ impl Mod for ModImpl {
                                     if let Some(tier) = tiers_per_id.get(&tier_id.id) {
                                         if let Some(title) = tier.attributes.title.as_deref() {
                                             if credited_tiers.contains(title) {
-                                                credited_patrons.insert(
-                                                    CowStr::from(full_name.trim()).into_static(),
-                                                );
+                                                credited_patrons
+                                                    .insert(full_name.trim().to_string());
                                             } else {
                                                 tracing::trace!("Tier {title} not credited");
                                             }
@@ -295,8 +294,8 @@ impl ModImpl {
     async fn to_auth_bundle_once(
         &self,
         rc: &RevisionConfig,
-        creds: &PatreonCredentials<'_>,
-    ) -> Result<AuthBundle<'static>> {
+        creds: &PatreonCredentials,
+    ) -> Result<AuthBundle> {
         let mut identity_url = Url::parse("https://www.patreon.com/api/oauth2/v2/identity")?;
         {
             let mut q = identity_url.query_pairs_mut();
@@ -447,10 +446,10 @@ impl ModImpl {
 
         tracing::info!("Creating profile with patreon_id={}", user.id);
         let profile = credentials::Profile {
-            patreon_id: Some(user.id.clone().into()),
+            patreon_id: Some(user.id.clone()),
             github_id: None,
-            full_name: user_attrs.full_name.into(),
-            thumb_url: user_attrs.thumb_url.into(),
+            full_name: user_attrs.full_name,
+            thumb_url: user_attrs.thumb_url,
         };
 
         let has_tier = tier_title.is_some();
@@ -480,9 +479,7 @@ impl ModImpl {
 
         let user_info = credentials::UserInfo {
             profile,
-            tier: tier_title.map(|title| credentials::Tier {
-                title: title.into(),
-            }),
+            tier: tier_title.map(|title| credentials::Tier { title }),
         };
 
         let auth_bundle = credentials::AuthBundle {
@@ -511,17 +508,17 @@ fn creator_tier_name() -> Option<String> {
 }
 
 #[derive(Debug, Clone)]
-pub struct PatreonCredentials<'s> {
-    pub access_token: CowStr<'s>,
-    pub refresh_token: CowStr<'s>,
+pub struct PatreonCredentials {
+    pub access_token: String,
+    pub refresh_token: String,
     pub expires_in: u32,
-    pub scope: CowStr<'s>,
-    pub token_type: Option<CowStr<'s>>,
-    pub version: Option<CowStr<'s>>,
+    pub scope: String,
+    pub token_type: Option<String>,
+    pub version: Option<String>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonCredentials<'s> { access_token, refresh_token, expires_in, scope, token_type, version }
+    impl (Serialize, Deserialize) for struct PatreonCredentials { access_token, refresh_token, expires_in, scope, token_type, version }
 }
 
 pub fn test_patreon_renewal() -> bool {
@@ -535,10 +532,7 @@ pub enum ForcePatreonRefresh {
 }
 
 pub trait PatreonStore: Send + Sync + 'static {
-    fn fetch_patreon_credentials(
-        &self,
-        patreon_id: &str,
-    ) -> Result<Option<PatreonCredentials<'static>>>;
+    fn fetch_patreon_credentials(&self, patreon_id: &str) -> Result<Option<PatreonCredentials>>;
 
     fn save_patreon_credentials(
         &self,
@@ -557,28 +551,28 @@ merde::derive! {
 }
 
 #[derive(Debug, Clone)]
-pub struct PatreonCallbackResponse<'s> {
-    pub auth_bundle: AuthBundle<'s>,
+pub struct PatreonCallbackResponse {
+    pub auth_bundle: AuthBundle,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonCallbackResponse<'s> { auth_bundle }
+    impl (Serialize, Deserialize) for struct PatreonCallbackResponse { auth_bundle }
 }
 
 #[derive(Debug, Clone)]
-pub struct PatreonRefreshCredentialsArgs<'s> {
-    pub patreon_id: CowStr<'s>,
+pub struct PatreonRefreshCredentialsArgs {
+    pub patreon_id: String,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonRefreshCredentialsArgs<'s> { patreon_id }
+    impl (Serialize, Deserialize) for struct PatreonRefreshCredentialsArgs { patreon_id }
 }
 
 #[derive(Debug, Clone)]
-pub struct PatreonRefreshCredentials<'s> {
-    pub auth_bundle: AuthBundle<'s>,
+pub struct PatreonRefreshCredentials {
+    pub auth_bundle: AuthBundle,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonRefreshCredentials<'s> { auth_bundle }
+    impl (Serialize, Deserialize) for struct PatreonRefreshCredentials { auth_bundle }
 }

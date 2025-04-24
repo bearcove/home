@@ -18,10 +18,7 @@ pub struct DerivationInfo<'a> {
 }
 
 impl<'a> DerivationInfo<'a> {
-    pub fn lookup(
-        pak: &'a Pak<'static>,
-        derivation: &'a Derivation,
-    ) -> eyre::Result<DerivationInfo<'a>> {
+    pub fn lookup(pak: &'a Pak, derivation: &'a Derivation) -> eyre::Result<DerivationInfo<'a>> {
         let input = pak
             .inputs
             .get_or_help(closest::ResourceKind::Input, &derivation.input)?;

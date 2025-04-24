@@ -70,7 +70,7 @@ pub struct RenderTemplateArgs<'a> {
     pub page: Option<Arc<LoadedPage>>,
 
     /// Gotten from cookies
-    pub user_info: Option<UserInfo<'static>>,
+    pub user_info: Option<UserInfo>,
 
     /// Web configuration
     pub web: WebConfig,

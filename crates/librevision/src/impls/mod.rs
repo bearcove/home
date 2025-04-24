@@ -42,7 +42,7 @@ pub fn print_error_to_writer(e: &eyre::Report, writer: &mut impl std::io::Write)
     }
 }
 
-pub(crate) fn serialize_pak(pak: &Pak<'_>) -> Vec<u8> {
+pub(crate) fn serialize_pak(pak: &Pak) -> Vec<u8> {
     // TODO: switch to something else
     merde::json::to_vec(pak).unwrap()
 }
@@ -172,7 +172,7 @@ pub(crate) async fn load_revision_from_disk(
 
 /// Save the revision pack to disk if needed, and make it the
 /// active one.
-pub async fn save_pak_to_disk_as_active(pak: &Pak<'_>, ti: &TenantInfo) -> eyre::Result<()> {
+pub async fn save_pak_to_disk_as_active(pak: &Pak, ti: &TenantInfo) -> eyre::Result<()> {
     let internal_dir = ti.internal_dir();
     let revisions_dir = internal_dir.join("revisions");
 

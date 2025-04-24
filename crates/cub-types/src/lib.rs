@@ -101,7 +101,7 @@ pub trait CubTenant: Send + Sync + 'static {
     }
 
     /// Return the current list of sponsors
-    fn sponsors(&self) -> Arc<Sponsors<'static>>;
+    fn sponsors(&self) -> Arc<Sponsors>;
 
     /// Returns the tenant's object store
     fn store(&self) -> Arc<dyn ObjectStore>;

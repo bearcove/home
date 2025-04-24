@@ -25,7 +25,7 @@ use tracing::{self, debug, warn};
 use crate::impls::frontmatter::{Frontmatter, FrontmatterIn};
 
 pub async fn load_pak(
-    pak: Pak<'static>,
+    pak: Pak,
     ti: Arc<TenantInfo>,
     prev_rev: Option<&Revision>,
     mappings: PathMappings,
@@ -445,7 +445,7 @@ pub async fn load_pak(
     // for now, so until we disentangle the dependencies here, that'll be that.
     let rev = Arc::new(rev);
 
-    let mut to_reinsert: Vec<Page<'static>> = Vec::new();
+    let mut to_reinsert: Vec<Page> = Vec::new();
 
     // Collect dependencies for each page to be built
     for page in &mut to_build {
@@ -651,7 +651,7 @@ fn recompute_asset_routes(rev: &mut Revision) -> eyre::Result<()> {
 fn load_single_page(
     rev: Arc<Revision>,
     templates: &dyn TemplateCollection,
-    page: &Page<'static>,
+    page: &Page,
     mod_markdown: &'static dyn libmarkdown::Mod,
     web: WebConfig,
 ) -> eyre::Result<LoadedPage> {
@@ -807,7 +807,7 @@ pub fn lrev_make_template_collection(
         debug!("Found template \x1b[33m{}\x1b[0m", name);
         compile_args
             .templates
-            .insert(name.to_string(), template.markup.clone().into());
+            .insert(name.to_string(), template.markup.clone());
     }
 
     tracing::trace!("{} templates total", compile_args.templates.len());

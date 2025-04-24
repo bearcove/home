@@ -139,11 +139,11 @@ pub(crate) async fn serve(
 }
 
 struct MomEventRelay {
-    mev_tx: mpsc::Sender<MomEvent<'static>>,
+    mev_tx: mpsc::Sender<MomEvent>,
 }
 
 impl MomEventListener for MomEventRelay {
-    fn on_event<'fut>(&'fut self, event: MomEvent<'static>) -> BoxFuture<'fut, ()> {
+    fn on_event<'fut>(&'fut self, event: MomEvent) -> BoxFuture<'fut, ()> {
         Box::pin(async move {
             self.mev_tx.send(event).await.unwrap();
         })
@@ -152,14 +152,14 @@ impl MomEventListener for MomEventRelay {
 
 async fn setup_mom_client(
     mcc: MomClientConfig,
-) -> eyre::Result<(Arc<dyn MomClient>, mpsc::Receiver<MomEvent<'static>>)> {
+) -> eyre::Result<(Arc<dyn MomClient>, mpsc::Receiver<MomEvent>)> {
     let mod_momclient = libmomclient::load();
     let mom_client = mod_momclient
         .client(mcc.clone())
         .await
         .map_err(|e| eyre::eyre!("Failed to create mom client: {}", e))?;
 
-    let (mev_tx, mev_rx) = tokio::sync::mpsc::channel::<MomEvent<'static>>(2);
+    let (mev_tx, mev_rx) = tokio::sync::mpsc::channel::<MomEvent>(2);
 
     mod_momclient
         .subscribe_to_mom_events(Box::new(MomEventRelay { mev_tx }), mcc)
@@ -171,16 +171,16 @@ async fn setup_mom_client(
 
 async fn process_mom_good_morning(
     cc: &CubConfig,
-    mev_rx: &mut mpsc::Receiver<MomEvent<'static>>,
+    mev_rx: &mut mpsc::Receiver<MomEvent>,
     web: WebConfig,
 ) -> eyre::Result<(
     HashMap<TenantDomain, Arc<TenantInfo>>,
     HashMap<TenantDomain, CubRevisionState>,
-    HashMap<TenantDomain, Sponsors<'static>>,
+    HashMap<TenantDomain, Sponsors>,
 )> {
     let mod_revision = librevision::load();
     let mut revs_per_ts: HashMap<TenantDomain, CubRevisionState> = Default::default();
-    let mut sponsors_per_ts: HashMap<TenantDomain, Sponsors<'static>> = Default::default();
+    let mut sponsors_per_ts: HashMap<TenantDomain, Sponsors> = Default::default();
 
     info!(
         "Waiting for mom's good morning message to initialize tenants and start serving content..."
@@ -190,9 +190,7 @@ async fn process_mom_good_morning(
     let gm = match mom_event {
         Some(MomEvent::GoodMorning(gm)) => gm,
         Some(ev) => {
-            panic!(
-                "Expected to receive good morning, but received unexpected event: {ev:?}"
-            );
+            panic!("Expected to receive good morning, but received unexpected event: {ev:?}");
         }
         None => {
             panic!(
@@ -295,7 +293,7 @@ async fn build_global_state(
     mom_deploy_client: Arc<dyn MomClient>,
     tenant_infos: &HashMap<TenantDomain, Arc<TenantInfo>>,
     revs_per_ts: &mut HashMap<TenantDomain, CubRevisionState>,
-    sponsors_per_ts: &mut HashMap<TenantDomain, Sponsors<'static>>,
+    sponsors_per_ts: &mut HashMap<TenantDomain, Sponsors>,
 ) -> eyre::Result<CubGlobalState> {
     let mut gs = CubGlobalState {
         config,
@@ -407,7 +405,7 @@ async fn start_watching_revisions() -> eyre::Result<()> {
     Ok(())
 }
 
-async fn setup_app_routes(metadata: &NodeMetadata<'static>) -> eyre::Result<Router> {
+async fn setup_app_routes(metadata: &NodeMetadata) -> eyre::Result<Router> {
     let pod_name = std::env::var("POD_NAME").ok();
     let node_name = std::env::var("NODE_NAME").ok();
 

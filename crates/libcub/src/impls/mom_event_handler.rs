@@ -8,10 +8,7 @@ use tokio::sync::mpsc;
 
 use super::{global_state, types::CubTenantImpl};
 
-pub(crate) fn spawn_mom_event_handler(
-    mut mev_rx: mpsc::Receiver<MomEvent<'static>>,
-    web: WebConfig,
-) {
+pub(crate) fn spawn_mom_event_handler(mut mev_rx: mpsc::Receiver<MomEvent>, web: WebConfig) {
     tokio::spawn(async move {
         loop {
             let ev = mev_rx.recv().await.unwrap();
@@ -46,7 +43,7 @@ pub(crate) fn spawn_mom_event_handler(
 
 async fn handle_tenant_event(
     ts: Arc<CubTenantImpl>,
-    payload: mom_types::TenantEventPayload<'static>,
+    payload: mom_types::TenantEventPayload,
     web: WebConfig,
 ) {
     match payload {
@@ -59,11 +56,11 @@ async fn handle_tenant_event(
     }
 }
 
-fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: Sponsors<'static>) {
+fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: Sponsors) {
     *ts.sponsors.write() = Arc::new(sponsors);
 }
 
-async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak<'static>>, web: WebConfig) {
+async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak>, web: WebConfig) {
     if is_development() {
         tracing::info!("Received a pak from mom, ignoring since we're in development");
         return;

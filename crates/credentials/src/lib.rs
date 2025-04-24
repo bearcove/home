@@ -1,55 +1,55 @@
-use merde::{CowStr, time::Rfc3339};
+use merde::time::Rfc3339;
 use serde::Serialize;
 use time::OffsetDateTime;
 
 pub use eyre::{Result, eyre};
 
 #[derive(Debug, Clone)]
-pub struct AuthBundle<'s> {
-    pub user_info: UserInfo<'s>,
+pub struct AuthBundle {
+    pub user_info: UserInfo,
     pub expires_at: Rfc3339<OffsetDateTime>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct AuthBundle<'s> { user_info, expires_at }
+    impl (Serialize, Deserialize) for struct AuthBundle { user_info, expires_at }
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct UserInfo<'s> {
-    pub profile: Profile<'s>,
-    pub tier: Option<Tier<'s>>,
+pub struct UserInfo {
+    pub profile: Profile,
+    pub tier: Option<Tier>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct UserInfo<'s> { profile, tier }
+    impl (Serialize, Deserialize) for struct UserInfo { profile, tier }
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct Tier<'s> {
-    pub title: CowStr<'s>,
+pub struct Tier {
+    pub title: String,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Tier<'s> { title }
+    impl (Serialize, Deserialize) for struct Tier { title }
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct Profile<'s> {
-    pub patreon_id: Option<CowStr<'s>>,
-    pub github_id: Option<CowStr<'s>>,
+pub struct Profile {
+    pub patreon_id: Option<String>,
+    pub github_id: Option<String>,
 
     // for GitHub that's `name ?? login`
-    pub full_name: CowStr<'s>,
+    pub full_name: String,
 
     // avatar thumbnail URL
-    pub thumb_url: CowStr<'s>,
+    pub thumb_url: String,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Profile<'s> { patreon_id, github_id, full_name, thumb_url }
+    impl (Serialize, Deserialize) for struct Profile { patreon_id, github_id, full_name, thumb_url }
 }
 
-impl Profile<'_> {
+impl Profile {
     pub fn patreon_id(&self) -> Result<&str> {
         self.patreon_id
             .as_deref()

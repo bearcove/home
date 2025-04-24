@@ -9,7 +9,7 @@ use content_type::ContentType;
 use eyre::Report;
 use http::header::CONTENT_TYPE;
 use libterm::FormatAnsiStyle;
-use merde::{DynSerialize, IntoStatic};
+use merde::DynSerialize;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::borrow::Cow;
@@ -280,9 +280,9 @@ impl_from!(libobjectstore::Error);
 impl_from!(std::str::Utf8Error);
 impl_from!(std::string::FromUtf8Error);
 
-impl<'s> From<merde::MerdeError<'s>> for LegacyHttpError {
-    fn from(err: merde::MerdeError<'s>) -> Self {
-        Self::from_report(err.into_static().into())
+impl From<merde::MerdeError<'_>> for LegacyHttpError {
+    fn from(err: merde::MerdeError<'_>) -> Self {
+        Self::from_report(eyre::eyre!("{err}"))
     }
 }
 

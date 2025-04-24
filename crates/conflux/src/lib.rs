@@ -15,7 +15,7 @@ use content_type::ContentType;
 use credentials::UserInfo;
 use image_types::{ICodec, IntrinsicPixels};
 use libobjectstore::input_key;
-use merde::{CowStr, time::Rfc3339};
+use merde::time::Rfc3339;
 use objectstore_types::ObjectStoreKey;
 pub use time::OffsetDateTime;
 
@@ -337,7 +337,7 @@ impl Viewer {
     /// Follow the tier from the user info
     pub fn new(
         rc: RevisionConfig,
-        user_info: Option<&UserInfo<'_>>,
+        user_info: Option<&UserInfo>,
         access_override: Option<AccessOverride>,
     ) -> Self {
         let mut v = Self::anon();
@@ -792,7 +792,7 @@ impl RouteRef {
 #[derive(Clone)]
 pub struct Revision {
     /// the original revision
-    pub pak: Pak<'static>,
+    pub pak: Pak,
 
     /// information about the tenant
     pub ti: Arc<TenantInfo>,
@@ -850,7 +850,7 @@ impl fmt::Debug for Revision {
 /// Some assets are inline (e.g. `Page` has `markup`), and some are in object storage,
 /// like images.
 #[derive(Clone)]
-pub struct Pak<'s> {
+pub struct Pak {
     /// revision ID (`rev_{lowercase_ulid}`)
     pub id: RevisionId,
 
@@ -860,10 +860,10 @@ pub struct Pak<'s> {
     /// Maps paths to the corresponding page (markdown markup)
     /// Markdown rendering and post-processing happens after this.
     /// (but can be cached by Hapa + deps)
-    pub pages: HashMap<InputPath, Page<'s>>,
+    pub pages: HashMap<InputPath, Page>,
 
     /// Templates (including shortcodes, partials, etc.)
-    pub templates: HashMap<InputPath, Template<'s>>,
+    pub templates: HashMap<InputPath, Template>,
 
     /// Media properties (bitmaps, diagrams, video files, audio files, etc)
     /// like their resolution, etc.
@@ -877,7 +877,7 @@ pub struct Pak<'s> {
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Pak<'s> {
+    impl (Serialize, Deserialize) for struct Pak {
         id, inputs, pages, media_props, templates, svg_font_face_collection, rc
     }
 }
@@ -1139,47 +1139,47 @@ merde::derive! {
 }
 
 #[derive(Clone)]
-pub struct Page<'s> {
+pub struct Page {
     pub hash: InputHash,
     pub path: InputPath,
 
     // the markdown content (including frontmatter)
-    pub markup: CowStr<'s>,
+    pub markup: String,
 
     // dependencies (images, shortcodes, etc.)
     pub deps: Vec<InputPath>,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Page<'s> {
+    impl (Serialize, Deserialize) for struct Page {
         hash, path, markup, deps
     }
 }
 
 #[derive(Clone)]
-pub struct Template<'s> {
+pub struct Template {
     pub path: InputPath,
 
     /// jinja markup
-    pub markup: CowStr<'s>,
+    pub markup: String,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Template<'s> {
+    impl (Serialize, Deserialize) for struct Template {
         path, markup
     }
 }
 
 #[derive(Clone)]
-pub struct Stylesheet<'s> {
+pub struct Stylesheet {
     pub path: InputPath,
 
     /// SCSS markup
-    pub markup: CowStr<'s>,
+    pub markup: String,
 }
 
 merde::derive! {
-    impl (Serialize, Deserialize) for struct Stylesheet<'s> {
+    impl (Serialize, Deserialize) for struct Stylesheet {
         path, markup
     }
 }
