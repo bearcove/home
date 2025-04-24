@@ -19,5 +19,9 @@ tokio = { workspace = true }
 tracing = { workspace = true }
 libwebsock = { version = "0.1.0", path = "../libwebsock" }
 hattip = { version = "0.1.0", path = "../../crates/hattip" }
-libcub = { version = "0.1.0", path = "../libcub" }
 futures-core = "0.3.31"
+cub-types = { version = "0.1.0", path = "../cub-types" }
+config-types = { version = "0.1.0", path = "../config-types" }
+mom-types = { version = "0.1.0", path = "../mom-types" }
+eyre.workspace = true
+autotrait = "0.1.12"

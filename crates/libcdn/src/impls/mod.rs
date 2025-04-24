@@ -2,19 +2,20 @@ use std::sync::LazyLock;
 use std::time::{Duration, Instant};
 
 use bytesize::ByteSize;
-use config::{TenantConfig, WebConfig};
+use config_types::{TenantConfig, WebConfig};
 use conflux::{Asset, PathMappings, Route};
 use content_type::ContentType;
 use cub_types::CubReq;
 use derivations::DerivationInfo;
+use eyre::bail;
 use hattip::http::Uri;
 use libhttpclient::HttpClient;
-use mom::{DeriveParams, DeriveResponse};
+use mom_types::{DeriveParams, DeriveResponse};
 use tracing::{debug, trace, warn};
 
 use hattip::prelude::*;
 use hattip::to_herror;
-use websock::{Frame, WebSocketStream};
+use libwebsock::{Frame, WebSocketStream};
 
 pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HReply {
     let tenant = rcx.tenant_owned();
@@ -165,10 +166,11 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
         Ok(res) => {
             tracing::debug!(?cache_key, "Found derivation in cache");
             return res.bytes().await.map_err(|e| {
-                BS::from_string(format!(
+                eyre::eyre!(
                     "failed to fetch bytes from upstream for cache key '{}': {}",
-                    cache_key, e
-                ))
+                    cache_key,
+                    e
+                )
             });
         }
         Err(e) => {
@@ -208,9 +210,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     loop {
         tries += 1;
         if tries > max_tries {
-            return Err(BS::from_string(format!(
-                "max retries ({tries}) exceeded waiting for derivation"
-            )));
+            bail!("max retries ({tries}) exceeded waiting for derivation");
         }
 
         tracing::info!(%input_key, %route, "Asking mom to derive");
@@ -224,9 +224,9 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
             DeriveResponse::Done(donezo) => {
                 let written_to = donezo.dest;
                 if written_to != cache_key {
-                    return Err(BS::from_string(format!(
+                    bail!(
                         "derivation output key ({written_to}) does not match expected key ({cache_key})"
-                    )));
+                    );
                 }
                 tracing::info!(
                     "\x1b[36m{} => {}\x1b[0m took \x1b[32m{:?}\x1b[0m (\x1b[34m{}\x1b[0m => \x1b[34m{}\x1b[0m, e.g. \x1b[35m{:.2}x\x1b[0m) \x1b[33m{}\x1b[0m",
@@ -257,10 +257,11 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     // according to mom, it's now available in the object store, fetch it
     let res = tenant.store().get(&cache_key).await?;
     return res.bytes().await.map_err(|e| {
-        BS::from_string(format!(
+        eyre::eyre!(
             "failed to fetch bytes from upstream for cache key '{}': {}",
-            cache_key, e
-        ))
+            cache_key,
+            e
+        )
     });
 }
 
@@ -321,7 +322,7 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
                             .join("\n")
                     );
 
-                    let upstream = match websock::load()
+                    let upstream = match libwebsock::load()
                         .websocket_connect(dst_uri.clone(), src_headers.clone())
                         .await
                     {

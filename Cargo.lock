@@ -3165,18 +3165,22 @@ checksum = "d750af042f7ef4f724306de029d18836c26c1765a54a6a3f094cbd23a7267ffa"
 name = "libcdn"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "bytesize 2.0.1",
+ "config-types",
  "conflux",
  "content-type",
+ "cub-types",
  "derivations",
+ "eyre",
  "futures-core",
  "hattip",
  "http-range",
  "libconfig",
- "libcub",
  "libhttpclient",
  "libmom",
  "libwebsock",
+ "mom-types",
  "tokio",
  "tracing",
 ]
@@ -3246,6 +3250,7 @@ dependencies = [
  "itertools 0.14.0",
  "libapi",
  "libc",
+ "libcdn",
  "libcompress",
  "libconfig",
  "liberrhandling",

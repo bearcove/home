@@ -71,3 +71,4 @@ librevision = { version = "0.1.0", path = "../librevision" }
 libconfig = { version = "0.1.0", path = "../libconfig" }
 open = { version = "5.3.2" }
 libgithub = { version = "0.1.0", path = "../libgithub" }
+libcdn = { version = "0.1.0", path = "../libcdn" }

@@ -1,9 +1,13 @@
+use autotrait::autotrait;
 use cub_types::CubReq;
 use futures_core::future::BoxFuture;
 use hattip::{HReply, http::HeaderMap};
 
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 mod impls;
 

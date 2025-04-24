@@ -34,7 +34,6 @@ pub trait MomEventListener: Send + 'static {
 
 pub use eyre::Result;
 
-#[derive(Default)]
 struct ModImpl;
 
 pub fn load() -> &'static dyn Mod {
