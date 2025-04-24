@@ -20,8 +20,7 @@ fn main() -> eyre::Result<()> {
             let class_name = ident.to_string();
             let constant_name = class_name.replace("-", "_").to_uppercase();
             eprintln!(
-                "Class name: {}, Constant name: {}",
-                class_name, constant_name
+                "Class name: {class_name}, Constant name: {constant_name}"
             );
 
             if let Token::Colon = parser.next().unwrap() {

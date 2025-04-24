@@ -102,7 +102,7 @@ impl LegacyHttpError {
                     let _ = writeln!(&mut err_string, "\x1b[32m{}.\x1b[0m {}", i + 1, e);
                     for (j, line) in err_lines.iter().enumerate() {
                         if j > 0 {
-                            let _ = writeln!(&mut err_string, "   {}", line);
+                            let _ = writeln!(&mut err_string, "   {line}");
                         }
                     }
                 }

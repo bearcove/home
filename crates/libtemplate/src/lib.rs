@@ -929,7 +929,7 @@ impl Object for MediaVal {
                                 opts.width = Some(LogicalPixels::from(width_str.parse::<f32>().map_err(|_| {
                                     minijinja::Error::new(
                                         minijinja::ErrorKind::InvalidOperation,
-                                        format!("Width must be a number or string that parses to a number, got: {:?}", width),
+                                        format!("Width must be a number or string that parses to a number, got: {width:?}"),
                                     )
                                 })?));
                             }
@@ -944,7 +944,7 @@ impl Object for MediaVal {
                                 opts.height = Some(LogicalPixels::from(height_str.parse::<f32>().map_err(|_| {
                                     minijinja::Error::new(
                                         minijinja::ErrorKind::InvalidOperation,
-                                        format!("Height must be a number or string that parses to a number, got: {:?}", height),
+                                        format!("Height must be a number or string that parses to a number, got: {height:?}"),
                                     )
                                 })?));
                             }

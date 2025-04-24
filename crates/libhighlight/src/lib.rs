@@ -702,7 +702,7 @@ pub(crate) mod impls {
 
         let has_language_tag = !name.is_empty();
         let lang_desc = if has_language_tag {
-            format!("{} code block", name)
+            format!("{name} code block")
         } else {
             "Code block".to_string()
         };

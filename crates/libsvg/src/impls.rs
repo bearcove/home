@@ -129,7 +129,7 @@ pub(crate) fn cleanup_svg(input: &[u8], _opts: SvgCleanupOptions) -> eyre::Resul
                     if !has_viewbox {
                         new_elem.push_attribute((
                             "viewBox",
-                            format!("0 0 {} {}", width_val, height_val).as_str(),
+                            format!("0 0 {width_val} {height_val}").as_str(),
                         ));
                     }
                 }
@@ -197,7 +197,7 @@ impl FontSubsetter {
         let subset_path = self
             .tmp_dir
             .path()
-            .join(format!("{}.subset.woff2", font_name));
+            .join(format!("{font_name}.subset.woff2"));
 
         let pyftsubset_path = which::which("pyftsubset")?;
 
@@ -343,9 +343,9 @@ mod test {
 
         let mut child = Command::new(pyftsubset_path)
             .arg(input_font_path)
-            .arg(format!("--text={}", included_chars))
+            .arg(format!("--text={included_chars}"))
             .arg("--flavor=woff2")
-            .arg(format!("--output-file={}", output_font_path))
+            .arg(format!("--output-file={output_font_path}"))
             .arg("--no-hinting")
             .arg("--desubroutinize")
             .arg("--no-notdef-outline")
@@ -376,8 +376,7 @@ mod test {
         let status = child.wait().await.expect("Failed to wait for pyftsubset");
         assert!(
             status.success(),
-            "pyftsubset failed with status: {}",
-            status
+            "pyftsubset failed with status: {status}"
         );
 
         // Verify the output file exists and has contents
@@ -439,7 +438,7 @@ mod test {
                 .unwrap();
 
             // Write decoded font to temporary file
-            let temp_font_path = format!("/tmp/extracted_font_{}.woff2", index);
+            let temp_font_path = format!("/tmp/extracted_font_{index}.woff2");
             tokio::fs::write(&temp_font_path, &font_data).await.unwrap();
 
             // Use ttx to dump only the 'cmap' table

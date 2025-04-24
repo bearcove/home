@@ -107,6 +107,6 @@ impl std::fmt::Display for CacheStats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let lookups = self.lookups.load(std::sync::atomic::Ordering::Relaxed);
         let hit_rate = self.hit_rate() * 100.0;
-        write!(f, "Lookups: {}, Hit rate: {:.2}%", lookups, hit_rate)
+        write!(f, "Lookups: {lookups}, Hit rate: {hit_rate:.2}%")
     }
 }

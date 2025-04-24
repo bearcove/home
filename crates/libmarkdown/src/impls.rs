@@ -589,7 +589,7 @@ impl<'a> Formatter<'a> {
                         Alignment::None => None,
                     };
                     match align_class {
-                        Some(class) => write!(self.writer()?, " class=\"{class}\">{}", class)?,
+                        Some(class) => write!(self.writer()?, " class=\"{class}\">{class}")?,
                         None => write!(self.writer()?, ">")?,
                     }
                 }
@@ -1298,7 +1298,7 @@ mod tests {
             _mode: libmath::MathMode,
             w: &mut dyn std::io::Write,
         ) -> eyre::Result<()> {
-            write!(w, "<span class=\"mathml\">{}</span>", input)?;
+            write!(w, "<span class=\"mathml\">{input}</span>")?;
             Ok(())
         }
     }

@@ -191,8 +191,7 @@ async fn process_mom_good_morning(
         Some(MomEvent::GoodMorning(gm)) => gm,
         Some(ev) => {
             panic!(
-                "Expected to receive good morning, but received unexpected event: {:?}",
-                ev
+                "Expected to receive good morning, but received unexpected event: {ev:?}"
             );
         }
         None => {
@@ -371,7 +370,7 @@ fn setup_domain_resolution(gs: &mut CubGlobalState, ts: &Arc<CubTenantImpl>, web
                 },
             );
 
-            let cdn_alias = TenantDomain::new(format!("cdn.{}", alias));
+            let cdn_alias = TenantDomain::new(format!("cdn.{alias}"));
             dynamic.domain_resolution.insert(
                 cdn_alias,
                 DomainResolution::Redirect {

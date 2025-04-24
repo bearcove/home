@@ -263,8 +263,7 @@ async fn objectstore_list_missing(
             .collect::<Vec<_>>()
             .join(",");
         let query = format!(
-            "SELECT key FROM objectstore_entries WHERE key IN ({})",
-            placeholders
+            "SELECT key FROM objectstore_entries WHERE key IN ({placeholders})"
         );
 
         let mut stmt = conn.prepare(&query)?;
@@ -383,7 +382,7 @@ async fn revision_upload_revid(
         let object_store = ts.object_store.clone();
 
         // Upload to cloud storage (for backup)
-        let key = ObjectStoreKey::new(format!("revpaks/{}", revision_id));
+        let key = ObjectStoreKey::new(format!("revpaks/{revision_id}"));
         let result = object_store.put(&key, payload.clone()).await?;
         tracing::debug!(e_tag = ?result.e_tag, "Uploaded revision package to object store");
 

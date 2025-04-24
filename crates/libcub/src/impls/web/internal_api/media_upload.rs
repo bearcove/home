@@ -147,7 +147,7 @@ pub(crate) async fn serve_media_upload(
 async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>) {
     if let Err(e) = handle_ws_inner(&mut socket, ts).await {
         tracing::warn!("Error in image upload socket: {:?}", e);
-        let error_message = WebSocketMessage::Error(format!("Error: {}", e));
+        let error_message = WebSocketMessage::Error(format!("Error: {e}"));
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
             tracing::error!("Failed to send error message to websocket: {}", send_err);
         }
@@ -454,7 +454,7 @@ async fn handle_ws_inner(
     } else {
         ":media:".to_string()
     });
-    lines.push(format!("    src: {}", final_image_name));
+    lines.push(format!("    src: {final_image_name}"));
     if !commit.title.is_empty() {
         lines.push("    title: |".to_string());
         for line in commit.title.lines() {
@@ -499,7 +499,7 @@ async fn handle_ws_inner(
     tracing::debug!("Updating page content with new image markdown");
     match headers.action {
         Action::Append => {
-            content.insert_str(paragraph_end, &format!("\n\n{}", markdown));
+            content.insert_str(paragraph_end, &format!("\n\n{markdown}"));
         }
         Action::Replace => {
             content.replace_range(paragraph_start..paragraph_end, &markdown);

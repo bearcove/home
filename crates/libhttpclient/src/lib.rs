@@ -27,10 +27,10 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Any(s) => write!(f, "{}", s),
-            Error::Json(s) => write!(f, "{}", s),
+            Error::Any(s) => write!(f, "{s}"),
+            Error::Json(s) => write!(f, "{s}"),
             Error::Non200Status { status, response } => {
-                write!(f, "HTTP Status {}: {}", status, response)
+                write!(f, "HTTP Status {status}: {response}")
             }
         }
     }

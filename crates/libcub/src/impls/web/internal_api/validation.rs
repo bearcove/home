@@ -153,7 +153,7 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
     let irev = match ts.rev() {
         Ok(rev) => rev,
         Err(e) => {
-            ms.error(format!("Failed to get current revision: {}", e))
+            ms.error(format!("Failed to get current revision: {e}"))
                 .await;
             return;
         }

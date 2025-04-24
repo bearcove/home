@@ -216,7 +216,7 @@ fn handle_ffmpeg_events(
                 })
             }
             FfmpegEvent::Log(level, message) => {
-                let log_entry = format!("[{:?}] {}", level, message);
+                let log_entry = format!("[{level:?}] {message}");
                 log_messages.push(log_entry.clone());
                 match level {
                     LogLevel::Error => {}
@@ -234,7 +234,7 @@ fn handle_ffmpeg_events(
                     continue;
                 }
                 tracing::error!("ffmpeg-sidecar error: {}", error);
-                log_messages.push(format!("[ERROR] ffmpeg-sidecar error: {}", error));
+                log_messages.push(format!("[ERROR] ffmpeg-sidecar error: {error}"));
                 continue;
             }
             _ => continue,

@@ -186,7 +186,7 @@ impl ProjectChangeSet {
                 tokio::fs::create_dir_all(parent).await?;
             }
             tokio::fs::write(&full_path, &file.content).await?;
-            eprintln!("📄 Created file: \x1b[36m{}\x1b[0m", full_path);
+            eprintln!("📄 Created file: \x1b[36m{full_path}\x1b[0m");
         }
         Ok(())
     }
@@ -221,7 +221,7 @@ pub async fn init_project(dir: &camino::Utf8Path, force: bool) -> eyre::Result<(
     if !existing_files.is_empty() && !force {
         eprintln!("\x1b[33m⚠️ The following files already exist:\x1b[0m");
         for file in &existing_files {
-            eprintln!("  \x1b[36m{}\x1b[0m", file);
+            eprintln!("  \x1b[36m{file}\x1b[0m");
         }
         eprintln!(
             "\x1b[33mPlease remove these files or run again with --force to overwrite.\x1b[0m"
@@ -231,7 +231,7 @@ pub async fn init_project(dir: &camino::Utf8Path, force: bool) -> eyre::Result<(
 
     // Ask for user consent
     if !force {
-        println!("{}", change_set);
+        println!("{change_set}");
         eprint!("\x1b[32mDo you want to proceed? (y/N): \x1b[0m");
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;

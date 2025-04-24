@@ -113,7 +113,7 @@ async fn real_main() -> eyre::Result<()> {
                 };
                 let mom_addr = mom_ln.local_addr()?;
                 eprintln!("Mom is listening on {}", mom_addr.blue());
-                cc.mom_base_url = format!("http://{}", mom_addr);
+                cc.mom_base_url = format!("http://{mom_addr}");
 
                 let mom_conf = MomConfig {
                     tenant_data_dir: Utf8PathBuf::from("/tmp/tenant_data"),
@@ -136,7 +136,7 @@ async fn real_main() -> eyre::Result<()> {
                         eprintln!("\n\n\x1b[31;1m========================================");
                         eprintln!("🚨 FATAL ERROR: Mom server died unexpectedly 🚨");
                         eprintln!("💀 We're dying! This is why: 💀");
-                        eprintln!("Error details: {}", e);
+                        eprintln!("Error details: {e}");
                         eprintln!("🔥 She's taking us down with her! 🔥");
                         eprintln!("Please report this to @fasterthanlime ASAP!");
                         eprintln!("========================================\x1b[0m\n");

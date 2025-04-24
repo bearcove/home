@@ -170,7 +170,7 @@ async fn convert_watcher_events_to_input_events(
                     Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                         InputEvent::Removed(input_path)
                     }
-                    Err(e) => panic!("Failed to get metadata for {}: {}", path, e),
+                    Err(e) => panic!("Failed to get metadata for {path}: {e}"),
                 },
                 WatcherEventKind::Modify => match tokio::fs::metadata(&path).await {
                     Ok(metadata) => InputEvent::Modified {
@@ -180,7 +180,7 @@ async fn convert_watcher_events_to_input_events(
                     Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                         InputEvent::Removed(input_path)
                     }
-                    Err(e) => panic!("Failed to get metadata for {}: {}", path, e),
+                    Err(e) => panic!("Failed to get metadata for {path}: {e}"),
                 },
                 WatcherEventKind::Remove => InputEvent::Removed(input_path),
             };

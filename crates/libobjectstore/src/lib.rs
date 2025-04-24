@@ -152,7 +152,7 @@ impl Mod for ModImpl {
 
     fn local_disk_with_prefix(&self, prefix: &str) -> Result<Arc<dyn ObjectStore>> {
         Ok(Arc::new(ObjectStoreWrapper {
-            desc: format!("Local disk (prefix: {})", prefix),
+            desc: format!("Local disk (prefix: {prefix})"),
             inner: Box::new(
                 object_store::local::LocalFileSystem::new_with_prefix(prefix)
                     .map_err(to_spec_error)?,
@@ -351,7 +351,7 @@ impl fmt::Debug for LayeredStore {
 
 impl fmt::Display for LayeredStore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 

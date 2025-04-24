@@ -167,19 +167,19 @@ pub fn media_markup(opts: MediaMarkupOpts<'_>) -> eyre::Result<String> {
             )?;
             let dims = &opts.media.props.dims;
             if let Some(width) = opts.width {
-                write!(w, r#" width="{}""#, width)?;
+                write!(w, r#" width="{width}""#)?;
                 if let Some(height) = opts.height {
-                    write!(w, r#" height="{}""#, height)?;
+                    write!(w, r#" height="{height}""#)?;
                 } else {
                     write!(w, r#" height="auto""#)?;
                 }
             } else if let Some(height) = opts.height {
-                write!(w, r#" height="{}""#, height)?;
+                write!(w, r#" height="{height}""#)?;
                 write!(w, r#" width="auto""#)?;
             } else {
                 let width = dims.w.to_logical(dims.density);
                 let height = dims.h.to_logical(dims.density);
-                write!(w, r#" width="{}" height="{}""#, width, height)?;
+                write!(w, r#" width="{width}" height="{height}""#)?;
             }
 
             if let Some(id) = opts.id {

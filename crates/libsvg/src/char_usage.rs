@@ -23,19 +23,19 @@ impl fmt::Display for Typo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Typo {{ ")?;
         if let Some(ref family) = self.family {
-            write!(f, "family: {:?}, ", family)?;
+            write!(f, "family: {family:?}, ")?;
         } else {
             write!(f, "family: \"unknown\", ")?;
         }
 
         if let Some(weight) = self.weight {
-            write!(f, "weight: {}, ", weight)?;
+            write!(f, "weight: {weight}, ")?;
         } else {
             write!(f, "weight: \"unknown\", ")?;
         }
 
         if let Some(style) = self.style {
-            write!(f, "style: {}", style)?;
+            write!(f, "style: {style}")?;
         } else {
             write!(f, "style: \"unknown\" }}")?;
         }
@@ -69,15 +69,14 @@ impl fmt::Display for CharUsageDetector {
                 StackItem::StyleElement { markup } => {
                     writeln!(
                         f,
-                        "    \x1b[34mStyleElement {{ markup: {:?} }}\x1b[0m",
-                        markup
+                        "    \x1b[34mStyleElement {{ markup: {markup:?} }}\x1b[0m"
                     )?;
                 }
                 StackItem::SwitchElement => {
                     writeln!(f, "    \x1b[35mSwitchElement\x1b[0m")?;
                 }
                 StackItem::TypoOverride(typo) => {
-                    writeln!(f, "    \x1b[36m{}\x1b[0m", typo)?;
+                    writeln!(f, "    \x1b[36m{typo}\x1b[0m")?;
                 }
                 StackItem::OtherElement => {
                     writeln!(f, "    \x1b[33mOtherElement\x1b[0m")?;
@@ -87,7 +86,7 @@ impl fmt::Display for CharUsageDetector {
         writeln!(f, "  ],")?;
         writeln!(f, "  chars_per_typo: {{")?;
         for (typo, chars) in &self.chars_per_typo {
-            writeln!(f, "    {}: {:?},", typo, chars)?;
+            writeln!(f, "    {typo}: {chars:?},")?;
         }
         writeln!(f, "  }}")?;
         writeln!(f, "}}\x1b[0m")?;

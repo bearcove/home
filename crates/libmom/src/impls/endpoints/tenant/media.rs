@@ -31,7 +31,7 @@ pub(crate) async fn upload(
 async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<MomTenantState>) {
     if let Err(e) = handle_ws_inner(&mut socket, ts).await {
         tracing::warn!("Error in media transcode socket: {:?}", e);
-        let error_message = WebSocketMessage::Error(format!("Error: {}", e));
+        let error_message = WebSocketMessage::Error(format!("Error: {e}"));
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
             tracing::error!("Failed to send error message to websocket: {}", send_err);
         }

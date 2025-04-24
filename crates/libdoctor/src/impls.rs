@@ -97,7 +97,7 @@ pub(crate) async fn doctor() -> Result<(), i32> {
         let mut fatal_errors = 0;
         for (index, error) in errors.iter().enumerate() {
             eprintln!("⭕ Error {} of {}", index + 1, errors.len());
-            eprintln!("\x1b[31m{}\x1b[0m", error);
+            eprintln!("\x1b[31m{error}\x1b[0m");
             if error.is_fatal() {
                 fatal_errors += 1;
             }

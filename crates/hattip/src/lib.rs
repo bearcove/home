@@ -143,6 +143,6 @@ pub fn redirect(u: &str) -> HReply {
     Response::builder()
         .status(StatusCode::TEMPORARY_REDIRECT)
         .header(http::header::LOCATION, u)
-        .body(HBody::String(format!("Redirecting to {}", u)))
+        .body(HBody::String(format!("Redirecting to {u}")))
         .map_err(|e| HError::Internal { err: e.to_string() })
 }

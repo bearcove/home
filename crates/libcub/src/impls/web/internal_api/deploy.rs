@@ -168,7 +168,7 @@ async fn handle_deploy_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>,
     if let Err(e) = handle_deploy_socket_inner(&mut socket, ts, web).await {
         let error_message = DeployMessage::LogMessage(LogMessage {
             level: Level::Error,
-            message: format!("Error: {}", e),
+            message: format!("Error: {e}"),
         });
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
             tracing::error!("Failed to send error message to websocket: {}", send_err);
@@ -208,8 +208,7 @@ async fn run_vite_build_and_update_revision(
             &DeployMessage::LogMessage(LogMessage {
                 level: Level::Error,
                 message: format!(
-                    "svelte-check failed. Aborting deploy. Error: {}",
-                    error_output
+                    "svelte-check failed. Aborting deploy. Error: {error_output}"
                 ),
             }),
         )
@@ -370,8 +369,7 @@ async fn run_vite_build_and_update_revision(
         &DeployMessage::LogMessage(LogMessage {
             level: Level::Info,
             message: format!(
-                "[{}] Frontend assets built successfully in {:?}",
-                tenant_name, build_elapsed
+                "[{tenant_name}] Frontend assets built successfully in {build_elapsed:?}"
             ),
         }),
     )
@@ -425,7 +423,7 @@ async fn run_vite_build_and_update_revision(
     let indexed_rev = match revision_result {
         Ok(rev) => rev,
         Err(e) => {
-            let err_msg = format!("Failed to update revision with new assets: {}", e);
+            let err_msg = format!("Failed to update revision with new assets: {e}");
             json_to_socket(
                 socket,
                 &DeployMessage::LogMessage(LogMessage {
@@ -443,7 +441,7 @@ async fn run_vite_build_and_update_revision(
         socket,
         &DeployMessage::LogMessage(LogMessage {
             level: Level::Info,
-            message: format!("Revision updated with new assets in {:?}", rev_elapsed),
+            message: format!("Revision updated with new assets in {rev_elapsed:?}"),
         }),
     )
     .await?;
@@ -500,8 +498,7 @@ async fn handle_deploy_socket_inner(
             &DeployMessage::LogMessage(LogMessage {
                 level: Level::Info,
                 message: format!(
-                    "Assets: {}/{} already present, will upload {} new ones",
-                    uploaded_inputs, total_inputs, missing_inputs
+                    "Assets: {uploaded_inputs}/{total_inputs} already present, will upload {missing_inputs} new ones"
                 ),
             }),
         )
@@ -613,7 +610,7 @@ async fn handle_deploy_socket_inner(
                     socket,
                     &DeployMessage::LogMessage(LogMessage {
                         level: Level::Error,
-                        message: format!("{}", e),
+                        message: format!("{e}"),
                     }),
                 )
                 .await?;
@@ -637,7 +634,7 @@ async fn handle_deploy_socket_inner(
         socket,
         &DeployMessage::LogMessage(LogMessage {
             level: Level::Info,
-            message: format!("Uploading revision package ({})", formatted_size),
+            message: format!("Uploading revision package ({formatted_size})"),
         }),
     )
     .await?;
@@ -650,7 +647,7 @@ async fn handle_deploy_socket_inner(
         socket,
         &DeployMessage::LogMessage(LogMessage {
             level: Level::Info,
-            message: format!("Revision uploaded in {:?}", elapsed),
+            message: format!("Revision uploaded in {elapsed:?}"),
         }),
     )
     .await?;

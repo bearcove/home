@@ -36,7 +36,7 @@ pub(crate) async fn download_url(
         Err(e) => {
             return LegacyHttpError::with_status(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to download URL: {}", e),
+                format!("Failed to download URL: {e}"),
             )
             .into_legacy_reply();
         }
@@ -53,7 +53,7 @@ pub(crate) async fn download_url(
         Err(e) => {
             return LegacyHttpError::with_status(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to read response body: {}", e),
+                format!("Failed to read response body: {e}"),
             )
             .into_legacy_reply();
         }

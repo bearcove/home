@@ -386,7 +386,7 @@ impl std::str::FromStr for FontStyle {
         match s.to_lowercase().as_str() {
             "normal" => Ok(FontStyle::Normal),
             "italic" => Ok(FontStyle::Italic),
-            _ => Err(format!("Unknown font style: {}", s)),
+            _ => Err(format!("Unknown font style: {s}")),
         }
     }
 }
@@ -613,7 +613,7 @@ impl std::fmt::Display for ByteSize {
         } else if size % (1024 * 1024) == 0 {
             write!(f, "{} MiB", size / (1024 * 1024))
         } else {
-            write!(f, "{} bytes", size)
+            write!(f, "{size} bytes")
         }
     }
 }
@@ -627,16 +627,16 @@ impl std::str::FromStr for ByteSize {
             size.trim()
                 .parse::<u64>()
                 .map(|v| ByteSize(v * 1024 * 1024 * 1024))
-                .map_err(|_| format!("Invalid number in '{}'", s))
+                .map_err(|_| format!("Invalid number in '{s}'"))
         } else if let Some(size) = s.strip_suffix(" mib") {
             size.trim()
                 .parse::<u64>()
                 .map(|v| ByteSize(v * 1024 * 1024))
-                .map_err(|_| format!("Invalid number in '{}'", s))
+                .map_err(|_| format!("Invalid number in '{s}'"))
         } else {
             s.parse::<u64>()
                 .map(ByteSize)
-                .map_err(|_| format!("Invalid number in '{}'", s))
+                .map_err(|_| format!("Invalid number in '{s}'"))
         }
     }
 }

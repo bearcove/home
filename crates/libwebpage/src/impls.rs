@@ -124,7 +124,7 @@ pub(crate) async fn add_image_maybe(
         let bytes = match get_limited_body(res).await {
             Ok(body) => body,
             Err(e) => {
-                eprintln!("Error fetching limited body: {}", e);
+                eprintln!("Error fetching limited body: {e}");
                 return;
             }
         };
@@ -149,7 +149,7 @@ pub(crate) async fn add_image_maybe(
     let bytes = match get_limited_body(res).await {
         Ok(body) => body,
         Err(e) => {
-            eprintln!("Error fetching limited body: {}", e);
+            eprintln!("Error fetching limited body: {e}");
             return;
         }
     };
@@ -158,7 +158,7 @@ pub(crate) async fn add_image_maybe(
     let (width, height) = match mod_img.dimensions(&bytes, iformat) {
         Ok(dims) => dims,
         Err(e) => {
-            eprintln!("Error while fetching image dimensions: {}", e);
+            eprintln!("Error while fetching image dimensions: {e}");
             return;
         }
     };
@@ -166,7 +166,7 @@ pub(crate) async fn add_image_maybe(
     let transcoded = match mod_img.transcode(&bytes, iformat, ICodec::WEBP, None) {
         Ok(transcoded) => transcoded,
         Err(e) => {
-            eprintln!("Error while transcoding image: {}", e);
+            eprintln!("Error while transcoding image: {e}");
             return;
         }
     };
@@ -189,7 +189,7 @@ async fn get_limited_body(res: Box<dyn Response>) -> Result<Vec<u8>, String> {
         let chunk = match chunk {
             Ok(chunk) => chunk,
             Err(e) => {
-                eprintln!("Error while fetching image chunk: {}", e);
+                eprintln!("Error while fetching image chunk: {e}");
                 return Err("Error fetching image chunk".to_string());
             }
         };

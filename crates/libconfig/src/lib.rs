@@ -31,8 +31,7 @@ impl Mod for ModImpl {
             } else {
                 eprintln!("Error: Please specify either a config file or tenant roots, not both.");
                 eprintln!(
-                    "You provided --config {:?} and tenant roots {:?}",
-                    config_path, roots
+                    "You provided --config {config_path:?} and tenant roots {roots:?}"
                 );
                 eprintln!(
                     "Use either `serve --config cub-config.json` or `serve tenant1.com/ tenant2.org/ etc.`"
@@ -42,7 +41,7 @@ impl Mod for ModImpl {
         }
 
         if let Some(config_path) = config_path {
-            eprintln!("Loading config from {}", config_path);
+            eprintln!("Loading config from {config_path}");
 
             let file_contents = fs_err::read_to_string(config_path)?;
             let config: CubConfig = serde_json::from_str(&file_contents)?;
@@ -77,15 +76,14 @@ impl Mod for ModImpl {
 
         for root in roots {
             if !root.exists() {
-                eprintln!("Error: Tenant root {} does not exist.", root);
+                eprintln!("Error: Tenant root {root} does not exist.");
                 std::process::exit(1);
             }
 
             let public_config_path = root.join("home.json");
             if !public_config_path.exists() {
                 eprintln!(
-                    "Error: Public config file {} does not exist.",
-                    public_config_path
+                    "Error: Public config file {public_config_path} does not exist."
                 );
                 std::process::exit(1);
             }

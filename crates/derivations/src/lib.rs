@@ -113,7 +113,7 @@ impl DerivationInfo<'_> {
                 let vc = derivation_video.vc.to_string();
                 let ac = derivation_video.ac.to_string();
                 let container_ext = derivation_video.container.content_type().ext();
-                format!("{}+{}.{}", vc, ac, container_ext).into()
+                format!("{vc}+{ac}.{container_ext}").into()
             }
             DerivationKind::VideoThumbnail(derivation_video_thumbnail) => {
                 derivation_video_thumbnail.ic.ext().into()

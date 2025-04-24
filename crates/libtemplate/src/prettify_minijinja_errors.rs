@@ -23,7 +23,7 @@ where
                     writeln!(&mut buf, "{i}. {e}").unwrap();
                     if let Some(minijinja_err) = e.downcast_ref::<minijinja::Error>() {
                         if let Some(detail) = minijinja_err.detail() {
-                            write!(&mut buf, "\ndetail: {}", detail).unwrap();
+                            write!(&mut buf, "\ndetail: {detail}").unwrap();
                         } else {
                             write!(&mut buf, "(no detail)").unwrap();
                         }
@@ -185,19 +185,19 @@ pub(crate) fn prettify_minijinja_error(e: &minijinja::Error) -> String {
             .replace("{#", "\x1b[36m{#\x1b[0m")
             .replace("#}", "\x1b[36m#}\x1b[0m");
 
-        let line_link = format!("[{:4}]({file_url}:{line_number})", line_number);
+        let line_link = format!("[{line_number:4}]({file_url}:{line_number})");
 
         if let Some(diag) = diag_lines.iter().find(|d| d.source_line_idx == idx) {
-            writeln!(result, "\x1b[90m{} >\x1b[0m {}", line_link, line).unwrap();
+            writeln!(result, "\x1b[90m{line_link} >\x1b[0m {line}").unwrap();
             let last_caret_index = diag.diag_text.rfind('^').unwrap_or(diag.diag_text.len());
             let formatted_diag = format!(
                 "{}\x1b[31m{}",
                 diag.diag_text[..=last_caret_index].replace("^", "\x1b[33m^\x1b[0m"),
                 &diag.diag_text[last_caret_index + 1..]
             );
-            writeln!(result, "\x1b[90m     i\x1b[0m {}", formatted_diag).unwrap();
+            writeln!(result, "\x1b[90m     i\x1b[0m {formatted_diag}").unwrap();
         } else {
-            writeln!(result, "\x1b[90m{} |\x1b[0m {}", line_link, line).unwrap();
+            writeln!(result, "\x1b[90m{line_link} |\x1b[0m {line}").unwrap();
         }
     }
 
@@ -206,7 +206,7 @@ pub(crate) fn prettify_minijinja_error(e: &minijinja::Error) -> String {
     } else {
         writeln!(result, "\x1b[90m{:═<80}\x1b[0m", "").unwrap();
         for line in other_lines {
-            writeln!(result, "{}", line).unwrap();
+            writeln!(result, "{line}").unwrap();
         }
         writeln!(result, "\x1b[90m{:─<80}\x1b[0m", "").unwrap();
     }

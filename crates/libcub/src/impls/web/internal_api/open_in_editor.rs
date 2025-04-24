@@ -43,7 +43,7 @@ pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Byte
 
     // Determine line number from byte offset, line number, or use the whole file
     let line_arg = if let Some(line) = params.line_number {
-        format!("{}:{}", disk_path, line)
+        format!("{disk_path}:{line}")
     } else if let Some(offset) = params.byte_offset {
         let contents = tokio::fs::read_to_string(&disk_path)
             .await
@@ -51,7 +51,7 @@ pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Byte
 
         // Count newlines up to the byte offset to determine line number
         let line = contents[..offset].chars().filter(|&c| c == '\n').count() + 1;
-        format!("{}:{}", disk_path, line)
+        format!("{disk_path}:{line}")
     } else {
         disk_path.to_string()
     };

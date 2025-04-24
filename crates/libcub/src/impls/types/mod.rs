@@ -80,7 +80,7 @@ impl CubGlobalState {
         let scheme = if is_production() { "https" } else { "http" };
 
         // Create a base URL from the original request
-        let url_str = format!("{}://{}{}", scheme, original_host, original_uri);
+        let url_str = format!("{scheme}://{original_host}{original_uri}");
         let mut url = url::Url::parse(&url_str).expect("Failed to parse original URL");
 
         // Replace the host with the target domain

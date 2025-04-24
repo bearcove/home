@@ -237,7 +237,7 @@ fn to_json(value: Value) -> Result<String, Error> {
     serde_json::to_string_pretty(&value).map_err(|e| {
         Error::new(
             minijinja::ErrorKind::InvalidOperation,
-            format!("Failed to serialize JSON: {}", e),
+            format!("Failed to serialize JSON: {e}"),
         )
     })
 }

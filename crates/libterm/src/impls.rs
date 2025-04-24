@@ -271,7 +271,7 @@ impl Screen {
             }
 
             c => {
-                panic!("unrecognized color: {:?}", c);
+                panic!("unrecognized color: {c:?}");
             }
         }
     }
@@ -363,7 +363,7 @@ impl Perform for Performer {
             }
             x => {
                 if self.strict {
-                    panic!("unrecognized execute character: \\x{:02x}", x);
+                    panic!("unrecognized execute character: \\x{x:02x}");
                 }
             }
         }
@@ -385,7 +385,7 @@ impl Perform for Performer {
 
     fn put(&mut self, _byte: u8) {
         if self.strict {
-            panic!("unsupported: put: {}", _byte);
+            panic!("unsupported: put: {_byte}");
         } else {
             tracing::warn!("unsupported: put: {}", _byte);
         }
@@ -577,7 +577,7 @@ impl Perform for Performer {
                         }
                         _ => {
                             if self.strict {
-                                panic!("unimplemented SGR: {:?}", param1);
+                                panic!("unimplemented SGR: {param1:?}");
                             }
                         }
                     }
@@ -706,7 +706,7 @@ impl Perform for Performer {
                         }
                     }
                     _ => {
-                        panic!("unrecognized erase in display: {:?}", param1);
+                        panic!("unrecognized erase in display: {param1:?}");
                     }
                 }
             }
@@ -739,7 +739,7 @@ impl Perform for Performer {
                         }
                     }
                     _ => {
-                        panic!("unrecognized erase in line: {:?}", param1);
+                        panic!("unrecognized erase in line: {param1:?}");
                     }
                 }
             }
@@ -890,11 +890,11 @@ impl Performer {
                                 // nothing
                             }
                             AnyColor::Classic(c) => {
-                                classes.push(format!("fg-{}", c).into());
+                                classes.push(format!("fg-{c}").into());
                             }
                             AnyColor::Rgb(r, g, b) => {
                                 style_directives
-                                    .push(format!("color:#{:02x}{:02x}{:02x}", r, g, b));
+                                    .push(format!("color:#{r:02x}{g:02x}{b:02x}"));
                             }
                             AnyColor::AnsiValue(c) => {
                                 classes.push(format!("fg-ansi{c}").into());
@@ -906,11 +906,11 @@ impl Performer {
                                 // nothing
                             }
                             AnyColor::Classic(c) => {
-                                classes.push(format!("bg-{}", c).into());
+                                classes.push(format!("bg-{c}").into());
                             }
                             AnyColor::Rgb(r, g, b) => {
                                 style_directives
-                                    .push(format!("background:#{:02x}{:02x}{:02x}", r, g, b));
+                                    .push(format!("background:#{r:02x}{g:02x}{b:02x}"));
                             }
                             AnyColor::AnsiValue(c) => {
                                 classes.push(format!("bg-ansi{c}").into());
