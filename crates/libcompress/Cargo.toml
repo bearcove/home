@@ -10,4 +10,4 @@ crate-type = ["dylib"]
 bytes = "1.10.1"
 brotli = { version = "6.0.0" }
 flate2 = { version = "1.1.0" }
-autotrait = "0.1.4"
+autotrait = "0.1.6"

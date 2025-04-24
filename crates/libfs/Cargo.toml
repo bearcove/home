@@ -11,7 +11,7 @@ eyre = { version = "0.6.12", default-features = false }
 camino = { version = "1.1.9" }
 ignore = { version = "0.4.23" }
 notify = { version = "6.1.1" }
-autotrait = "0.1.4"
+autotrait = "0.1.6"
 
 [features]
 default = []
