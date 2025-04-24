@@ -2166,7 +2166,6 @@ dependencies = [
  "libterm",
  "libtracingsub",
  "owo-colors 4.2.0",
- "rubicon-imports",
  "serde_json",
  "tokio",
  "tracing",
@@ -5514,13 +5513,6 @@ name = "rubicon"
 version = "3.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df530fafa5c66f7f964f24310867c75ad19d3869bcc86f5befdcc41eafa3ac9d"
-
-[[package]]
-name = "rubicon-imports"
-version = "0.1.0"
-dependencies = [
- "camino",
-]
 
 [[package]]
 name = "rusqlite"

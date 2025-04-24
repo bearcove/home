@@ -1,9 +1,0 @@
-[package]
-name = "rubicon-imports"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-
-[build-dependencies]
-camino = "1.1.9"
