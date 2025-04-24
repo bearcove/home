@@ -2,6 +2,7 @@ use autotrait::autotrait;
 use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use eyre::bail;
 use futures_core::future::BoxFuture;
+use mom_types::{TranscodeParams, TranscodeResponse};
 use std::str::FromStr;
 
 use libhttpclient::{
@@ -17,12 +18,6 @@ use conflux::RevisionIdRef;
 use credentials::AuthBundle;
 use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
 use libhttpclient::{HttpClient, RequestBuilder};
-use libmom::{
-    ListMissingArgs, ListMissingResponse, MomEvent,
-    media_types::{
-        HeadersMessage, TranscodeEvent, TranscodingProgress, UploadDoneMessage, WebSocketMessage,
-    },
-};
 use libpatreon::{
     PatreonCallbackArgs, PatreonCallbackResponse, PatreonRefreshCredentials,
     PatreonRefreshCredentialsArgs,
@@ -374,10 +369,7 @@ impl MomTenantClient for MomTenantClientImpl {
         })
     }
 
-    fn media_transcode(
-        &self,
-        params: mom::TranscodeParams,
-    ) -> BoxFuture<'_, Result<mom::TranscodeResponse>> {
+    fn media_transcode(&self, params: TranscodeParams) -> BoxFuture<'_, Result<TranscodeResponse>> {
         Box::pin(async move {
             let uri = self.config_mom_uri("media/transcode");
             let req = self.hclient.post(uri).with_auth(&self.mcc).json(&params)?;

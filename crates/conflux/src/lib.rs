@@ -2,6 +2,7 @@
 //! between crates.
 
 use core::fmt;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     hash::{Hash, Hasher},
@@ -109,8 +110,7 @@ impl CacheBuster for Revision {
 
 pub type Toc = Vec<TocEntry>;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TocEntry {
     // 1 through 6
     pub level: u8,
@@ -288,8 +288,7 @@ pub struct PageThumb {
 }
 
 /// Determines what kind of access someone has to articles etc.
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Viewer {
     /// User ID matches admin in config
     pub is_admin: bool,
@@ -468,8 +467,7 @@ impl Hash for LoadedPage {
     }
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VideoInfo {
     pub dual_feature: bool,
     pub tube: Option<String>,
@@ -486,8 +484,7 @@ impl fmt::Debug for LoadedPage {
     }
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[derive(Debug, Clone, Serialize)]
 pub struct SeriesLink {
     /// the route of the series index page
     pub index_route: Route,
@@ -1070,8 +1067,7 @@ impl std::fmt::Display for DerivationKind {
     }
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[derive(Debug, Clone, Serialize)]
 pub struct Part {
     pub title: String,
     pub path: InputPath,
@@ -1079,9 +1075,8 @@ pub struct Part {
 }
 
 /// A 1-based series part number
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[cfg_attr(feature = "serde", serde(transparent))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[serde(transparent)]
 pub struct PartNumber(usize);
 
 impl fmt::Display for PartNumber {
@@ -1375,10 +1370,9 @@ impl PathMappings {
 #[cfg(test)]
 mod tests {
     #[test]
-    #[cfg(feature = "serde")]
     fn test_input_path_roundtrip() {
         use camino::Utf8PathBuf;
-        use config::{TenantConfig, TenantInfo};
+        use config_types::{TenantConfig, TenantInfo};
 
         use crate::{InputPath, PathMappings};
 

@@ -6,7 +6,9 @@
   "lsp": {
     "rust-analyzer": {
       "initialization_options": {
-        "check": {},
+        "check": {
+          "command": "check"
+        },
         "cargo": {
           "features": []
         }

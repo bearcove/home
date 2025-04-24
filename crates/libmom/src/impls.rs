@@ -24,9 +24,10 @@ use parking_lot::Mutex;
 use tokio::sync::broadcast;
 use tracing::{debug, error, info};
 
-use crate::{
+use crate::impls::db::mom_db_pool;
+use mom_types::{
     DeriveJobInfo, DeriveParams, MomEvent, MomServeArgs, TenantEvent, TenantEventPayload,
-    TranscodeJobInfo, TranscodeParams, impls::db::mom_db_pool,
+    TranscodeJobInfo, TranscodeParams,
 };
 
 mod db;

@@ -2,7 +2,7 @@ use eyre::Context;
 use ffmpeg_sidecar::command::FfmpegCommand;
 use std::path::Path;
 
-use crate::media_types::TargetFormat;
+use mom_types::media_types::TargetFormat;
 
 pub fn configure_ffmpeg_command(
     cmd: &mut FfmpegCommand,

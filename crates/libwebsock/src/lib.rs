@@ -167,7 +167,7 @@ impl WebSocketStreamImpl {
     }
 }
 
-#[autotrait(!Send)]
+#[autotrait(!Sync)]
 impl WebSocketStream for WebSocketStreamImpl {
     fn send(&mut self, frame: Frame) -> BoxFuture<'_, Result<(), Error>> {
         use futures_util::SinkExt;

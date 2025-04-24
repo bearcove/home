@@ -18,6 +18,11 @@ pub use eyre::Result;
 #[derive(Default)]
 struct ModImpl;
 
+pub fn load() -> &'static dyn Mod {
+    static INSTANCE: ModImpl = ModImpl;
+    &INSTANCE
+}
+
 #[autotrait]
 impl Mod for ModImpl {
     fn indexer(&self) -> Box<dyn Indexer> {

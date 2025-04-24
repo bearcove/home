@@ -20,10 +20,8 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 
 use super::{deriver::FfmpegEncodePermit, ffmpeg::configure_ffmpeg_command};
-use crate::{
-    impls::ffmpeg::parse_ffmpeg_timestamp,
-    media_types::{TargetFormat, TranscodingProgress},
-};
+use crate::impls::ffmpeg::parse_ffmpeg_timestamp;
+use mom_types::media_types::{TargetFormat, TranscodingProgress};
 
 #[derive(Debug)]
 pub enum DetailedTranscodeEvent {

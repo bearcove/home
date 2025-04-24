@@ -1,7 +1,8 @@
 use axum::Extension;
 
 use super::TenantExtractor;
-use crate::{DeriveParams, impls::site::Reply};
+use crate::impls::site::Reply;
+use mom_types::DeriveParams;
 
 pub(crate) async fn derive(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,

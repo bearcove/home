@@ -28,3 +28,4 @@ config-types = { version = "0.1.0", path = "../config-types" }
 eyre.workspace = true
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 autotrait = "0.1.11"
+mom-types = { version = "0.1.0", path = "../mom-types" }

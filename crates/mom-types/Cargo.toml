@@ -13,7 +13,14 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+camino = "1.1.9"
 config-types = { version = "0.1.0", path = "../config-types" }
+conflux = { version = "0.1.0", path = "../conflux" }
+derivations = { version = "0.1.0", path = "../derivations" }
+eyre.workspace = true
 facet.workspace = true
+image-types = { version = "0.1.0", path = "../image-types" }
 merde.workspace = true
+objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 serde = { workspace = true, features = ["derive"] }
+tokio.workspace = true

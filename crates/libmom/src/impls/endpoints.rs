@@ -11,10 +11,8 @@ use tenant_extractor::TenantExtractor;
 use tokio::signal::unix::SignalKind;
 use tracing::{error, info, warn};
 
-use crate::{
-    GoodMorning, MomEvent, TenantInitialState,
-    impls::{MomGlobalState, global_state},
-};
+use crate::impls::{MomGlobalState, global_state};
+use mom_types::{GoodMorning, MomEvent, TenantInitialState};
 
 mod tenant;
 mod tenant_extractor;

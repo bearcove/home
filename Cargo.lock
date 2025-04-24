@@ -3528,6 +3528,7 @@ dependencies = [
  "libpatreon",
  "libwebsock",
  "merde",
+ "mom-types",
  "objectstore-types",
  "rand 0.8.5",
  "tokio",
@@ -4191,10 +4192,17 @@ dependencies = [
 name = "mom-types"
 version = "0.1.0"
 dependencies = [
+ "camino",
  "config-types",
+ "conflux",
+ "derivations",
+ "eyre",
  "facet",
+ "image-types",
  "merde",
+ "objectstore-types",
  "serde",
+ "tokio",
 ]
 
 [[package]]
