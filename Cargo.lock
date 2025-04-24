@@ -3518,6 +3518,8 @@ dependencies = [
 name = "libreddit"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
+ "eyre",
  "futures-core",
  "libconfig",
  "libhttpclient",

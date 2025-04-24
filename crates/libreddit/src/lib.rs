@@ -1,43 +1,31 @@
-include!(".dylo/spec.rs");
-include!(".dylo/support.rs");
-
+use autotrait::autotrait;
+use eyre::bail;
 use futures_core::future::BoxFuture;
 
-#[cfg(feature = "impl")]
-use std::sync::Mutex;
-#[cfg(feature = "impl")]
+use std::sync::{LazyLock, Mutex};
 use std::time::{Duration, Instant};
 
-#[cfg(feature = "impl")]
-use eyre::{BS, BsForResults};
-#[cfg(feature = "impl")]
+pub use eyre::Result;
 use libhttpclient::form_urlencoded;
-#[cfg(feature = "impl")]
 use tracing::{debug, info, trace};
 
-use config::RedditSecrets;
-#[cfg(feature = "impl")]
+use libconfig::RedditSecrets;
 use libhttpclient::HttpClient;
-#[cfg(feature = "impl")]
 use merde::CowStr;
-#[cfg(feature = "impl")]
 use url::Url;
 
 // cache the oauth token in a static variable
-#[cfg(feature = "impl")]
 #[derive(Debug, Clone)]
 struct AccessToken {
     token: String,
     expires_at: Instant,
 }
 
-#[cfg(feature = "impl")]
 struct ModImpl {
     client: Box<dyn HttpClient>,
     cached_token: Mutex<Option<AccessToken>>,
 }
 
-#[cfg(feature = "impl")]
 impl Default for ModImpl {
     fn default() -> Self {
         Self {
@@ -47,9 +35,13 @@ impl Default for ModImpl {
     }
 }
 
-pub type Result<T, E = eyre::BS> = std::result::Result<T, E>;
+static MOD: LazyLock<ModImpl> = LazyLock::new(ModImpl::default);
 
-#[dylo::export]
+pub fn load() -> &'static dyn Mod {
+    &*MOD
+}
+
+#[autotrait]
 impl Mod for ModImpl {
     fn get_submission<'fut>(
         &'fut self,
@@ -97,8 +89,7 @@ impl Mod for ModImpl {
                     .polite_user_agent()
                     .basic_auth(&secrets.oauth_client_id, Some(&secrets.oauth_client_secret))
                     .send()
-                    .await
-                    .map_err(|e| BS::from_string(e.to_string()))?;
+                    .await?;
 
                 let status = res.status();
                 if !status.is_success() {
@@ -106,9 +97,7 @@ impl Mod for ModImpl {
                         .text()
                         .await
                         .unwrap_or_else(|_| "Could not get error text".into());
-                    return Err(BS::from_string(format!(
-                        "got HTTP {status} for URL ({api_uri}), server said: {error}"
-                    )));
+                    bail!("got HTTP {status} for URL ({api_uri}), server said: {error}");
                 }
 
                 // example output:
@@ -162,9 +151,7 @@ impl Mod for ModImpl {
                     .text()
                     .await
                     .unwrap_or_else(|_| "Could not get error text".into());
-                return Err(BS::from_string(format!(
-                    "got HTTP {status} for URL ({api_uri}), server said: {error}"
-                )));
+                bail!("got HTTP {status} for URL ({api_uri}), server said: {error}");
             }
 
             #[derive(Debug)]

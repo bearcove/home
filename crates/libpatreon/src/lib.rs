@@ -25,8 +25,12 @@ fn patreon_refresh_interval() -> time::Duration {
     time::Duration::days(1)
 }
 
-#[derive(Default)]
 pub struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    static MOD: ModImpl = ModImpl;
+    &MOD
+}
 
 #[autotrait]
 impl Mod for ModImpl {
