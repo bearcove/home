@@ -34,6 +34,7 @@ image-types = { version = "0.1.0", path = "../image-types" }
 config-types = { version = "0.1.0", path = "../config-types" }
 mom-types = { version = "0.1.0", path = "../mom-types" }
 template-types = { version = "0.1.0", path = "../template-types" }
+autotrait = "0.1.11"
 
 [dev-dependencies]
 insta = "1.42.2"

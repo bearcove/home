@@ -1,3 +1,4 @@
+use config_types::WebConfig;
 use conflux::{CacheBuster, InputPath, RevisionView};
 use std::{
     collections::HashSet,
@@ -47,7 +48,7 @@ impl TrackingCacheBuster {
 impl CacheBuster for TrackingCacheBuster {
     fn asset_url(
         &self,
-        web: config::WebConfig,
+        web: WebConfig,
         asset_path: &conflux::InputPathRef,
     ) -> conflux::Result<conflux::AbsoluteUrl> {
         self.deps.lock().unwrap().insert(asset_path.to_owned());

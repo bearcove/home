@@ -2,7 +2,7 @@ pub(crate) trait ToMinijinjaError {
     fn to_minijinja_error(&self) -> minijinja::Error;
 }
 
-impl ToMinijinjaError for eyre::BS {
+impl ToMinijinjaError for eyre::Report {
     fn to_minijinja_error(&self) -> minijinja::Error {
         minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, format!("{self}"))
     }

@@ -206,7 +206,7 @@ fn html_escape(value: String) -> Result<Value, Error> {
 fn truncate_html(html: String, args: Kwargs) -> Result<String, Error> {
     let max = args.get::<u64>("max").unwrap_or(300);
     args.assert_all_used()?;
-    Ok(htmlrewrite::load().truncate_html(&html, max))
+    Ok(libhtmlrewrite::load().truncate_html(&html, max))
 }
 
 pub(crate) fn truncate_core(input: &str, len: usize) -> String {
@@ -268,7 +268,7 @@ fn unknown_method_callback(
 }
 
 fn all_icons() -> Result<Value, Error> {
-    Ok(Value::from(highlight::load().all_icons()))
+    Ok(Value::from(libhighlight::load().all_icons()))
 }
 
 const DAY_MONTH_YEAR_FORMAT: &[time::format_description::FormatItem<'static>] =
@@ -336,7 +336,7 @@ pub fn is_future(input: String) -> Result<bool, Error> {
 }
 
 fn basic_markdown(input: String) -> Result<String, Error> {
-    markdown::load().basic_markdown(&input).map_err(|e| {
+    libmarkdown::load().basic_markdown(&input).map_err(|e| {
         Error::new(
             minijinja::ErrorKind::InvalidOperation,
             format!("markdown error: {e}"),

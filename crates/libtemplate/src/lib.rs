@@ -12,6 +12,9 @@ mod global_functions_and_filters;
 mod impls;
 mod prettify_minijinja_errors;
 
+use crate::conversions::ToMinijinaResult;
+use crate::global_functions_and_filters::{get_globals, get_revision_view};
+use autotrait::autotrait;
 use closest::{GetOrHelp, ResourceKind};
 use config_types::{TenantInfo, WebConfig, is_production};
 use conflux::{
@@ -33,15 +36,12 @@ use minijinja::{
 use mom_types::GlobalStateView;
 use prettify_minijinja_errors::PrettifyExt;
 use rand::seq::SliceRandom;
-use template_types::{DataObject, DataValue, GlobalsVal};
-
-use crate::conversions::ToMinijinaResult;
-use crate::global_functions_and_filters::{get_globals, get_revision_view};
+use template_types::{DataObject, DataValue, RenderShortcodeResult, Shortcode};
 
 #[derive(Default)]
 struct ModImpl;
 
-#[dylo::export]
+#[autotrait]
 impl Mod for ModImpl {
     fn make_collection(&self, args: CompileArgs) -> eyre::Result<Box<dyn TemplateCollection>> {
         let mut environment = Environment::new();
@@ -66,12 +66,11 @@ impl Mod for ModImpl {
     }
 }
 
-#[cfg(feature = "impl")]
 struct TemplateCollectionImpl {
     environment: Environment<'static>,
 }
 
-#[dylo::export]
+#[autotrait]
 impl TemplateCollection for TemplateCollectionImpl {
     fn render_template_to(
         &self,
@@ -113,7 +112,7 @@ impl TemplateCollection for TemplateCollectionImpl {
     ) -> eyre::Result<RenderShortcodeResult> {
         let template_name = format!("shortcodes/{}.html", sc.name);
         let template_input_path = InputPath::new(format!("/templates/{template_name}.jinja"));
-        let template_input = rv.rev().bs()?.inputs().get(&template_input_path).cloned().ok_or_else(|| {
+        let template_input = rv.rev()?.inputs().get(&template_input_path).cloned().ok_or_else(|| {
                 eyre!("shortcode template not found: {template_name}, tried input path {template_input_path}")
             })?;
 
@@ -152,7 +151,7 @@ impl TemplateCollection for TemplateCollectionImpl {
             .get_template(&template_name)
             .prettify_minijinja_error()?;
 
-        template.render_to_write(Value::from_object(args), w).bs()?;
+        template.render_to_write(Value::from_object(args), w)?;
         Ok(RenderShortcodeResult {
             shortcode_input_path: template_input.path.clone(),
             assets_looked_up: {
@@ -379,7 +378,7 @@ impl Object for LoadedPageVal {
                 if let Some(i) = self.html.find("<!-- more -->") {
                     Value::from_safe_string(self.html[..i].to_string())
                 } else {
-                    let truncated = htmlrewrite::load().truncate_html(&self.html, 400);
+                    let truncated = libhtmlrewrite::load().truncate_html(&self.html, 400);
                     Value::from_safe_string(truncated)
                 }
             }
@@ -387,7 +386,7 @@ impl Object for LoadedPageVal {
                 if let Some(i) = self.html.find("<!-- playwall -->") {
                     Value::from_safe_string(self.html[..i].to_string())
                 } else {
-                    let truncated = htmlrewrite::load().truncate_html(&self.html, 400);
+                    let truncated = libhtmlrewrite::load().truncate_html(&self.html, 400);
                     Value::from_safe_string(truncated)
                 }
             }
@@ -1037,7 +1036,7 @@ impl Object for MediaVal {
                     kwargs.assert_all_used()?;
                 }
 
-                let markup = media::load().media_html_markup(opts).map_err(|e| {
+                let markup = libmedia::load().media_html_markup(opts).map_err(|e| {
                     minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string())
                 })?;
                 Ok(Value::from_safe_string(markup.to_string()))

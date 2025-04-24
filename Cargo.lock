@@ -3700,6 +3700,7 @@ dependencies = [
 name = "libtemplate"
 version = "0.1.0"
 dependencies = [
+ "autotrait",
  "camino",
  "closest",
  "config-types",

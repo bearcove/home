@@ -15,6 +15,14 @@ impl Default for ModImpl {
     }
 }
 
+use std::sync::LazyLock;
+
+static MOD: LazyLock<ModImpl> = LazyLock::new(|| ModImpl::default());
+
+pub fn load() -> &'static dyn Mod {
+    &*MOD
+}
+
 struct ModImpl {
     highlight: &'static dyn libhighlight::Mod,
     math: &'static dyn libmath::Mod,
