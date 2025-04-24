@@ -9,7 +9,7 @@ use credentials::UserInfo;
 use libsearch::Index;
 use mom_types::GlobalStateView;
 
-pub trait TemplateCollection {
+pub trait TemplateCollection: Send + Sync {
     fn render_template_to(
         &self,
         w: &mut dyn std::io::Write,
@@ -23,6 +23,26 @@ pub trait TemplateCollection {
         rv: Arc<dyn RevisionView>,
         web: WebConfig,
     ) -> eyre::Result<RenderShortcodeResult>;
+}
+
+impl TemplateCollection for () {
+    fn render_template_to(
+        &self,
+        _w: &mut dyn std::io::Write,
+        _args: RenderTemplateArgs<'_>,
+    ) -> eyre::Result<()> {
+        Err(eyre::eyre!("no template collection"))
+    }
+
+    fn render_shortcode_to(
+        &self,
+        _w: &mut dyn std::io::Write,
+        _args: Shortcode<'_>,
+        _rv: Arc<dyn RevisionView>,
+        _web: WebConfig,
+    ) -> eyre::Result<RenderShortcodeResult> {
+        Err(eyre::eyre!("no template collection"))
+    }
 }
 
 pub struct RenderTemplateArgs<'a> {
@@ -105,4 +125,9 @@ pub struct RenderShortcodeResult {
 
     /// for dependency tracking
     pub assets_looked_up: HashSet<InputPath>,
+}
+
+#[derive(Default)]
+pub struct CompileArgs {
+    pub templates: HashMap<String, String>,
 }

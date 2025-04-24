@@ -5,8 +5,8 @@ use crate::{
         revision_error_from_report,
     },
 };
-use ::fs::{WatcherEvent, WatcherEventKind};
-use config::WebConfig;
+use ::libfs::{WatcherEvent, WatcherEventKind};
+use config_types::WebConfig;
 use conflux::{PathMappings, ROOT_INPUT_PATHS};
 use cub_types::{CubTenant, PathMetadata};
 use eyre::Result;
@@ -101,7 +101,7 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
     });
 
     let prefix = format!("\x1b[35m{}\x1b[0m", tenant.tc().name);
-    let fs = ::fs::load();
+    let fs = ::libfs::load();
     let (event_tx, mut event_rx) = mpsc::channel::<eyre::Result<WatcherEvent>>(128);
 
     // Spawn background task to handle async path filtering

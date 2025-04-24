@@ -1,12 +1,16 @@
 use std::{collections::VecDeque, sync::Arc};
 
-use config::{TenantInfo, WebConfig};
+use autotrait::autotrait;
+use config_types::{TenantInfo, WebConfig};
 use conflux::{InputPath, PathMappings, Revision};
 use cub_types::{CubRevisionState, IndexedRevision, PathMetadata};
 use futures_core::future::BoxFuture;
 
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 /// All the information needed to build a new revision
 pub struct RevisionSpec {

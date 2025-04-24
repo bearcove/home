@@ -292,9 +292,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "autotrait"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e73fb2d854602842e35edaff7268cff5e9fc743a3d181068b2b175255b08296b"
+checksum = "c524d1f709d0ba7dd876c5f5be7082648db5480a917c3faea53ff8523f07e521"
 dependencies = [
  "unsynn",
 ]
@@ -3612,8 +3612,10 @@ name = "librevision"
 version = "0.1.0"
 dependencies = [
  "atomicwrites",
+ "autotrait",
  "camino",
  "closest",
+ "config-types",
  "conflux",
  "content-type",
  "cub-types",
@@ -3622,6 +3624,7 @@ dependencies = [
  "facet-json",
  "facet-pretty",
  "futures-core",
+ "image-types",
  "itertools 0.14.0",
  "libconfig",
  "liberrhandling",
@@ -3631,10 +3634,12 @@ dependencies = [
  "libsearch",
  "libsvg",
  "libtemplate",
+ "markdown-types",
  "merde",
  "rayon",
  "redb",
  "seahash",
+ "template-types",
  "time",
  "tokio",
  "tracing",

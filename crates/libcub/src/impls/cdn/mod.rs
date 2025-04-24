@@ -2,7 +2,7 @@ use crate::impls::{
     cub_req::CubReqImpl,
     reply::{IntoLegacyReply, LegacyReply},
 };
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 
 use super::h_to_axum;
 
@@ -17,5 +17,5 @@ async fn serve_root() -> LegacyReply {
 }
 
 async fn serve_asset(crx: CubReqImpl, headers: axum::http::HeaderMap) -> LegacyReply {
-    h_to_axum(cdn::load().serve_asset(Box::new(crx), headers).await)
+    h_to_axum(libcdn::load().serve_asset(Box::new(crx), headers).await)
 }

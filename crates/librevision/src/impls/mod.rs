@@ -1,6 +1,6 @@
 use std::{io::Write, sync::Arc};
 
-use config::{TenantInfo, WebConfig, is_production};
+use config_types::{TenantInfo, WebConfig, is_production};
 use conflux::{Pak, PathMappings, RevisionError};
 use cub_types::{CubRevisionState, IndexedRevision};
 use load::load_pak;
@@ -37,7 +37,7 @@ pub fn print_error_to_writer(e: &eyre::Report, writer: &mut impl std::io::Write)
         writeln!(writer, "{}. {}", i + 1, e).unwrap();
     }
 
-    if let Some(bt) = errhandling::load().format_backtrace_to_terminal_colors(e) {
+    if let Some(bt) = liberrhandling::load().format_backtrace_to_terminal_colors(e) {
         writeln!(writer, "{bt}").unwrap();
     }
 }

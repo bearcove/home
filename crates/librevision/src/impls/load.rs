@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use closest::{GetOrHelp, ResourceKind};
-use config::{TenantInfo, WebConfig};
+use config_types::{TenantInfo, WebConfig};
 use conflux::{
     ACodec, Asset, BitmapVariant, Derivation, DerivationBitmap, DerivationDrawioRender,
     DerivationIdentity, DerivationKind, DerivationPassthrough, DerivationSvgCleanup,
@@ -13,13 +13,13 @@ use content_type::ContentType;
 use cub_types::IndexedRevision;
 use derivations::DerivationInfo;
 use eyre::{Context, eyre};
-use image::{ICodec, LogicalPixels, PixelDensity};
+use image_types::{ICodec, LogicalPixels, PixelDensity};
 use itertools::Itertools;
-use markdown::ProcessMarkdownArgs;
+use libsearch::Index;
+use markdown_types::ProcessMarkdownArgs;
 use merde::{DynDeserializerExt, yaml::YamlDeserializer};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use search::Index;
-use template::{CompileArgs, TemplateCollection};
+use template_types::{CompileArgs, TemplateCollection};
 use tracing::{self, debug, warn};
 
 use crate::impls::frontmatter::{Frontmatter, FrontmatterIn};
@@ -350,7 +350,7 @@ pub async fn load_pak(
     tracing::debug!("Compiled templates in {:?}", template_start.elapsed());
 
     let markdown_load_start = Instant::now();
-    let mod_markdown = markdown::load();
+    let mod_markdown = libmarkdown::load();
     tracing::debug!(
         "Loaded markdown module in {:?}",
         markdown_load_start.elapsed()
@@ -613,7 +613,7 @@ pub async fn load_pak(
     }
 
     // Index pages for search
-    let mut indexer = search::load().indexer();
+    let mut indexer = libsearch::load().indexer();
 
     let before_index = Instant::now();
     for (path, page) in &rev.pages {
@@ -652,7 +652,7 @@ fn load_single_page(
     rev: Arc<Revision>,
     templates: &dyn TemplateCollection,
     page: &Page<'static>,
-    mod_markdown: &'static dyn markdown::Mod,
+    mod_markdown: &'static dyn libmarkdown::Mod,
     web: WebConfig,
 ) -> eyre::Result<LoadedPage> {
     let path = &page.path;
@@ -812,7 +812,7 @@ pub fn lrev_make_template_collection(
 
     tracing::trace!("{} templates total", compile_args.templates.len());
 
-    let modtpl = template::load();
+    let modtpl = libtemplate::load();
     let coll = modtpl.make_collection(compile_args)?;
     Ok(Arc::<dyn TemplateCollection>::from(coll))
 }

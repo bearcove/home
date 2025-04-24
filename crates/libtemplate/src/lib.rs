@@ -36,10 +36,16 @@ use minijinja::{
 use mom_types::GlobalStateView;
 use prettify_minijinja_errors::PrettifyExt;
 use rand::seq::SliceRandom;
-use template_types::{DataObject, DataValue, RenderShortcodeResult, Shortcode};
+use template_types::{
+    CompileArgs, DataObject, DataValue, RenderShortcodeResult, RenderTemplateArgs, Shortcode,
+    TemplateCollection,
+};
 
-#[derive(Default)]
 struct ModImpl;
+
+pub fn load() -> &'static dyn Mod {
+    &ModImpl
+}
 
 #[autotrait]
 impl Mod for ModImpl {
@@ -70,7 +76,6 @@ struct TemplateCollectionImpl {
     environment: Environment<'static>,
 }
 
-#[autotrait]
 impl TemplateCollection for TemplateCollectionImpl {
     fn render_template_to(
         &self,
@@ -162,67 +167,8 @@ impl TemplateCollection for TemplateCollectionImpl {
     }
 }
 
-#[derive(Default)]
-pub struct CompileArgs {
-    pub templates: HashMap<String, String>,
-}
-
-pub struct RenderTemplateArgs<'a> {
-    pub template_name: &'a str,
-
-    /// URL structure:
-    /// +-------------------------+---+-------------------+
-    /// | /articles/foo           | ? | bar=baz&qux=quux  |
-    /// +-------------------------+---+-------------------+
-    /// | Path                    |   | Raw Query         |
-    /// +-------------------------+---+-------------------+
-    pub path: &'a RouteRef,
-    pub raw_query: &'a str,
-
-    /// Revision bundle
-    pub rv: Arc<dyn RevisionView>,
-
-    /// Global state view
-    pub gv: Arc<dyn GlobalStateView>,
-
-    /// Search index
-    pub index: Arc<dyn Index>,
-
-    /// Page we're rendering (optional)
-    pub page: Option<Arc<LoadedPage>>,
-
-    /// Gotten from cookies
-    pub user_info: Option<UserInfo<'static>>,
-
-    /// Web configuration
-    pub web: WebConfig,
-
-    /// Additional globals
-    pub additional_globals: DataObject,
-}
-
 pub fn shortcode_name_to_input_path(name: &str) -> InputPath {
     format!("/templates/shortcodes/{name}.html.jinja").into()
-}
-
-impl TemplateCollection for () {
-    fn render_template_to(
-        &self,
-        _w: &mut dyn std::io::Write,
-        _args: RenderTemplateArgs<'_>,
-    ) -> eyre::Result<()> {
-        Err(eyre!("no template collection"))
-    }
-
-    fn render_shortcode_to(
-        &self,
-        _w: &mut dyn std::io::Write,
-        _args: Shortcode<'_>,
-        _rv: Arc<dyn RevisionView>,
-        _web: WebConfig,
-    ) -> eyre::Result<RenderShortcodeResult> {
-        Err(eyre!("no template collection"))
-    }
 }
 
 #[derive(Debug, Clone)]
