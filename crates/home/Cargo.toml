@@ -3,9 +3,6 @@ name = "libhome"
 edition = "2024"
 version = "4.0.0"
 
-[lib]
-crate-type = ["dylib"]
-
 [dependencies]
 eyre = "0.6.12"
 tokio = { version = "1.44.1", features = ["full"] }

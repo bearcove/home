@@ -32,7 +32,7 @@ pub(crate) fn print_error_to_writer(e: &eyre::Report, writer: &mut impl std::io:
 }
 
 #[tokio::main(flavor = "multi_thread")]
-pub async fn main() -> eyre::Result<()> {
+async fn main() -> eyre::Result<()> {
     real_main().await
 }
 

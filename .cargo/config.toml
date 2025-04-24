@@ -7,11 +7,7 @@ feature-unification = true
 [resolver]
 feature-unification = "workspace"
 
-[target.'cfg(any())']
-rustflags = ["-Cprefer-dynamic"]
-
 [patch.crates-io]
-
 # facet = { path = "../facet/facet" }
 # facet-core = { path = "../facet/facet-core" }
 # facet-json = { path = "../facet/facet-json" }

@@ -13,7 +13,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [lib]
-crate-type = ["dylib"]
+crate-type = ["rlib"]
 
 [dependencies]
 autotrait = "0.1.11"
