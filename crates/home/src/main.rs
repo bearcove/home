@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 
 use camino::Utf8PathBuf;
-use config::{
+use config_types::{
     CubConfigBundle, Environment, MOM_DEV_API_KEY, MomConfig, MomSecrets, TenantConfig,
     TenantDomain, TenantInfo, WebConfig,
 };
-use cub::OpenBehavior;
 use eyre::Context;
 use libc as _;
+use libcub::OpenBehavior;
 
-use clap::Cmd;
+use libclap::Cmd;
+use mom_types::MomServeArgs;
 use owo_colors::OwoColorize;
 use tokio::net::TcpListener;
 use tracing::info;
@@ -25,7 +26,7 @@ pub(crate) fn print_error_to_writer(e: &eyre::Report, writer: &mut impl std::io:
         writeln!(writer, "{}. {}", i + 1, e).unwrap();
     }
 
-    if let Some(bt) = errhandling::load().format_backtrace_to_terminal_colors(e) {
+    if let Some(bt) = liberrhandling::load().format_backtrace_to_terminal_colors(e) {
         writeln!(writer, "{bt}").unwrap();
     }
 }
@@ -36,22 +37,21 @@ async fn main() -> eyre::Result<()> {
 }
 
 async fn real_main() -> eyre::Result<()> {
-    rubicon_imports::hi();
-    errhandling::load().install();
-    tracingsub::load().install();
+    liberrhandling::load().install();
+    libtracingsub::load().install();
 
-    let args = clap::load().parse();
+    let args = libclap::load().parse();
 
     let res = match args.sub {
         Cmd::Doctor(_) => {
-            doctor::load().run().await;
+            libdoctor::load().run().await;
             Ok(())
         }
         Cmd::Init(args) => dev_setup::init_project(&args.dir, args.force)
             .await
             .map_err(|err| eyre::eyre!(err.to_string())),
         Cmd::Serve(args) => {
-            let CubConfigBundle { mut cc, tenants } = config::load()
+            let CubConfigBundle { mut cc, tenants } = libconfig::load()
                 .load_cub_config(args.config.as_ref().map(|p| p.as_path()), args.roots)
                 .wrap_err("while reading cub config")?;
 
@@ -124,8 +124,8 @@ async fn real_main() -> eyre::Result<()> {
                 };
 
                 tokio::spawn(async move {
-                    if let Err(e) = mom::load()
-                        .serve(mom::MomServeArgs {
+                    if let Err(e) = libmom::load()
+                        .serve(MomServeArgs {
                             config: mom_conf,
                             web,
                             tenants,
@@ -149,7 +149,7 @@ async fn real_main() -> eyre::Result<()> {
                 "Starting up cub, who expects a mom at: {}",
                 cc.mom_base_url.blue()
             );
-            cub::load()
+            libcub::load()
                 .serve(
                     cc,
                     cub_ln,
@@ -169,7 +169,7 @@ async fn real_main() -> eyre::Result<()> {
                 "mom subcommand is only for production right now"
             );
 
-            let config = config::load().load_mom_config(&args.mom_config)?;
+            let config = libconfig::load().load_mom_config(&args.mom_config)?;
             let tenant_list: Vec<TenantConfig> =
                 serde_json::from_str(&tokio::fs::read_to_string(&args.tenant_config).await?)?;
             let tenants: HashMap<TenantDomain, TenantInfo> = tenant_list
@@ -187,8 +187,8 @@ async fn real_main() -> eyre::Result<()> {
 
             let listener = TcpListener::bind("[::]:1118").await?;
 
-            mom::load()
-                .serve(mom::MomServeArgs {
+            libmom::load()
+                .serve(MomServeArgs {
                     config,
                     web: WebConfig {
                         env: Environment::Production,
@@ -201,7 +201,7 @@ async fn real_main() -> eyre::Result<()> {
                 .map_err(|err| eyre::eyre!(err.to_string()))
         }
         Cmd::Term(args) => {
-            term::load().run(args);
+            libterm::load().run(args);
             Ok(())
         }
     };
