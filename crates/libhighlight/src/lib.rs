@@ -1,3 +1,10 @@
+use std::{collections::HashMap, sync::Arc};
+
+use autotrait::autotrait;
+use tree_sitter_collection::tree_sitter_highlight::{
+    self, Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
+};
+
 const HIGHLIGHT_NAMES: &[&str] = &[
     "attribute",
     "constant",
@@ -36,19 +43,11 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "text.strikethrough",
 ];
 
-use std::{collections::HashMap, sync::Arc};
-
-use tree_sitter_collection::tree_sitter_highlight::{
-    self, Highlight, HighlightConfiguration, HighlightEvent, Highlighter,
-};
-
-#[cfg(feature = "impl")]
 struct ModImpl {
     langs: HashMap<&'static str, Arc<Lang>>,
     cache: Option<dumbcache::Cache>,
 }
 
-#[cfg(feature = "impl")]
 struct Lang {
     conf: Option<HighlightConfiguration>,
     name: &'static str,
@@ -78,7 +77,6 @@ impl From<std::io::Error> for Error {
     }
 }
 
-#[cfg(feature = "impl")]
 impl From<tree_sitter_highlight::Error> for Error {
     fn from(value: tree_sitter_highlight::Error) -> Self {
         Self::Any(value.to_string())
@@ -97,21 +95,18 @@ impl From<&'static str> for Error {
     }
 }
 
-#[cfg(feature = "impl")]
 impl From<std::str::Utf8Error> for Error {
     fn from(value: std::str::Utf8Error) -> Self {
         Self::Any(value.to_string())
     }
 }
 
-#[cfg(feature = "impl")]
 impl From<std::string::FromUtf8Error> for Error {
     fn from(value: std::string::FromUtf8Error) -> Self {
         Self::Any(value.to_string())
     }
 }
 
-#[cfg(feature = "impl")]
 impl From<tree_sitter_collection::tree_sitter::QueryError> for Error {
     fn from(value: tree_sitter_collection::tree_sitter::QueryError) -> Self {
         Self::Any(value.to_string())
@@ -840,7 +835,7 @@ pub(crate) mod impls {
         Ok(())
     }
 
-    #[cfg(all(test, feature = "impl"))]
+    #[cfg(test)]
     mod tests {
         use super::*;
 
