@@ -292,9 +292,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "autotrait"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92ad4de582cd28c23f5065eaa25d4ce255a268d22616196ed189dfdc47a3a3b1"
+checksum = "51893dc903aede15a9ba4e2c1655260cbb3f0799b91ebea7d2663547eba1f412"
 dependencies = [
  "unsynn",
 ]

@@ -14,4 +14,4 @@ tracing = { version = "0.1" }
 url = { version = "2.5.4" }
 futures-core = "0.3.31"
 eyre.workspace = true
-autotrait = "0.1.7"
+autotrait = "0.1.8"

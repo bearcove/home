@@ -19,4 +19,4 @@ tokio = { version = "1.44", features = ["fs"] }
 futures-util = { version = "0.3.31" }
 rustls = { version = "0.23", features = ["ring"], default-features = false }
 futures-core = "0.3.31"
-autotrait = "0.1.7"
+autotrait = "0.1.8"
