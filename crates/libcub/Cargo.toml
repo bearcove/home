@@ -42,7 +42,7 @@ rand = { version = "0.8.5" }
 strsim = { version = "0.11.1" }
 libwebpage = { path = "../libwebpage" }
 flume = { version = "0.11.1" }
-bytesize = { version = "1.3.2" }
+bytesize = { version = "2.0.0" }
 libimage = { path = "../libimage" }
 tempfile = { version = "3.19.1" }
 uffmpeg = { path = "../../crates/uffmpeg" }

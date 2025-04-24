@@ -47,7 +47,7 @@ tokio-stream = { version = "0.1.17" }
 libimage = { version = "0.1.0", path = "../../crates/libimage" }
 uffmpeg = { version = "0.1.0", path = "../../crates/uffmpeg" }
 libsvg = { version = "0.1.0", path = "../../crates/libsvg" }
-bytesize = { version = "1.3.2" }
+bytesize = { version = "2.0.0" }
 futures-core = "0.3.31"
 owo-colors = "4.2.0"
 itertools = "0.14.0"
