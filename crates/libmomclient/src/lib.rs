@@ -2,7 +2,11 @@ use autotrait::autotrait;
 use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use eyre::bail;
 use futures_core::future::BoxFuture;
-use mom_types::{TranscodeParams, TranscodeResponse};
+use mom_types::{
+    DeriveParams, DeriveResponse, ListMissingArgs, ListMissingResponse, MomEvent, TranscodeParams,
+    TranscodeResponse,
+    media_types::{HeadersMessage, UploadDoneMessage, WebSocketMessage},
+};
 use std::str::FromStr;
 
 use libhttpclient::{
@@ -374,17 +378,17 @@ impl MomTenantClient for MomTenantClientImpl {
             let uri = self.config_mom_uri("media/transcode");
             let req = self.hclient.post(uri).with_auth(&self.mcc).json(&params)?;
             let res = req.send().await?;
-            let response: mom::TranscodeResponse = res.json().await?;
+            let response: TranscodeResponse = res.json().await?;
             Ok(response)
         })
     }
 
-    fn derive(&self, params: mom::DeriveParams) -> BoxFuture<'_, Result<mom::DeriveResponse>> {
+    fn derive(&self, params: DeriveParams) -> BoxFuture<'_, Result<mom::DeriveResponse>> {
         Box::pin(async move {
             let uri = self.config_mom_uri("derive");
             let req = self.hclient.post(uri).with_auth(&self.mcc).json(&params)?;
             let res = req.send().await?;
-            let response: mom::DeriveResponse = res.json().await?;
+            let response: DeriveResponse = res.json().await?;
             Ok(response)
         })
     }
@@ -465,21 +469,17 @@ impl MediaUploader for MediaUploaderImpl {
                 let msg = match self.ws.receive().await {
                     Some(frame) => frame,
                     None => {
-                        return Err(eyre::BS::from_string(
-                            "Connection closed unexpectedly (but gracefully)".to_string(),
-                        ));
+                        bail!("Connection closed unexpectedly (but gracefully)");
                     }
                 }?;
                 match msg {
-                    websock::Frame::Text(text) => {
+                    libwebsock::Frame::Text(text) => {
                         let msg: WebSocketMessage =
                             merde::json::from_str(&text).map_err(|e| e.into_static())?;
                         match msg {
                             WebSocketMessage::TranscodingEvent(ev) => {
                                 if let Err(e) = self.listener.on_transcoding_event(ev).await {
-                                    return Err(eyre::BS::from_string(format!(
-                                        "Could not notify progress: {e}"
-                                    )));
+                                    bail!("Could not notify progress: {e}");
                                 }
                             }
                             WebSocketMessage::TranscodingComplete(complete) => {
@@ -496,14 +496,11 @@ impl MediaUploader for MediaUploaderImpl {
                                             tracing::error!(
                                                 "WebSocket connection closed unexpectedly"
                                             );
-                                            return Err(eyre::BS::from_string(
-                                                "WebSocket connection closed unexpectedly"
-                                                    .to_string(),
-                                            ));
+                                            bail!("WebSocket connection closed unexpectedly");
                                         }
                                     };
                                     match res? {
-                                        websock::Frame::Binary(chunk) => {
+                                        libwebsock::Frame::Binary(chunk) => {
                                             received_bytes += chunk.len();
                                             tracing::trace!(
                                                 "Received chunk of {} bytes ({}/{} total)",
