@@ -1145,6 +1145,7 @@ dependencies = [
 name = "cub-types"
 version = "0.1.0"
 dependencies = [
+ "config-types",
  "conflux",
  "eyre",
  "futures-core",
@@ -1155,6 +1156,7 @@ dependencies = [
  "libobjectstore",
  "libsearch",
  "libwebsock",
+ "mom-types",
  "template-types",
  "time",
 ]

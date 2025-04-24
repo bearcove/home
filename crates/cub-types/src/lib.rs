@@ -1,19 +1,19 @@
-use mom::Sponsors;
+use mom_types::Sponsors;
 use std::{collections::HashMap, sync::Arc};
 use time::OffsetDateTime;
 
-use config::{RedditSecrets, RevisionConfig, TenantConfig, TenantInfo, WebConfig};
+use config_types::{RedditSecrets, RevisionConfig, TenantConfig, TenantInfo, WebConfig};
 use conflux::{Revision, RevisionError, RouteRef};
 use futures_core::future::BoxFuture;
 use hattip::{
     HReply,
     http::{Uri, request::Parts},
 };
-use momclient::MomTenantClient;
-use objectstore::ObjectStore;
-use search::Index;
+use libmomclient::MomTenantClient;
+use libobjectstore::ObjectStore;
+use libsearch::Index;
+use libwebsock::WebSocketStream;
 use template_types::TemplateCollection;
-use websock::WebSocketStream;
 
 /// An indexed revision (with a template collection, a search index, etc.)
 #[derive(Clone)]
@@ -114,10 +114,10 @@ pub trait CubTenant: Send + Sync + 'static {
     fn vite_port(&self) -> BoxFuture<'_, Result<u16, String>>;
 
     /// Get search index
-    fn index(&self) -> Result<Arc<dyn search::Index>, conflux::RevisionError>;
+    fn index(&self) -> Result<Arc<dyn Index>, conflux::RevisionError>;
 
     /// Get templates
-    fn templates(&self) -> Result<Arc<dyn template::TemplateCollection>, conflux::RevisionError>;
+    fn templates(&self) -> Result<Arc<dyn TemplateCollection>, conflux::RevisionError>;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
