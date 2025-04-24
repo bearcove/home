@@ -10,7 +10,7 @@ crate-type = ["rlib"]
 eyre = { version = "0.6.12", default-features = false }
 camino = { version = "1.1.9" }
 ignore = { version = "0.4.23" }
-notify = { version = "6.1.1" }
+notify = { version = "8.0.0" }
 autotrait = "0.1.11"
 
 [features]
