@@ -7,10 +7,11 @@ feature-unification = true
 [resolver]
 feature-unification = "workspace"
 
-[target."any()"]
+[build]
 rustflags = [
     # (Nightly) Make the current crate share its generic instantiations
     "-Zshare-generics=y",
+    "-Cprefer-dynamic",
 ]
 
 [patch.crates-io]
