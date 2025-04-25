@@ -12,6 +12,9 @@ rustflags = [
     # (Nightly) Make the current crate share its generic instantiations
     "-Zshare-generics=y",
     "-Cprefer-dynamic",
+    "-Zunstable-options",
+    "--extern",
+    "force:std",
 ]
 
 [patch.crates-io]
