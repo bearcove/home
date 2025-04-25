@@ -627,7 +627,7 @@ async fn handle_deploy_socket_inner(
     let mod_revision = librevision::load();
     let revpak = mod_revision.serialize_pak(&rev.pak);
     let revpak_size = revpak.len();
-    let formatted_size = bytesize::to_string(revpak_size as u64, true);
+    let formatted_size = bytesize::ByteSize::b(revpak_size as u64).display().iec();
     json_to_socket(
         socket,
         &DeployMessage::LogMessage(LogMessage {

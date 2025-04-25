@@ -1,3 +1,4 @@
+use bytesize::ByteSize;
 use config_types::Environment;
 use conflux::{DerivationKind, VCodec, VContainer};
 use derivations::DerivationInfo;
@@ -218,8 +219,8 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
         load_duration,
         derive_duration,
         write_duration,
-        bytesize::to_string(input.size, true),
-        bytesize::to_string(output_size as u64, true),
+        ByteSize::b(input.size).display().iec(),
+        ByteSize::b(output_size as u64).display().iec(),
         output_size as f64 / input.size as f64
     );
 
