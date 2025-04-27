@@ -133,19 +133,6 @@ echo -e "\033[1;33m⏱️ Adding layers took \033[1;35m$duration\033[0m seconds"
 echo -e "\033[1;32m🚀 Pushing image: \033[1;35m$IMAGE_NAME\033[0m"
 regctl image copy $IMAGE_NAME{,}
 
-# Push tagged image if we're in CI and there's a tag
-if [ -n "${CI:-}" ] && [ -n "${GITHUB_REF:-}" ]; then
-    if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-        TAG=${GITHUB_REF#refs/tags/}
-        if [[ "$TAG" == v* ]]; then
-            TAG=${TAG#v}
-        fi
-        TAGGED_IMAGE_NAME="ghcr.io/bearcove/home:$TAG"
-        echo -e "\033[1;32m🏷️ Tagging and pushing: \033[1;35m$TAGGED_IMAGE_NAME\033[0m"
-        regctl image copy $IMAGE_NAME $TAGGED_IMAGE_NAME
-    fi
-fi
-
 # Test the image if not in CI
 if [ -z "${CI:-}" ]; then
     echo -e "\033[1;34m🧪 Testing image locally\033[0m"
