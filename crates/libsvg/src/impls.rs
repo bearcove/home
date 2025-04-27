@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use camino::Utf8PathBuf;
 use config_types::FontStyle;
 use conflux::{Dimensions, SvgFontFaceCollection};
+use eyre::Context as _;
 use image_types::{IntrinsicPixels, PixelDensity};
 
 use crate::{SvgCleanupOptions, char_usage};
@@ -174,9 +175,22 @@ impl FontSubsetter {
         }
 
         let font_path = self.tmp_dir.path().join(font_file_name);
+        if let Some(parent) = font_path.parent() {
+            trace!("Creating parent directory {}", parent.display());
+            tokio::fs::create_dir_all(parent).await?;
+        }
+
         trace!("Writing font to {}", font_path.display());
-        tokio::fs::write(&font_path, &data).await?;
-        self.known_fonts.insert(font_name, font_path.try_into()?);
+        tokio::fs::write(&font_path, &data)
+            .await
+            .wrap_err_with(|| format!("Failed to write font to {}", font_path.display()))?;
+        self.known_fonts
+            .insert(font_name.clone(), font_path.clone().try_into()?);
+        trace!(
+            "Font {} (to {}) added successfully",
+            font_name,
+            font_path.display()
+        );
         Ok(())
     }
 
@@ -198,6 +212,10 @@ impl FontSubsetter {
             .tmp_dir
             .path()
             .join(format!("{font_name}.subset.woff2"));
+        trace!(
+            "Running pyftsubset for font {} with chars: {:?}",
+            font_name, used_chars
+        );
 
         let mut child = tokio::process::Command::new("uvx")
             .arg("--with")
@@ -220,7 +238,9 @@ impl FontSubsetter {
             return Err(eyre::eyre!("pyftsubset failed with status: {}", status));
         }
 
+        trace!("Reading subset font file from {}", subset_path.display());
         let output = tokio::fs::read(&subset_path).await;
+        trace!("Removing subset font file from {}", subset_path.display());
         let _ = tokio::fs::remove_file(&subset_path).await;
         Ok(output?)
     }
