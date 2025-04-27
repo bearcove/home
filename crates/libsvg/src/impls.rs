@@ -5,6 +5,7 @@ use config_types::FontStyle;
 use conflux::{Dimensions, SvgFontFaceCollection};
 use eyre::Context as _;
 use image_types::{IntrinsicPixels, PixelDensity};
+use which::which;
 
 use crate::{SvgCleanupOptions, char_usage};
 
@@ -217,7 +218,8 @@ impl FontSubsetter {
             font_name, used_chars
         );
 
-        let mut child = tokio::process::Command::new("uvx")
+        let uvx_path = which("uvx").wrap_err("could not find uvx")?;
+        let mut child = tokio::process::Command::new(uvx_path)
             .arg("--with")
             .arg("brotli")
             .arg("fonttools")

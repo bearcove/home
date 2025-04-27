@@ -20,6 +20,7 @@ autotrait = "0.1.12"
 config-types = { version = "0.1.0", path = "../config-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 lightningcss = "1.0.0-alpha.65"
+which = "7.0.3"
 
 [dev-dependencies]
 insta = "1.43.0"

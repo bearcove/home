@@ -3532,6 +3532,7 @@ dependencies = [
  "regex 1.11.1",
  "tempfile",
  "tokio",
+ "which",
 ]
 
 [[package]]
