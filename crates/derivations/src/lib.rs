@@ -1,4 +1,8 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{
+    borrow::Cow,
+    hash::{DefaultHasher, Hash, Hasher},
+    sync::Arc,
+};
 
 use closest::GetOrHelp;
 use config_types::{Environment, TenantInfo, WebConfig};
@@ -165,7 +169,11 @@ impl DerivationInfo<'_> {
                 d.ic.add_pipeline_hash(&mut mixer);
                 mixer.mix(VIDEO_THUMB_PIPELINE_HASH.as_str());
             }
-            DerivationKind::DrawioRender(_) => {
+            DerivationKind::DrawioRender(ddr) => {
+                let mut hasher = DefaultHasher::new();
+                ddr.svg_font_face_collection.hash(&mut hasher);
+                let h = hasher.finish();
+                mixer.mix(format!("{h:08x}").as_str());
                 mixer.mix(DRAWIO_PIPELINE_HASH.as_str());
             }
             DerivationKind::SvgCleanup(_) => {
