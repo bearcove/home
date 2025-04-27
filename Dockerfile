@@ -41,3 +41,7 @@ RUN set -eux; \
 # apparently `libsqlite3.so` is only installed by the `-dev` package, but our program relies on it, so...
 RUN arch=$([ "$(uname -m)" = "aarch64" ] && echo "aarch64" || echo "x86_64") \
     && ln -s "/usr/lib/${arch}-linux-gnu/libsqlite3.so.0" "/usr/lib/${arch}-linux-gnu/libsqlite3.so"
+
+RUN set -eux; \
+    echo "Installing uv (Python package manager)..." && \
+    curl -sSL --retry 3 --retry-delay 3 https://astral.sh/uv/install.sh | sh
