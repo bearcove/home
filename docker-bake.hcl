@@ -1,30 +1,55 @@
 group "default" {
-  targets = ["home-base", "home-base-amd64", "home-base-arm64"]
+  targets = []
 }
 
-target "home-base" {
+target "home-aarch64-unknown-linux-gnu" {
   context = "."
   dockerfile = "Dockerfile"
-  target = "home-base"
-  tags = ["ghcr.io/bearcove/home-base:latest"]
-  platforms = ["linux/amd64", "linux/arm64"]
+  target = "home"
+  tags = ["ghcr.io/bearcove/home:latest-arm64"]
+  platforms = ["linux/arm64"]
   output = ["type=registry"]
+  mounts = [
+    "type=cache,target=/tmp/cache"
+  ]
+  env = {
+    GITHUB_REF             = "${GITHUB_REF}"
+    GITHUB_SERVER_URL      = "${GITHUB_SERVER_URL}"
+    BEARDIST_ARTIFACT_NAME = "aarch64-unknown-linux-gnu"
+    # force timelord sync
+    CI                     = "1"
+  }
 }
 
-target "home-base-amd64" {
+target "home-x86_64-unknown-linux-gnu" {
   context = "."
   dockerfile = "Dockerfile"
-  target = "home-base"
-  tags = ["ghcr.io/bearcove/home-base:latest-amd64"]
+  target = "home"
+  tags = ["ghcr.io/bearcove/home:latest-amd64"]
   platforms = ["linux/amd64"]
   output = ["type=registry"]
+  mounts = [
+    "type=cache,target=/tmp/cache"
+  ]
+  env = {
+    GITHUB_REF             = "${GITHUB_REF}"
+    GITHUB_SERVER_URL      = "${GITHUB_SERVER_URL}"
+    BEARDIST_ARTIFACT_NAME = "x86_64-unknown-linux-gnu"
+    # force timelord sync
+    CI                     = "1"
+  }
 }
 
-target "home-base-arm64" {
-  context = "."
-  dockerfile = "Dockerfile"
-  target = "home-base"
-  tags = ["ghcr.io/bearcove/home-base:latest-arm64"]
-  platforms = ["linux/arm64"]
+target "home-multiarch" {
+  platforms = [
+    "linux/arm64",
+    "linux/amd64"
+  ]
+  tags = ["ghcr.io/bearcove/home:latest"]
+  # Import images built previously for both platforms
+  sources = [
+    "docker://ghcr.io/bearcove/home:latest-arm64",
+    "docker://ghcr.io/bearcove/home:latest-amd64"
+  ]
   output = ["type=registry"]
 }

@@ -45,3 +45,19 @@ RUN arch=$([ "$(uname -m)" = "aarch64" ] && echo "aarch64" || echo "x86_64") \
 RUN set -eux; \
     echo "Installing uv (Python package manager)..." && \
     curl -sSL --retry 3 --retry-delay 3 https://astral.sh/uv/install.sh | sh
+
+####################################################################################################
+FROM ghcr.io/bearcove/beardist AS build
+
+RUN rustc +stable --version
+COPY rust-toolchain.toml .
+RUN rustc --version
+COPY . .
+ENV BEARDIST_CACHE_DIR=/tmp/cache
+ENV RUST_LOG=debug
+RUN beardist build && mkdir /app && cp -rfv /tmp/beardist-output/home /usr/bin/home
+
+####################################################################################################
+FROM home-base AS home
+
+COPY --from=build /usr/bin/home /usr/bin/home

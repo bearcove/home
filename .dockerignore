@@ -1,0 +1,15 @@
+local_data
+target
+dist
+node_modules
+result
+.direnv
+.DS_Store
+.parcel-cache
+.dummy.env
+/usr
+/linux-mods
+.aider*
+.env
+.envrc
+.home

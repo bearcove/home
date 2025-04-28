@@ -50,42 +50,18 @@ jobs:
       matrix:
         include:
           - runs-on: depot-ubuntu-24.04-16
-            platform: linux/amd64
-            artifact: x86_64-unknown-linux-gnu
+            target: home-x86_64-unknown-linux-gnu
           - runs-on: depot-ubuntu-24.04-arm-16
-            platform: linux/arm64
-            artifact: aarch64-unknown-linux-gnu
+            target: home-aarch64-unknown-linux-gnu
     runs-on: ${{ matrix.runs-on }}
     container:
       image: ghcr.io/bearcove/beardist:latest
-    env:
-      BEARDIST_CACHE_DIR: /tmp/cache/beardist/${{ matrix.platform }}
-      BEARDIST_ARTIFACT_NAME: ${{ matrix.artifact }}
-      GH_READWRITE_TOKEN: ${{ secrets.GH_READWRITE_TOKEN }}
-      CLICOLOR: 1
-      CLICOLOR_FORCE: 1
-      IMAGE_PLATFORM: ${{ matrix.platform }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/cache
-          key: ${{ runner.os }}-${{ matrix.artifact }}-home-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.artifact }}-home-
-      - name: Build
-        shell: bash
+      - name: Docker buildx bake ${{ matrix.target }}
         run: |
-          beardist build
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-              echo "we're building a tag! "
-              echo "building + pushing the container image"
-              regctl registry login ghcr.io -u token -p "${{ secrets.GH_READWRITE_TOKEN }}"
-              regctl image inspect ghcr.io/bearcove/home-base:latest
-              ./repack.sh
-          fi
+          docker buildx bake ${{ matrix.target }}
   trigger-formula-update:
     needs: [mac-build, linux-build]
     if: startsWith(github.ref, 'refs/tags/')
@@ -98,13 +74,9 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Login to registry
+      - name: Docker buildx bake home-multiarch
         run: |
-          regctl registry login ghcr.io -u token -p "${{ secrets.GH_READWRITE_TOKEN }}"
-
-      - name: Create and push multi-platform manifest
-        run: |
-          ./multify.sh
+          docker buildx bake home-multiarch
 
       - name: Trigger workflow dispatch for bump.yml
         run: |
