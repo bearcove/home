@@ -1,3 +1,4 @@
+*.tar.xz
 local_data
 target
 dist

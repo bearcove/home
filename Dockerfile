@@ -2,8 +2,6 @@
 FROM ghcr.io/bearcove/beardist AS base
 
 COPY rust-toolchain.toml .
-# RUN apt-get update && apt-get install -y libssl-dev && rm -rf /var/lib/apt/lists/* \
-#     && cargo install --locked cargo-chef sccache
 RUN cargo binstall -y cargo-chef sccache
 ENV RUSTC_WRAPPER=sccache SCCACHE_DIR=/sccache
 
@@ -74,3 +72,8 @@ RUN set -eux; \
     curl -sSL --retry 3 --retry-delay 3 https://astral.sh/uv/install.sh | sh
 
 COPY --from=builder /app/home /usr/bin/home
+
+####################################################################################################
+FROM scratch AS home-minimal
+
+COPY --from=builder /app/home /home
