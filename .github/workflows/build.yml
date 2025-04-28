@@ -57,6 +57,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Log in to GitHub container registry
+        run: echo "${{ secrets.GH_READWRITE_TOKEN }}" | docker login ghcr.io -u fasterthanlime --password-stdin
       - name: Docker buildx bake ${{ matrix.target }}
         run: |
           docker buildx bake ${{ matrix.target }}
