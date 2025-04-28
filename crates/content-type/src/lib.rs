@@ -69,7 +69,7 @@ content_types! {
     MP3 => { ext: "mp3", mime: "audio/mpeg", serial: "mp3" },
     FLAC => { ext: "flac", mime: "audio/flac", serial: "flac" },
     WOFF2 => { ext: "woff2", mime: "font/woff2", serial: "woff2" },
-    Js => { ext: "js", mime: "text/javascript;charset=utf-8", serial: "js" },
+    Js => { ext: "js", mime: "application/javascript;charset=utf-8", serial: "js" },
     JsSourcemap => { ext: "js.map", mime: "application/json", serial: "js.map" },
     WASM => { ext: "wasm", mime: "application/wasm", serial: "wasm" },
     AAC => { ext: "aac", mime: "audio/aac", serial: "aac" },
