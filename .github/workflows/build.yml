@@ -58,7 +58,7 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
-            echo "set_value=target.home.tags=ghcr.io/bearcove/home:${TAG_NAME}" >> $GITHUB_OUTPUT
+            echo "set_value=home.tags=ghcr.io/bearcove/home:${TAG_NAME}" >> $GITHUB_OUTPUT
           fi
       - name: Bake Docker images
         uses: depot/bake-action@v1
