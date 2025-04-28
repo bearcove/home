@@ -53,19 +53,12 @@ jobs:
           password: ${{ secrets.GH_READWRITE_TOKEN }}
       - name: Set up Depot CLI
         uses: depot/setup-action@v1
-      - name: Set override if this is a Git tag
-        id: set_override
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
-            echo "set_value=home.tags=ghcr.io/bearcove/home:${TAG_NAME}" >> $GITHUB_OUTPUT
-          fi
       - name: Bake Docker images
         uses: depot/bake-action@v1
         with:
           lint: true
           files: docker-bake.hcl
-          set: ${{ steps.set_override.outputs.set_value }}
+          set: ${{ github.ref_type == 'tag' && format('home.tags=ghcr.io/bearcove/home:latest,ghcr.io/bearcove/home:{0}', github.ref_name) || '' }}
           token: ${{ secrets.DEPOT_TOKEN }}
   # trigger-formula-update:
   #   needs: [mac-build] # TODO: restore linux build etc.
