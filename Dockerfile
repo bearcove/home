@@ -1,5 +1,32 @@
 ####################################################################################################
-FROM ghcr.io/bearcove/base AS home-base
+FROM ghcr.io/bearcove/beardist AS base
+
+COPY rust-toolchain.toml .
+# RUN apt-get update && apt-get install -y libssl-dev && rm -rf /var/lib/apt/lists/* \
+#     && cargo install --locked cargo-chef sccache
+RUN cargo binstall -y cargo-chef sccache
+ENV RUSTC_WRAPPER=sccache SCCACHE_DIR=/sccache
+
+FROM base AS planner
+WORKDIR /app
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=planner /app/recipe.json recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+    cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+    cargo build --release && mkdir -p /app && cp target/release/home /app/
+
+####################################################################################################
+FROM ghcr.io/bearcove/base AS home
 
 RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive \
@@ -46,20 +73,4 @@ RUN set -eux; \
     echo "Installing uv (Python package manager)..." && \
     curl -sSL --retry 3 --retry-delay 3 https://astral.sh/uv/install.sh | sh
 
-####################################################################################################
-FROM ghcr.io/bearcove/beardist AS build
-
-ENV CI=1
-
-RUN rustc +stable --version
-COPY rust-toolchain.toml .
-RUN rustc --version
-COPY . .
-ENV BEARDIST_CACHE_DIR=/tmp/cache
-ENV RUST_LOG=debug
-RUN beardist build && mkdir /app && cp -rfv /tmp/beardist-output/home /usr/bin/home
-
-####################################################################################################
-FROM home-base AS home
-
-COPY --from=build /usr/bin/home /usr/bin/home
+COPY --from=builder /app/home /usr/bin/home
