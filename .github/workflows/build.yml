@@ -40,7 +40,7 @@ jobs:
           export SCCACHE_WEBDAV_ENDPOINT=https://cache.depot.dev
           export SCCACHE_WEBDAV_TOKEN=${{ secrets.DEPOT_TOKEN }}
           export RUSTC_WRAPPER=sccache
-          beardist build
+          cargo build --release
           sccache --show-stats
   linux-build:
     runs-on: ubuntu-24.04
@@ -69,20 +69,20 @@ jobs:
           files: docker-bake.hcl
           set: ${{ steps.set_override.outputs.set_value }}
           token: ${{ secrets.DEPOT_TOKEN }}
-  trigger-formula-update:
-    needs: [mac-build] # TODO: restore linux build etc.
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Trigger workflow dispatch for bump.yml
-        run: |
-          curl -X POST \
-            -f \
-            -H "Authorization: token ${{ env.GH_READWRITE_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            -d '{
-              "ref": "main",
-              "inputs": {}
-            }' \
-            https://api.github.com/repos/bearcove/homebrew-tap/actions/workflows/bump.yml/dispatches
+  # trigger-formula-update:
+  #   needs: [mac-build] # TODO: restore linux build etc.
+  #   if: startsWith(github.ref, 'refs/tags/')
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #     - name: Trigger workflow dispatch for bump.yml
+  #       run: |
+  #         curl -X POST \
+  #           -f \
+  #           -H "Authorization: token ${{ env.GH_READWRITE_TOKEN }}" \
+  #           -H "Accept: application/vnd.github.v3+json" \
+  #           -H "X-GitHub-Api-Version: 2022-11-28" \
+  #           -d '{
+  #             "ref": "main",
+  #             "inputs": {}
+  #           }' \
+  #           https://api.github.com/repos/bearcove/homebrew-tap/actions/workflows/bump.yml/dispatches
