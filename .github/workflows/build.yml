@@ -32,9 +32,7 @@ jobs:
           sudo mv beardist /usr/local/bin/
       - name: Install required dependencies
         run: |
-          # Install pnpm package manager and bun via tap
-          brew tap oven-sh/bun
-          brew install node pnpm cargo-sweep cargo-nextest just bun coreutils xz dav1d sccache
+          brew install dav1d sccache
       - name: Build
         run: |
           export SCCACHE_WEBDAV_ENDPOINT=https://cache.depot.dev
