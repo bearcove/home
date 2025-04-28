@@ -58,7 +58,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
       - name: Log in to GitHub container registry
-        run: echo "${{ secrets.GH_READWRITE_TOKEN }}" | docker login ghcr.io -u fasterthanlime --password-stdin
+        run: echo "${{ secrets.GH_READWRITE_TOKEN }}" | docker login ghcr.io -u USERNAME --password-stdin
       - name: Docker buildx bake ${{ matrix.target }}
         run: |
           docker buildx bake ${{ matrix.target }}
@@ -66,27 +66,23 @@ jobs:
     needs: [mac-build, linux-build]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: depot-ubuntu-24.04-4
-    container:
-      image: ghcr.io/bearcove/beardist:latest
-    env:
-      GH_READWRITE_TOKEN: ${{ secrets.GH_READWRITE_TOKEN }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-
+      - name: Log in to GitHub container registry
+        run: echo "${{ secrets.GH_READWRITE_TOKEN }}" | docker login ghcr.io -u USERNAME --password-stdin
       - name: Docker buildx bake home-multiarch
         run: |
           docker buildx bake home-multiarch
-
-      - name: Trigger workflow dispatch for bump.yml
-        run: |
-          curl -X POST \
-            -f \
-            -H "Authorization: token ${{ env.GH_READWRITE_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            -d '{
-              "ref": "main",
-              "inputs": {}
-            }' \
-            https://api.github.com/repos/bearcove/homebrew-tap/actions/workflows/bump.yml/dispatches
+      # - name: Trigger workflow dispatch for bump.yml
+      #   run: |
+      #     curl -X POST \
+      #       -f \
+      #       -H "Authorization: token ${{ env.GH_READWRITE_TOKEN }}" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       -H "X-GitHub-Api-Version: 2022-11-28" \
+      #       -d '{
+      #         "ref": "main",
+      #         "inputs": {}
+      #       }' \
+      #       https://api.github.com/repos/bearcove/homebrew-tap/actions/workflows/bump.yml/dispatches
