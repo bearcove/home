@@ -51,6 +51,19 @@ pub fn configure_ffmpeg_command(
             // Add common settings
             vid_common(cmd);
         }
+        TargetFormat::AVC => {
+            cmd.arg("-f")
+                .arg("mp4")
+                .arg("-c:v")
+                .arg("libx264")
+                .arg("-crf")
+                .arg("25")
+                .arg("-preset")
+                .arg("slow");
+
+            // Add common settings
+            vid_common(cmd);
+        }
         TargetFormat::ThumbJXL => {
             assert!(output_path.to_str().unwrap().ends_with(".jxl"));
             cmd.arg("-c:v")

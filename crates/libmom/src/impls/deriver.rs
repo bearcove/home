@@ -111,6 +111,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
             let target_format = match (video.container, video.vc) {
                 (VContainer::WebM, VCodec::VP9) => TargetFormat::VP9,
                 (VContainer::MP4, VCodec::AV1) => TargetFormat::AV1,
+                (VContainer::MP4, VCodec::AVC) => TargetFormat::AVC,
                 (container, vc) => {
                     return Err(eyre!(
                         "Unsupported video container/codec combination: {container:?}/{vc:?}"

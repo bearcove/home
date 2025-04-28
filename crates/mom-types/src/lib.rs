@@ -181,6 +181,7 @@ pub mod media_types {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub enum TargetFormat {
         AV1,
+        AVC,
         VP9,
         ThumbJXL,
         ThumbAVIF,
@@ -214,6 +215,7 @@ pub mod media_types {
         pub fn ffmpeg_output_ext(&self) -> &'static str {
             match self {
                 TargetFormat::AV1 => "mp4",
+                TargetFormat::AVC => "mp4",
                 TargetFormat::VP9 => "webm",
                 TargetFormat::ThumbJXL => "jxl",
                 TargetFormat::ThumbAVIF => "jxl",
@@ -230,6 +232,7 @@ pub mod media_types {
     merde::derive! {
         impl (Serialize, Deserialize) for enum TargetFormat string_like {
             "av1" => AV1,
+            "avc" => AVC,
             "vp9" => VP9,
             "thumb_jxl" => ThumbJXL,
             "thumb_avif" => ThumbAVIF,

@@ -216,7 +216,8 @@ pub async fn load_pak(
                 for (dst_container, dst_vc, dst_ac) in [
                     // AV1 needs to be first to be the default
                     (VContainer::MP4, VCodec::AV1, ACodec::Opus),
-                    (VContainer::WebM, VCodec::VP9, ACodec::Opus),
+                    (VContainer::MP4, VCodec::AVC, ACodec::Opus),
+                    // (VContainer::WebM, VCodec::VP9, ACodec::Opus),
                 ] {
                     let is_identity = {
                         if let (Some(src_vc), Some(src_ac)) = (props.vc(), props.ac()) {
