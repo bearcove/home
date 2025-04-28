@@ -20,16 +20,18 @@ target "home-base" {
   }
 }
 
-# ARM64 container push
 target "home-arm64" {
   inherits = ["home-base"]
   platforms = ["linux/arm64"]
+  output = ["type=registry"]
+  tags = ["ghcr.io/bearcove/home:arm64-latest"]
 }
 
-# AMD64 container push
 target "home-amd64" {
   inherits = ["home-base"]
   platforms = ["linux/amd64"]
+  output = ["type=registry"]
+  tags = ["ghcr.io/bearcove/home:amd64-latest"]
 }
 
 # ARM64 tarball extraction
@@ -58,6 +60,8 @@ target "home-manifest" {
   tags = ["ghcr.io/bearcove/home:latest"]
   platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]
-  depends_on = ["home-amd64", "home-arm64"]
-  inputs = ["home-amd64", "home-arm64"]
+  inputs = [
+    "docker://ghcr.io/bearcove/home:amd64-latest",
+    "docker://ghcr.io/bearcove/home:arm64-latest"
+  ]
 }
