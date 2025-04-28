@@ -1,8 +1,10 @@
 group "default" {
   targets = [
+    "home-amd64",
+    "home-arm64",
+    "home-manifest",
     "home-arm64-tar",
     "home-amd64-tar",
-    "home-manifest"
   ]
 }
 
@@ -63,5 +65,9 @@ target "home-manifest" {
   inputs = [
     "docker://ghcr.io/bearcove/home:amd64-latest",
     "docker://ghcr.io/bearcove/home:arm64-latest"
+  ]
+  depends_on = [
+    "home-amd64",
+    "home-arm64"
   ]
 }
