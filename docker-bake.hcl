@@ -8,34 +8,6 @@ group "default" {
   ]
 }
 
-# Base target with shared settings
-target "home-base" {
-  target = "home" # ← default full container
-  tags = []
-  pull = true
-  labels = {
-    "org.opencontainers.image.title" = "home"
-    "org.opencontainers.image.source" = "https://github.com/bearcove/home"
-  }
-  env = {
-    "DEPOT_TOKEN" = "${DEPOT_TOKEN}"
-  }
-}
-
-target "home-arm64" {
-  inherits = ["home-base"]
-  platforms = ["linux/arm64"]
-  output = ["type=registry"]
-  tags = ["ghcr.io/bearcove/home:arm64-latest"]
-}
-
-target "home-amd64" {
-  inherits = ["home-base"]
-  platforms = ["linux/amd64"]
-  output = ["type=registry"]
-  tags = ["ghcr.io/bearcove/home:amd64-latest"]
-}
-
 # ARM64 tarball extraction
 target "home-arm64-tar" {
   target = "home-minimal" # 🔥 override to scratch minimal!
@@ -56,18 +28,18 @@ target "home-amd64-tar" {
   tags = []
 }
 
-# Manifest merging both registries
+# Manifest merging both registries and base target settings
 target "home-manifest" {
-  type = "image"
   tags = ["ghcr.io/bearcove/home:latest"]
   platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]
-  inputs = [
-    "docker://ghcr.io/bearcove/home:amd64-latest",
-    "docker://ghcr.io/bearcove/home:arm64-latest"
-  ]
-  depends_on = [
-    "home-amd64",
-    "home-arm64"
-  ]
+  target = "home"
+  pull = true
+  labels = {
+    "org.opencontainers.image.title" = "home"
+    "org.opencontainers.image.source" = "https://github.com/bearcove/home"
+  }
+  env = {
+    "DEPOT_TOKEN" = "${DEPOT_TOKEN}"
+  }
 }
