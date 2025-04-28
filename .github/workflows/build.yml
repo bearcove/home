@@ -50,6 +50,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      - name: Log in to ghcr.io Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: fasterthanlime
+          password: ${{ secrets.GH_READWRITE_TOKEN }}
       - name: Set up Depot CLI
         uses: depot/setup-action@v1
       - name: Set override if this is a Git tag
