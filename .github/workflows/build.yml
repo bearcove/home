@@ -84,6 +84,8 @@ jobs:
     needs: [mac-build, linux-build]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
+    env:
+      GH_READWRITE_TOKEN: ${{ secrets.GH_READWRITE_TOKEN }}
     steps:
       - name: Trigger workflow dispatch for bump.yml
         run: |
