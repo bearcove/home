@@ -63,5 +63,6 @@ target "home-manifest" {
   type = "image"
   tags = ["ghcr.io/bearcove/home:latest"]
   platforms = ["linux/amd64", "linux/arm64"]
+  output = ["type=registry"]
   depends_on = ["home-amd64", "home-arm64"]
 }
