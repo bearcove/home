@@ -62,7 +62,14 @@ pub fn configure_ffmpeg_command(
                 .arg("slow");
 
             // Add common settings
-            vid_common(cmd);
+            cmd.arg("-pix_fmt")
+                .arg("yuv420p")
+                .arg("-movflags")
+                .arg("+faststart")
+                .arg("-c:a")
+                .arg("aac")
+                .arg("-ab")
+                .arg("196k");
         }
         TargetFormat::ThumbJXL => {
             assert!(output_path.to_str().unwrap().ends_with(".jxl"));

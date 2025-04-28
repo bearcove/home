@@ -226,7 +226,7 @@ impl HasPipelineHash for VCodec {
         mixer.mix(match self {
             VCodec::AV1 => "av1-pipeline-2025-01-26",
             VCodec::VP9 => "vp9-pipeline-2025-01-26",
-            VCodec::AVC => "avc-pipeline-2025-01-26",
+            VCodec::AVC => "avc-pipeline-2025-04-28",
         });
     }
 }
