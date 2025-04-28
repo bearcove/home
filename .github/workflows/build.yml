@@ -24,13 +24,6 @@ jobs:
         run: |
           rustup default nightly-2025-04-23
           rustc --version
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/cache
-          key: ${{ runner.os }}-${{ matrix.artifact }}-home-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.artifact }}-home-
       - name: Download beardist
         run: |
           curl -L -o beardist.tar.xz https://github.com/bearcove/beardist/releases/download/v2.1.0/aarch64-apple-darwin.tar.xz
@@ -41,10 +34,14 @@ jobs:
         run: |
           # Install pnpm package manager and bun via tap
           brew tap oven-sh/bun
-          brew install node pnpm cargo-sweep cargo-nextest just bun coreutils xz dav1d
+          brew install node pnpm cargo-sweep cargo-nextest just bun coreutils xz dav1d sccache
       - name: Build
         run: |
+          export SCCACHE_WEBDAV_ENDPOINT=https://cache.depot.dev
+          export SCCACHE_WEBDAV_TOKEN=${{ secrets.DEPOT_TOKEN }}
+          export RUSTC_WRAPPER=sccache
           beardist build
+          sccache --show-stats
   linux-build:
     runs-on: ubuntu-24.04
     steps:
