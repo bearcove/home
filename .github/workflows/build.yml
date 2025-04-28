@@ -66,6 +66,7 @@ jobs:
       - name: Bake Docker images
         uses: depot/bake-action@v1
         with:
+          lint: true
           files: docker-bake.hcl
   trigger-formula-update:
     needs: [mac-build] # TODO: restore linux build etc.

@@ -49,6 +49,8 @@ RUN set -eux; \
 ####################################################################################################
 FROM ghcr.io/bearcove/beardist AS build
 
+ENV CI=1
+
 RUN rustc +stable --version
 COPY rust-toolchain.toml .
 RUN rustc --version
