@@ -46,7 +46,7 @@ jobs:
         run: |
           beardist build
   linux-build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write
@@ -71,7 +71,7 @@ jobs:
   trigger-formula-update:
     needs: [mac-build] # TODO: restore linux build etc.
     if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Trigger workflow dispatch for bump.yml
         run: |
