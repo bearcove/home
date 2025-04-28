@@ -54,8 +54,6 @@ jobs:
           - runs-on: depot-ubuntu-24.04-arm-16
             target: home-aarch64-unknown-linux-gnu
     runs-on: ${{ matrix.runs-on }}
-    container:
-      image: ghcr.io/bearcove/beardist:latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
