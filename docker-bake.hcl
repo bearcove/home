@@ -41,15 +41,19 @@ target "home-x86_64-unknown-linux-gnu" {
 }
 
 target "home-multiarch" {
+  depends_on = ["home-aarch64-unknown-linux-gnu", "home-x86_64-unknown-linux-gnu"]
   platforms = [
     "linux/arm64",
     "linux/amd64"
   ]
-  tags = ["ghcr.io/bearcove/home:latest"]
+  tags = [
+    "ghcr.io/bearcove/home:latest",
+    "${EXTRA_TAG}"
+  ]
   # Import images built previously for both platforms
   sources = [
-    "docker://ghcr.io/bearcove/home:latest-arm64",
-    "docker://ghcr.io/bearcove/home:latest-amd64"
+    "ghcr.io/bearcove/home:latest-arm64",
+    "ghcr.io/bearcove/home:latest-amd64"
   ]
   output = ["type=registry"]
 }

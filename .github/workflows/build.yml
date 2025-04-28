@@ -46,43 +46,41 @@ jobs:
         run: |
           beardist build
   linux-build:
-    strategy:
-      matrix:
-        include:
-          - runs-on: depot-ubuntu-24.04-16
-            target: home-x86_64-unknown-linux-gnu
-          - runs-on: depot-ubuntu-24.04-arm-16
-            target: home-aarch64-unknown-linux-gnu
-    runs-on: ${{ matrix.runs-on }}
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - name: Check out repository code
+      - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Log in to GitHub container registry
-        run: echo "${{ secrets.GH_READWRITE_TOKEN }}" | docker login ghcr.io -u USERNAME --password-stdin
-      - name: Docker buildx bake ${{ matrix.target }}
+      - name: Set up Depot CLI
+        uses: depot/setup-action@v1
+      - name: Set EXTRA_TAG if this is a Git tag
         run: |
-          docker buildx bake ${{ matrix.target }}
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            echo "EXTRA_TAG=ghcr.io/bearcove/home:${TAG_NAME}" >> $GITHUB_ENV
+          else
+            echo "EXTRA_TAG=" >> $GITHUB_ENV
+          fi
+      - name: Bake Docker images
+        uses: depot/bake-action@v1
+        with:
+          files: docker-bake.hcl
   trigger-formula-update:
-    needs: [mac-build, linux-build]
+    needs: [mac-build] # TODO: restore linux build etc.
     if: startsWith(github.ref, 'refs/tags/')
-    runs-on: depot-ubuntu-24.04-4
+    runs-on: ubuntu-22.04
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - name: Log in to GitHub container registry
-        run: echo "${{ secrets.GH_READWRITE_TOKEN }}" | docker login ghcr.io -u USERNAME --password-stdin
-      - name: Docker buildx bake home-multiarch
+      - name: Trigger workflow dispatch for bump.yml
         run: |
-          docker buildx bake home-multiarch
-      # - name: Trigger workflow dispatch for bump.yml
-      #   run: |
-      #     curl -X POST \
-      #       -f \
-      #       -H "Authorization: token ${{ env.GH_READWRITE_TOKEN }}" \
-      #       -H "Accept: application/vnd.github.v3+json" \
-      #       -H "X-GitHub-Api-Version: 2022-11-28" \
-      #       -d '{
-      #         "ref": "main",
-      #         "inputs": {}
-      #       }' \
-      #       https://api.github.com/repos/bearcove/homebrew-tap/actions/workflows/bump.yml/dispatches
+          curl -X POST \
+            -f \
+            -H "Authorization: token ${{ env.GH_READWRITE_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{
+              "ref": "main",
+              "inputs": {}
+            }' \
+            https://api.github.com/repos/bearcove/homebrew-tap/actions/workflows/bump.yml/dispatches
