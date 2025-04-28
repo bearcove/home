@@ -1,8 +1,6 @@
 group "default" {
   targets = [
-    "home-amd64",
-    "home-arm64",
-    "home-manifest",
+    "home",
     "home-arm64-tar",
     "home-amd64-tar",
   ]
@@ -29,7 +27,7 @@ target "home-amd64-tar" {
 }
 
 # Manifest merging both registries and base target settings
-target "home-manifest" {
+target "home" {
   tags = ["ghcr.io/bearcove/home:latest"]
   platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]

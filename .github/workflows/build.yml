@@ -68,7 +68,7 @@ jobs:
         with:
           lint: true
           files: docker-bake.hcl
-          set: ${{ github.ref_type == 'tag' && format('home-manifest.tags=ghcr.io/bearcove/home:{0}', github.ref_name) || '' }}
+          set: ${{ github.ref_type == 'tag' && format('home.tags=ghcr.io/bearcove/home:{0}', github.ref_name) || '' }}
           token: ${{ secrets.DEPOT_TOKEN }}
       - name: Upload Linux artifacts to GitHub Release
         if: github.ref_type == 'tag'
