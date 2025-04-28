@@ -1,7 +1,5 @@
 group "default" {
   targets = [
-    "home-arm64",
-    "home-amd64",
     "home-arm64-tar",
     "home-amd64-tar",
     "home-manifest"
@@ -11,7 +9,7 @@ group "default" {
 # Base target with shared settings
 target "home-base" {
   target = "home" # ← default full container
-  tags = ["ghcr.io/bearcove/home:latest"]
+  tags = []
   pull = true
   labels = {
     "org.opencontainers.image.title" = "home"
@@ -26,19 +24,16 @@ target "home-base" {
 target "home-arm64" {
   inherits = ["home-base"]
   platforms = ["linux/arm64"]
-  output = ["type=registry"]
 }
 
 # AMD64 container push
 target "home-amd64" {
   inherits = ["home-base"]
   platforms = ["linux/amd64"]
-  output = ["type=registry"]
 }
 
 # ARM64 tarball extraction
 target "home-arm64-tar" {
-  inherits = ["home-base"]
   target = "home-minimal" # 🔥 override to scratch minimal!
   platforms = ["linux/arm64"]
   output = [
@@ -49,7 +44,6 @@ target "home-arm64-tar" {
 
 # AMD64 tarball extraction
 target "home-amd64-tar" {
-  inherits = ["home-base"]
   target = "home-minimal" # 🔥 override to scratch minimal!
   platforms = ["linux/amd64"]
   output = [
@@ -64,5 +58,6 @@ target "home-manifest" {
   tags = ["ghcr.io/bearcove/home:latest"]
   platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]
+  depends_on = ["home-amd64", "home-arm64"]
   inputs = ["home-amd64", "home-arm64"]
 }
