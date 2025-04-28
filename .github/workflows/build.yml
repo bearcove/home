@@ -41,7 +41,12 @@ jobs:
           cargo build --release
           sccache --show-stats
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            export LC_ALL=en_US.UTF-8
             tar -cJf home-aarch64-apple-darwin.tar.xz -C target/release home
+            # Ensure the release exists before uploading artifacts
+            if ! GH_TOKEN="${GH_READWRITE_TOKEN}" gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+              GH_TOKEN="${GH_READWRITE_TOKEN}" gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --title "${GITHUB_REF_NAME}" --notes ""
+            fi
             GH_TOKEN="${GH_READWRITE_TOKEN}" gh release upload "${GITHUB_REF_NAME}" home-aarch64-apple-darwin.tar.xz --repo "${GITHUB_REPOSITORY}" --clobber
           fi
   linux-build:
@@ -70,6 +75,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_READWRITE_TOKEN }}
         run: |
+          # Ensure the release exists before uploading artifacts
+          if ! gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+            gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --title "${GITHUB_REF_NAME}" --notes ""
+          fi
           gh release upload "${GITHUB_REF_NAME}" aarch64-unknown-linux-gnu.tar.xz x86_64-unknown-linux-gnu.tar.xz --repo "${GITHUB_REPOSITORY}" --clobber
   trigger-formula-update:
     needs: [mac-build, linux-build]
