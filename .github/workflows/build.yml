@@ -55,19 +55,19 @@ jobs:
         uses: actions/checkout@v4
       - name: Set up Depot CLI
         uses: depot/setup-action@v1
-      - name: Set EXTRA_TAG if this is a Git tag
+      - name: Set override if this is a Git tag
+        id: set_override
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
-            echo "EXTRA_TAG=ghcr.io/bearcove/home:${TAG_NAME}" >> $GITHUB_ENV
-          else
-            echo "EXTRA_TAG=" >> $GITHUB_ENV
+            echo "set_value=target.home.tags=ghcr.io/bearcove/home:${TAG_NAME}" >> $GITHUB_OUTPUT
           fi
       - name: Bake Docker images
         uses: depot/bake-action@v1
         with:
           lint: true
           files: docker-bake.hcl
+          set: ${{ steps.set_override.outputs.set_value }}
   trigger-formula-update:
     needs: [mac-build] # TODO: restore linux build etc.
     if: startsWith(github.ref, 'refs/tags/')

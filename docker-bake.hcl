@@ -4,7 +4,7 @@ group "default" {
 
 target "home" {
   target = "home"
-  tags = [ "ghcr.io/bearcove/home:latest", "${EXTRA_TAG}" ]
+  tags = [ "ghcr.io/bearcove/home:latest" ]
   platforms = [ "linux/arm64", "linux/amd64" ]
   output = ["type=registry"]
   mounts = [ "type=cache,target=/tmp/cache" ]
