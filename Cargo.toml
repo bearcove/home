@@ -40,7 +40,7 @@ minijinja = { version = "2.9.0" }
 reqwest = { version = "0.12.15", default-features = false, features = [
     "rustls-tls-native-roots",
 ] }
-facet = { version = "0.18.1", features = ["camino"] }
+facet = { version = "0.18.3", features = ["camino"] }
 facet-core = { version = "0.18.0" }
-facet-json = { version = "0.18.1" }
-facet-pretty = { version = "0.18.1" }
+facet-json = { version = "0.19.0" }
+facet-pretty = { version = "0.20.0" }

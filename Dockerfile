@@ -71,6 +71,16 @@ RUN set -eux; \
     echo "Installing uv (Python package manager)..." && \
     curl -sSL --retry 3 --retry-delay 3 https://astral.sh/uv/install.sh | sh
 
+RUN set -eux; \
+    echo "Installing home-drawio..." && \
+    homedrawio_version="v1.0.3" && \
+    arch=$([ "$(uname -m)" = "aarch64" ] && echo "aarch64-unknown-linux-gnu" || echo "x86_64-unknown-linux-gnu") && \
+    curl -sSL --retry 3 --retry-delay 3 \
+    "https://github.com/bearcove/home-drawio/releases/download/${homedrawio_version}/${arch}.tar.xz" -o /tmp/home-drawio.tar.xz && \
+    tar -xJf /tmp/home-drawio.tar.xz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/home-drawio && \
+    rm -f /tmp/home-drawio.tar.xz
+
 COPY --from=builder /app/home /usr/bin/home
 
 ####################################################################################################
