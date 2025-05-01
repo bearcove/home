@@ -364,7 +364,7 @@ merde::derive! {
 
 #[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[facet(rename_all = "lowercase")]
+#[facet(rename_all = "snake_case")]
 #[repr(u8)]
 pub enum FontStyle {
     #[default]
