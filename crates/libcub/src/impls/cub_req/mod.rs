@@ -260,7 +260,7 @@ impl CubReqImpl {
                     .rev
                     .asset_url(web, InputPathRef::from_str("/dist/assets/bundle.css"))?;
                 format!(
-                    "{prefix}<script type=\"module\" src=\"{bundle_js_url}\"></script><link rel=\"stylesheet\" href=\"{bundle_css_url}\">"
+                    "{prefix}<script type=\"module\" src=\"{bundle_js_url}\" defer></script><link rel=\"stylesheet\" href=\"{bundle_css_url}\" media=\"print\" onload=\"this.media='all'\">"
                 )
             }
         };
