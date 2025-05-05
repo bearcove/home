@@ -128,13 +128,32 @@ pub(crate) async fn serve(
         }
     }
 
-    axum::serve(
-        ln,
-        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
-    )
-    .with_graceful_shutdown(quit_sig)
-    .await
-    .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
+    if std::env::var("CUB_HTTPS").is_ok() {
+        // generate self-signed certificate
+        let cert = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
+        let key_pem = cert.serialize_private_key_pem();
+        let cert_pem = cert.serialize_pem().unwrap();
+
+        let tls_config = axum_server::tls_rustls::RustlsConfig::from_pem(
+            cert_pem.as_bytes().to_vec(),
+            key_pem.as_bytes().to_vec(),
+        )
+        .map_err(|e| eyre::eyre!("Failed to load TLS config: {}", e))?;
+
+        axum_server::from_tcp_rustls(ln.into_std().unwrap(), tls_config)
+            .serve(app.into_make_service_with_connect_info::<std::net::SocketAddr>())
+            .with_graceful_shutdown(quit_sig)
+            .await
+            .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
+    } else {
+        axum::serve(
+            ln,
+            app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+        )
+        .with_graceful_shutdown(quit_sig)
+        .await
+        .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
+    }
 
     Ok(())
 }

@@ -13,6 +13,6 @@ serde_json = { version = "1.0.140" }
 owo-colors = { version = "4.2.0" }
 facet-json.workspace = true
 facet-pretty.workspace = true
-autotrait = "0.1.12"
+autotrait = "0.2.0"
 eyre.workspace = true
 config-types = { version = "0.1.0", path = "../config-types" }

@@ -15,6 +15,6 @@ object_store = { version = "0.10.2", features = ["aws"] }
 tracing = { version = "0.1.41" }
 tokio = { version = "1.44" }
 futures-core = "0.3.31"
-autotrait = "0.1.12"
+autotrait = "0.2.0"
 config-types = { version = "0.1.0", path = "../config-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }

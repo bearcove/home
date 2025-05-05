@@ -30,7 +30,7 @@ image-types = { version = "0.1.0", path = "../image-types" }
 config-types = { version = "0.1.0", path = "../config-types" }
 mom-types = { version = "0.1.0", path = "../mom-types" }
 template-types = { version = "0.1.0", path = "../template-types" }
-autotrait = "0.1.12"
+autotrait = "0.2.0"
 
 [dev-dependencies]
 insta = "1.43.0"
