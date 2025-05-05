@@ -75,4 +75,6 @@ mom-types = { version = "0.1.0", path = "../mom-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 rcgen = "0.13.2"
-axum-server = { version = "0.7.2", features = ["tls-rustls"] }
+rustls = "0.21.10"
+rustls-pemfile = "1.0.3"
+axum-tls = "0.8.0"

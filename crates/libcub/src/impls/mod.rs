@@ -129,22 +129,38 @@ pub(crate) async fn serve(
     }
 
     if std::env::var("CUB_HTTPS").is_ok() {
-        // generate self-signed certificate
-        let cert = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
-        let key_pem = cert.serialize_private_key_pem();
-        let cert_pem = cert.serialize_pem().unwrap();
+        // Generate self-signed certificate
+        let certified_key = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
+        let key_pem = certified_key.key_pair.serialize_pem();
+        let cert_pem = certified_key.cert.pem();
 
-        let tls_config = axum_server::tls_rustls::RustlsConfig::from_pem(
-            cert_pem.as_bytes().to_vec(),
-            key_pem.as_bytes().to_vec(),
+        // Create rustls config directly
+        use rustls::{Certificate, PrivateKey, ServerConfig};
+        use rustls_pemfile;
+        
+        // Parse certificate and key
+        let cert = Certificate(cert_pem.as_bytes().to_vec());
+        let key = PrivateKey(key_pem.as_bytes().to_vec());
+        
+        // Configure TLS
+        let config = ServerConfig::builder()
+            .with_safe_defaults()
+            .with_no_client_auth()
+            .with_single_cert(vec![cert], key)
+            .map_err(|e| eyre::eyre!("Failed to load TLS config: {}", e))?;
+        
+        // Convert to axum's TLS configuration
+        let tls_config = axum_tls::rustls_config(Arc::new(config));
+        
+        // Run with TLS
+        axum::serve(
+            ln,
+            app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
         )
-        .map_err(|e| eyre::eyre!("Failed to load TLS config: {}", e))?;
-
-        axum_server::from_tcp_rustls(ln.into_std().unwrap(), tls_config)
-            .serve(app.into_make_service_with_connect_info::<std::net::SocketAddr>())
-            .with_graceful_shutdown(quit_sig)
-            .await
-            .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
+        .with_tls_config(tls_config)
+        .with_graceful_shutdown(quit_sig)
+        .await
+        .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
     } else {
         axum::serve(
             ln,
