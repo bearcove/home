@@ -179,7 +179,11 @@ impl TenantConfig {
             }
             Environment::Development => {
                 let port = web_config.port;
-                format!("http://{name}.snug.blog:{port}")
+                if let Ok(_var) = std::env::var("CUB_HTTPS") {
+                    format!("https://{name}.snug.blog:{port}")
+                } else {
+                    format!("http://{name}.snug.blog:{port}")
+                }
             }
         }
     }
@@ -194,7 +198,11 @@ impl TenantConfig {
             }
             Environment::Development => {
                 let port = web_config.port;
-                format!("http://cdn.{name}.snug.blog:{port}")
+                if let Ok(_var) = std::env::var("CUB_HTTPS") {
+                    format!("https://cdn.{name}.snug.blog:{port}")
+                } else {
+                    format!("http://cdn.{name}.snug.blog:{port}")
+                }
             }
         }
     }

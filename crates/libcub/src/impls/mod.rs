@@ -128,39 +128,74 @@ pub(crate) async fn serve(
         }
     }
 
-    if std::env::var("CUB_HTTPS").is_ok() {
-        // Generate self-signed certificate
-        let certified_key = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
-        let key_pem = certified_key.key_pair.serialize_pem();
-        let cert_pem = certified_key.cert.pem();
-
-        // Create rustls config directly
-        use rustls::{Certificate, PrivateKey, ServerConfig};
-        use rustls_pemfile;
-        
-        // Parse certificate and key
-        let cert = Certificate(cert_pem.as_bytes().to_vec());
-        let key = PrivateKey(key_pem.as_bytes().to_vec());
-        
-        // Configure TLS
-        let config = ServerConfig::builder()
+    if let Ok(_var) = std::env::var("CUB_HTTPS") {
+        // Create a self-signed certificate for HTTPS
+        let config = rustls::ServerConfig::builder()
             .with_safe_defaults()
-            .with_no_client_auth()
-            .with_single_cert(vec![cert], key)
-            .map_err(|e| eyre::eyre!("Failed to load TLS config: {}", e))?;
-        
-        // Convert to axum's TLS configuration
-        let tls_config = axum_tls::rustls_config(Arc::new(config));
-        
-        // Run with TLS
-        axum::serve(
-            ln,
-            app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
-        )
-        .with_tls_config(tls_config)
-        .with_graceful_shutdown(quit_sig)
-        .await
-        .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
+            .with_no_client_auth();
+
+        // Generate a self-signed certificate and private key
+        let cert_keys = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
+
+        // Set up certificate chain and private key
+        let cert_chain = vec![rustls::Certificate(cert_keys.cert.der().to_vec())];
+        let priv_key = rustls::PrivateKey(cert_keys.key_pair.serialize_der());
+
+        let config = config.with_single_cert(cert_chain, priv_key)?;
+
+        // Create the TLS acceptor
+        let tls_acceptor = tokio_rustls::TlsAcceptor::from(Arc::new(config));
+        let tcp_listener = ln;
+
+        // Create custom TLS listener
+        let tls_listener = TlsListener::new(tcp_listener, tls_acceptor);
+
+        // Serve with TLS
+        axum::serve(tls_listener, app.into_make_service())
+            .with_graceful_shutdown(quit_sig)
+            .await
+            .map_err(|e| eyre::eyre!("Failed to serve: {}", e))?;
+
+        struct TlsListener<I> {
+            inner: I,
+            acceptor: tokio_rustls::TlsAcceptor,
+        }
+
+        impl<I> TlsListener<I> {
+            fn new(inner: I, acceptor: tokio_rustls::TlsAcceptor) -> Self {
+                Self { inner, acceptor }
+            }
+        }
+
+        impl axum::serve::Listener for TlsListener<tokio::net::TcpListener> {
+            type Io = tokio_rustls::server::TlsStream<tokio::net::TcpStream>;
+            type Addr = std::net::SocketAddr;
+
+            async fn accept(&mut self) -> (Self::Io, Self::Addr) {
+                loop {
+                    match self.inner.accept().await {
+                        Ok((socket, addr)) => {
+                            let acceptor = self.acceptor.clone();
+                            match acceptor.accept(socket).await {
+                                Ok(tls_stream) => return (tls_stream, addr),
+                                Err(e) => {
+                                    tracing::warn!("TLS error: {}", e);
+                                    continue;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!("TCP accept error: {}", e);
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            fn local_addr(&self) -> tokio::io::Result<Self::Addr> {
+                self.inner.local_addr()
+            }
+        }
     } else {
         axum::serve(
             ln,
