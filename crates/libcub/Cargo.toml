@@ -11,7 +11,7 @@ camino = { version = "1.1.9" }
 merde = { workspace = true, features = ["yaml"] }
 conflux = { path = "../../crates/conflux" }
 libmomclient = { path = "../libmomclient" }
-axum = { version = "0.8.3", default-features = false, features = [
+axum = { version = "0.8.4", default-features = false, features = [
     "http1",
     "tokio",
     "ws",
@@ -75,7 +75,7 @@ mom-types = { version = "0.1.0", path = "../mom-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 rcgen = "0.13.2"
-rustls = "0.21.10"
+rustls = "0.21.12"
 tokio-rustls = "0.24.1"
 arboard = "3.5.0"
 fs-err = { version = "3.1.0", features = ["tokio"] }

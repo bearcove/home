@@ -19,7 +19,7 @@ content-type = { path = "../../crates/content-type" }
 derivations = { version = "0.1.0", path = "../../crates/derivations" }
 
 # impl deps
-axum = { version = "0.8.3", default-features = false, features = [
+axum = { version = "0.8.4", default-features = false, features = [
     "http1",
     "tokio",
     "ws",
@@ -35,7 +35,7 @@ r2d2_sqlite = { version = "0.28.0" }
 rusqlite = { workspace = true, default-features = false, features = ["time"] }
 serde = { version = "1.0.219", features = ["derive"] }
 time = { version = "0.3.41", features = ["formatting"] }
-tokio = { version = "1.44.2", features = ["full"] }
+tokio = { version = "1.45.0", features = ["full"] }
 tracing = { version = "0.1.41" }
 url = { version = "2.5.4" }
 tempfile = { version = "3.19.1" }

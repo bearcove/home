@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["rlib"]
 
 [dependencies]
-quick-xml = { version = "0.37.4" }
+quick-xml = { version = "0.37.5" }
 conflux = { path = "../../crates/conflux" }
 tokio = { workspace = true, features = ["time", "process", "sync"] }
 tempfile = { version = "3.19.1" }
@@ -24,5 +24,5 @@ which = "7.0.3"
 fs-err = { version = "3.1.0", features = ["tokio"] }
 
 [dev-dependencies]
-insta = "1.43.0"
+insta = "1.43.1"
 regex = "1.11.1"

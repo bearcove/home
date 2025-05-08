@@ -30,13 +30,13 @@ lto = "off"
 split-debuginfo = "unpacked"
 
 [workspace.dependencies]
-tokio = { version = "=1.44.2", features = ["full"] }
+tokio = { version = "1.45.0", features = ["full"] }
 serde = { version = "1.0.219", features = ["derive"] }
 merde = { version = "10.0.7", features = ["full"] }
 rusqlite = { version = "0.35.0", default-features = false, features = ["time"] }
 eyre = "0.6.12"
 tracing = { version = "0.1.41", default-features = false, features = ["std"] }
-minijinja = { version = "2.9.0" }
+minijinja = { version = "2.10.2" }
 facet = { version = "0.18.5", features = ["camino"] }
 facet-json = { version = "0.22.0" }
 facet-pretty = { version = "0.22.0" }
