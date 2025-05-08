@@ -14,7 +14,7 @@ use std::process::Command;
 //   - `/.home`
 pub(crate) async fn perform_dev_setup(base_dir: &Utf8Path) -> eyre::Result<()> {
     let package_json_path = base_dir.join("package.json");
-    if tokio::fs::metadata(&package_json_path).await.is_err() {
+    if fs_err::tokio::metadata(&package_json_path).await.is_err() {
         eprintln!(
             "📦 \x1b[33mpackage.json\x1b[0m not found. Running \x1b[36m`pnpm init`\x1b[0m to create it..."
         );
@@ -35,13 +35,13 @@ pub(crate) async fn perform_dev_setup(base_dir: &Utf8Path) -> eyre::Result<()> {
     }
 
     // Ensure package.json has "type": "module"
-    let package_json_content = tokio::fs::read_to_string(&package_json_path).await?;
+    let package_json_content = fs_err::tokio::read_to_string(&package_json_path).await?;
     let mut package_json: serde_json::Value = serde_json::from_str(&package_json_content)?;
 
     if package_json["type"] != "module" {
         package_json["type"] = serde_json::Value::String("module".to_string());
         let updated_content = serde_json::to_string_pretty(&package_json)?;
-        tokio::fs::write(&package_json_path, updated_content).await?;
+        fs_err::tokio::write(&package_json_path, updated_content).await?;
         eprintln!(
             "🔄 Updated \x1b[33mpackage.json\x1b[0m to set \x1b[36m\"type\": \"module\"\x1b[0m"
         );
@@ -49,8 +49,8 @@ pub(crate) async fn perform_dev_setup(base_dir: &Utf8Path) -> eyre::Result<()> {
 
     // Ensure .gitignore contains required entries
     let gitignore_path = base_dir.join(".gitignore");
-    let mut gitignore_content = if tokio::fs::metadata(&gitignore_path).await.is_ok() {
-        tokio::fs::read_to_string(&gitignore_path).await?
+    let mut gitignore_content = if fs_err::tokio::metadata(&gitignore_path).await.is_ok() {
+        fs_err::tokio::read_to_string(&gitignore_path).await?
     } else {
         String::new()
     };
@@ -70,7 +70,7 @@ pub(crate) async fn perform_dev_setup(base_dir: &Utf8Path) -> eyre::Result<()> {
     }
 
     if updated {
-        tokio::fs::write(&gitignore_path, gitignore_content).await?;
+        fs_err::tokio::write(&gitignore_path, gitignore_content).await?;
         eprintln!("📝 Updated \x1b[33m.gitignore\x1b[0m with required entries");
     }
 
@@ -172,7 +172,7 @@ impl ProjectChangeSet {
         let mut existing_files = Vec::new();
         for file in &self.files {
             let full_path = dir.join(&file.path);
-            if tokio::fs::metadata(&full_path).await.is_ok() {
+            if fs_err::tokio::metadata(&full_path).await.is_ok() {
                 existing_files.push(file.path.clone());
             }
         }
@@ -183,9 +183,9 @@ impl ProjectChangeSet {
         for file in &self.files {
             let full_path = dir.join(&file.path);
             if let Some(parent) = full_path.parent() {
-                tokio::fs::create_dir_all(parent).await?;
+                fs_err::tokio::create_dir_all(parent).await?;
             }
-            tokio::fs::write(&full_path, &file.content).await?;
+            fs_err::tokio::write(&full_path, &file.content).await?;
             eprintln!("📄 Created file: \x1b[36m{full_path}\x1b[0m");
         }
         Ok(())

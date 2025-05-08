@@ -45,7 +45,7 @@ pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Byte
     let line_arg = if let Some(line) = params.line_number {
         format!("{disk_path}:{line}")
     } else if let Some(offset) = params.byte_offset {
-        let contents = tokio::fs::read_to_string(&disk_path)
+        let contents = fs_err::tokio::read_to_string(&disk_path)
             .await
             .wrap_err("reading file to determine line number")?;
 

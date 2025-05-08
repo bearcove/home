@@ -168,7 +168,7 @@ async fn handle_ws_inner(
     let temp_dir = TempDir::new()?;
     let input_path = temp_dir.path().join("home-media-upload");
     let mut input_len: usize = 0;
-    let mut file = tokio::fs::File::create(&input_path).await?;
+    let mut file = fs_err::tokio::File::create(&input_path).await?;
 
     'read_msg: while let Some(msg) = socket.recv().await {
         let msg = msg?;
@@ -266,7 +266,7 @@ async fn handle_ws_inner(
     match media_type {
         MediaType::Diagram => {
             // nothing to change!
-            tokio::fs::copy(&input_path, &temp_output_path).await?;
+            fs_err::tokio::copy(&input_path, &temp_output_path).await?;
         }
         MediaType::Image => {
             // first poke the image with ffprobe
@@ -283,11 +283,11 @@ async fn handle_ws_inner(
             json_to_socket(socket, &WebSocketMessage::MediaIdentified(props)).await?;
 
             let image = libimage::load();
-            let input_bytes = tokio::fs::read(&input_path).await?;
+            let input_bytes = fs_err::tokio::read(&input_path).await?;
             let output_bytes = image
                 .transcode(&input_bytes, src_ic, ICodec::JXL, None)
                 .map_err(|e| eyre!("{e}"))?;
-            tokio::fs::write(&temp_output_path, output_bytes).await?;
+            fs_err::tokio::write(&temp_output_path, output_bytes).await?;
         }
         MediaType::Video => {
             struct EventListener {
@@ -343,7 +343,7 @@ async fn handle_ws_inner(
                     })
                     .await?;
 
-                let file = tokio::fs::File::open(&input_path).await?;
+                let file = fs_err::tokio::File::open(&input_path).await?;
                 let mut reader = tokio::io::BufReader::new(file);
                 let mut buffer = vec![0; 2 * 1024 * 1024]; // 2MB buffer
                 loop {
@@ -358,7 +358,7 @@ async fn handle_ws_inner(
                 }
 
                 struct ChunkReceiver {
-                    file: tokio::fs::File,
+                    file: fs_err::tokio::File,
                 }
 
                 impl libmomclient::ChunkReceiver for ChunkReceiver {
@@ -377,7 +377,7 @@ async fn handle_ws_inner(
                 }
 
                 let receiver = ChunkReceiver {
-                    file: tokio::fs::File::create(&temp_output_path).await?,
+                    file: fs_err::tokio::File::create(&temp_output_path).await?,
                 };
 
                 tracing::info!("Starting to download and write video chunks");

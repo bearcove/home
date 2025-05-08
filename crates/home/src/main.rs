@@ -171,7 +171,7 @@ async fn real_main() -> eyre::Result<()> {
 
             let config = libconfig::load().load_mom_config(&args.mom_config)?;
             let tenant_list: Vec<TenantConfig> =
-                serde_json::from_str(&tokio::fs::read_to_string(&args.tenant_config).await?)?;
+                serde_json::from_str(&fs_err::tokio::read_to_string(&args.tenant_config).await?)?;
             let tenants: HashMap<TenantDomain, TenantInfo> = tenant_list
                 .into_iter()
                 .map(|tc| {

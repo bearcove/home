@@ -194,7 +194,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
             let mappings = PathMappings::from_ti(tenant.ti());
             let disk_path = mappings.to_disk_path(&di.input.path)?;
             // TODO: don't buffer the whole file in memory
-            let bytes = tokio::fs::read(&disk_path).await?;
+            let bytes = fs_err::tokio::read(&disk_path).await?;
             tenant.store().put(&input_key, bytes.into()).await?;
         } else {
             tracing::info!(%input_key, object_store = %tenant.store().desc(), "Input is already in object storage");

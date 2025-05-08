@@ -47,7 +47,7 @@ impl<'a> DerivationInfo<'a> {
             // in development, inputs are sometimes only on disk
             let mappings = PathMappings::from_ti(ti.as_ref());
             match mappings.to_disk_path(&self.input.path) {
-                Ok(disk_path) => match tokio::fs::read(&disk_path).await {
+                Ok(disk_path) => match fs_err::tokio::read(&disk_path).await {
                     Ok(bytes) => return Ok(bytes.into()),
                     Err(read_err) => {
                         eyre::bail!(
@@ -264,7 +264,7 @@ pub async fn objectstore_for_tenant(
 
     let disk_path = ti.internal_dir().join("object-cache");
     if !disk_path.exists() {
-        tokio::fs::create_dir_all(&disk_path).await.unwrap();
+        fs_err::tokio::create_dir_all(&disk_path).await.unwrap();
     }
 
     let mut builder = LayeredBuilder::new(objectstore)

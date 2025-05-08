@@ -50,7 +50,7 @@ pub async fn is_path_ignored_with_meta(path: &Utf8Path, metadata: Option<&PathMe
     IGNORED_EXTS.contains(ext)
         && match metadata {
             Some(metadata) => metadata.is_file(),
-            None => match tokio::fs::metadata(path).await {
+            None => match fs_err::tokio::metadata(path).await {
                 Ok(metadata) => metadata.is_file(),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => false,
                 Err(e) => {
@@ -87,7 +87,7 @@ pub async fn make_revision(
             let mut events = VecDeque::new();
             for input_path in ROOT_INPUT_PATHS {
                 let disk_path = mappings.to_disk_path(input_path)?;
-                let metadata = tokio::fs::metadata(disk_path).await?.into();
+                let metadata = fs_err::tokio::metadata(disk_path).await?.into();
                 events.push_back(InputEvent::Created {
                     path: InputPath::from(input_path),
                     metadata,
@@ -306,7 +306,7 @@ pub async fn make_revision(
     let rc = if let Some(_input) = home_json_input {
         // Read from disk using the mappings (mappings was cloned earlier)
         let home_json_disk_path = mappings.to_disk_path(&home_json_input_path)?;
-        let home_json_contents = tokio::fs::read_to_string(&home_json_disk_path)
+        let home_json_contents = fs_err::tokio::read_to_string(&home_json_disk_path)
             .await
             .wrap_err_with(|| format!("Failed to read /home.json at {home_json_disk_path}"))?;
         let rc: RevisionConfig =
@@ -510,7 +510,7 @@ async fn gather_svg_font_face_collection(
     let mut coll = SvgFontFaceCollection::default();
     for spec in &rc.svg_fonts {
         let absolute_path = ti.base_dir.join(&spec.path);
-        if tokio::fs::metadata(&absolute_path).await.is_err() {
+        if fs_err::tokio::metadata(&absolute_path).await.is_err() {
             return Err(eyre::eyre!(
                 "Font file not found: {absolute_path} (specified in tenant config as {}, should be relative to base dir {})",
                 &spec.path,
@@ -518,7 +518,7 @@ async fn gather_svg_font_face_collection(
             ));
         }
 
-        let contents = tokio::fs::read(&absolute_path)
+        let contents = fs_err::tokio::read(&absolute_path)
             .await
             .wrap_err_with(|| format!("while reading font file {absolute_path}"))?;
         let hash = input_hash_from_contents(&contents);
@@ -582,7 +582,7 @@ async fn revision_added(
     if is_path_ignored(&disk_path).await {
         return Ok(());
     }
-    let contents = tokio::fs::read(&disk_path).await?;
+    let contents = fs_err::tokio::read(&disk_path).await?;
     let hash = input_hash_from_contents(&contents);
     let mtime: time::OffsetDateTime = metadata.mtime;
 
@@ -808,7 +808,7 @@ pub async fn wake_revision_events(
         .map(|&path| mappings.to_disk_path(path).unwrap())
         .collect::<Vec<_>>();
     while let Some(dir) = dirs.pop() {
-        let mut read_dir = tokio::fs::read_dir(dir).await?;
+        let mut read_dir = fs_err::tokio::read_dir(dir).await?;
         while let Some(entry) = read_dir.next_entry().await? {
             let path = Utf8PathBuf::from_path_buf(entry.path()).unwrap();
             let metadata = PathMetadata::from(entry.metadata().await?);
@@ -846,7 +846,7 @@ pub async fn wake_revision_events(
 
             let outcome = if meta_changed {
                 // maybe the contents changed too?
-                let contents = tokio::fs::read(mappings.to_disk_path(input_path)?).await?;
+                let contents = fs_err::tokio::read(mappings.to_disk_path(input_path)?).await?;
                 let hash = input_hash_from_contents(&contents);
                 if hash != prev_input.hash {
                     tracing::debug!("File modtime + hash changed: {input_path}");

@@ -22,6 +22,7 @@ owo-colors = "4.2.0"
 tracing.workspace = true
 config-types = { version = "0.1.0", path = "../config-types" }
 mom-types = { version = "0.1.0", path = "../mom-types" }
+fs-err = { version = "3.1.0", features = ["tokio"] }
 
 [features]
 minijinja = []

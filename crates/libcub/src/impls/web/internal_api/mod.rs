@@ -14,6 +14,7 @@ mod internal_search;
 mod media_upload;
 mod open_in_editor;
 mod validation;
+mod write_to_clipboard;
 mod ws;
 
 /// Returns routes that are only available in development mode
@@ -39,6 +40,10 @@ pub(crate) fn internal_api_routes() -> Router {
             post(open_in_editor::serve_open_in_editor),
         )
         .route("/edit-asset", post(edit_asset::serve_edit_asset))
+        .route(
+            "/write-to-clipboard",
+            post(write_to_clipboard::serve_write_to_clipboard),
+        )
         .route("/deploy", get(deploy::serve))
         .route("/validation", get(validation::serve))
         .route("/media-upload", get(media_upload::serve_media_upload))

@@ -77,3 +77,5 @@ objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 rcgen = "0.13.2"
 rustls = "0.21.10"
 tokio-rustls = "0.24.1"
+arboard = "3.5.0"
+fs-err = { version = "3.1.0", features = ["tokio"] }

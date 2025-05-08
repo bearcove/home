@@ -49,7 +49,6 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "label",
     "diff.addition",
     "diff.deletion",
-    // markdown_inline
     "number",
     "text.literal",
     "text.emphasis",
@@ -57,7 +56,6 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "text.uri",
     "text.reference",
     "string.escape",
-    // markdown
     "text.title",
     "punctuation.special",
     "text.strikethrough",

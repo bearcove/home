@@ -140,7 +140,7 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
         let disk_path = mappings.to_disk_path(path).unwrap();
         if !disk_path.exists() {
             info!("[{prefix}] Creating {disk_path}");
-            tokio::fs::create_dir_all(&disk_path).await.unwrap();
+            fs_err::tokio::create_dir_all(&disk_path).await.unwrap();
         }
 
         info!("[{prefix}] Watching \x1b[33m{disk_path}\x1b[0m");
@@ -162,7 +162,7 @@ async fn convert_watcher_events_to_input_events(
         for path in ev.paths {
             let input_path = mappings.to_input_path(&path)?;
             let input_event = match kind {
-                WatcherEventKind::Create => match tokio::fs::metadata(&path).await {
+                WatcherEventKind::Create => match fs_err::tokio::metadata(&path).await {
                     Ok(metadata) => InputEvent::Created {
                         path: input_path,
                         metadata: PathMetadata::from(metadata),
@@ -172,7 +172,7 @@ async fn convert_watcher_events_to_input_events(
                     }
                     Err(e) => panic!("Failed to get metadata for {path}: {e}"),
                 },
-                WatcherEventKind::Modify => match tokio::fs::metadata(&path).await {
+                WatcherEventKind::Modify => match fs_err::tokio::metadata(&path).await {
                     Ok(metadata) => InputEvent::Modified {
                         path: input_path,
                         metadata: PathMetadata::from(metadata),

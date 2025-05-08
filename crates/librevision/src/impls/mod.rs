@@ -152,7 +152,7 @@ pub(crate) async fn load_revision_from_disk(
     let mappings = PathMappings::from_ti(ti.as_ref());
 
     // the active revision ID is written in a file named `{internal_dir}/revisions/00000_active`
-    let rev_id = match tokio::fs::read_to_string(revisions_dir.join("active")).await {
+    let rev_id = match fs_err::tokio::read_to_string(revisions_dir.join("active")).await {
         Ok(id) => id,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(e) => return Err(e.into()),
@@ -162,7 +162,7 @@ pub(crate) async fn load_revision_from_disk(
     let rev_pack_path = revisions_dir.join(format!("{rev_id}.revpak"));
 
     // read it as a string
-    let source = tokio::fs::read_to_string(&rev_pack_path).await?;
+    let source = fs_err::tokio::read_to_string(&rev_pack_path).await?;
 
     // deserialize it
     let pak: Pak = merde::json::from_str_owned(&source).map_err(|e| e.into_static())?;
@@ -180,7 +180,7 @@ pub async fn save_pak_to_disk_as_active(pak: &Pak, ti: &TenantInfo) -> eyre::Res
 
     if !pak_file_path.exists() {
         // Create the revisions directory if it doesn't exist
-        tokio::fs::create_dir_all(&revisions_dir).await?;
+        fs_err::tokio::create_dir_all(&revisions_dir).await?;
 
         // Serialize the revision to JSON
         let serialized = serialize_pak(pak);
@@ -197,7 +197,7 @@ pub async fn save_pak_to_disk_as_active(pak: &Pak, ti: &TenantInfo) -> eyre::Res
 
     // List all files in the revisions directory that start with 'rev_'
     let mut rev_files = Vec::new();
-    let mut read_dir = tokio::fs::read_dir(&revisions_dir).await?;
+    let mut read_dir = fs_err::tokio::read_dir(&revisions_dir).await?;
     while let Some(entry) = read_dir.next_entry().await? {
         let file_name = match entry.file_name().into_string() {
             Ok(name) => name,
@@ -224,7 +224,7 @@ pub async fn save_pak_to_disk_as_active(pak: &Pak, ti: &TenantInfo) -> eyre::Res
         .collect();
 
     // Remove all other rev_ files
-    let mut read_dir = tokio::fs::read_dir(&revisions_dir).await?;
+    let mut read_dir = fs_err::tokio::read_dir(&revisions_dir).await?;
     while let Some(entry) = read_dir.next_entry().await? {
         let path = entry.path();
         if path
@@ -233,7 +233,7 @@ pub async fn save_pak_to_disk_as_active(pak: &Pak, ti: &TenantInfo) -> eyre::Res
             .is_some_and(|n| n.starts_with("rev_"))
             && !files_to_keep.contains(&path)
         {
-            if let Err(e) = tokio::fs::remove_file(&path).await {
+            if let Err(e) = fs_err::tokio::remove_file(&path).await {
                 if e.kind() != std::io::ErrorKind::NotFound {
                     warn!("Failed to remove {}: {e}", path.display());
                 }

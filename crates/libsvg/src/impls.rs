@@ -172,17 +172,17 @@ impl FontSubsetter {
     ) -> eyre::Result<()> {
         trace!("Adding font {} from {}", font_name, font_file_name);
         if let Some(old_path) = self.known_fonts.remove(&font_name) {
-            let _ = tokio::fs::remove_file(old_path).await;
+            let _ = fs_err::tokio::remove_file(old_path).await;
         }
 
         let font_path = self.tmp_dir.path().join(font_file_name);
         if let Some(parent) = font_path.parent() {
             trace!("Creating parent directory {}", parent.display());
-            tokio::fs::create_dir_all(parent).await?;
+            fs_err::tokio::create_dir_all(parent).await?;
         }
 
         trace!("Writing font to {}", font_path.display());
-        tokio::fs::write(&font_path, &data)
+        fs_err::tokio::write(&font_path, &data)
             .await
             .wrap_err_with(|| format!("Failed to write font to {}", font_path.display()))?;
         self.known_fonts
@@ -205,7 +205,7 @@ impl FontSubsetter {
             .get(font_name)
             .ok_or(eyre::eyre!("unknown font {font_name}"))?;
         trace!("Subsetting font {}", font_name);
-        if tokio::fs::metadata(font_path).await.is_err() {
+        if fs_err::tokio::metadata(font_path).await.is_err() {
             return Err(eyre::eyre!("could not find font file?"));
         }
 
@@ -241,9 +241,9 @@ impl FontSubsetter {
         }
 
         trace!("Reading subset font file from {}", subset_path.display());
-        let output = tokio::fs::read(&subset_path).await;
+        let output = fs_err::tokio::read(&subset_path).await;
         trace!("Removing subset font file from {}", subset_path.display());
-        let _ = tokio::fs::remove_file(&subset_path).await;
+        let _ = fs_err::tokio::remove_file(&subset_path).await;
         Ok(output?)
     }
 }
@@ -358,7 +358,7 @@ mod test {
         let input_font_path = "/tmp/input.woff2";
         let output_font_path = "/tmp/blah.woff2";
 
-        tokio::fs::write(input_font_path, font_bytes)
+        fs_err::tokio::write(input_font_path, font_bytes)
             .await
             .expect("Failed to write input font");
 
@@ -432,7 +432,7 @@ mod test {
         let modified_svg = result.expect("inject_font_faces failed");
         // Write the modified SVG to a temporary file for inspection
         let temp_file_path = "/tmp/modified_svg_output.svg";
-        tokio::fs::write(&temp_file_path, &modified_svg)
+        fs_err::tokio::write(&temp_file_path, &modified_svg)
             .await
             .expect("Failed to write modified SVG to temporary file");
         eprintln!("Modified SVG written to: {temp_file_path}");
@@ -459,7 +459,9 @@ mod test {
 
             // Write decoded font to temporary file
             let temp_font_path = format!("/tmp/extracted_font_{index}.woff2");
-            tokio::fs::write(&temp_font_path, &font_data).await.unwrap();
+            fs_err::tokio::write(&temp_font_path, &font_data)
+                .await
+                .unwrap();
 
             // Use ttx to dump only the 'cmap' table
             let output = tokio::process::Command::new("uvx")

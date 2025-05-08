@@ -56,3 +56,4 @@ objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 autotrait = "0.2.0"
 mom-types = { version = "0.1.0", path = "../mom-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
+fs-err = { version = "3.1.0", features = ["tokio"] }

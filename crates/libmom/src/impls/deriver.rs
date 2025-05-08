@@ -294,7 +294,7 @@ pub async fn transcode_media_data(
         .path()
         .join(format!("output.{}", target_format.ffmpeg_output_ext()));
 
-    tokio::fs::write(&input_path, &input_data).await?;
+    fs_err::tokio::write(&input_path, &input_data).await?;
 
     transcode_media(
         input_path.clone(),
@@ -314,7 +314,7 @@ pub async fn transcode_media_data(
         )
     })?;
 
-    let output_data = tokio::fs::read(&output_path).await?;
+    let output_data = fs_err::tokio::read(&output_path).await?;
     Ok(output_data)
 }
 
@@ -342,7 +342,7 @@ async fn transcode_media(
             }
             DetailedTranscodeEvent::Done => {
                 if let Some(postprocess) = target_format.postprocess() {
-                    let input_payload = tokio::fs::read(&output_path).await?;
+                    let input_payload = fs_err::tokio::read(&output_path).await?;
                     let image = libimage::load();
                     let output_payload = image
                         .transcode(
@@ -353,7 +353,7 @@ async fn transcode_media(
                         )
                         .map_err(|e| eyre!("{e}"))?;
                     // it's kind of wasteful to write this back to disk, but that's the way it is right now.
-                    tokio::fs::write(&output_path, output_payload).await?;
+                    fs_err::tokio::write(&output_path, output_payload).await?;
                 }
                 return Ok(());
             }

@@ -70,7 +70,7 @@ impl Mod for ModImpl {
             } else if let Ok(ipv6) = host.parse::<std::net::Ipv6Addr>() {
                 ipv6.into()
             } else {
-                let resolv_conf = tokio::fs::read_to_string("/etc/resolv.conf")
+                let resolv_conf = fs_err::tokio::read_to_string("/etc/resolv.conf")
                     .await
                     .map_err(|e| Error::Any(format!("Failed to read /etc/resolv.conf: {e}")))?;
                 let nameserver = resolv_conf

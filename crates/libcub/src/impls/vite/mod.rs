@@ -37,7 +37,7 @@ async fn generate_vite_configs(ti: &TenantInfo, web: WebConfig) -> eyre::Result<
     );
 
     // First, generate the vite config file
-    tokio::fs::write(&vite_config_path, template)
+    fs_err::tokio::write(&vite_config_path, template)
         .await
         .map_err(|e| eyre::eyre!("[{tenant_name}] Failed to write vite config: {e}"))?;
 
@@ -97,7 +97,7 @@ async fn generate_vite_configs(ti: &TenantInfo, web: WebConfig) -> eyre::Result<
     // Also generate tsconfig
     let tsconfig_config_path = ti.base_dir.join("tsconfig.json");
     let tsconfig_template = include_str!("./tsconfig.json");
-    tokio::fs::write(&tsconfig_config_path, tsconfig_template)
+    fs_err::tokio::write(&tsconfig_config_path, tsconfig_template)
         .await
         .map_err(|e| eyre::eyre!("[{tenant_name}] Failed to write tsconfig.json: {e}"))?;
 
@@ -130,9 +130,9 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
         let base_dir = &ti.base_dir;
 
         let pid_file_path = ti.internal_dir().join("vite.pid");
-        let _ = tokio::fs::create_dir_all(pid_file_path.parent().unwrap()).await;
+        let _ = fs_err::tokio::create_dir_all(pid_file_path.parent().unwrap()).await;
         if pid_file_path.exists() {
-            if let Ok(pid_str) = tokio::fs::read_to_string(&pid_file_path).await {
+            if let Ok(pid_str) = fs_err::tokio::read_to_string(&pid_file_path).await {
                 if let Ok(pid) = pid_str.trim().parse::<i32>() {
                     tracing::debug!("[{tenant_name}] Killing previous vite process with PID {pid}");
                     if let Err(e) = nix::sys::signal::kill(
@@ -148,7 +148,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
                     }
                 }
             }
-            let _ = tokio::fs::remove_file(&pid_file_path).await;
+            let _ = fs_err::tokio::remove_file(&pid_file_path).await;
         }
 
         tracing::debug!("[{tenant_name}] Starting vite");
@@ -185,7 +185,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
                 .spawn()
                 .unwrap_or_else(|_| panic!("Failed to start vite"));
             let pid = child.id().expect("Failed to get child PID");
-            tokio::fs::write(&pid_file_path, pid.to_string())
+            fs_err::tokio::write(&pid_file_path, pid.to_string())
                 .await
                 .unwrap_or_else(|e| {
                     tracing::warn!("[{tenant_name}] Failed to write PID file for vite: {e}");

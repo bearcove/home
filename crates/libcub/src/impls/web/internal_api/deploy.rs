@@ -394,7 +394,7 @@ async fn run_vite_build_and_update_revision(
 
     // Create a synthetic "file created" event for the dist directory
     // This will make the revision process scan the entire directory
-    let dist_metadata = tokio::fs::metadata(&vite_build_dir)
+    let dist_metadata = fs_err::tokio::metadata(&vite_build_dir)
         .await
         .map_err(|e| eyre::eyre!("Failed to get metadata for dist directory: {}", e))?;
     let dist_input_path = InputPath::new("/dist".to_string());
@@ -537,7 +537,7 @@ async fn handle_deploy_socket_inner(
                 let disk_path = mappings.to_disk_path(&key)?;
                 tracing::debug!("Reading input file from disk path: {:?}", disk_path);
                 let before_read = Instant::now();
-                let payload = match tokio::fs::read(&disk_path).await {
+                let payload = match fs_err::tokio::read(&disk_path).await {
                     Ok(data) => data,
                     Err(e) => {
                         return Err(eyre::eyre!(
