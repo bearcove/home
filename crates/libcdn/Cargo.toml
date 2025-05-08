@@ -22,5 +22,5 @@ cub-types = { version = "0.1.0", path = "../cub-types" }
 config-types = { version = "0.1.0", path = "../config-types" }
 mom-types = { version = "0.1.0", path = "../mom-types" }
 eyre.workspace = true
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 fs-err = { version = "3.1.0", features = ["tokio"] }

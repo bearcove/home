@@ -18,7 +18,7 @@ template-types = { path = "../template-types" }
 libhighlight = { path = "../libhighlight" }
 libmath = { path = "../libmath" }
 libmedia = { version = "0.1.0", path = "../libmedia" }
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 eyre.workspace = true
 highlight-types = { version = "0.1.0", path = "../highlight-types" }
 markdown-types = { version = "0.1.0", path = "../markdown-types" }

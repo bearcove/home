@@ -24,5 +24,5 @@ libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 config-types = { version = "0.1.0", path = "../config-types" }
 eyre.workspace = true
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 mom-types = { version = "0.1.0", path = "../mom-types" }

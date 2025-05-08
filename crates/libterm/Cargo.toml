@@ -20,4 +20,4 @@ term_size = { version = "0.3.2" }
 termion = { version = "4.0.5" }
 tracing = { version = "0.1.41" }
 which = { version = "7.0.3" }
-autotrait = "0.2.0"
+autotrait = "0.2.1"

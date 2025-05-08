@@ -7,7 +7,7 @@ edition = "2024"
 crate-type = ["rlib"]
 
 [dependencies]
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 
 # impl deps
 lol_html = { version = "2.3.0" }

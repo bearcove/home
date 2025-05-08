@@ -16,7 +16,7 @@ categories.workspace = true
 crate-type = ["rlib"]
 
 [dependencies]
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 bytes = "1.10.1"
 eyre.workspace = true
 form_urlencoded = "1.2.1"

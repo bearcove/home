@@ -25,7 +25,7 @@ jpegxl-rs = { version = "0.11.2", features = ["vendored"] }
 tempfile = { version = "3.19.1" }
 fs-err = { version = "3.1.0" }
 num_cpus = { version = "1.16.0" }
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 eyre.workspace = true
 image-types = { version = "0.1.0", path = "../image-types" }
 

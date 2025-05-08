@@ -296,12 +296,12 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "autotrait"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17913631ae2c4b587082c645fdff1f6c7d54d2c8eb02cf4cb1bd84ba6657c36d"
+checksum = "f5338e9acb90400d5646d9efd8556099fa2d13b8f6a42a1560a9bade157f4ff8"
 dependencies = [
  "quote",
- "unsynn",
+ "unsynn 0.1.0",
 ]
 
 [[package]]
@@ -1545,7 +1545,7 @@ version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "76375e33eaa50670e49213a4f99b82c770fc27625715a3de80489e72573ecd02"
 dependencies = [
- "unsynn",
+ "unsynn 0.0.26",
 ]
 
 [[package]]
@@ -7359,6 +7359,18 @@ version = "0.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14013db4ac11f92d4df4b56edb431eab9c1d9f7aee4791f3205b6a1119b83f54"
 dependencies = [
+ "mutants",
+ "proc-macro2",
+ "shadow_counted",
+]
+
+[[package]]
+name = "unsynn"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afee20a313b148fb6985d15f22529034c266b104eed992716dfc051762053ee6"
+dependencies = [
+ "fxhash",
  "mutants",
  "proc-macro2",
  "shadow_counted",

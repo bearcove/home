@@ -40,5 +40,5 @@ config-types = { version = "0.1.0", path = "../config-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 template-types = { version = "0.1.0", path = "../template-types" }
 markdown-types = { version = "0.1.0", path = "../markdown-types" }
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 fs-err = { version = "3.1.0", features = ["tokio"] }

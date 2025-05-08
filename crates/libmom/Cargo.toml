@@ -53,7 +53,7 @@ libgithub = { version = "0.1.0", path = "../libgithub" }
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 config-types = { version = "0.1.0", path = "../config-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
-autotrait = "0.2.0"
+autotrait = "0.2.1"
 mom-types = { version = "0.1.0", path = "../mom-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 fs-err = { version = "3.1.0", features = ["tokio"] }
