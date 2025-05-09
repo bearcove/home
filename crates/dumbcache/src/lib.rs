@@ -88,7 +88,7 @@ impl Cache {
             if inner.data.contains_key(&key) {
                 // then we're merely replacing
             } else {
-                let key_to_remove = inner.data.keys().cloned().choose(&mut rand::thread_rng());
+                let key_to_remove = inner.data.keys().cloned().choose(&mut rand::rng());
                 if let Some(key) = key_to_remove {
                     inner.data.remove(&key);
                 }

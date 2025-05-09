@@ -10,8 +10,8 @@ use eyre::Report;
 use http::header::CONTENT_TYPE;
 use libterm::FormatAnsiStyle;
 use merde::DynSerialize;
-use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::prelude::IndexedRandom;
+use rand::rng;
 use std::borrow::Cow;
 use tracing::error;
 use ulid::Ulid;
@@ -143,7 +143,7 @@ impl LegacyHttpError {
         let sadmojis = [
             "😩", "😭", "😢", "😖", "😣", "😞", "😓", "😔", "☹️", "😧", "🥺", "🤕",
         ];
-        let sadmoji = *sadmojis.choose(&mut thread_rng()).unwrap();
+        let sadmoji = *sadmojis.choose(&mut rng()).unwrap();
         let color_css = libterm::load().css();
 
         let body = format!(

@@ -11,7 +11,7 @@ conflux = { path = "../../crates/conflux" }
 
 # impl deps
 merde = { workspace = true, features = ["json"] }
-rand = { version = "0.8.5" }
+rand = { version = "0.9.1" }
 tokio = { workspace = true, features = ["time"] }
 tracing = { version = "0.1.41" }
 credentials = { path = "../../crates/credentials" }

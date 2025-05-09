@@ -6,6 +6,7 @@ use conflux::{InputPath, InputPathRef, RevisionView, RouteRef, Viewer};
 use itertools::Itertools;
 use minijinja::{Environment, Error, Value, value::Kwargs};
 use rand::seq::SliceRandom;
+use rand::prelude::IndexedRandom;
 use time::OffsetDateTime;
 
 use crate::{
@@ -36,7 +37,7 @@ fn fragment_urlencode(input: String) -> String {
 }
 
 fn shuffle(mut input: Vec<Value>) -> Result<Vec<Value>, Error> {
-    input.shuffle(&mut rand::thread_rng());
+    input.shuffle(&mut rand::rng());
     Ok(input)
 }
 
@@ -366,7 +367,7 @@ fn random_article(state: &minijinja::State) -> Result<Value, Error> {
         .filter(|p| p.tags.iter().any(|t| t == "rust"))
         .collect::<Vec<_>>();
 
-    let page = (*pages.choose(&mut rand::thread_rng()).ok_or_else(|| {
+    let page = (*pages.choose(&mut rand::rng()).ok_or_else(|| {
         Error::new(
             minijinja::ErrorKind::InvalidOperation,
             "No articles available",

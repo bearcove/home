@@ -35,7 +35,7 @@ use minijinja::{
 };
 use mom_types::GlobalStateView;
 use prettify_minijinja_errors::PrettifyExt;
-use rand::seq::SliceRandom;
+use rand::prelude::IndexedRandom;
 use template_types::{
     CompileArgs, DataObject, DataValue, RenderShortcodeResult, RenderTemplateArgs, Shortcode,
     TemplateCollection,
@@ -574,7 +574,7 @@ impl Object for GlobalsVal {
                     .filter(|p| p.is_article() && p.is_listed(&viewer))
                     .filter(|p| p.tags.iter().any(|t| t == "rust"))
                     .collect::<Vec<_>>();
-                let page = (*pages.choose(&mut rand::thread_rng()).ok_or_else(|| {
+                let page = (*pages.choose(&mut rand::rng()).ok_or_else(|| {
                     minijinja::Error::new(
                         minijinja::ErrorKind::InvalidOperation,
                         "No articles available",

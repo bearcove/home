@@ -35,7 +35,7 @@ nix = { version = "0.30.1", features = ["process", "signal"] }
 http = { version = "1.3.1" }
 libcompress = { path = "../libcompress" }
 pin-project-lite = { version = "0.2.16" }
-rand = { version = "0.8.5" }
+rand = { version = "0.9.1" }
 strsim = { version = "0.11.1" }
 libwebpage = { path = "../libwebpage" }
 flume = { version = "0.11.1" }

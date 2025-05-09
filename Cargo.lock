@@ -1390,7 +1390,7 @@ name = "dumbcache"
 version = "0.1.0"
 dependencies = [
  "ahash 0.8.12",
- "rand 0.8.5",
+ "rand 0.9.1",
 ]
 
 [[package]]
@@ -3238,7 +3238,7 @@ dependencies = [
  "open",
  "parking_lot",
  "pin-project-lite",
- "rand 0.8.5",
+ "rand 0.9.1",
  "rcgen",
  "regex 1.11.1",
  "rustls 0.21.12",
@@ -3488,7 +3488,7 @@ dependencies = [
  "merde",
  "mom-types",
  "objectstore-types",
- "rand 0.8.5",
+ "rand 0.9.1",
  "tokio",
  "tracing",
 ]
@@ -3666,7 +3666,7 @@ dependencies = [
  "minijinja",
  "mom-types",
  "percent-encoding 2.3.1",
- "rand 0.8.5",
+ "rand 0.9.1",
  "serde_json",
  "template-types",
  "time",

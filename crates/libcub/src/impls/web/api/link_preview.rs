@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use conflux::InputPathRef;
 use cub_types::{CubReq, CubTenant as _};
 use libwebpage::WebpageInfo;
-use rand::seq::SliceRandom as _;
+use rand::prelude::IndexedRandom;
 use std::collections::{HashMap, HashSet};
 use std::sync::{LazyLock, Mutex};
 
@@ -196,7 +196,7 @@ impl LinkCache {
         const EVICTION_COUNT: usize = 64;
 
         if self.positive_cache.len() > MAX_ENTRIES {
-            let mut rng = rand::thread_rng();
+            let mut rng = rand::rng();
             let keys_to_remove: Vec<_> = self
                 .positive_cache
                 .keys()
@@ -212,7 +212,7 @@ impl LinkCache {
         }
 
         if self.negative_cache.len() > MAX_ENTRIES {
-            let mut rng = rand::thread_rng();
+            let mut rng = rand::rng();
             let keys_to_remove: Vec<_> = self
                 .negative_cache
                 .iter()
