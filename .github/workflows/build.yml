@@ -17,9 +17,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Install uv
         run: |
-          curl -Ls https://github.com/astral-sh/uv/releases/latest/download/uv-$(uname -m)-unknown-linux-gnu.tar.gz | tar xz
-          chmod +x uv
-          sudo mv uv /usr/local/bin/
+          curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Run tests
         run: cargo nextest run --all --release --verbose
   mac-build:
