@@ -211,9 +211,9 @@ fn from_spec_put_multipart_opts(opts: PutMultipartOpts) -> object_store::PutMult
 
 fn from_spec_getrange(range: GetRange) -> object_store::GetRange {
     match range {
-        GetRange::Bounded(range) => object_store::GetRange::Bounded(range.start..range.end),
-        GetRange::Offset(offset) => object_store::GetRange::Offset(offset),
-        GetRange::Suffix(suffix) => object_store::GetRange::Suffix(suffix),
+        GetRange::Bounded(range) => object_store::GetRange::Bounded(range.start as u64..range.end as u64),
+        GetRange::Offset(offset) => object_store::GetRange::Offset(offset as u64),
+        GetRange::Suffix(suffix) => object_store::GetRange::Suffix(suffix as u64),
     }
 }
 
@@ -543,11 +543,11 @@ struct GetResultWrapper(object_store::GetResult);
 #[autotrait(!Sync)]
 impl GetResult for GetResultWrapper {
     fn size(&self) -> usize {
-        self.0.meta.size
+        self.0.meta.size as usize
     }
 
     fn range(&self) -> std::ops::Range<usize> {
-        self.0.range.clone()
+        (self.0.range.start as usize)..(self.0.range.end as usize)
     }
 
     fn content_type(&self) -> Option<&str> {
