@@ -10,11 +10,11 @@ on:
 jobs:
   test:
     runs-on: depot-ubuntu-24.04-16
+    container:
+      image: ghcr.io/bearcove/build:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install cargo-nextest
-        run: cargo install --locked cargo-nextest
       - name: Run tests
         run: cargo nextest run --all --release --verbose
   mac-build:
