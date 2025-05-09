@@ -13,12 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Rust
-        uses: actions/setup-rust@v1
-        with:
-          rust-version: stable
       - name: Install cargo-nextest
-        run: cargo install cargo-nextest
+        run: cargo binstall -y cargo-nextest
       - name: Run tests
         run: cargo nextest run --all --release --verbose
   mac-build:
