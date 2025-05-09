@@ -12,3 +12,7 @@ Benefits of nextest:
 - Faster test execution with parallel testing
 - Better output formatting
 - More detailed failure reporting
+
+## Searching code
+
+Use `rg` (ripgrep) for fast code searches instead of `grep` or `find`.

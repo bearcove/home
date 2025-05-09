@@ -3643,7 +3643,7 @@ dependencies = [
  "html-escape",
  "image-types",
  "insta",
- "itertools 0.13.0",
+ "itertools 0.14.0",
  "libhighlight",
  "libhtmlrewrite",
  "libmarkdown",
