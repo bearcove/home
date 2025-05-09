@@ -1,0 +1,9 @@
+---
+source: crates/libmarkdown/src/impls.rs
+expression: html
+---
+<p data-bo="0">Before:</p>
+
+<p data-bo="19">I am not sure about that</p>
+
+<p data-bo="1">After (also, with args {“__page_input_path”: String(“&#x2F;content&#x2F;dummy.md”)})</p>

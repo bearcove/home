@@ -1,0 +1,5 @@
+---
+source: crates/libmarkdown/src/impls.rs
+expression: result.toc
+---
+[]

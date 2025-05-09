@@ -1,6 +1,5 @@
 ---
-source: crates/mod-template/src/prettify_minijinja_errors.rs
-assertion_line: 239
+source: crates/libtemplate/src/prettify_minijinja_errors.rs
 expression: prettified
 ---
 ============= [/templates/something.jinja.jinja](home:///templates/something.jinja.jinja)

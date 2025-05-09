@@ -14,3 +14,5 @@ result
 .env
 .envrc
 .home
+
+**/.claude/settings.local.json

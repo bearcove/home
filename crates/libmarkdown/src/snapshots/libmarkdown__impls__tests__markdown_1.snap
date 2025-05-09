@@ -1,0 +1,10 @@
+---
+source: crates/libmarkdown/src/impls.rs
+expression: result.plain_text
+---
+Hello World
+This is a test.
+Subheading
+Subsubheading
+Now with some code
+And a paragraph.
