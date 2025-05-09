@@ -1,0 +1,6 @@
+---
+source: crates/libmarkdown/src/impls.rs
+expression: result.plain_text
+---
+home is very opinionated
+This is some content.

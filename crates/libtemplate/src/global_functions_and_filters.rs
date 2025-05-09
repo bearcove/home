@@ -521,7 +521,7 @@ mod tests {
 
         // Fragment urlencoding encodes fewer characters by default, but our custom set adds '.'
         // Note: It also percent-encodes characters like `’`, `“`, `”` because they are outside the ASCII range allowed by the spec.
-        let expected_fragment_urlencode = "%20unsafe%20code%2E%20There%E2%80%99s%20no%20such%20thing%20as%20%E2%80%9Ctwo%20Rusts%E2%80%9D%2C";
+        let expected_fragment_urlencode = "%20unsafe%20code%2E%20There%E2%80%99s%20no%20such%20thing%20as%20%E2%80%9Ctwo%20Rusts%E2%80%9D,";
         assert_eq!(fragment_urlencoded, expected_fragment_urlencode);
 
         // The key difference in this case is the encoding of '.'

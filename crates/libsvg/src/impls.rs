@@ -363,8 +363,10 @@ mod test {
             .expect("Failed to write input font");
 
         let mut child = Command::new("uvx")
+            .arg("--with")
+            .arg("brotli")
             .arg("fonttools")
-            .arg("ttx")
+            .arg("subset")
             .arg(input_font_path)
             .arg(format!("--text={included_chars}"))
             .arg("--flavor=woff2")
