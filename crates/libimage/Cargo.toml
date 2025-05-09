@@ -19,7 +19,7 @@ image = { version = "0.25.6", default-features = false, features = [
 ravif = { version = "0.11.12" }
 rgb = { version = "0.8.50" }
 webp = { version = "0.3.0" }
-jxl-oxide = { version = "0.8.1" }
+jxl-oxide = { version = "0.12.0" }
 tracing = { version = "0.1.41" }
 jpegxl-rs = { version = "0.11.2", features = ["vendored"] }
 tempfile = { version = "3.19.1" }

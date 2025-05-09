@@ -42,35 +42,51 @@ impl Mod for ModImpl {
                 let image = JxlImage::builder()
                     .read(input)
                     .map_err(|e| eyre::eyre!("jxl decoding error: {}", e))?;
-                let fb = image
+                let render = image
                     .render_frame(0)
-                    .map_err(|e| eyre::eyre!("jxl rendering error: {}", e))?
-                    .image();
-                match fb.channels() {
-                    3 => DynamicImage::from(
-                        image::ImageBuffer::<Rgb<f32>, Vec<f32>>::from_raw(
-                            fb.width() as u32,
-                            fb.height() as u32,
-                            fb.buf().to_vec(),
+                    .map_err(|e| eyre::eyre!("jxl rendering error: {}", e))?;
+
+                // Get all channels in an interleaved buffer
+                let buffer = render.image_all_channels();
+
+                // Check the number of color channels to determine if RGB or RGBA
+                let num_channels = render.color_channels().len();
+
+                match num_channels {
+                    3 => {
+                        // Get the buffer directly which is already in the format we need
+                        let rgb_data: Vec<f32> = buffer.buf().to_vec();
+
+                        DynamicImage::from(
+                            image::ImageBuffer::<Rgb<f32>, Vec<f32>>::from_raw(
+                                image.width(),
+                                image.height(),
+                                rgb_data,
+                            )
+                            .ok_or_else(|| {
+                                eyre::eyre!("failed to create ImageBuffer from jxl frame (RGB)")
+                            })?,
                         )
-                        .ok_or_else(|| {
-                            eyre::eyre!("failed to create ImageBuffer from jxl frame (RGB)")
-                        })?,
-                    ),
-                    4 => DynamicImage::from(
-                        image::ImageBuffer::<Rgba<f32>, Vec<f32>>::from_raw(
-                            fb.width() as u32,
-                            fb.height() as u32,
-                            fb.buf().to_vec(),
+                    },
+                    4 => {
+                        // Get the buffer directly which is already in the format we need
+                        let rgba_data: Vec<f32> = buffer.buf().to_vec();
+
+                        DynamicImage::from(
+                            image::ImageBuffer::<Rgba<f32>, Vec<f32>>::from_raw(
+                                image.width(),
+                                image.height(),
+                                rgba_data,
+                            )
+                            .ok_or_else(|| {
+                                eyre::eyre!("failed to create ImageBuffer from jxl frame (RGBA)")
+                            })?,
                         )
-                        .ok_or_else(|| {
-                            eyre::eyre!("failed to create ImageBuffer from jxl frame (RGBA)")
-                        })?,
-                    ),
+                    },
                     _ => {
                         unimplemented!(
-                            "unsupported number of channels in jxl image: {}",
-                            fb.channels()
+                            "unsupported number of color channels in jxl image: {}",
+                            num_channels
                         )
                     }
                 }
