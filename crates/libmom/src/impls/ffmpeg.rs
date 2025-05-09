@@ -141,6 +141,11 @@ pub fn parse_ffmpeg_timestamp(input: &str) -> eyre::Result<f64> {
         )
     })?;
 
+    // Validate time components
+    if minutes >= 60.0 || seconds >= 60.0 {
+        return Err(eyre::eyre!("Invalid timestamp: minutes and seconds must be less than 60"));
+    }
+
     Ok(hours * 3600.0 + minutes * 60.0 + seconds)
 }
 
