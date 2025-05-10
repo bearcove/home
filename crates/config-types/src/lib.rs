@@ -84,7 +84,7 @@ pub struct CubConfig {
     pub reddit_secrets: Option<RedditSecrets>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MomConfig {
     /// Tenant data dir
@@ -115,7 +115,7 @@ impl CubConfig {
 }
 
 /// tenant-specific configuration that's common betweeen mom and cub
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TenantConfig {
     /// tenant name (and domain name)
@@ -314,7 +314,7 @@ merde::derive! {
     }
 }
 
-#[derive(Clone, Facet, Serialize, Deserialize)]
+#[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SvgFontSpec {
     /// how the font is referred to in CSS, e.g. `IosevkaFtl`
@@ -448,7 +448,7 @@ mod serde_defaults {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[derive(Clone)]
 pub struct ObjectStorageConfig {
@@ -462,7 +462,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct ObjectStorageConfig { bucket, region, endpoint }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[derive(Clone)]
 pub struct TenantSecrets {
@@ -475,7 +475,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TenantSecrets { aws, patreon, github }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AwsSecrets {
     pub access_key_id: String,
@@ -537,7 +537,7 @@ impl std::fmt::Display for Environment {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PatreonSecrets {
     pub oauth_client_id: String,
@@ -548,7 +548,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct PatreonSecrets { oauth_client_id, oauth_client_secret }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GitHubSecrets {
     pub oauth_client_id: String,
