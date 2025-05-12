@@ -263,7 +263,7 @@ impl RequestBuilder for RequestBuilderImpl {
         })
     }
 
-    fn json(
+    fn json_peek(
         self: Box<Self>,
         body: &Peek<'_, '_>,
     ) -> Result<Box<dyn RequestBuilder>, DeserError<'static>> {
@@ -352,5 +352,14 @@ impl dyn Response {
             )
             .map_err(|e| Error::Json(e.to_string()))
         })
+    }
+}
+
+impl dyn RequestBuilder {
+    pub fn json<'facet>(
+        self: Box<Self>,
+        body: &impl Facet<'facet>,
+    ) -> Result<Box<dyn RequestBuilder>, DeserError<'static>> {
+        self.json_peek(&Peek::new(body))
     }
 }

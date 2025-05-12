@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use futures_util::TryFutureExt;
 use libgithub::GitHubCredentials;
 use libhttpclient::HttpClient;
-use merde::IntoStatic;
 
 use crate::impls::{MomTenantState, global_state};
 use mom_types::Sponsors;

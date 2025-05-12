@@ -1,8 +1,7 @@
 use conflux::{InputHashRef, MediaProps};
 use eyre::Context;
-use merde::IntoStatic;
 use redb::{ReadableTable, TableDefinition};
-use std::sync::{atomic::AtomicUsize, Arc, Mutex};
+use std::sync::{Arc, Mutex, atomic::AtomicUsize};
 
 /// Whenever the revision schema change we don't necessarily want to recompute the properties of all
 /// the media — grabbing metadata from mp4s or draw.io files is especially resource intensive.

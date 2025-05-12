@@ -28,7 +28,6 @@ use image_types::{ICodec, LogicalPixels};
 use itertools::Itertools;
 use libmedia::MediaMarkupOpts;
 use libsearch::Index;
-use merde::time::Rfc3339;
 use minijinja::{
     Environment,
     value::{Kwargs, Object, Value},

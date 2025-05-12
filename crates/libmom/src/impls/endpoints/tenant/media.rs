@@ -4,7 +4,6 @@ use axum::body::Bytes;
 use axum::extract::ws;
 use axum::http::StatusCode;
 use eyre::eyre;
-use merde::IntoStatic;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::mpsc;
@@ -12,7 +11,7 @@ use tokio::sync::mpsc;
 use super::{MomTenantState, Reply, TenantExtractor};
 use crate::impls::{
     deriver::{acquire_ffmpeg_encode_permit, transcode_media_data},
-    site::{IntoReply, FacetJson},
+    site::{FacetJson, IntoReply},
 };
 use mom_types::{
     TranscodeJobInfo, TranscodeParams, TranscodeResponse, TranscodeResponseAlreadyInProgress,
@@ -125,10 +124,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
     Ok(())
 }
 
-async fn json_to_socket(
-    socket: &mut ws::WebSocket,
-    payload: &impl merde::Serialize,
-) -> eyre::Result<()> {
+async fn json_to_socket(socket: &mut ws::WebSocket, payload: &impl Facet<'_>) -> eyre::Result<()> {
     let json_string = facet_json::to_string(payload)?;
     socket.send(ws::Message::text(json_string)).await?;
     Ok(())

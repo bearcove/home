@@ -3,10 +3,9 @@ use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::AuthBundle;
 use eyre::Context as _;
 use eyre::Result;
+use facet::Facet;
 use futures_core::future::BoxFuture;
 use libhttpclient::{HttpClient, Uri};
-use merde::CowStr;
-use merde::IntoStatic;
 use std::collections::HashSet;
 use url::Url;
 
@@ -51,7 +50,7 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         web: WebConfig,
-        args: &'fut PatreonCallbackArgs<'_>,
+        args: &'fut PatreonCallbackArgs,
     ) -> BoxFuture<'fut, Result<Option<PatreonCredentials>>> {
         Box::pin(async move {
             let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
@@ -157,7 +156,7 @@ impl Mod for ModImpl {
                     let patreon_id = site_creds.user_info.profile.patreon_id()?;
                     store.save_patreon_credentials(patreon_id, &pat_creds)?;
 
-                    Ok((pat_creds.into_static(), site_creds))
+                    Ok((pat_creds, site_creds))
                 }
             }
         })
@@ -507,7 +506,7 @@ fn creator_tier_name() -> Option<String> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct PatreonCredentials {
     pub access_token: String,
     pub refresh_token: String,
@@ -537,9 +536,9 @@ pub trait PatreonStore: Send + Sync + 'static {
     ) -> Result<()>;
 }
 
-#[derive(Debug, Clone)]
-pub struct PatreonCallbackArgs<'s> {
-    pub raw_query: CowStr<'s>,
+#[derive(Facet, Debug, Clone)]
+pub struct PatreonCallbackArgs {
+    pub raw_query: String,
 }
 
 #[derive(Debug, Clone)]
@@ -551,8 +550,6 @@ pub struct PatreonCallbackResponse {
 pub struct PatreonRefreshCredentialsArgs {
     pub patreon_id: String,
 }
-
-
 
 #[derive(Debug, Clone)]
 pub struct PatreonRefreshCredentials {

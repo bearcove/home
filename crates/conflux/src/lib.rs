@@ -251,7 +251,7 @@ pub struct LoadedPage {
 
     pub draft_code: Option<String>,
 
-    pub updated_at: Option<Rfc3339<OffsetDateTime>>,
+    pub updated_at: Option<OffsetDateTime>,
     pub rust_version: Option<String>,
 
     // if this page is a series part, then here's the info about
@@ -422,7 +422,7 @@ impl LoadedPage {
         if self.draft && !viewer.is_admin {
             return false;
         }
-        if self.date.0 > OffsetDateTime::now_utc() && !viewer.is_admin {
+        if self.date > OffsetDateTime::now_utc() && !viewer.is_admin {
             return false;
         }
         match self.kind {
@@ -891,13 +891,13 @@ pub enum Asset {
     },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationIdentity;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationPassthrough;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationBitmap {
     pub ic: ICodec,
 
@@ -906,23 +906,19 @@ pub struct DerivationBitmap {
     pub width: Option<IntrinsicPixels>,
 }
 
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationVideo {
     pub container: VContainer,
     pub vc: VCodec,
     pub ac: ACodec,
 }
 
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationVideoThumbnail {
     pub ic: ICodec,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationDrawioRender {
     pub svg_font_face_collection: Arc<SvgFontFaceCollection>,
 }
@@ -931,8 +927,6 @@ pub struct DerivationDrawioRender {
 pub struct SvgFontFaceCollection {
     pub faces: Vec<SvgFontFace>,
 }
-
-
 
 /// SVG font-face definition
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Facet)]
@@ -963,12 +957,13 @@ impl SvgFontFace {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationSvgCleanup {
     // no font faces needed
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Facet)]
+#[repr(u8)]
 pub enum DerivationKind {
     /// not doing anything special _and_ not cache-busted!
     Passthrough(DerivationPassthrough),
@@ -1041,7 +1036,7 @@ impl PartNumber {
 
 /// An input file for a revision, including markdown files,
 /// SASS files, images, .drawio files, etc.
-#[derive(PartialEq, Eq, Debug, Clone, Hash, Facet)]
+#[derive(Facet, PartialEq, Eq, Debug, Clone, Hash)]
 pub struct Input {
     // input hash
     pub hash: InputHash,
@@ -1074,7 +1069,6 @@ impl Input {
         input_key(self.hash.as_str(), self.ext())
     }
 }
-
 
 #[derive(Clone, Facet)]
 pub struct Page {

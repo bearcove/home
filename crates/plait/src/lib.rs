@@ -119,48 +119,6 @@ macro_rules! plait {
         }
     };
 
-    // Internal rule for merde impls
-    (
-        @impl_internal {
-            $( #[ $($crateattr:tt)* ] )?
-            merde
-        }
-        $(#[$attr:meta])*
-        $vis:vis struct $name:ident => &$ref_name:ident;
-    ) => {
-        #[automatically_derived]
-        $( #[ $($crateattr)* ] )?
-        impl ::merde::Serialize for $name {
-            async fn serialize<'fut>(
-                &'fut self,
-                serializer: &'fut mut dyn ::merde::DynSerializer,
-            ) -> Result<(), ::merde::MerdeError<'static>> {
-                serializer.write(::merde::Event::Str(self.0.as_str().into())).await
-            }
-        }
-
-        #[automatically_derived]
-        $( #[ $($crateattr)* ] )?
-        impl<'s> ::merde::Deserialize<'s> for $name
-        {
-            async fn deserialize(
-                de: &mut dyn ::merde::DynDeserializer<'s>,
-            ) -> Result<Self, ::merde::MerdeError<'s>> {
-                <String as ::merde::Deserialize<'s>>::deserialize(de).await.map($name::from)
-            }
-        }
-
-        #[automatically_derived]
-        $( #[ $($crateattr)* ] )?
-        impl ::merde::IntoStatic for $name {
-            type Output = $name;
-
-            fn into_static(self) -> $name {
-                self.clone()
-            }
-        }
-    };
-
     // Internal rule for rusqlite impls
     (
         @impl_internal {
@@ -575,7 +533,6 @@ mod tests {
             #[doc = "yay"]
             serde
             #[doc = "yahoo"]
-            merde
             rusqlite
         }
 

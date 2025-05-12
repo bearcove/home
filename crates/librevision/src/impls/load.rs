@@ -17,7 +17,6 @@ use image_types::{ICodec, LogicalPixels, PixelDensity};
 use itertools::Itertools;
 use libsearch::Index;
 use markdown_types::ProcessMarkdownArgs;
-use merde::{DynDeserializerExt, yaml::YamlDeserializer};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use template_types::{CompileArgs, TemplateCollection};
 use tracing::{self, debug, warn};

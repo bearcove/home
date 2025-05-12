@@ -9,6 +9,7 @@ use crate::{
 
 /// A media container we know about
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[repr(u8)]
 pub enum VContainer {
     /// ISO Base Media File Format (typically .mp4)
     MP4,
@@ -36,6 +37,7 @@ impl std::fmt::Display for VContainer {
 
 /// A video codec we know about
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[repr(u8)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum VCodec {
     AVC,
@@ -111,6 +113,7 @@ impl VCodec {
 
 /// An audio codec we know about
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[repr(u8)]
 pub enum ACodec {
     Opus,
     Aac,
@@ -273,8 +276,6 @@ pub enum MediaKind {
     /// Stored as .drawio files
     Diagram,
 }
-
-
 
 #[derive(Clone, Debug, Facet)]
 pub struct VParams {

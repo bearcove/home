@@ -65,8 +65,6 @@ pub struct TranscodeResponseAlreadyInProgress {
 #[derive(Facet)]
 pub struct TranscodeResponseTooManyRequests {}
 
-
-
 #[derive(Debug, Clone)]
 pub struct DeriveJobInfo {
     pub started: Instant,
@@ -74,7 +72,7 @@ pub struct DeriveJobInfo {
     pub last_progress: Option<TranscodingProgress>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Facet, Debug, Clone)]
 pub struct DeriveParams {
     // input for the derivation
     pub input: Input,
@@ -121,21 +119,13 @@ pub struct DeriveResponseDone {
     pub dest: ObjectStoreKey,
 }
 
-
-
 #[derive(Debug, Facet)]
 pub struct DeriveResponseAlreadyInProgress {
     pub info: String,
 }
 
-
-
 #[derive(Facet)]
 pub struct DeriveResponseTooManyRequests {}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DeriveResponseTooManyRequests {}
-}
 
 pub mod media_types {
     use conflux::{MediaProps, VCodec};
@@ -195,17 +185,6 @@ pub mod media_types {
         pub dst_ic: ICodec,
     }
 
-    merde::derive! {
-        impl (Serialize, Deserialize) for enum TargetFormat string_like {
-            "av1" => AV1,
-            "avc" => AVC,
-            "vp9" => VP9,
-            "thumb_jxl" => ThumbJXL,
-            "thumb_avif" => ThumbAVIF,
-            "thumb_webp" => ThumbWEBP,
-        }
-    }
-
     impl TryFrom<VCodec> for TargetFormat {
         type Error = eyre::Report;
 
@@ -241,17 +220,6 @@ pub mod media_types {
         Error(String),
     }
 
-    merde::derive! {
-        impl (Serialize, Deserialize) for enum WebSocketMessage
-        externally_tagged {
-            "Headers" => Headers,
-            "UploadDone" => UploadDone,
-            "TranscodingEvent" => TranscodingEvent,
-            "TranscodingComplete" => TranscodingComplete,
-            "Error" => Error,
-        }
-    }
-
     #[derive(Debug, Facet)]
     pub struct HeadersMessage {
         pub target_format: TargetFormat,
@@ -259,30 +227,14 @@ pub mod media_types {
         pub file_size: usize,
     }
 
-    merde::derive! {
-        impl (Serialize, Deserialize) for struct HeadersMessage {
-            target_format,
-            file_name,
-            file_size
-        }
-    }
-
     #[derive(Debug, Facet)]
     pub struct UploadDoneMessage {
         pub uploaded_size: usize,
     }
 
-    merde::derive! {
-        impl (Serialize, Deserialize) for struct UploadDoneMessage { uploaded_size }
-    }
-
     #[derive(Debug, Facet)]
     pub struct TranscodingCompleteMessage {
         pub output_size: usize,
-    }
-
-    merde::derive! {
-        impl (Serialize, Deserialize) for struct TranscodingCompleteMessage { output_size }
     }
 
     #[derive(Debug, Clone, Facet)]
@@ -317,32 +269,11 @@ pub mod media_types {
         }
     }
 
-    merde::derive! {
-        impl (Serialize, Deserialize) for struct TranscodingProgress {
-            frame,
-            fps,
-            quality,
-            size_kb,
-            bitrate_kbps,
-            speed,
-            processed_time,
-            total_time
-        }
-    }
-
     #[derive(Debug, Clone, Facet)]
     #[repr(u8)]
     pub enum TranscodeEvent {
         MediaIdentified(MediaProps),
         Progress(TranscodingProgress),
-    }
-
-    merde::derive! {
-        impl (Serialize, Deserialize) for enum TranscodeEvent
-        externally_tagged {
-            "MediaIdentified" => MediaIdentified,
-            "Progress" => Progress,
-        }
     }
 }
 
@@ -358,17 +289,9 @@ pub struct ListMissingArgs {
     pub mark_these_as_uploaded: Option<Vec<ObjectStoreKey>>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ListMissingArgs { objects_to_query, mark_these_as_uploaded }
-}
-
 #[derive(Debug, Clone, Facet)]
 pub struct ListMissingResponse {
     pub missing: HashMap<ObjectStoreKey, InputPath>,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ListMissingResponse { missing }
 }
 
 #[derive(Debug, Facet)]
@@ -378,23 +301,10 @@ pub enum MomEvent {
     TenantEvent(TenantEvent),
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum MomEvent
-    externally_tagged
-    {
-        "GoodMorning" => GoodMorning,
-        "TenantEvent" => TenantEvent,
-    }
-}
-
 #[derive(Debug, Facet)]
 pub struct TenantEvent {
     pub tenant_name: TenantDomain,
     pub payload: TenantEventPayload,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TenantEvent { tenant_name, payload }
 }
 
 #[derive(Facet)]

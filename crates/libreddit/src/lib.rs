@@ -1,5 +1,6 @@
 use autotrait::autotrait;
 use eyre::bail;
+use facet::Facet;
 use futures_core::future::BoxFuture;
 
 use std::sync::{LazyLock, Mutex};
@@ -11,7 +12,6 @@ use tracing::{debug, info, trace};
 
 use config_types::RedditSecrets;
 use libhttpclient::HttpClient;
-use merde::CowStr;
 use url::Url;
 
 // cache the oauth token in a static variable
@@ -104,14 +104,12 @@ impl Mod for ModImpl {
                 /*
                 got reddit token token=Object {"access_token": String("(redacted)"), "expires_in": Number(86400), "scope": String("*"), "token_type": String("bearer")}
                 */
-                #[derive(Debug)]
-                struct RedditAccessToken<'s> {
-                    access_token: CowStr<'s>,
+                #[derive(Debug, Facet)]
+                struct RedditAccessToken {
+                    #[facet(sensitive)]
+                    access_token: String,
                     expires_in: u64,
                 }
-                merde::derive!(
-                    impl (Deserialize) for struct RedditAccessToken<'s> { access_token, expires_in }
-                );
 
                 let token = res.json::<RedditAccessToken>().await?;
                 trace!(?token, "got reddit token");
@@ -154,34 +152,26 @@ impl Mod for ModImpl {
                 bail!("got HTTP {status} for URL ({api_uri}), server said: {error}");
             }
 
-            #[derive(Debug)]
-            struct Info<'s> {
-                data: Listing<'s>,
+            #[derive(Facet, Debug)]
+            struct Info {
+                data: Listing,
             }
 
-
-
-            #[derive(Debug)]
-            struct Listing<'s> {
-                children: Vec<Link<'s>>,
+            #[derive(Facet, Debug)]
+            struct Listing {
+                children: Vec<Link>,
             }
 
-
-
-            #[derive(Debug)]
-            struct Link<'s> {
-                data: LinkData<'s>,
+            #[derive(Facet, Debug)]
+            struct Link {
+                data: LinkData,
             }
 
-
-
-            #[derive(Debug)]
-            struct LinkData<'s> {
-                subreddit: CowStr<'s>,
-                permalink: CowStr<'s>,
+            #[derive(Facet, Debug)]
+            struct LinkData {
+                subreddit: String,
+                permalink: String,
             }
-
-
 
             let info = res.json::<Info>().await?;
 
