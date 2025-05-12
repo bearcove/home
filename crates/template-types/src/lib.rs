@@ -6,6 +6,7 @@ use std::{
 use config_types::WebConfig;
 use conflux::{InputPath, LoadedPage, RevisionView, RouteRef};
 use credentials::UserInfo;
+use facet::Facet;
 use libsearch::Index;
 use mom_types::GlobalStateView;
 
@@ -45,6 +46,7 @@ impl TemplateCollection for () {
     }
 }
 
+#[derive(Facet)]
 pub struct RenderTemplateArgs<'a> {
     pub template_name: &'a str,
 
@@ -79,7 +81,7 @@ pub struct RenderTemplateArgs<'a> {
     pub additional_globals: DataObject,
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Facet)]
 pub struct Shortcode<'a> {
     pub name: &'a str,
     pub body: Option<&'a str>,
@@ -88,7 +90,8 @@ pub struct Shortcode<'a> {
 
 pub type DataObject = HashMap<String, DataValue>;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Facet)]
+#[repr(u8)]
 pub enum DataValue {
     String(String),
     Number(i32),
@@ -119,6 +122,7 @@ impl From<bool> for DataValue {
     }
 }
 
+#[derive(Facet)]
 pub struct RenderShortcodeResult {
     /// for dependency tracking
     pub shortcode_input_path: InputPath,
@@ -127,7 +131,7 @@ pub struct RenderShortcodeResult {
     pub assets_looked_up: HashSet<InputPath>,
 }
 
-#[derive(Default)]
+#[derive(Default, Facet)]
 pub struct CompileArgs {
     pub templates: HashMap<String, String>,
 }

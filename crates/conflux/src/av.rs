@@ -1,4 +1,5 @@
 use content_type::ContentType;
+use facet::Facet;
 use image_types::{ICodec, IntrinsicPixels, LogicalPixels, PixelDensity};
 
 use crate::{
@@ -147,7 +148,7 @@ impl ACodec {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct MediaProps {
     /// The kind of media this is
     pub kind: MediaKind,
@@ -198,7 +199,7 @@ merde::derive! {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Facet)]
 pub struct Dimensions {
     pub w: IntrinsicPixels,
     pub h: IntrinsicPixels,
@@ -308,7 +309,8 @@ impl VideoVariant {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Facet)]
+#[repr(u8)]
 pub enum MediaKind {
     /// Stored as JXL
     Bitmap,
@@ -329,7 +331,7 @@ merde::derive! {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Facet)]
 pub struct VParams {
     /// Video codec name from FFmpeg, e.g. "h264", "av1", "vp9"
     pub codec: Option<FfmpegCodec>,
@@ -345,7 +347,7 @@ merde::derive! {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Facet)]
 pub struct AParams {
     /// Audio codec name from FFmpeg, e.g. "aac", "opus"
     pub codec: Option<FfmpegCodec>,

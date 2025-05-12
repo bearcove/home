@@ -903,6 +903,7 @@ checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 name = "content-type"
 version = "0.1.0"
 dependencies = [
+ "facet",
  "merde",
 ]
 
@@ -1499,9 +1500,7 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f93e0401c705b2e2f0fb31fcb613023e37555d5d7bc4048539daed079f4cfaf"
+version = "0.25.1"
 dependencies = [
  "facet-core",
  "facet-derive",
@@ -1510,20 +1509,17 @@ dependencies = [
 
 [[package]]
 name = "facet-core"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "036e5491cf7a0750a7c01bd968c07ebeb22dd2502836a14cc6de6662d7c42e75"
+version = "0.25.1"
 dependencies = [
  "bitflags 2.9.0",
  "camino",
  "impls",
+ "ordered-float",
 ]
 
 [[package]]
 name = "facet-derive"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "867542643f378696ad949d485c2d8dac50f74e206acc0d18dc22735785082bb1"
+version = "0.25.1"
 dependencies = [
  "facet-core",
  "facet-derive-emit",
@@ -1531,9 +1527,7 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e6ecfc2efa2e74dc103f3bfe977a27310b546e0eb3365a0c5851087c787ab6d"
+version = "0.25.1"
 dependencies = [
  "facet-derive-parse",
  "quote",
@@ -1541,18 +1535,14 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bea323df0d02a0a78fa8c24d7bcdb296710932666430198929c6027abcece1c8"
+version = "0.25.1"
 dependencies = [
  "unsynn",
 ]
 
 [[package]]
 name = "facet-deserialize"
-version = "0.24.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ea313b56cccb2b353987e33d12865dbb0292ce1c5da050e01023a99584fc4e7"
+version = "0.24.3"
 dependencies = [
  "ariadne",
  "facet-core",
@@ -1563,9 +1553,7 @@ dependencies = [
 
 [[package]]
 name = "facet-json"
-version = "0.23.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22ee439befeff80829436f9cf1621e58278bc3caae6cb66bf9ccadf1ccb87e4e"
+version = "0.23.4"
 dependencies = [
  "facet-core",
  "facet-deserialize",
@@ -1576,9 +1564,7 @@ dependencies = [
 
 [[package]]
 name = "facet-pretty"
-version = "0.23.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f56dfd733912a755f6915dc0a749d4d6f5238ee8c841342450d7d93bc239a3a"
+version = "0.23.4"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -1587,9 +1573,7 @@ dependencies = [
 
 [[package]]
 name = "facet-reflect"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abcb859367b5a1bef0682bd9e4b14727a54d7c41dba0f99694ec5f422309fec8"
+version = "0.25.1"
 dependencies = [
  "bitflags 2.9.0",
  "facet-core",
@@ -1598,9 +1582,7 @@ dependencies = [
 
 [[package]]
 name = "facet-serialize"
-version = "0.23.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72f549f797a2bf275655178625dad7562d051aee418f6347958c0935f5697830"
+version = "0.23.4"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -2134,6 +2116,9 @@ dependencies = [
 [[package]]
 name = "highlight-types"
 version = "0.1.0"
+dependencies = [
+ "facet",
+]
 
 [[package]]
 name = "hkdf"
@@ -2557,6 +2542,7 @@ version = "0.1.0"
 dependencies = [
  "content-type",
  "eyre",
+ "facet",
  "merde",
  "ordered-float",
 ]
@@ -4114,6 +4100,7 @@ dependencies = [
  "conflux",
  "derivations",
  "eyre",
+ "facet",
  "image-types",
  "merde",
  "objectstore-types",
@@ -6439,6 +6426,7 @@ dependencies = [
  "conflux",
  "credentials",
  "eyre",
+ "facet",
  "libsearch",
  "mom-types",
 ]

@@ -2,6 +2,7 @@
 //! between crates.
 
 use core::fmt;
+use facet::Facet;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -9,15 +10,17 @@ use std::{
     sync::Arc,
 };
 
+// Implement Facet for Rfc3339<OffsetDateTime>
+use merde::time::Rfc3339;
+use time::OffsetDateTime;
+
 use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
 use content_type::ContentType;
 use credentials::UserInfo;
 use image_types::{ICodec, IntrinsicPixels};
 use libobjectstore::input_key;
-use merde::time::Rfc3339;
 use objectstore_types::ObjectStoreKey;
-pub use time::OffsetDateTime;
 
 use closest::{GetOrHelp, ResourceKind};
 use config_types::{FontStyle, FontWeight, RevisionConfig, TenantConfig, TenantInfo, WebConfig};
@@ -242,7 +245,7 @@ pub struct LoadedPage {
     // frontmatter
     pub title: String,
     pub template: String,
-    pub date: Rfc3339<OffsetDateTime>,
+    pub date: OffsetDateTime,
     pub draft: bool,
     pub archive: bool,
     pub aliases: Vec<Route>,
@@ -849,7 +852,7 @@ impl fmt::Debug for Revision {
 ///
 /// Some assets are inline (e.g. `Page` has `markup`), and some are in object storage,
 /// like images.
-#[derive(Clone)]
+#[derive(Clone, Facet)]
 pub struct Pak {
     /// revision ID (`rev_{lowercase_ulid}`)
     pub id: RevisionId,
@@ -960,7 +963,7 @@ merde::derive! {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default, Facet)]
 pub struct SvgFontFaceCollection {
     pub faces: Vec<SvgFontFace>,
 }
@@ -970,7 +973,7 @@ merde::derive! {
 }
 
 /// SVG font-face definition
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Facet)]
 pub struct SvgFontFace {
     pub family: String,
 
@@ -1098,7 +1101,7 @@ impl PartNumber {
 
 /// An input file for a revision, including markdown files,
 /// SASS files, images, .drawio files, etc.
-#[derive(PartialEq, Eq, Debug, Clone, Hash)]
+#[derive(PartialEq, Eq, Debug, Clone, Hash, Facet)]
 pub struct Input {
     // input hash
     pub hash: InputHash,
@@ -1107,7 +1110,7 @@ pub struct Input {
     pub path: InputPath,
 
     // last modified time
-    pub mtime: Rfc3339<OffsetDateTime>,
+    pub mtime: OffsetDateTime,
 
     // size in bytes
     pub size: u64,
@@ -1138,7 +1141,7 @@ merde::derive! {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Facet)]
 pub struct Page {
     pub hash: InputHash,
     pub path: InputPath,
@@ -1156,7 +1159,7 @@ merde::derive! {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Facet)]
 pub struct Template {
     pub path: InputPath,
 

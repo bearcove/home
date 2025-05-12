@@ -1,6 +1,7 @@
 use camino::Utf8PathBuf;
 use conflux::{Derivation, DerivationHash, Input, InputPath, Pak};
 use derivations::DerivationInfo;
+use facet::Facet;
 use media_types::{TargetFormat, TranscodingProgress};
 use objectstore_types::ObjectStoreKey;
 use serde::Serialize;
@@ -18,7 +19,7 @@ pub trait GlobalStateView: Send + Sync + 'static {
     }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Facet)]
 pub struct Sponsors {
     pub sponsors: Vec<String>,
 }
@@ -35,7 +36,7 @@ pub struct TranscodeJobInfo {
 }
 
 // Note: this is tenant-specific, the video data etc. is per-tenant.
-#[derive(PartialEq, Eq, Debug, Clone, Hash)]
+#[derive(PartialEq, Eq, Debug, Clone, Hash, Facet)]
 pub struct TranscodeParams {
     // source data
     pub input: ObjectStoreKey,
@@ -51,6 +52,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TranscodeParams { input, target_format, output }
 }
 
+#[derive(Facet)]
+#[repr(u8)]
 pub enum TranscodeResponse {
     Done(TranscodeResponseDone),
     AlreadyInProgress(TranscodeResponseAlreadyInProgress),
@@ -67,6 +70,7 @@ merde::derive! {
     }
 }
 
+#[derive(Facet)]
 pub struct TranscodeResponseDone {
     pub output_size: usize,
 }
@@ -75,7 +79,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TranscodeResponseDone { output_size }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 pub struct TranscodeResponseAlreadyInProgress {
     pub info: String,
 }
@@ -84,6 +88,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TranscodeResponseAlreadyInProgress { info }
 }
 
+#[derive(Facet)]
 pub struct TranscodeResponseTooManyRequests {}
 
 merde::derive! {
@@ -131,6 +136,8 @@ impl std::hash::Hash for DeriveParams {
     }
 }
 
+#[derive(Facet)]
+#[repr(u8)]
 pub enum DeriveResponse {
     Done(DeriveResponseDone),
     AlreadyInProgress(DeriveResponseAlreadyInProgress),
@@ -147,6 +154,7 @@ merde::derive! {
     }
 }
 
+#[derive(Facet)]
 pub struct DeriveResponseDone {
     /// How large the output was
     pub output_size: usize,
@@ -159,7 +167,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct DeriveResponseDone { output_size, dest }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 pub struct DeriveResponseAlreadyInProgress {
     pub info: String,
 }
@@ -168,6 +176,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct DeriveResponseAlreadyInProgress { info }
 }
 
+#[derive(Facet)]
 pub struct DeriveResponseTooManyRequests {}
 
 merde::derive! {
@@ -176,9 +185,11 @@ merde::derive! {
 
 pub mod media_types {
     use conflux::{MediaProps, VCodec};
+    use facet::Facet;
     use image_types::ICodec;
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
+    #[repr(u8)]
     pub enum TargetFormat {
         AV1,
         AVC,
@@ -224,6 +235,7 @@ pub mod media_types {
         }
     }
 
+    #[derive(Facet)]
     pub struct PostProcess {
         pub src_ic: ICodec,
         pub dst_ic: ICodec,
@@ -265,7 +277,8 @@ pub mod media_types {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Facet)]
+    #[repr(u8)]
     pub enum WebSocketMessage {
         Headers(HeadersMessage),
         UploadDone(UploadDoneMessage),
@@ -285,7 +298,7 @@ pub mod media_types {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Facet)]
     pub struct HeadersMessage {
         pub target_format: TargetFormat,
         pub file_name: String,
@@ -300,7 +313,7 @@ pub mod media_types {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Facet)]
     pub struct UploadDoneMessage {
         pub uploaded_size: usize,
     }
@@ -309,7 +322,7 @@ pub mod media_types {
         impl (Serialize, Deserialize) for struct UploadDoneMessage { uploaded_size }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Facet)]
     pub struct TranscodingCompleteMessage {
         pub output_size: usize,
     }
@@ -318,7 +331,7 @@ pub mod media_types {
         impl (Serialize, Deserialize) for struct TranscodingCompleteMessage { output_size }
     }
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, Facet)]
     pub struct TranscodingProgress {
         pub frame: u32,
         pub fps: f32,
@@ -363,7 +376,8 @@ pub mod media_types {
         }
     }
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, Facet)]
+    #[repr(u8)]
     pub enum TranscodeEvent {
         MediaIdentified(MediaProps),
         Progress(TranscodingProgress),
@@ -378,7 +392,7 @@ pub mod media_types {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct ListMissingArgs {
     /// queries if ObjectStoreKey is in object storage, if
     /// not we'll return the InputPath
@@ -394,7 +408,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct ListMissingArgs { objects_to_query, mark_these_as_uploaded }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct ListMissingResponse {
     pub missing: HashMap<ObjectStoreKey, InputPath>,
 }
@@ -403,7 +417,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct ListMissingResponse { missing }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
+#[repr(u8)]
 pub enum MomEvent {
     GoodMorning(GoodMorning),
     TenantEvent(TenantEvent),
@@ -418,7 +433,7 @@ merde::derive! {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 pub struct TenantEvent {
     pub tenant_name: TenantDomain,
     pub payload: TenantEventPayload,
@@ -428,6 +443,8 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct TenantEvent { tenant_name, payload }
 }
 
+#[derive(Facet)]
+#[repr(u8)]
 pub enum TenantEventPayload {
     RevisionChanged(Box<Pak>),
     SponsorsUpdated(Sponsors),
@@ -463,7 +480,7 @@ merde::derive! {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 pub struct GoodMorning {
     pub initial_states: HashMap<TenantDomain, TenantInitialState>,
 }
@@ -472,6 +489,7 @@ merde::derive! {
     impl (Serialize, Deserialize) for struct GoodMorning { initial_states }
 }
 
+#[derive(Facet)]
 pub struct TenantInitialState {
     /// The revision to serve (if any)
     pub pak: Option<Pak>,

@@ -1,6 +1,9 @@
+use facet::Facet;
+
 macro_rules! content_types {
     ($($variant:ident => { ext: $ext:literal, mime: $mime:literal, serial: $serial:literal }),* $(,)?) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
+        #[repr(u8)]
         pub enum ContentType {
             $($variant),*
         }

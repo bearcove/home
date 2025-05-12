@@ -13,3 +13,4 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+facet = { workspace = true }

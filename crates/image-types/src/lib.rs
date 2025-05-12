@@ -1,12 +1,16 @@
 use content_type::ContentType;
+use facet::Facet;
 use ordered_float::OrderedFloat;
 use std::fmt;
+
+// We can't directly implement Facet for OrderedFloat due to the orphan rule
 
 macro_rules! define_icodec {
     ($($variant:ident => ($ser_str:expr, $ffmpeg_name:expr, $content_type:expr, $ext:expr, $content_type_pattern:expr)),* $(,)?) => {
         /// An image format we know about
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
         #[allow(clippy::upper_case_acronyms)]
+        #[repr(u8)]
         pub enum ICodec {
             $($variant),*
         }
@@ -95,7 +99,8 @@ macro_rules! u32_wrapper {
     ($(#[$attr:meta])* $name:ident) => {
         $(#[$attr])*
         #[repr(transparent)]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Facet)]
+        #[facet(transparent)]
         pub struct $name(u32);
 
         impl $name {
@@ -132,7 +137,8 @@ macro_rules! ordered_f32_wrapper {
     ($(#[$attr:meta])* $name:ident) => {
         $(#[$attr])*
         #[repr(transparent)]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Facet)]
+        #[facet(transparent)]
         pub struct $name(OrderedFloat<f32>);
 
         impl fmt::Display for $name {

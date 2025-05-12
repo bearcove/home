@@ -1,3 +1,6 @@
+use facet::Facet;
+
+#[derive(Facet)]
 pub struct HighlightCodeParams<'a> {
     /// the code to highlight
     pub source: &'a str,
