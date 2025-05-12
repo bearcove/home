@@ -179,7 +179,7 @@ pub(crate) async fn serve_debug_credentials(tr: CubReqImpl) -> LegacyReply {
     )
     .unwrap();
     if let Some(creds) = creds.as_ref() {
-        let remaining = *creds.expires_at - OffsetDateTime::now_utc();
+        let remaining = creds.expires_at - OffsetDateTime::now_utc();
         writeln!(&mut text).unwrap();
         writeln!(
             &mut text,

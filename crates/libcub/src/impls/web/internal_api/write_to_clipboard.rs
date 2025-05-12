@@ -1,10 +1,12 @@
 use crate::impls::reply::{IntoLegacyReply, LegacyHttpError, LegacyReply};
 use config_types::is_development;
 use eyre::Context as _;
+use facet::Facet;
 use http::StatusCode;
 use tracing::{info, warn};
 
 /// Params for writing text to system clipboard
+#[derive(Facet)]
 struct WriteToClipboardParams {
     text: String,
 }
@@ -45,8 +47,7 @@ pub(crate) async fn serve_write_to_clipboard(body: axum::body::Bytes) -> LegacyR
         Ok(())
     })
     .await
-    .map_err(|e| eyre::eyre!("Failed to join blocking task: {}", e))?
-    ?;
+    .map_err(|e| eyre::eyre!("Failed to join blocking task: {}", e))??;
 
     "OK".into_legacy_reply()
 }

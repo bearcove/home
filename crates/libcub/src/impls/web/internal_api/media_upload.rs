@@ -358,7 +358,7 @@ async fn handle_ws_inner(
             Some(Ok(ws::Message::Text(text))) => {
                 tracing::debug!("Received text message: {}", text);
                 let message: WebSocketMessage =
-                    facet_json::from_str(&text).map_err(|e| e.into_static())?;
+                    facet_json::from_str(&text).map_err(|e| e.into_owned())?;
                 if let WebSocketMessage::Commit(c) = message {
                     tracing::debug!("Received commit: {:?}", c);
                     break c;

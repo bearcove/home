@@ -3,6 +3,7 @@ use config_types::{
 };
 use conflux::{RevisionError, RevisionId};
 use cub_types::{CubRevisionState, CubTenant, IndexedRevision};
+use facet::Facet;
 use hattip::prelude::BoxFuture;
 use libmomclient::{MomClient, MomTenantClient};
 use libobjectstore::ObjectStore;
@@ -15,7 +16,8 @@ use tower_cookies::Key;
 
 use super::{global_state, vite::start_vite};
 
-#[derive(Clone)]
+#[derive(Facet, Clone)]
+#[repr(u8)]
 pub enum RevisionBroadcastEvent {
     NewRevision(RevisionId),
     RevisionError(String),
