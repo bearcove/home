@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 plait::plait! {
     with crates {
         serde
-        merde
     }
 
     /// A domain name/tenant name, like `fasterthanli.me` or `ftl.snug.blog`
@@ -133,9 +132,7 @@ pub struct TenantConfig {
     pub secrets: Option<TenantSecrets>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TenantConfig { name, domain_aliases, object_storage, secrets }
-}
+
 
 impl TenantConfig {
     /// Empty config with just a name
@@ -308,12 +305,6 @@ pub struct RevisionConfig {
     pub svg_fonts: Vec<SvgFontSpec>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct RevisionConfig {
-        id, patreon_campaign_ids, admin_github_ids, admin_patreon_ids, svg_fonts
-    }
-}
-
 #[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SvgFontSpec {
@@ -328,12 +319,6 @@ pub struct SvgFontSpec {
 
     /// style: normal, etc.
     pub style: FontStyle,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct SvgFontSpec {
-        family, path, weight, style
-    }
 }
 
 #[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -364,10 +349,6 @@ impl FontWeight {
     pub fn as_css_prop(&self) -> String {
         format!("font-weight:{};", self.0)
     }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct FontWeight transparent
 }
 
 #[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
@@ -407,13 +388,6 @@ impl FontStyle {
             FontStyle::Normal => "font-style:normal;",
             FontStyle::Italic => "font-style:italic;",
         }
-    }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for enum FontStyle string_like {
-        "normal" => Normal,
-        "italic" => Italic,
     }
 }
 
@@ -458,9 +432,7 @@ pub struct ObjectStorageConfig {
     pub endpoint: Option<S3Endpoint>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ObjectStorageConfig { bucket, region, endpoint }
-}
+
 
 #[derive(Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -471,9 +443,7 @@ pub struct TenantSecrets {
     pub github: Option<GitHubSecrets>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TenantSecrets { aws, patreon, github }
-}
+
 
 #[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -482,9 +452,7 @@ pub struct AwsSecrets {
     pub secret_access_key: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct AwsSecrets { access_key_id, secret_access_key }
-}
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -544,9 +512,7 @@ pub struct PatreonSecrets {
     pub oauth_client_secret: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonSecrets { oauth_client_id, oauth_client_secret }
-}
+
 
 #[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -555,9 +521,7 @@ pub struct GitHubSecrets {
     pub oauth_client_secret: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubSecrets { oauth_client_id, oauth_client_secret }
-}
+
 
 #[derive(Clone, Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -566,9 +530,7 @@ pub struct RedditSecrets {
     pub oauth_client_secret: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct RedditSecrets { oauth_client_id, oauth_client_secret }
-}
+
 
 #[derive(Clone, Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -581,9 +543,7 @@ pub struct MomSecrets {
     pub scoped_api_keys: HashMap<MomApiKey, ScopedMomApiKey>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct MomSecrets { readonly_api_key, scoped_api_keys }
-}
+
 
 pub const MOM_DEV_API_KEY: &MomApiKeyRef = MomApiKeyRef::from_static("mom_KEY_IN_DEV");
 
@@ -594,9 +554,7 @@ pub struct ScopedMomApiKey {
     pub tenants: Vec<TenantDomain>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ScopedMomApiKey { tenants }
-}
+
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Facet)]
 pub struct ByteSize(u64);

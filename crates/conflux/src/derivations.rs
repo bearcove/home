@@ -11,9 +11,3 @@ pub struct Derivation {
 
     pub kind: DerivationKind,
 }
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Derivation {
-        input, kind
-    }
-}

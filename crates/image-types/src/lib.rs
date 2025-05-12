@@ -15,12 +15,6 @@ macro_rules! define_icodec {
             $($variant),*
         }
 
-        merde::derive! {
-            impl (Serialize, Deserialize) for enum ICodec string_like {
-                $($ser_str => $variant),*
-            }
-        }
-
         impl ICodec {
             pub fn from_ffmpeg_codec_name(name: &str) -> Option<Self> {
                 match name {
@@ -126,10 +120,6 @@ macro_rules! u32_wrapper {
                 v.0
             }
         }
-
-        merde::derive! {
-            impl (Serialize, Deserialize) for struct $name transparent
-        }
     }
 }
 
@@ -162,24 +152,6 @@ macro_rules! ordered_f32_wrapper {
         impl From<$name> for f32 {
             fn from(v: $name) -> Self {
                 v.0.into_inner()
-            }
-        }
-
-        impl merde::Serialize for $name {
-            async fn serialize<'fut>(
-                &'fut self,
-                ser: &'fut mut dyn merde::DynSerializer,
-            ) -> Result<(), merde::MerdeError<'static>> {
-                self.0.into_inner().serialize(ser).await
-            }
-        }
-
-        impl<'s> merde::Deserialize<'s> for $name {
-            async fn deserialize<'de>(
-                de: &'de mut dyn merde::DynDeserializer<'s>,
-            ) -> Result<Self, merde::MerdeError<'s>> {
-                let v = f32::deserialize(de).await?;
-                Ok(Self(OrderedFloat(v)))
             }
         }
     }

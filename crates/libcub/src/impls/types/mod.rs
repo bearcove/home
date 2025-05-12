@@ -21,14 +21,6 @@ pub enum RevisionBroadcastEvent {
     RevisionError(String),
 }
 
-merde::derive!(
-    impl (Serialize, Deserialize) for
-    enum RevisionBroadcastEvent externally_tagged {
-        "new_revision" => NewRevision,
-        "revision_error" => RevisionError,
-    }
-);
-
 #[derive(Clone)]
 pub enum DomainResolution {
     /// This domain maps directly to a tenant

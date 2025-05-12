@@ -23,7 +23,6 @@ futures-core = "0.3.31"
 libimage = { version = "0.1.0", path = "../libimage" }
 itertools = { version = "0.14.0" }
 libmarkdown = { version = "0.1.0", path = "../libmarkdown" }
-merde = { workspace = true }
 rayon = { version = "1.10.0" }
 redb = { version = "2.5.0" }
 seahash = { version = "4.1.0" }

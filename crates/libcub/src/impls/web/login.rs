@@ -215,7 +215,7 @@ async fn serve_login_for_dev(tr: CubReqImpl) -> LegacyReply {
     };
 
     // Dev logins shouldn't expire for a while
-    let expires_at = merde::time::Rfc3339(OffsetDateTime::now_utc() + time::Duration::weeks(52));
+    let expires_at = OffsetDateTime::now_utc() + time::Duration::weeks(52);
 
     let auth_bundle = AuthBundle {
         user_info,

@@ -16,6 +16,5 @@ categories.workspace = true
 camino = { version = "1.1.9", features = ["serde1"] }
 eyre.workspace = true
 facet.workspace = true
-merde.workspace = true
 plait = { version = "0.1.0", path = "../plait" }
 serde.workspace = true

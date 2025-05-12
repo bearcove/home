@@ -1,5 +1,4 @@
 use config_types::is_production;
-use merde::IntoStatic as _;
 use tracing::warn;
 
 pub(crate) struct NodeMetadata {
@@ -8,11 +7,6 @@ pub(crate) struct NodeMetadata {
     pub(crate) region: String,
 }
 
-merde::derive!(
-    impl (Serialize, Deserialize) for
-    struct NodeMetadata { node_type, region }
-);
-
 pub(crate) async fn load_node_metadata() -> eyre::Result<NodeMetadata> {
     let node_metadata_path = "/metadata/node-metadata.json";
     let mut found_metadata = false;
@@ -20,7 +14,7 @@ pub(crate) async fn load_node_metadata() -> eyre::Result<NodeMetadata> {
     let metadata =
         if let Ok(metadata_content) = fs_err::tokio::read_to_string(node_metadata_path).await {
             found_metadata = true;
-            merde::json::from_str_owned(&metadata_content).map_err(|e| e.into_static())?
+            facet_json::from_str_owned(&metadata_content).map_err(|e| e.into_static())?
         } else {
             NodeMetadata {
                 node_type: "leader".into(),

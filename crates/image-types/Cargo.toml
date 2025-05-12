@@ -16,5 +16,4 @@ categories.workspace = true
 content-type = { version = "0.1.0", path = "../content-type" }
 eyre.workspace = true
 facet = { workspace = true }
-merde.workspace = true
 ordered-float = "5.0.0"

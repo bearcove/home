@@ -8,7 +8,6 @@ crate-type = ["rlib"]
 
 [dependencies]
 libhttpclient = { path = "../libhttpclient" }
-merde = { workspace = true }
 tracing = { version = "0.1" }
 url = { version = "2.5.4" }
 futures-core = "0.3.31"

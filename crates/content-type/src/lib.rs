@@ -28,13 +28,6 @@ macro_rules! content_types {
             }
         }
 
-        merde::derive! {
-            impl (Serialize, Deserialize) for
-            enum ContentType string_like {
-                $($serial => $variant),*
-            }
-        }
-
         impl ContentType {
             pub fn guess_from_path(path: &str) -> Option<Self> {
                 let guess = match path.rfind('.') {

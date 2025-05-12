@@ -9,10 +9,6 @@ struct WriteToClipboardParams {
     text: String,
 }
 
-merde::derive! {
-    impl (Deserialize) for struct WriteToClipboardParams { text }
-}
-
 /// Writes provided text to the system clipboard
 pub(crate) async fn serve_write_to_clipboard(body: axum::body::Bytes) -> LegacyReply {
     if !is_development() {
@@ -23,7 +19,7 @@ pub(crate) async fn serve_write_to_clipboard(body: axum::body::Bytes) -> LegacyR
         .into_legacy_reply();
     }
 
-    let params: WriteToClipboardParams = merde::json::from_str(
+    let params: WriteToClipboardParams = facet_json::from_str(
         std::str::from_utf8(&body[..]).wrap_err("deserializing body of /write-to-clipboard")?,
     )?;
 

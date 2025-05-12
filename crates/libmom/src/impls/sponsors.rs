@@ -58,7 +58,7 @@ async fn github_list_sponsors(
                 eyre::eyre!("rusqlite error: creator needs to log in with GitHub first: {e}")
             })?
     };
-    let github_credentials = merde::json::from_str_owned::<GitHubCredentials>(&github_credentials)
+    let github_credentials = facet_json::from_str_owned::<GitHubCredentials>(&github_credentials)
         .map_err(|e| e.into_static())?;
     let github = libgithub::load();
     github

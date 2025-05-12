@@ -630,15 +630,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "castaway"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0abae9be0aaf9ea96a3b1b8b1b55c602ca751eba1b1500220cea4ecbafe7c0d5"
-dependencies = [
- "rustversion",
-]
-
-[[package]]
 name = "cc"
 version = "1.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -801,38 +792,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
-name = "compact_bytes"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b8688f4a138f72f4dc214e7cafcd80c629363415c26db3040842acd26cb37eb"
-dependencies = [
- "serde",
- "static_assertions",
-]
-
-[[package]]
-name = "compact_str"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b79c4069c6cad78e2e0cdfcbd26275770669fb39fd308a752dc110e83b9af32"
-dependencies = [
- "castaway",
- "cfg-if",
- "itoa",
- "rustversion",
- "ryu",
- "serde",
- "static_assertions",
-]
-
-[[package]]
 name = "config-types"
 version = "0.1.0"
 dependencies = [
  "camino",
  "eyre",
  "facet",
- "merde",
  "plait",
  "serde",
 ]
@@ -851,7 +816,6 @@ dependencies = [
  "facet",
  "image-types",
  "libobjectstore",
- "merde",
  "minijinja",
  "objectstore-types",
  "plait",
@@ -904,7 +868,6 @@ name = "content-type"
 version = "0.1.0"
 dependencies = [
  "facet",
- "merde",
 ]
 
 [[package]]
@@ -1010,7 +973,6 @@ name = "credentials"
 version = "0.1.0"
 dependencies = [
  "eyre",
- "merde",
  "serde",
  "time",
 ]
@@ -2543,7 +2505,6 @@ dependencies = [
  "content-type",
  "eyre",
  "facet",
- "merde",
  "ordered-float",
 ]
 
@@ -3071,36 +3032,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2cdeb66e45e9f36bfad5bbdb4d2384e70936afbee843c6f6543f0c551ebb25"
 
 [[package]]
-name = "lexical-parse-float"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "683b3a5ebd0130b8fb52ba0bdc718cc56815b6a097e28ae5a6997d0ad17dc05f"
-dependencies = [
- "lexical-parse-integer",
- "lexical-util",
- "static_assertions",
-]
-
-[[package]]
-name = "lexical-parse-integer"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d0994485ed0c312f6d965766754ea177d07f9c00c9b82a5ee62ed5b47945ee9"
-dependencies = [
- "lexical-util",
- "static_assertions",
-]
-
-[[package]]
-name = "lexical-util"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5255b9ff16ff898710eb9eb63cb39248ea8a5bb036bea8085b1a767ff6c4e3fc"
-dependencies = [
- "static_assertions",
-]
-
-[[package]]
 name = "libapi"
 version = "0.1.0"
 dependencies = [
@@ -3217,7 +3148,6 @@ dependencies = [
  "libterm",
  "libwebpage",
  "libwebsock",
- "merde",
  "mom-types",
  "nix 0.30.1",
  "objectstore-types",
@@ -3297,7 +3227,6 @@ dependencies = [
  "fs-err",
  "futures-core",
  "libhttpclient",
- "merde",
  "time",
  "tracing",
  "url 2.5.4",
@@ -3335,7 +3264,6 @@ dependencies = [
  "futures-core",
  "futures-util",
  "http",
- "merde",
  "reqwest",
 ]
 
@@ -3437,7 +3365,6 @@ dependencies = [
  "libpatreon",
  "libsvg",
  "libterm",
- "merde",
  "mom-types",
  "nix 0.30.1",
  "objectstore-types",
@@ -3471,7 +3398,6 @@ dependencies = [
  "libhttpclient",
  "libpatreon",
  "libwebsock",
- "merde",
  "mom-types",
  "objectstore-types",
  "rand 0.9.1",
@@ -3506,7 +3432,6 @@ dependencies = [
  "futures-core",
  "jsonapi",
  "libhttpclient",
- "merde",
  "serde",
  "serde_json",
  "time",
@@ -3523,7 +3448,6 @@ dependencies = [
  "eyre",
  "futures-core",
  "libhttpclient",
- "merde",
  "tracing",
  "url 2.5.4",
 ]
@@ -3567,7 +3491,6 @@ dependencies = [
  "libsvg",
  "libtemplate",
  "markdown-types",
- "merde",
  "rayon",
  "redb",
  "seahash",
@@ -3648,7 +3571,6 @@ dependencies = [
  "libmarkdown",
  "libmedia",
  "libsearch",
- "merde",
  "minijinja",
  "mom-types",
  "percent-encoding 2.3.1",
@@ -3709,7 +3631,6 @@ dependencies = [
  "image-types",
  "libhttpclient",
  "libimage",
- "merde",
  "tokio",
  "url 2.5.4",
  "webpage",
@@ -3988,65 +3909,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38d1115007560874e373613744c6fba374c17688327a71c1476d1a5954cc857b"
 
 [[package]]
-name = "merde"
-version = "10.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edd8dc7668eb89ede52dc09d4b21a8c2f7c9cd47168ea1f82550f705615d9b99"
-dependencies = [
- "merde_core",
- "merde_json",
- "merde_msgpack",
- "merde_yaml",
-]
-
-[[package]]
-name = "merde_core"
-version = "10.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e937026f22a5a3567bc402f1edf871ecab0e0222cd6f829ea58abae0185e759c"
-dependencies = [
- "camino",
- "compact_bytes",
- "compact_str",
- "ordered-float",
- "rusqlite",
- "serde",
- "time",
-]
-
-[[package]]
-name = "merde_json"
-version = "10.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a729dbfff53e394d26496e43edd4725032cd70f917e9f050fa5639f6a4af3abd"
-dependencies = [
- "itoa",
- "lexical-parse-float",
- "merde_core",
- "ryu",
-]
-
-[[package]]
-name = "merde_msgpack"
-version = "10.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffe4620c27f9a69f4d105f011855584217648923920273e082507a3b464a8159"
-dependencies = [
- "merde_core",
- "rmp",
-]
-
-[[package]]
-name = "merde_yaml"
-version = "10.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c36f61da594ecad0ed986ceeb5061eba47a36fcf839576ce525c7e4ff08f3fa"
-dependencies = [
- "merde_core",
- "yaml-rust2",
-]
-
-[[package]]
 name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4102,7 +3964,6 @@ dependencies = [
  "eyre",
  "facet",
  "image-types",
- "merde",
  "objectstore-types",
  "serde",
  "tokio",
@@ -4442,7 +4303,6 @@ name = "objectstore-types"
 version = "0.1.0"
 dependencies = [
  "facet",
- "merde",
  "plait",
  "rusqlite",
 ]
@@ -4772,7 +4632,6 @@ name = "plait"
 version = "0.1.0"
 dependencies = [
  "facet",
- "merde",
  "rusqlite",
  "serde",
 ]
@@ -5513,17 +5372,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "rmp"
-version = "0.8.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "228ed7c16fa39782c3b3468e974aec2795e9089153cd08ee2e9aefb3613334c4"
-dependencies = [
- "byteorder",
- "num-traits",
- "paste",
 ]
 
 [[package]]
@@ -8072,16 +7920,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388c44dc09d76f1536602ead6d325eb532f5c122f17782bd57fb47baeeb767e2"
 dependencies = [
  "lzma-sys",
-]
-
-[[package]]
-name = "yaml-rust2"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8902160c4e6f2fb145dbe9d6760a75e3c9522d8bf796ed7047c85919ac7115f8"
-dependencies = [
- "arraydeque",
- "hashlink 0.8.4",
 ]
 
 [[package]]

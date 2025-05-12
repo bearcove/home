@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    http::{HeaderName, StatusCode, header},
+    http::{header, HeaderName, StatusCode},
     response::{IntoResponse, Response},
 };
 use config_types::is_production;
@@ -9,7 +9,6 @@ use content_type::ContentType;
 use eyre::Report;
 use http::header::CONTENT_TYPE;
 use libterm::FormatAnsiStyle;
-use merde::DynSerialize;
 use rand::prelude::IndexedRandom;
 use rand::rng;
 use std::borrow::Cow;
@@ -44,14 +43,14 @@ impl<T: IntoResponse> IntoLegacyReply for T {
     }
 }
 
-pub struct MerdeJson<T>(pub T);
+pub struct FacetJson<T>(pub T);
 
-impl<T> IntoLegacyReply for MerdeJson<T>
+impl<T> IntoLegacyReply for FacetJson<T>
 where
     T: DynSerialize,
 {
     fn into_legacy_reply(self) -> LegacyReply {
-        let payload = merde::json::to_vec(&self.0)?;
+        let payload = facet_json::to_vec(&self.0)?;
 
         (
             StatusCode::OK,
@@ -279,12 +278,6 @@ impl_from!(url::ParseError);
 impl_from!(libobjectstore::Error);
 impl_from!(std::str::Utf8Error);
 impl_from!(std::string::FromUtf8Error);
-
-impl From<merde::MerdeError<'_>> for LegacyHttpError {
-    fn from(err: merde::MerdeError<'_>) -> Self {
-        Self::from_report(eyre::eyre!("{err}"))
-    }
-}
 
 impl From<RevisionError> for LegacyHttpError {
     fn from(err: RevisionError) -> Self {

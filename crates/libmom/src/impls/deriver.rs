@@ -12,7 +12,7 @@ use tokio_stream::StreamExt as _;
 
 use crate::impls::{
     MomTenantState,
-    site::{IntoReply, MerdeJson, Reply},
+    site::{IntoReply, FacetJson, Reply},
 };
 use mom_types::{
     DeriveJobInfo, DeriveParams, DeriveResponse, DeriveResponseAlreadyInProgress,
@@ -27,7 +27,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
         let mut locks = ts.derive_jobs.lock();
         if let Some(info) = locks.get(&params) {
             tracing::info!("Derive already in progress: {info:?}");
-            let mut res = MerdeJson(DeriveResponse::AlreadyInProgress(
+            let mut res = FacetJson(DeriveResponse::AlreadyInProgress(
                 DeriveResponseAlreadyInProgress {
                     info: format!("derive already in progress: {info:#?}"),
                 },
@@ -234,7 +234,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
         dest: dest_key,
     });
 
-    MerdeJson(response).into_reply()
+    FacetJson(response).into_reply()
 }
 
 #[allow(clippy::result_large_err)]
@@ -242,7 +242,7 @@ fn acquire_permit_or_429() -> Result<FfmpegEncodePermit, Reply> {
     Ok(match try_acquire_ffmpeg_encode_permit() {
         Some(permit) => permit,
         None => {
-            return Err(MerdeJson(DeriveResponse::TooManyRequests(
+            return Err(FacetJson(DeriveResponse::TooManyRequests(
                 DeriveResponseTooManyRequests {},
             ))
             .into_reply());

@@ -21,17 +21,6 @@ enum ValidationMessage {
     ValidationComplete(ValidationComplete),
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum ValidationMessage
-    externally_tagged {
-        "logMessage" => LogMessage,
-        "routeResult" => RouteResult,
-        "validationComplete" => ValidationComplete,
-        "badLink" => BadLink,
-        "mathError" => MathError,
-    }
-}
-
 macro_rules! impl_from {
     ($from:tt) => {
         impl From<$from> for ValidationMessage {
@@ -53,21 +42,9 @@ struct RouteResult {
     status: u16,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct RouteResult {
-        url, status
-    }
-}
-
 #[derive(Debug)]
 struct ValidationComplete {
     num_errors: u32,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ValidationComplete {
-        num_errors
-    }
 }
 
 #[derive(Debug)]
@@ -77,23 +54,9 @@ struct BadLink {
     reason: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct BadLink {
-        route,
-        href,
-        reason
-    }
-}
-
 #[derive(Debug)]
 struct MathError {
     route: Route,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct MathError {
-        route
-    }
 }
 
 pub(crate) async fn serve(
@@ -115,7 +78,7 @@ impl MsgSender<'_> {
 
         if let Err(e) = self
             .sock
-            .send(ws::Message::text(merde::json::to_string(&msg).unwrap()))
+            .send(ws::Message::text(facet_json::to_string(&msg).unwrap()))
             .await
         {
             tracing::error!("Failed to send WebSocket message: {}", e);

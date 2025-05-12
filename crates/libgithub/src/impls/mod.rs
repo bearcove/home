@@ -66,57 +66,36 @@ impl ModImpl {
             query: String,
             variables: Variables,
         }
-        merde::derive!(
-            impl (Serialize, ) for struct GraphqlQuery { query, variables }
-        );
 
         struct GraphqlResponse {
             data: Option<GraphqlResponseData>,
             errors: Option<Vec<GraphqlError>>,
         }
-        merde::derive!(
-            impl (Deserialize) for struct GraphqlResponse { data, errors }
-        );
 
         #[derive(Debug)]
         struct GraphqlError {
             #[allow(dead_code)]
             message: String,
         }
-        merde::derive!(
-            impl (Deserialize) for struct GraphqlError { message }
-        );
 
         struct GraphqlResponseData {
             viewer: Viewer,
         }
-        merde::derive!(
-            impl (Deserialize) for struct GraphqlResponseData { viewer }
-        );
 
         struct Viewer {
             sponsors: Sponsors,
         }
-        merde::derive!(
-            impl (Deserialize) for struct Viewer { sponsors }
-        );
 
         #[allow(non_snake_case)]
         struct Sponsors {
             pageInfo: PageInfo,
             nodes: Vec<Node>,
         }
-        merde::derive!(
-            impl (Deserialize) for struct Sponsors { pageInfo, nodes }
-        );
 
         #[allow(non_snake_case)]
         struct PageInfo {
             endCursor: Option<String>,
         }
-        merde::derive!(
-            impl (Deserialize) for struct PageInfo { endCursor }
-        );
 
         #[allow(non_snake_case)]
         struct Node {

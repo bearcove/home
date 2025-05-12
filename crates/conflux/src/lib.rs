@@ -11,7 +11,6 @@ use std::{
 };
 
 // Implement Facet for Rfc3339<OffsetDateTime>
-use merde::time::Rfc3339;
 use time::OffsetDateTime;
 
 use bytes::Bytes;
@@ -35,8 +34,6 @@ pub use derivations::*;
 /// An error that occurred while loading a revision
 #[derive(Debug, Clone)]
 pub struct RevisionError(pub String);
-
-merde::derive!(impl (Serialize, Deserialize) for struct RevisionError transparent);
 
 impl std::fmt::Display for RevisionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -302,10 +299,6 @@ pub struct Viewer {
     /// As of Nov 2022, 10EUR/month or above
     pub has_silver: bool,
 }
-
-merde::derive!(
-    impl (Serialize, Deserialize) for struct Viewer { is_admin, has_bronze, has_silver }
-);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AccessOverride {
@@ -614,7 +607,6 @@ plait! {
         serde
         rusqlite
         minijinja
-        merde
     }
 
     /// A route, e.g. `/articles/10-months-of-itch`,
@@ -879,12 +871,6 @@ pub struct Pak {
     pub rc: RevisionConfig,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Pak {
-        id, inputs, pages, media_props, templates, svg_font_face_collection, rc
-    }
-}
-
 #[derive(Clone)]
 pub enum Asset {
     // This asset we can serve directly from memory
@@ -908,16 +894,8 @@ pub enum Asset {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DerivationIdentity;
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationIdentity { }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DerivationPassthrough;
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationPassthrough { }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DerivationBitmap {
@@ -928,9 +906,7 @@ pub struct DerivationBitmap {
     pub width: Option<IntrinsicPixels>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationBitmap { ic, width }
-}
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DerivationVideo {
@@ -939,17 +915,11 @@ pub struct DerivationVideo {
     pub ac: ACodec,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationVideo { container, vc, ac }
-}
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DerivationVideoThumbnail {
     pub ic: ICodec,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationVideoThumbnail { ic }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -957,20 +927,12 @@ pub struct DerivationDrawioRender {
     pub svg_font_face_collection: Arc<SvgFontFaceCollection>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationDrawioRender {
-        svg_font_face_collection
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default, Facet)]
 pub struct SvgFontFaceCollection {
     pub faces: Vec<SvgFontFace>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct SvgFontFaceCollection { faces }
-}
+
 
 /// SVG font-face definition
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Facet)]
@@ -1001,19 +963,9 @@ impl SvgFontFace {
     }
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct SvgFontFace {
-        family, weight, style, file_name, hash, contents
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DerivationSvgCleanup {
     // no font faces needed
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DerivationSvgCleanup {}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -1038,18 +990,6 @@ pub enum DerivationKind {
 
     /// injecting viewbox in SVG, minifying, etc.
     SvgCleanup(DerivationSvgCleanup),
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for enum DerivationKind externally_tagged {
-        "Passthrough" => Passthrough,
-        "Identity" => Identity,
-        "Bitmap" => Bitmap,
-        "Video" => Video,
-        "VideoThumbnail" => VideoThumbnail,
-        "DrawioRender" => DrawioRender,
-        "SvgCleanup" => SvgCleanup,
-    }
 }
 
 impl std::fmt::Display for DerivationKind {
@@ -1135,11 +1075,6 @@ impl Input {
     }
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Input {
-        hash, path, mtime, size, content_type
-    }
-}
 
 #[derive(Clone, Facet)]
 pub struct Page {
@@ -1153,12 +1088,6 @@ pub struct Page {
     pub deps: Vec<InputPath>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Page {
-        hash, path, markup, deps
-    }
-}
-
 #[derive(Clone, Facet)]
 pub struct Template {
     pub path: InputPath,
@@ -1167,24 +1096,12 @@ pub struct Template {
     pub markup: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Template {
-        path, markup
-    }
-}
-
 #[derive(Clone)]
 pub struct Stylesheet {
     pub path: InputPath,
 
     /// SCSS markup
     pub markup: String,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Stylesheet {
-        path, markup
-    }
 }
 
 #[derive(Default)]
@@ -1238,23 +1155,10 @@ pub struct Completion {
     pub url: Option<Href>,
 }
 
-merde::derive! {
-    impl (Serialize, ) for struct Completion {
-        kind, text, html, url
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CompletionKind {
     Term,
     Article,
-}
-
-merde::derive! {
-    impl (Serialize, ) for enum CompletionKind string_like {
-        "term" => Term,
-        "article" => Article,
-    }
 }
 
 /// Maps input paths to disk paths

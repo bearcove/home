@@ -16,13 +16,6 @@ pub enum VContainer {
     WebM,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum VContainer string_like {
-        "mp4" => MP4,
-        "webm" => WebM,
-    }
-}
-
 impl VContainer {
     pub fn content_type(&self) -> ContentType {
         match self {
@@ -80,12 +73,6 @@ macro_rules! impl_codec_conversions {
         impl std::fmt::Display for $codec {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(f, "{}", self.ffmpeg_codec_name())
-            }
-        }
-
-        merde::derive! {
-            impl (Serialize, Deserialize) for enum $codec string_like {
-                $($ffmpeg_name => $variant,)*
             }
         }
     };
@@ -188,28 +175,11 @@ impl MediaProps {
     }
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct MediaProps {
-        kind,
-        dims,
-        secs,
-        ic,
-        vp,
-        ap
-    }
-}
-
 #[derive(Clone, Copy, Debug, Facet)]
 pub struct Dimensions {
     pub w: IntrinsicPixels,
     pub h: IntrinsicPixels,
     pub density: PixelDensity,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Dimensions {
-        w, h, density
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -222,12 +192,6 @@ pub struct BitmapVariant {
     pub srcset: Vec<(PixelDensity, Route)>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct BitmapVariant {
-        ic, max_width, srcset
-    }
-}
-
 /// A container, audio codec and video codec combination.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VideoVariant {
@@ -235,12 +199,6 @@ pub struct VideoVariant {
     pub container: VContainer,
     pub ac: ACodec,
     pub vc: VCodec,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct VideoVariant {
-        route, container, ac, vc
-    }
 }
 
 impl VideoVariant {
@@ -267,12 +225,6 @@ impl VideoVariant {
 pub struct VideoThumbnail {
     pub route: Route,
     pub fmt: ICodec,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct VideoThumbnail {
-        route, fmt
-    }
 }
 
 impl VideoThumbnail {
@@ -322,14 +274,7 @@ pub enum MediaKind {
     Diagram,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum MediaKind string_like {
-        "image" => Bitmap,
-        "video" => Video,
-        "audio" => Audio,
-        "diagram" => Diagram,
-    }
-}
+
 
 #[derive(Clone, Debug, Facet)]
 pub struct VParams {
@@ -341,12 +286,6 @@ pub struct VParams {
     pub pix_fmt: Option<FfmpegPixelFormat>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct VParams {
-        codec, frame_rate, pix_fmt
-    }
-}
-
 #[derive(Clone, Debug, Facet)]
 pub struct AParams {
     /// Audio codec name from FFmpeg, e.g. "aac", "opus"
@@ -355,12 +294,6 @@ pub struct AParams {
     pub sample_rate: Option<u32>,
     /// Audio channels, e.g. `stereo`, `5.1` or `7.1`
     pub channels: Option<FfmpegChannels>,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct AParams {
-        codec, sample_rate, channels
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -406,11 +339,5 @@ impl Media {
 
     pub fn vcodec(&self) -> Option<VCodec> {
         self.props.vc()
-    }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Media {
-        props, bv, vv, thumb
     }
 }

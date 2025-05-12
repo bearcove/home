@@ -94,13 +94,13 @@ pub(crate) fn global_state() -> &'static MomGlobalState {
 
 impl MomGlobalState {
     pub(crate) fn event_to_message(event: MomEvent) -> ws::Message {
-        let json_string = merde::json::to_string(&event).unwrap();
+        let json_string = facet_json::to_string(&event).unwrap();
         ws::Message::text(json_string)
     }
 
     pub(crate) fn broadcast_event(&self, event: MomEvent) -> eyre::Result<()> {
         let ev_debug = format!("{event:?}");
-        let event = merde::json::to_string(&event)?;
+        let event = facet_json::to_string(&event)?;
         match self.bx_event.send(event) {
             Ok(n) => tracing::info!("Broadcast to {n} subscribers: {ev_debug}"),
             Err(_) => tracing::info!("No subscribers for event: {ev_debug}"),
@@ -148,7 +148,7 @@ impl PatreonStore for Pool {
         let creds: Option<String> = stmt.query_row([patreon_id], |row| row.get(0))?;
         if let Some(creds) = creds {
             Ok(Some(
-                merde::json::from_str_owned::<PatreonCredentials>(&creds)
+                facet_json::from_str_owned::<PatreonCredentials>(&creds)
                     .map_err(|e| e.into_static())?,
             ))
         } else {
@@ -168,7 +168,7 @@ impl PatreonStore for Pool {
                 VALUES (?1, ?2)
                 ON CONFLICT (patreon_id) DO UPDATE SET data = ?2
                 ",
-            rusqlite::params![patreon_id, merde::json::to_string(credentials)?],
+            rusqlite::params![patreon_id, facet_json::to_string(credentials)?],
         )?;
         Ok(())
     }
@@ -217,7 +217,7 @@ pub(crate) fn save_sponsors_to_db(ts: &MomTenantState, sponsors: Sponsors) -> ey
     // insert new entry
     conn.execute(
         "INSERT INTO sponsors (sponsors_json) VALUES (?1)",
-        [merde::json::to_string(&sponsors)?],
+        [facet_json::to_string(&sponsors)?],
     )?;
 
     Ok(())
@@ -236,7 +236,7 @@ pub(crate) fn load_sponsors_from_db(ts: &MomTenantState) -> eyre::Result<Option<
     let res: Result<String, rusqlite::Error> = stmt.query_row([], |row| row.get(0));
     match res {
         Ok(sponsors_json) => Ok(Some(
-            merde::json::from_str_owned::<Sponsors>(&sponsors_json).map_err(|e| e.into_static())?,
+            facet_json::from_str_owned::<Sponsors>(&sponsors_json).map_err(|e| e.into_static())?,
         )),
         Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
         Err(e) => Err(e.into()),
@@ -281,7 +281,7 @@ pub(crate) async fn load_revision_from_db(ts: &MomTenantState) -> eyre::Result<O
     debug!("Fetching revision data took {duration:?}");
 
     debug!("Deserializing revision data");
-    let revision: Pak = merde::json::from_str_owned(std::str::from_utf8(&bytes[..])?)
+    let revision: Pak = facet_json::from_str_owned(std::str::from_utf8(&bytes[..])?)
         .map_err(|e| e.into_static())?;
     Ok(Some(revision))
 }

@@ -1,4 +1,3 @@
-use merde::time::Rfc3339;
 use serde::Serialize;
 use time::OffsetDateTime;
 
@@ -10,27 +9,15 @@ pub struct AuthBundle {
     pub expires_at: Rfc3339<OffsetDateTime>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct AuthBundle { user_info, expires_at }
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub struct UserInfo {
     pub profile: Profile,
     pub tier: Option<Tier>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct UserInfo { profile, tier }
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub struct Tier {
     pub title: String,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Tier { title }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -43,10 +30,6 @@ pub struct Profile {
 
     // avatar thumbnail URL
     pub thumb_url: String,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Profile { patreon_id, github_id, full_name, thumb_url }
 }
 
 impl Profile {

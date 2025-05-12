@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::impls::{
     cub_req::CubReqImpl,
-    reply::{IntoLegacyReply, LegacyReply, MerdeJson},
+    reply::{IntoLegacyReply, LegacyReply, FacetJson},
 };
 use conflux::Input;
 use cub_types::CubTenant;
@@ -42,7 +42,7 @@ pub(crate) async fn search_assets(
         })
         .collect();
 
-    MerdeJson(routes).into_legacy_reply()
+    FacetJson(routes).into_legacy_reply()
 }
 
 pub(crate) async fn search_inputs(
@@ -64,5 +64,5 @@ pub(crate) async fn search_inputs(
         .map(|(path, input)| (path.to_string(), input.clone()))
         .collect();
 
-    MerdeJson(inputs).into_legacy_reply()
+    FacetJson(inputs).into_legacy_reply()
 }

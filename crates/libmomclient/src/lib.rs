@@ -144,7 +144,7 @@ impl Mod for ModImpl {
                                 }
                             };
 
-                            let ev = merde::json::from_str_owned::<MomEvent>(&ev)
+                            let ev = facet_json::from_str_owned::<MomEvent>(&ev)
                                 .map_err(|e| e.into_static())?;
                             let elapsed = before_recv.elapsed();
                             tracing::debug!(?ev, ?elapsed, "Got event from mom");
@@ -437,7 +437,7 @@ impl MediaUploader for MediaUploaderImpl {
     fn with_headers(&mut self, headers: HeadersMessage) -> BoxFuture<'_, Result<()>> {
         Box::pin(async move {
             let msg = WebSocketMessage::Headers(headers);
-            let json = merde::json::to_string(&msg)?;
+            let json = facet_json::to_string(&msg)?;
             self.ws.send_text(json).await?;
             Ok(())
         })
@@ -458,7 +458,7 @@ impl MediaUploader for MediaUploaderImpl {
         Box::pin(async move {
             tracing::debug!("Sending UploadDone message with size {uploaded_size}");
             let msg = WebSocketMessage::UploadDone(UploadDoneMessage { uploaded_size });
-            let json = merde::json::to_string(&msg)?;
+            let json = facet_json::to_string(&msg)?;
             self.ws.send_text(json).await?;
 
             let mut received_bytes = 0;
@@ -474,7 +474,7 @@ impl MediaUploader for MediaUploaderImpl {
                 match msg {
                     libwebsock::Frame::Text(text) => {
                         let msg: WebSocketMessage =
-                            merde::json::from_str(&text).map_err(|e| e.into_static())?;
+                            facet_json::from_str(&text).map_err(|e| e.into_static())?;
                         match msg {
                             WebSocketMessage::TranscodingEvent(ev) => {
                                 if let Err(e) = self.listener.on_transcoding_event(ev).await {

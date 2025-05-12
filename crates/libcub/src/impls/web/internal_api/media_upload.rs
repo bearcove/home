@@ -9,7 +9,6 @@ use eyre::eyre;
 use futures_core::future::BoxFuture;
 use image_types::ICodec;
 use libmomclient::TranscodingEventListener;
-use merde::IntoStatic;
 use mom_types::media_types::{self, TargetFormat, TranscodingProgress};
 use tempfile::TempDir;
 use tokio::{
@@ -38,20 +37,6 @@ enum WebSocketMessage {
     Error(String),
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum WebSocketMessage
-    externally_tagged {
-        "Headers" => Headers,
-        "Commit" => Commit,
-        "UploadDone" => UploadDone,
-        "MediaIdentified" => MediaIdentified,
-        "ConversionProgress" => ConversionProgress,
-        "ConversionDone" => ConversionDone,
-        "ActionDone" => ActionDone,
-        "Error" => Error,
-    }
-}
-
 #[derive(Debug)]
 struct HeadersMessage {
     page_input_path: InputPath,
@@ -61,24 +46,12 @@ struct HeadersMessage {
     paragraph_byte_offset: u64,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct HeadersMessage {
-        page_input_path,
-        file_name,
-        file_size,
-        action,
-        paragraph_byte_offset
-    }
-}
-
 #[derive(Debug)]
 struct UploadDoneMessage {
     uploaded_size: u64,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct UploadDoneMessage { uploaded_size }
-}
+
 #[derive(Debug)]
 struct CommitMessage {
     name: String,
@@ -91,24 +64,9 @@ struct CommitMessage {
     attrlink: Option<String>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct CommitMessage {
-        name,
-        title,
-        alt,
-        is_figure,
-        attr,
-        attrlink
-    }
-}
-
 #[derive(Debug)]
 struct ConversionDoneMessage {
     file_size: u64,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ConversionDoneMessage { file_size }
 }
 
 #[derive(Debug)]
@@ -116,23 +74,11 @@ struct ActionDoneMessage {
     done: bool,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct ActionDoneMessage { done }
-}
-
 #[derive(Debug)]
 enum Action {
     Replace,
     Append,
     SetThumb,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for enum Action string_like {
-        "replace" => Replace,
-        "append" => Append,
-        "set_thumb" => SetThumb,
-    }
 }
 
 pub(crate) async fn serve_media_upload(
@@ -175,7 +121,7 @@ async fn handle_ws_inner(
         match msg {
             ws::Message::Text(text) => {
                 let message: WebSocketMessage =
-                    merde::json::from_str(&text).map_err(|e| e.into_static())?;
+                    facet_json::from_str(&text).map_err(|e| e.into_static())?;
 
                 match message {
                     WebSocketMessage::Headers(h) => {
@@ -411,7 +357,7 @@ async fn handle_ws_inner(
             Some(Ok(ws::Message::Text(text))) => {
                 tracing::debug!("Received text message: {}", text);
                 let message: WebSocketMessage =
-                    merde::json::from_str(&text).map_err(|e| e.into_static())?;
+                    facet_json::from_str(&text).map_err(|e| e.into_static())?;
                 if let WebSocketMessage::Commit(c) = message {
                     tracing::debug!("Received commit: {:?}", c);
                     break c;
@@ -531,9 +477,9 @@ async fn handle_ws_inner(
 
 async fn json_to_socket(
     socket: &mut ws::WebSocket,
-    payload: &impl merde::Serialize,
+    payload: &impl facet::Facet,
 ) -> eyre::Result<()> {
-    let json_string = merde::json::to_string(payload)?;
+    let json_string = facet_json::to_string(payload)?;
     socket.send(ws::Message::text(json_string)).await?;
     Ok(())
 }
