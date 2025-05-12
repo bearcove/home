@@ -4,7 +4,6 @@ use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::{AuthBundle, Profile, Tier, UserInfo};
 use eyre::Result;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
-use merde::{IntoStatic, Map};
 use time::OffsetDateTime;
 use tracing::debug;
 
@@ -103,36 +102,24 @@ impl ModImpl {
             name: Option<String>,
             sponsorshipForViewerAsSponsorable: Option<SponsorshipForViewerAsSponsorable>,
         }
-        merde::derive!(
-            impl (Deserialize) for struct Node { login, name, sponsorshipForViewerAsSponsorable }
-        );
 
         #[allow(non_snake_case)]
         struct SponsorshipForViewerAsSponsorable {
             privacyLevel: String,
             tier: GitHubTier,
         }
-        merde::derive!(
-            impl (Deserialize) for struct SponsorshipForViewerAsSponsorable { privacyLevel, tier }
-        );
 
         #[allow(non_snake_case)]
         struct GitHubTier {
             monthlyPriceInDollars: Option<u32>,
             isOneTime: bool,
         }
-        merde::derive!(
-            impl (Deserialize) for struct GitHubTier { monthlyPriceInDollars, isOneTime }
-        );
 
         #[derive(Debug)]
         struct Variables {
             first: u32,
             after: Option<String>,
         }
-        merde::derive!(
-            impl (Serialize, ) for struct Variables { first, after }
-        );
 
         let mut query = GraphqlQuery {
             query: query.into(),
@@ -251,24 +238,15 @@ impl ModImpl {
             query: String,
             variables: Map<'static>,
         }
-        merde::derive!(
-            impl (Serialize, ) for struct GraphqlQuery { query, variables }
-        );
 
         struct GraphqlResponse {
             data: GraphqlResponseData,
         }
-        merde::derive!(
-            impl (Deserialize) for struct GraphqlResponse { data }
-        );
 
         struct GraphqlResponseData {
             viewer: Viewer,
             user: User,
         }
-        merde::derive!(
-            impl (Deserialize) for struct GraphqlResponseData { viewer, user }
-        );
         #[allow(non_snake_case)]
         struct Viewer {
             databaseId: i64,
@@ -276,33 +254,21 @@ impl ModImpl {
             name: Option<String>,
             avatarUrl: String,
         }
-        merde::derive!(
-            impl (Deserialize) for struct Viewer { databaseId, login, name, avatarUrl }
-        );
 
         #[allow(non_snake_case)]
         struct User {
             sponsorshipForViewerAsSponsor: Option<Sponsorship>,
         }
-        merde::derive!(
-            impl (Deserialize) for struct User { sponsorshipForViewerAsSponsor }
-        );
 
         struct Sponsorship {
             tier: SponsorshipTier,
         }
-        merde::derive!(
-            impl (Deserialize) for struct Sponsorship { tier }
-        );
 
         #[allow(non_snake_case)]
         struct SponsorshipTier {
             isOneTime: bool,
             monthlyPriceInDollars: u32,
         }
-        merde::derive!(
-            impl (Deserialize) for struct SponsorshipTier { isOneTime, monthlyPriceInDollars }
-        );
 
         let query = include_str!("github_sponsorship_for_viewer.graphql");
         let login = if web.env.is_dev() {

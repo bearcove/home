@@ -6,7 +6,7 @@ pub use eyre::{Result, eyre};
 #[derive(Debug, Clone)]
 pub struct AuthBundle {
     pub user_info: UserInfo,
-    pub expires_at: Rfc3339<OffsetDateTime>,
+    pub expires_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Serialize)]
