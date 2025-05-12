@@ -130,7 +130,7 @@ async fn github_callback(
                 "INSERT OR REPLACE INTO github_credentials (github_id, data) VALUES (?1, ?2)",
                 rusqlite::params![
                     site_creds.user_info.profile.github_id,
-                    facet_json::to_string(&github_creds)?
+                    facet_json::to_string(&github_creds)
                 ],
             )?;
             Some(GitHubCallbackResponse {
@@ -160,14 +160,12 @@ fn get_patreon_credentials(
             )
         })?;
 
-    facet_json::from_str::<PatreonCredentials>(&pat_creds_payload)
-        .map(|creds| creds.into_static())
-        .map_err(|_| {
-            HttpError::with_status(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to parse Patreon credentials",
-            )
-        })
+    facet_json::from_str::<PatreonCredentials>(&pat_creds_payload).map_err(|_| {
+        HttpError::with_status(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Failed to parse Patreon credentials",
+        )
+    })
 }
 
 fn get_github_credentials(
@@ -187,14 +185,12 @@ fn get_github_credentials(
             )
         })?;
 
-    facet_json::from_str::<GitHubCredentials>(&github_creds)
-        .map(|creds| creds.into_static())
-        .map_err(|_| {
-            HttpError::with_status(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to parse GitHub credentials",
-            )
-        })
+    facet_json::from_str::<GitHubCredentials>(&github_creds).map_err(|_| {
+        HttpError::with_status(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Failed to parse GitHub credentials",
+        )
+    })
 }
 
 // #[axum::debug_handler]
@@ -372,7 +368,6 @@ async fn revision_upload_revid(
 
     // Load the revision from JSON
     let pak: conflux::Pak = facet_json::from_str(std::str::from_utf8(&payload)?)?;
-    let pak = pak.into_static();
 
     // Spawn a background task to handle upload, DB insertion, and notification
     tokio::spawn(async move {

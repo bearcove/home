@@ -4,6 +4,7 @@ use axum::body::Bytes;
 use axum::extract::ws;
 use axum::http::StatusCode;
 use eyre::eyre;
+use facet::Facet;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::mpsc;
@@ -50,7 +51,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
         match msg {
             ws::Message::Text(text) => {
                 let message: WebSocketMessage =
-                    facet_json::from_str(&text).map_err(|e| e.into_static())?;
+                    facet_json::from_str(&text).map_err(|e| e.into_owned())?;
                 match message {
                     WebSocketMessage::Headers(h) => {
                         headers = Some(h);
@@ -125,7 +126,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
 }
 
 async fn json_to_socket(socket: &mut ws::WebSocket, payload: &impl Facet<'_>) -> eyre::Result<()> {
-    let json_string = facet_json::to_string(payload)?;
+    let json_string = facet_json::to_string(payload);
     socket.send(ws::Message::text(json_string)).await?;
     Ok(())
 }

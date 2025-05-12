@@ -8,6 +8,8 @@ use axum::{
 };
 use content_type::ContentType;
 use eyre::Report;
+use facet::Facet;
+use facet_json::DeserError;
 use libterm::FormatAnsiStyle;
 use std::{borrow::Cow, sync::Arc};
 use tracing::error;
@@ -26,12 +28,12 @@ impl<T: IntoResponse> IntoReply for T {
 
 pub struct FacetJson<T>(pub T);
 
-impl<T> IntoReply for FacetJson<T>
+impl<'facet, T> IntoReply for FacetJson<T>
 where
-    T: DynSerialize,
+    T: Facet<'facet>,
 {
     fn into_reply(self) -> Reply {
-        let payload = facet_json::to_vec(&self.0)?;
+        let payload = facet_json::to_string(&self.0);
         (
             StatusCode::OK,
             [(CONTENT_TYPE, ContentType::JSON.as_str())],
@@ -126,6 +128,12 @@ impl_from!(r2d2::Error);
 impl_from!(rusqlite::Error);
 impl_from!(libobjectstore::Error);
 impl_from!(std::str::Utf8Error);
+
+impl<'a> From<DeserError<'a>> for HttpError {
+    fn from(err: DeserError<'a>) -> Self {
+        Self::from_report(eyre::eyre!("{err}"))
+    }
+}
 
 impl From<Arc<eyre::Report>> for HttpError {
     fn from(err: Arc<eyre::Report>) -> Self {

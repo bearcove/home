@@ -24,6 +24,7 @@ plait::plait! {
 }
 
 /// The result of `load_cub_config`
+#[derive(Facet)]
 pub struct CubConfigBundle {
     pub cc: CubConfig,
     pub tenants: HashMap<TenantDomain, TenantInfo>,
@@ -42,6 +43,7 @@ impl TenantDomain {
         PrettyTenantDomain(self)
     }
 }
+#[derive(Facet)]
 pub struct PrettyTenantDomain(TenantDomain);
 
 impl std::fmt::Display for PrettyTenantDomain {
@@ -94,7 +96,7 @@ pub struct MomConfig {
 }
 
 /// Just enough information to build web/cdn URLs
-#[derive(Debug, Copy, Clone)]
+#[derive(Facet, Debug, Copy, Clone)]
 pub struct WebConfig {
     /// development or production
     pub env: Environment,
@@ -131,8 +133,6 @@ pub struct TenantConfig {
     /// tenant-specific secrets (patreon/github oauth etc.)
     pub secrets: Option<TenantSecrets>,
 }
-
-
 
 impl TenantConfig {
     /// Empty config with just a name
@@ -245,7 +245,7 @@ impl TenantConfig {
 }
 
 /// Info that cub has about a tenant.
-#[derive(Clone)]
+#[derive(Facet, Clone)]
 pub struct TenantInfo {
     /// Where the tenant's data is stored (assets, etc.)
     pub base_dir: Utf8PathBuf,
@@ -432,8 +432,6 @@ pub struct ObjectStorageConfig {
     pub endpoint: Option<S3Endpoint>,
 }
 
-
-
 #[derive(Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[derive(Clone)]
@@ -443,8 +441,6 @@ pub struct TenantSecrets {
     pub github: Option<GitHubSecrets>,
 }
 
-
-
 #[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AwsSecrets {
@@ -452,10 +448,9 @@ pub struct AwsSecrets {
     pub secret_access_key: String,
 }
 
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
+#[repr(u8)]
 pub enum Environment {
     Development,
     Production,
@@ -512,8 +507,6 @@ pub struct PatreonSecrets {
     pub oauth_client_secret: String,
 }
 
-
-
 #[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GitHubSecrets {
@@ -521,16 +514,12 @@ pub struct GitHubSecrets {
     pub oauth_client_secret: String,
 }
 
-
-
 #[derive(Clone, Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RedditSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
 }
-
-
 
 #[derive(Clone, Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -543,8 +532,6 @@ pub struct MomSecrets {
     pub scoped_api_keys: HashMap<MomApiKey, ScopedMomApiKey>,
 }
 
-
-
 pub const MOM_DEV_API_KEY: &MomApiKeyRef = MomApiKeyRef::from_static("mom_KEY_IN_DEV");
 
 #[derive(Clone, Facet, Serialize, Deserialize)]
@@ -553,8 +540,6 @@ pub struct ScopedMomApiKey {
     #[serde(default)]
     pub tenants: Vec<TenantDomain>,
 }
-
-
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Facet)]
 pub struct ByteSize(u64);

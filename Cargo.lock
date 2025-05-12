@@ -3401,6 +3401,7 @@ dependencies = [
  "conflux",
  "credentials",
  "eyre",
+ "facet-json",
  "futures-core",
  "libgithub",
  "libhttpclient",
