@@ -675,16 +675,17 @@ fn load_single_page(
     let res = mod_markdown
         .process_markdown_to_writer(args)
         .wrap_err_with(|| format!("processing markdown for {path:?}"))?;
-    let mut deser = YamlDeserializer::new(res.frontmatter.as_deref().unwrap_or_default());
-    let frontmatter: Frontmatter = deser
-        .deserialize::<FrontmatterIn>()
-        .map_err(|e| {
-            eyre!(
-                "yaml deser error for input path {path:?}: {e:?}\nFull YAML markup:\n{}\nError as display: {e}\n",
-                res.frontmatter.as_deref().unwrap_or_default()
-            )
-        })?
-        .into();
+    // let mut deser = YamlDeserializer::new(res.frontmatter.as_deref().unwrap_or_default());
+    // let frontmatter: Frontmatter = deser
+    //     .deserialize::<FrontmatterIn>()
+    //     .map_err(|e| {
+    //         eyre!(
+    //             "yaml deser error for input path {path:?}: {e:?}\nFull YAML markup:\n{}\nError as display: {e}\n",
+    //             res.frontmatter.as_deref().unwrap_or_default()
+    //         )
+    //     })?
+    //     .into();
+    let frontmatter: Frontmatter = todo!();
 
     let reading_time = res.reading_time;
 

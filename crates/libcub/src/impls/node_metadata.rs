@@ -1,6 +1,8 @@
 use config_types::is_production;
+use facet::Facet;
 use tracing::warn;
 
+#[derive(Facet)]
 pub(crate) struct NodeMetadata {
     #[allow(dead_code)]
     pub(crate) node_type: String,
@@ -14,7 +16,7 @@ pub(crate) async fn load_node_metadata() -> eyre::Result<NodeMetadata> {
     let metadata =
         if let Ok(metadata_content) = fs_err::tokio::read_to_string(node_metadata_path).await {
             found_metadata = true;
-            facet_json::from_str_owned(&metadata_content).map_err(|e| e.into_static())?
+            facet_json::from_str(&metadata_content).map_err(|e| e.into_owned())?
         } else {
             NodeMetadata {
                 node_type: "leader".into(),

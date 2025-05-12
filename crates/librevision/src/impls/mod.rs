@@ -43,7 +43,7 @@ pub fn print_error_to_writer(e: &eyre::Report, writer: &mut impl std::io::Write)
 
 pub(crate) fn serialize_pak(pak: &Pak) -> Vec<u8> {
     // TODO: switch to something else
-    facet_json::to_vec(pak).unwrap()
+    facet_json::to_string(pak).into_bytes()
 }
 
 // Load the initial revision, either from disk or by creating a new one
@@ -164,7 +164,7 @@ pub(crate) async fn load_revision_from_disk(
     let source = fs_err::tokio::read_to_string(&rev_pack_path).await?;
 
     // deserialize it
-    let pak: Pak = facet_json::from_str_owned(&source).map_err(|e| e.into_static())?;
+    let pak: Pak = facet_json::from_str(&source).map_err(|e| e.into_owned())?;
     let rev = load_pak(pak, ti, None, mappings, web).await?;
     Ok(Some(rev))
 }

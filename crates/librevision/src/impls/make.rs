@@ -596,7 +596,7 @@ async fn revision_added(
         input: Input {
             hash: hash.clone(),
             path: path.to_owned(),
-            mtime: Rfc3339(mtime),
+            mtime,
             size: metadata.len,
             content_type,
         },
@@ -835,7 +835,7 @@ pub async fn wake_revision_events(
             let meta_changed = if prev_input.size != metadata.len {
                 tracing::debug!("File size changed: {input_path}");
                 true
-            } else if prev_input.mtime.0 != modtime {
+            } else if prev_input.mtime != modtime {
                 tracing::debug!("File modtime changed: {input_path}");
                 true
             } else {

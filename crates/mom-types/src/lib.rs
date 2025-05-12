@@ -19,6 +19,11 @@ pub trait GlobalStateView: Send + Sync + 'static {
     }
 }
 
+unsafe impl<'a> Facet<'a> for dyn GlobalStateView {
+    const SHAPE: &'static facet::Shape = <()>::SHAPE;
+    const VTABLE: &'static facet::ValueVTable = <()>::VTABLE;
+}
+
 #[derive(Clone, Serialize, Facet)]
 pub struct Sponsors {
     pub sponsors: Vec<String>,

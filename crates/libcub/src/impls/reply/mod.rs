@@ -1,12 +1,14 @@
 use axum::{
     body::Body,
-    http::{header, HeaderName, StatusCode},
+    http::{HeaderName, StatusCode, header},
     response::{IntoResponse, Response},
 };
 use config_types::is_production;
 use conflux::RevisionError;
 use content_type::ContentType;
 use eyre::Report;
+use facet::Facet;
+use facet_json::DeserError;
 use http::header::CONTENT_TYPE;
 use libterm::FormatAnsiStyle;
 use rand::prelude::IndexedRandom;
@@ -45,12 +47,12 @@ impl<T: IntoResponse> IntoLegacyReply for T {
 
 pub struct FacetJson<T>(pub T);
 
-impl<T> IntoLegacyReply for FacetJson<T>
+impl<'facet, T> IntoLegacyReply for FacetJson<T>
 where
-    T: DynSerialize,
+    T: Facet<'facet>,
 {
     fn into_legacy_reply(self) -> LegacyReply {
-        let payload = facet_json::to_vec(&self.0)?;
+        let payload = facet_json::to_string(&self.0);
 
         (
             StatusCode::OK,
@@ -282,6 +284,13 @@ impl_from!(std::string::FromUtf8Error);
 impl From<RevisionError> for LegacyHttpError {
     fn from(err: RevisionError) -> Self {
         Self::from_report(err.into())
+    }
+}
+
+impl From<DeserError<'_>> for LegacyHttpError {
+    fn from(err: DeserError) -> Self {
+        let report = eyre::eyre!("{err:?}");
+        Self::from_report(report)
     }
 }
 

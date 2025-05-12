@@ -1,15 +1,15 @@
-use std::sync::Arc;
-
 use axum::extract::ws;
 use camino::{Utf8Path, Utf8PathBuf};
 use config_types::is_development;
 use conflux::{InputPath, MediaProps, PathMappings};
 use cub_types::CubTenant;
 use eyre::eyre;
+use facet::Facet;
 use futures_core::future::BoxFuture;
 use image_types::ICodec;
 use libmomclient::TranscodingEventListener;
 use mom_types::media_types::{self, TargetFormat, TranscodingProgress};
+use std::sync::Arc;
 use tempfile::TempDir;
 use tokio::{
     fs,
@@ -25,7 +25,8 @@ use crate::impls::{
     reply::{IntoLegacyReply, LegacyReply},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
+#[repr(u8)]
 enum WebSocketMessage {
     Headers(HeadersMessage),
     Commit(CommitMessage),
@@ -37,7 +38,7 @@ enum WebSocketMessage {
     Error(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct HeadersMessage {
     page_input_path: InputPath,
     file_name: String,
@@ -46,13 +47,12 @@ struct HeadersMessage {
     paragraph_byte_offset: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct UploadDoneMessage {
     uploaded_size: u64,
 }
 
-
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct CommitMessage {
     name: String,
     /// displayed after the image (if it's a figure) or on hover
@@ -64,17 +64,18 @@ struct CommitMessage {
     attrlink: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct ConversionDoneMessage {
     file_size: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct ActionDoneMessage {
     done: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
+#[repr(u8)]
 enum Action {
     Replace,
     Append,
@@ -121,7 +122,7 @@ async fn handle_ws_inner(
         match msg {
             ws::Message::Text(text) => {
                 let message: WebSocketMessage =
-                    facet_json::from_str(&text).map_err(|e| e.into_static())?;
+                    facet_json::from_str(&text).map_err(|e| e.into_owned())?;
 
                 match message {
                     WebSocketMessage::Headers(h) => {
@@ -477,14 +478,15 @@ async fn handle_ws_inner(
 
 async fn json_to_socket(
     socket: &mut ws::WebSocket,
-    payload: &impl facet::Facet,
+    payload: &impl facet::Facet<'_>,
 ) -> eyre::Result<()> {
-    let json_string = facet_json::to_string(payload)?;
+    let json_string = facet_json::to_string(payload);
     socket.send(ws::Message::text(json_string)).await?;
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
+#[repr(u8)]
 enum MediaType {
     Image,
     Diagram,

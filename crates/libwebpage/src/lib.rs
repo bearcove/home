@@ -1,10 +1,11 @@
 use autotrait::autotrait;
+use facet::Facet;
 use futures_core::future::BoxFuture;
 // TODO: move me to `image-types` or something to avoid rebuilds
 use image_types::IntrinsicPixels;
 use std::sync::{Arc, LazyLock};
 
-#[derive(Debug, Clone)]
+#[derive(Facet, Debug, Clone)]
 pub struct Image {
     pub url: String,
     pub width: Option<IntrinsicPixels>,
@@ -12,7 +13,7 @@ pub struct Image {
     pub data_url: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Facet, Debug, Clone)]
 pub struct WebpageInfo {
     pub title: Option<String>,
     pub description: Option<String>,

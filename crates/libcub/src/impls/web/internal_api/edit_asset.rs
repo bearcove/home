@@ -1,6 +1,7 @@
 use config_types::is_development;
 use conflux::{InputPath, PathMappings};
 use eyre::Context as _;
+use facet::Facet;
 use http::StatusCode;
 use tracing::warn;
 
@@ -10,6 +11,7 @@ use crate::impls::{
 };
 
 /// Params for editing an asset file, like a diagram source
+#[derive(Facet)]
 struct EditAssetParams {
     // Path to the input asset file to edit
     input_path: InputPath,

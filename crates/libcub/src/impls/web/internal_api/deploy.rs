@@ -4,6 +4,7 @@ use camino::Utf8PathBuf;
 use config_types::{TenantDomain, WebConfig};
 use conflux::{InputPath, Pak, PathMappings};
 use cub_types::{CubTenant, PathMetadata};
+use facet::Facet;
 use libmomclient::MomTenantClient;
 use librevision::{InputEvent, RevisionKind, RevisionSpec};
 use libterm::FormatAnsiStyle;
@@ -20,35 +21,37 @@ pub(super) async fn serve(
     ws.on_upgrade(move |ws| handle_deploy_socket(ws, ts, web))
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
+#[repr(u8)]
 enum DeployAction {
     StartDeploy(StartDeploy),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct StartDeploy {
     ok: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
+#[repr(u8)]
 enum DeployMessage {
     AssetProgress(AssetProgress),
     LogMessage(LogMessage),
     DeployComplete(DeployComplete),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct AssetCount {
     count: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct AssetProgress {
     uploaded: usize,
     total: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 pub struct LogMessage {
     pub(crate) level: Level,
     pub(crate) message: String,
@@ -86,13 +89,14 @@ impl LogMessage {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 struct DeployComplete {
     complete: bool,
     domain: TenantDomain,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Facet)]
+#[repr(u8)]
 pub(crate) enum Level {
     Debug,
     Info,
@@ -100,11 +104,8 @@ pub(crate) enum Level {
     Error,
 }
 
-async fn json_to_socket(
-    socket: &mut ws::WebSocket,
-    payload: &impl Facet,
-) -> eyre::Result<()> {
-    let json_string = facet_json::to_string(payload)?;
+async fn json_to_socket(socket: &mut ws::WebSocket, payload: &impl Facet<'_>) -> eyre::Result<()> {
+    let json_string = facet_json::to_string(payload);
     Ok(socket.send(ws::Message::text(json_string)).await?)
 }
 

@@ -13,7 +13,7 @@ use super::global_state;
 static COOKIE_NAME: &str = "home-credentials";
 
 pub fn auth_bundle_as_cookie(ab: &AuthBundle) -> Cookie<'static> {
-    let mut cookie = Cookie::new(COOKIE_NAME, facet_json::to_string(ab).unwrap());
+    let mut cookie = Cookie::new(COOKIE_NAME, facet_json::to_string(ab));
     auth_bundle_configure_cookie(&mut cookie);
     cookie.set_expires(Some(
         time::OffsetDateTime::now_utc() + time::Duration::days(31),
@@ -49,9 +49,9 @@ pub async fn authbundle_load_from_cookies(cookies: &PrivateCookies<'_>) -> Optio
     };
 
     let now = OffsetDateTime::now_utc();
-    if now < *creds.expires_at {
+    if now < creds.expires_at {
         // credentials aren't expired yet
-        return Some(creds.into_static());
+        return Some(creds);
     }
 
     debug!("Refreshing cookies");
@@ -65,7 +65,7 @@ pub async fn authbundle_load_from_cookies(cookies: &PrivateCookies<'_>) -> Optio
     };
 
     cookies.add(auth_bundle_as_cookie(&creds));
-    Some(creds.into_static())
+    Some(creds)
 }
 
 async fn refresh_credentials(creds: &AuthBundle) -> eyre::Result<AuthBundle> {
@@ -93,5 +93,5 @@ async fn refresh_patreon_credentials(patreon_id: String) -> eyre::Result<AuthBun
         .await
         .inspect_err(|e| warn!("Failed to refresh credentials: {e}"))?;
 
-    Ok(res.auth_bundle.into_static())
+    Ok(res.auth_bundle)
 }

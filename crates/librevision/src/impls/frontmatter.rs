@@ -1,7 +1,8 @@
 use conflux::Route;
+use facet::Facet;
 use time::OffsetDateTime;
 
-#[derive(Debug)]
+#[derive(Facet, Debug)]
 pub struct Frontmatter {
     /// Title of the page
     pub title: String,
@@ -10,10 +11,10 @@ pub struct Frontmatter {
     pub template: String,
 
     /// Publication date in RFC3339 format, e.g. `2023-10-01T12:00:00Z` (UTC)
-    pub date: Rfc3339<OffsetDateTime>,
+    pub date: OffsetDateTime,
 
     /// Last update date, if any
-    pub updated_at: Option<Rfc3339<OffsetDateTime>>,
+    pub updated_at: Option<OffsetDateTime>,
 
     /// If true, page is only visible by admins
     pub draft: bool,
@@ -35,7 +36,7 @@ pub struct Frontmatter {
     pub extra: FrontmatterExtras,
 }
 
-#[derive(Default, Debug)]
+#[derive(Facet, Default, Debug)]
 pub struct FrontmatterExtras {
     // show patreon credits
     pub patreon: bool,
@@ -73,10 +74,10 @@ pub struct FrontmatterIn {
     pub template: Option<String>,
 
     /// Publication date in RFC3339 format, e.g. `2023-10-01T12:00:00Z` (UTC)
-    pub date: Rfc3339<OffsetDateTime>,
+    pub date: OffsetDateTime,
 
     /// Last update date, if any
-    pub updated_at: Option<Rfc3339<OffsetDateTime>>,
+    pub updated_at: Option<OffsetDateTime>,
 
     /// If true, page is only visible by admins
     pub draft: Option<bool>,
@@ -102,8 +103,8 @@ impl From<FrontmatterIn> for Frontmatter {
         Self {
             title: frontmatter_in.title,
             template: frontmatter_in.template.unwrap_or("page.html".into()),
-            date: frontmatter_in.date.0.into(),
-            updated_at: frontmatter_in.updated_at.map(|d| d.0.into()),
+            date: frontmatter_in.date.into(),
+            updated_at: frontmatter_in.updated_at.map(|d| d.into()),
             draft: frontmatter_in.draft.unwrap_or_default(),
             archive: frontmatter_in.archive.unwrap_or_default(),
             draft_code: frontmatter_in.draft_code,

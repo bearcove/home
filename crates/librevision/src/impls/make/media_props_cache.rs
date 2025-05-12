@@ -39,7 +39,7 @@ impl MediaPropsCache {
                 .hits
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             let props: MediaProps =
-                facet_json::from_str(value.value()).map_err(|e| e.into_static())?;
+                facet_json::from_str(value.value()).map_err(|e| e.into_owned())?;
             return Ok(Some(props));
         };
         Ok(None)
@@ -51,7 +51,7 @@ impl MediaPropsCache {
             .open_table(MEDIA_PROPS_CACHE_TABLE)
             .wrap_err("opening media props table for writing")?;
         table
-            .insert(hash.as_str(), facet_json::to_string(props)?.as_str())
+            .insert(hash.as_str(), facet_json::to_string(props).as_str())
             .wrap_err("putting media props into cache")?;
         Ok(())
     }
