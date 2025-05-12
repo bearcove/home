@@ -1,8 +1,10 @@
 use autotrait::autotrait;
 pub use bytes::Bytes;
+use facet::{Facet, PtrConst, Shape};
+use facet_json::DeserError;
+use facet_reflect::Peek;
 use futures_core::{future::BoxFuture, stream::BoxStream};
-use merde::{DynSerialize, MerdeError};
-use std::collections::HashMap;
+use std::collections::{HashMap, binary_heap::PeekMut};
 
 pub use form_urlencoded;
 pub use http::{
@@ -38,12 +40,6 @@ impl std::fmt::Display for Error {
 
 impl From<eyre::Error> for Error {
     fn from(err: eyre::Error) -> Self {
-        Error::Any(err.to_string())
-    }
-}
-
-impl From<merde::MerdeError<'_>> for Error {
-    fn from(err: merde::MerdeError<'_>) -> Self {
         Error::Any(err.to_string())
     }
 }
@@ -269,9 +265,10 @@ impl RequestBuilder for RequestBuilderImpl {
 
     fn json(
         self: Box<Self>,
-        body: &dyn DynSerialize,
-    ) -> Result<Box<dyn RequestBuilder>, MerdeError<'static>> {
-        let body = facet_json::to_vec(body)?;
+        body: &Peek<'_, '_>,
+    ) -> Result<Box<dyn RequestBuilder>, DeserError<'static>> {
+        let body = facet_json::peek_to_string(body);
+
         Ok(self
             .header(
                 HeaderName::from_static("content-type"),
@@ -344,12 +341,16 @@ impl Response for ResponseImpl {
 }
 
 impl dyn Response {
-    pub fn json<T: merde::DeserializeOwned>(
-        self: Box<Self>,
-    ) -> BoxFuture<'static, Result<T, Error>> {
+    pub fn json<T>(self: Box<Self>) -> BoxFuture<'static, Result<T, Error>>
+    where
+        T: for<'a> Facet<'a>,
+    {
         Box::pin(async move {
             let bytes = self.bytes().await?;
-            facet_json::from_bytes_owned(&bytes).map_err(|e| Error::Json(e.to_string()))
+            facet_json::from_str(
+                std::str::from_utf8(&bytes[..]).map_err(|e| Error::Any(e.to_string()))?,
+            )
+            .map_err(|e| Error::Json(e.to_string()))
         })
     }
 }
