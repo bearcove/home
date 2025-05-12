@@ -1,15 +1,17 @@
 use conflux::Viewer;
 use credentials::UserInfo;
 use cub_types::CubTenant;
+use facet::Facet;
 use http::StatusCode;
 
 use crate::impls::{
     credentials::auth_bundle_as_cookie,
     cub_req::CubReqImpl,
-    reply::{IntoLegacyReply, LegacyHttpError, LegacyReply, FacetJson},
+    reply::{FacetJson, IntoLegacyReply, LegacyHttpError, LegacyReply},
 };
 
 /// The userinfo after updating it
+#[derive(Facet)]
 struct UpdatedUserInfo {
     viewer: Viewer,
     user_info: UserInfo,

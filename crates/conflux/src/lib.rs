@@ -13,7 +13,6 @@ use std::{
 // Implement Facet for Rfc3339<OffsetDateTime>
 use time::OffsetDateTime;
 
-use bytes::Bytes;
 use camino::{Utf8Path, Utf8PathBuf};
 use content_type::ContentType;
 use credentials::UserInfo;
@@ -53,6 +52,11 @@ pub trait RevisionView: Send + Sync + 'static {
     fn cachebuster(&self) -> &dyn CacheBuster {
         unimplemented!()
     }
+}
+
+unsafe impl<'a> Facet<'a> for dyn RevisionView {
+    const SHAPE: &'static facet::Shape = <()>::SHAPE;
+    const VTABLE: &'static facet::ValueVTable = <()>::VTABLE;
 }
 
 impl RevisionView for Revision {
@@ -878,7 +882,7 @@ pub struct Pak {
 pub enum Asset {
     // This asset we can serve directly from memory
     Inline {
-        content: Bytes,
+        content: Vec<u8>,
         content_type: ContentType,
     },
 
@@ -1154,6 +1158,7 @@ pub struct Completion {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
+#[repr(u8)]
 pub enum CompletionKind {
     Term,
     Article,

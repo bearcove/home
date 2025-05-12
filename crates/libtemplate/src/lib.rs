@@ -18,8 +18,8 @@ use autotrait::autotrait;
 use closest::{GetOrHelp, ResourceKind};
 use config_types::{TenantInfo, WebConfig, is_production};
 use conflux::{
-    AccessOverride, InputPath, LoadedPage, Media, OffsetDateTime, PageKind, RevisionView, RouteRef,
-    SearchResult, SearchResults, Viewer,
+    AccessOverride, InputPath, LoadedPage, Media, PageKind, RevisionView, RouteRef, SearchResult,
+    SearchResults, Viewer,
 };
 use credentials::UserInfo;
 use eyre::eyre;
@@ -39,6 +39,7 @@ use template_types::{
     CompileArgs, DataObject, DataValue, RenderShortcodeResult, RenderTemplateArgs, Shortcode,
     TemplateCollection,
 };
+use time::OffsetDateTime;
 
 struct ModImpl;
 
@@ -177,11 +178,10 @@ trait AsMinijinjaValue {
     fn mj(self) -> Value;
 }
 
-impl AsMinijinjaValue for Rfc3339<OffsetDateTime> {
+impl AsMinijinjaValue for OffsetDateTime {
     fn mj(self) -> Value {
         Value::from_safe_string(
-            self.0
-                .format(&time::format_description::well_known::Rfc3339)
+            self.format(&time::format_description::well_known::Rfc3339)
                 .unwrap(),
         )
     }
@@ -363,7 +363,7 @@ impl Object for LoadedPageVal {
                 let now = OffsetDateTime::now_utc();
                 let two_years_ago = now.replace_year(now.year() - 2).unwrap();
 
-                if *updated_at <= two_years_ago {
+                if updated_at <= two_years_ago {
                     Value::from(true)
                 } else {
                     Value::from(false)
@@ -388,9 +388,9 @@ impl Object for LoadedPageVal {
                 // 6 months
                 const EXCLUSIVITY_DURATION: Duration = Duration::from_secs(60 * 60 * 24 * 30 * 6);
                 if self.video_info.dual_feature {
-                    let unlocks_at = self.date.0 + EXCLUSIVITY_DURATION;
+                    let unlocks_at = self.date + EXCLUSIVITY_DURATION;
                     if unlocks_at > OffsetDateTime::now_utc() {
-                        Rfc3339(unlocks_at).mj()
+                        unlocks_at.mj()
                     } else {
                         Value::from(false)
                     }

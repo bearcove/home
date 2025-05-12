@@ -116,7 +116,7 @@ impl Mod for ModImpl {
 
                 let expires_at = Instant::now() + Duration::from_secs(token.expires_in);
                 access_token = AccessToken {
-                    token: token.access_token.into(),
+                    token: token.access_token,
                     expires_at,
                 };
                 // store a clone in cache, too

@@ -227,7 +227,7 @@ impl CubReqImpl {
             &mut buffer,
             RenderTemplateArgs {
                 template_name,
-                path: &self.path,
+                path: self.path.clone(),
                 raw_query: self.raw_query(),
                 user_info: auth_bundle.as_ref().map(|creds| creds.user_info.clone()),
                 page: args.page.clone(),

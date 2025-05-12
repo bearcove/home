@@ -4,7 +4,7 @@ use std::{
 };
 
 use config_types::WebConfig;
-use conflux::{InputPath, LoadedPage, RevisionView, RouteRef};
+use conflux::{InputPath, LoadedPage, RevisionView, Route, RouteRef};
 use credentials::UserInfo;
 use facet::Facet;
 use libsearch::Index;
@@ -56,7 +56,7 @@ pub struct RenderTemplateArgs<'a> {
     /// +-------------------------+---+-------------------+
     /// | Path                    |   | Raw Query         |
     /// +-------------------------+---+-------------------+
-    pub path: &'a RouteRef,
+    pub path: Route,
     pub raw_query: &'a str,
 
     /// Revision bundle
