@@ -21,7 +21,6 @@ libhighlight = { path = "../libhighlight" }
 credentials = { path = "../credentials" }
 libhtmlrewrite = { path = "../libhtmlrewrite" }
 time = { version = "0.3.41", features = ["formatting", "parsing"] }
-merde = { workspace = true, features = ["time"] }
 libmedia = { version = "0.1.0", path = "../libmedia" }
 libmarkdown = { version = "0.1.0", path = "../libmarkdown" }
 percent-encoding = "2.3.1"

@@ -159,27 +159,21 @@ impl Mod for ModImpl {
                 data: Listing<'s>,
             }
 
-            merde::derive! {
-                impl (Serialize, Deserialize) for struct Info<'s> { data }
-            }
+
 
             #[derive(Debug)]
             struct Listing<'s> {
                 children: Vec<Link<'s>>,
             }
 
-            merde::derive! {
-                impl (Serialize, Deserialize) for struct Listing<'s> { children }
-            }
+
 
             #[derive(Debug)]
             struct Link<'s> {
                 data: LinkData<'s>,
             }
 
-            merde::derive! {
-                impl (Serialize, Deserialize) for struct Link<'s> { data }
-            }
+
 
             #[derive(Debug)]
             struct LinkData<'s> {
@@ -187,9 +181,7 @@ impl Mod for ModImpl {
                 permalink: CowStr<'s>,
             }
 
-            merde::derive! {
-                impl (Serialize, Deserialize) for struct LinkData<'s> { subreddit, permalink }
-            }
+
 
             let info = res.json::<Info>().await?;
 

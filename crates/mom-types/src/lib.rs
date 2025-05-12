@@ -24,10 +24,6 @@ pub struct Sponsors {
     pub sponsors: Vec<String>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct Sponsors { sponsors }
-}
-
 #[derive(Debug, Clone)]
 pub struct TranscodeJobInfo {
     pub started: Instant,
@@ -48,10 +44,6 @@ pub struct TranscodeParams {
     pub output: ObjectStoreKey,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TranscodeParams { input, target_format, output }
-}
-
 #[derive(Facet)]
 #[repr(u8)]
 pub enum TranscodeResponse {
@@ -60,23 +52,9 @@ pub enum TranscodeResponse {
     TooManyRequests(TranscodeResponseTooManyRequests),
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum TranscodeResponse
-    externally_tagged
-    {
-        "Done" => Done,
-        "AlreadyInProgress" => AlreadyInProgress,
-        "TooManyRequests" => TooManyRequests,
-    }
-}
-
 #[derive(Facet)]
 pub struct TranscodeResponseDone {
     pub output_size: usize,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TranscodeResponseDone { output_size }
 }
 
 #[derive(Debug, Facet)]
@@ -84,16 +62,10 @@ pub struct TranscodeResponseAlreadyInProgress {
     pub info: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TranscodeResponseAlreadyInProgress { info }
-}
-
 #[derive(Facet)]
 pub struct TranscodeResponseTooManyRequests {}
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TranscodeResponseTooManyRequests {}
-}
+
 
 #[derive(Debug, Clone)]
 pub struct DeriveJobInfo {
@@ -109,10 +81,6 @@ pub struct DeriveParams {
 
     // derivation to compute
     pub derivation: Derivation,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DeriveParams { input, derivation }
 }
 
 impl DeriveParams {
@@ -144,16 +112,6 @@ pub enum DeriveResponse {
     TooManyRequests(DeriveResponseTooManyRequests),
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum DeriveResponse
-    externally_tagged
-    {
-        "Done" => Done,
-        "AlreadyInProgress" => AlreadyInProgress,
-        "TooManyRequests" => TooManyRequests,
-    }
-}
-
 #[derive(Facet)]
 pub struct DeriveResponseDone {
     /// How large the output was
@@ -163,18 +121,14 @@ pub struct DeriveResponseDone {
     pub dest: ObjectStoreKey,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DeriveResponseDone { output_size, dest }
-}
+
 
 #[derive(Debug, Facet)]
 pub struct DeriveResponseAlreadyInProgress {
     pub info: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DeriveResponseAlreadyInProgress { info }
-}
+
 
 #[derive(Facet)]
 pub struct DeriveResponseTooManyRequests {}
@@ -471,22 +425,9 @@ impl std::fmt::Debug for TenantEventPayload {
     }
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum TenantEventPayload
-    externally_tagged
-    {
-        "RevisionChanged" => RevisionChanged,
-        "SponsorsUpdated" => SponsorsUpdated,
-    }
-}
-
 #[derive(Debug, Facet)]
 pub struct GoodMorning {
     pub initial_states: HashMap<TenantDomain, TenantInitialState>,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct GoodMorning { initial_states }
 }
 
 #[derive(Facet)]
@@ -502,10 +443,6 @@ pub struct TenantInitialState {
 
     /// if mom and cub are colocated, they can share a data dir (especially important in dev)
     pub base_dir: Option<Utf8PathBuf>,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct TenantInitialState { pak, sponsors, tc, base_dir }
 }
 
 impl std::fmt::Debug for TenantInitialState {

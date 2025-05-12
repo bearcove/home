@@ -12,7 +12,7 @@ use tokio::sync::mpsc;
 use super::{MomTenantState, Reply, TenantExtractor};
 use crate::impls::{
     deriver::{acquire_ffmpeg_encode_permit, transcode_media_data},
-    site::{IntoReply, MerdeJson},
+    site::{IntoReply, FacetJson},
 };
 use mom_types::{
     TranscodeJobInfo, TranscodeParams, TranscodeResponse, TranscodeResponseAlreadyInProgress,
@@ -51,7 +51,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
         match msg {
             ws::Message::Text(text) => {
                 let message: WebSocketMessage =
-                    merde::json::from_str(&text).map_err(|e| e.into_static())?;
+                    facet_json::from_str(&text).map_err(|e| e.into_static())?;
                 match message {
                     WebSocketMessage::Headers(h) => {
                         headers = Some(h);
@@ -129,7 +129,7 @@ async fn json_to_socket(
     socket: &mut ws::WebSocket,
     payload: &impl merde::Serialize,
 ) -> eyre::Result<()> {
-    let json_string = merde::json::to_string(payload)?;
+    let json_string = facet_json::to_string(payload)?;
     socket.send(ws::Message::text(json_string)).await?;
     Ok(())
 }
@@ -139,7 +139,7 @@ pub(crate) async fn transcode(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
     body: String,
 ) -> Reply {
-    let params: TranscodeParams = merde::json::from_str(&body).unwrap();
+    let params: TranscodeParams = facet_json::from_str(&body).unwrap();
 
     let start_time = Instant::now();
     let permit = acquire_ffmpeg_encode_permit().await;
@@ -150,7 +150,7 @@ pub(crate) async fn transcode(
         let mut locks = ts.transcode_jobs.lock();
         if let Some(info) = locks.get(&params) {
             tracing::info!("Transcode already in progress: {info:?}");
-            let mut res = MerdeJson(TranscodeResponse::AlreadyInProgress(
+            let mut res = FacetJson(TranscodeResponse::AlreadyInProgress(
                 TranscodeResponseAlreadyInProgress {
                     info: format!("Transcode already in progress: {info:#?}"),
                 },
@@ -242,5 +242,5 @@ pub(crate) async fn transcode(
     // Create a response
     let response = TranscodeResponse::Done(TranscodeResponseDone { output_size });
 
-    MerdeJson(response).into_reply()
+    FacetJson(response).into_reply()
 }

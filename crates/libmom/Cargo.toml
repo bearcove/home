@@ -9,7 +9,6 @@ crate-type = ["rlib"]
 [dependencies]
 camino = { version = "1.1.9" }
 conflux = { path = "../../crates/conflux" }
-merde = { workspace = true, features = ["json", "rusqlite", "serde", "camino"] }
 liberrhandling = { path = "../../crates/liberrhandling" }
 libobjectstore = { path = "../../crates/libobjectstore" }
 libterm = { path = "../../crates/libterm" }

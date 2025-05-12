@@ -15,10 +15,6 @@ struct EditAssetParams {
     input_path: InputPath,
 }
 
-merde::derive! {
-    impl (Deserialize) for struct EditAssetParams { input_path }
-}
-
 /// Opens an asset file in the default editor for editing
 pub(crate) async fn serve_edit_asset(tr: CubReqImpl, body: axum::body::Bytes) -> LegacyReply {
     if !is_development() {
@@ -29,7 +25,7 @@ pub(crate) async fn serve_edit_asset(tr: CubReqImpl, body: axum::body::Bytes) ->
         .into_legacy_reply();
     }
 
-    let params: EditAssetParams = merde::json::from_str(
+    let params: EditAssetParams = facet_json::from_str(
         std::str::from_utf8(&body[..]).wrap_err("deserializing body of /edit-asset")?,
     )?;
 

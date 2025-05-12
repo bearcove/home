@@ -517,10 +517,6 @@ pub struct PatreonCredentials {
     pub version: Option<String>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonCredentials { access_token, refresh_token, expires_in, scope, token_type, version }
-}
-
 pub fn test_patreon_renewal() -> bool {
     std::env::var("TEST_PATREON_RENEWAL").is_ok()
 }
@@ -546,17 +542,9 @@ pub struct PatreonCallbackArgs<'s> {
     pub raw_query: CowStr<'s>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonCallbackArgs<'s> { raw_query }
-}
-
 #[derive(Debug, Clone)]
 pub struct PatreonCallbackResponse {
     pub auth_bundle: AuthBundle,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonCallbackResponse { auth_bundle }
 }
 
 #[derive(Debug, Clone)]
@@ -564,15 +552,9 @@ pub struct PatreonRefreshCredentialsArgs {
     pub patreon_id: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonRefreshCredentialsArgs { patreon_id }
-}
+
 
 #[derive(Debug, Clone)]
 pub struct PatreonRefreshCredentials {
     pub auth_bundle: AuthBundle,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct PatreonRefreshCredentials { auth_bundle }
 }

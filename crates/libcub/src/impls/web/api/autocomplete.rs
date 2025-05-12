@@ -5,7 +5,7 @@ use cub_types::CubTenant;
 use crate::impls::{
     cub_req::CubReqImpl,
     global_state::global_state,
-    reply::{IntoLegacyReply, LegacyReply, MerdeJson},
+    reply::{IntoLegacyReply, LegacyReply, FacetJson},
 };
 
 pub(crate) async fn serve_autocomplete(
@@ -22,5 +22,5 @@ pub(crate) async fn serve_autocomplete(
 
     let results = index.autocomplete(irev.rev.as_ref(), &tr.viewer()?, q, global_state().web);
 
-    MerdeJson(results).into_legacy_reply()
+    FacetJson(results).into_legacy_reply()
 }

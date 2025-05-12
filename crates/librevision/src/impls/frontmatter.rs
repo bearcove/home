@@ -123,21 +123,6 @@ impl DeserOpinions for FrontMatterInOpinions {
     }
 }
 
-merde::derive! {
-    impl (Deserialize) for struct FrontmatterIn {
-        title,
-        template,
-        date,
-        updated_at,
-        draft,
-        archive,
-        draft_code,
-        aliases,
-        tags,
-        extra
-    } via FrontMatterInOpinions
-}
-
 impl From<FrontmatterIn> for Frontmatter {
     fn from(frontmatter_in: FrontmatterIn) -> Self {
         Self {
@@ -166,20 +151,6 @@ pub struct FrontmatterExtrasIn {
     pub youtube: Option<String>,
     pub duration: Option<u64>,
     pub ongoing: Option<bool>,
-}
-
-merde::derive! {
-    impl (Deserialize) for struct FrontmatterExtrasIn {
-        patreon,
-        hide_comments,
-        hide_patreon,
-        hide_metadata,
-        tube,
-        dual_feature,
-        youtube,
-        duration,
-        ongoing
-    }
 }
 
 impl From<FrontmatterExtrasIn> for FrontmatterExtras {

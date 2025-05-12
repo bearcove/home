@@ -8,7 +8,7 @@ use std::sync::{LazyLock, Mutex};
 
 use crate::impls::cub_req::CubReqImpl;
 use crate::impls::global_state;
-use crate::impls::reply::{IntoLegacyReply, LegacyHttpError, LegacyReply, MerdeJson};
+use crate::impls::reply::{IntoLegacyReply, LegacyHttpError, LegacyReply, FacetJson};
 
 static LINK_CACHE: LazyLock<Mutex<LinkCache>> = LazyLock::new(|| Mutex::new(LinkCache::new()));
 
@@ -40,7 +40,7 @@ pub(crate) async fn serve_link_preview(
 
     if let Some(cached_info) = LINK_CACHE.lock().unwrap().get(&href) {
         tracing::info!("Cache hit for {href}, returning cached information");
-        let mut response = MerdeJson(cached_info).into_legacy_reply()?;
+        let mut response = FacetJson(cached_info).into_legacy_reply()?;
         add_cache_control_headers(&mut response);
         return Ok(response);
     }
@@ -159,7 +159,7 @@ pub(crate) async fn serve_link_preview(
         .lock()
         .unwrap()
         .insert(href.clone(), info.clone());
-    let mut response = MerdeJson(info).into_legacy_reply()?;
+    let mut response = FacetJson(info).into_legacy_reply()?;
     add_cache_control_headers(&mut response);
     Ok(response)
 }

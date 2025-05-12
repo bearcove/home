@@ -271,7 +271,7 @@ impl RequestBuilder for RequestBuilderImpl {
         self: Box<Self>,
         body: &dyn DynSerialize,
     ) -> Result<Box<dyn RequestBuilder>, MerdeError<'static>> {
-        let body = merde::json::to_vec(body)?;
+        let body = facet_json::to_vec(body)?;
         Ok(self
             .header(
                 HeaderName::from_static("content-type"),
@@ -349,7 +349,7 @@ impl dyn Response {
     ) -> BoxFuture<'static, Result<T, Error>> {
         Box::pin(async move {
             let bytes = self.bytes().await?;
-            merde::json::from_bytes_owned(&bytes).map_err(|e| Error::Json(e.to_string()))
+            facet_json::from_bytes_owned(&bytes).map_err(|e| Error::Json(e.to_string()))
         })
     }
 }

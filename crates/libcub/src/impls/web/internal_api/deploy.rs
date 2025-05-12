@@ -25,22 +25,9 @@ enum DeployAction {
     StartDeploy(StartDeploy),
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum DeployAction
-    externally_tagged {
-        "startDeploy" => StartDeploy,
-    }
-}
-
 #[derive(Debug)]
 struct StartDeploy {
     ok: bool,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct StartDeploy {
-        ok
-    }
 }
 
 #[derive(Debug)]
@@ -105,40 +92,6 @@ struct DeployComplete {
     domain: TenantDomain,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum DeployMessage
-    externally_tagged {
-        "assetProgress" => AssetProgress,
-        "logMessage" => LogMessage,
-        "deployComplete" => DeployComplete,
-    }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct AssetCount {
-        count
-    }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct AssetProgress {
-        uploaded,
-        total
-    }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct DeployComplete {
-        complete, domain
-    }
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct LogMessage {
-        level, message
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Level {
     Debug,
@@ -147,20 +100,11 @@ pub(crate) enum Level {
     Error,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for enum Level string_like {
-        "debug" => Debug,
-        "info" => Info,
-        "warn" => Warn,
-        "error" => Error,
-    }
-}
-
 async fn json_to_socket(
     socket: &mut ws::WebSocket,
-    payload: &(dyn merde::DynSerialize + Sync),
+    payload: &impl Facet,
 ) -> eyre::Result<()> {
-    let json_string = merde::json::to_string(payload)?;
+    let json_string = facet_json::to_string(payload)?;
     Ok(socket.send(ws::Message::text(json_string)).await?)
 }
 

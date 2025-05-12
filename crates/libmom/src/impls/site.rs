@@ -1,8 +1,8 @@
 use axum::{
     body::Body,
     http::{
-        StatusCode,
         header::{self, CONTENT_TYPE},
+        StatusCode,
     },
     response::{IntoResponse, Response},
 };
@@ -25,14 +25,14 @@ impl<T: IntoResponse> IntoReply for T {
     }
 }
 
-pub struct MerdeJson<T>(pub T);
+pub struct FacetJson<T>(pub T);
 
-impl<T> IntoReply for MerdeJson<T>
+impl<T> IntoReply for FacetJson<T>
 where
     T: DynSerialize,
 {
     fn into_reply(self) -> Reply {
-        let payload = merde::json::to_vec(&self.0)?;
+        let payload = facet_json::to_vec(&self.0)?;
         (
             StatusCode::OK,
             [(CONTENT_TYPE, ContentType::JSON.as_str())],

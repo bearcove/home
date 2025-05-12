@@ -20,14 +20,6 @@ pub struct WebpageInfo {
     pub image: Option<Image>,
 }
 
-merde::derive! {
-    impl (Serialize) for struct WebpageInfo { title, description, url, image }
-}
-
-merde::derive! {
-    impl (Serialize) for struct Image { url, width, height, data_url }
-}
-
 struct ModImpl {
     client: Arc<dyn libhttpclient::HttpClient>,
 }

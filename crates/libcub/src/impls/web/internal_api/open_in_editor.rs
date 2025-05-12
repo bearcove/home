@@ -20,10 +20,6 @@ struct OpenInEditorParams {
     line_number: Option<usize>,
 }
 
-merde::derive! {
-    impl (Deserialize) for struct OpenInEditorParams { input_path, byte_offset, line_number }
-}
-
 /// Opens a file in the configured text editor at the specified line number based on byte offset or line number
 pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Bytes) -> LegacyReply {
     if !is_development() {
@@ -34,7 +30,7 @@ pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Byte
         .into_legacy_reply();
     }
 
-    let params: OpenInEditorParams = merde::json::from_str(
+    let params: OpenInEditorParams = facet_json::from_str(
         std::str::from_utf8(&body[..]).wrap_err("deserializing body of /open-in-editor")?,
     )?;
 

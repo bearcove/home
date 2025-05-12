@@ -77,18 +77,12 @@ pub struct GitHubCallbackArgs {
     pub raw_query: String,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubCallbackArgs { raw_query }
-}
+
 
 #[derive(Debug, Clone)]
 pub struct GitHubCallbackResponse {
     pub auth_bundle: AuthBundle,
     pub github_credentials: GitHubCredentials,
-}
-
-merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubCallbackResponse { auth_bundle, github_credentials }
 }
 
 #[derive(Debug, Clone)]
@@ -101,9 +95,7 @@ pub struct GitHubCredentials {
     pub token_type: Option<String>,
 }
 
-merde::derive! {
-    impl (Serialize, Deserialize) for struct GitHubCredentials { access_token, scope, token_type }
-}
+
 /// The purpose of the login (to determine the OAuth scopes needed for the login)
 pub enum GitHubLoginPurpose {
     // admin login

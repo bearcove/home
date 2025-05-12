@@ -22,7 +22,7 @@ use merde::IntoStatic;
 use mom_types::{ListMissingArgs, ListMissingResponse, TenantEventPayload};
 use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
 
-use crate::impls::site::{HttpError, IntoReply, MerdeJson, Reply};
+use crate::impls::site::{HttpError, IntoReply, FacetJson, Reply};
 
 use super::tenant_extractor::TenantExtractor;
 
@@ -51,7 +51,7 @@ async fn patreon_callback(
     body: Bytes,
 ) -> Reply {
     let body = std::str::from_utf8(&body[..])?;
-    let args: PatreonCallbackArgs = merde::json::from_str(body)?;
+    let args: PatreonCallbackArgs = facet_json::from_str(body)?;
 
     let mod_patreon = libpatreon::load();
     let pool = &ts.pool;
@@ -77,7 +77,7 @@ async fn patreon_callback(
         }
         None => None,
     };
-    MerdeJson(res).into_reply()
+    FacetJson(res).into_reply()
 }
 
 async fn patreon_refresh_credentials(
@@ -85,7 +85,7 @@ async fn patreon_refresh_credentials(
     body: Bytes,
 ) -> Reply {
     let args =
-        merde::json::from_str::<PatreonRefreshCredentialsArgs>(std::str::from_utf8(&body[..])?)?;
+        facet_json::from_str::<PatreonRefreshCredentialsArgs>(std::str::from_utf8(&body[..])?)?;
     let patreon_id = args.patreon_id;
 
     let site_credentials = ts
@@ -100,7 +100,7 @@ async fn patreon_refresh_credentials(
             )
         })?;
 
-    MerdeJson(PatreonRefreshCredentials {
+    FacetJson(PatreonRefreshCredentials {
         auth_bundle: site_credentials,
     })
     .into_reply()
@@ -111,7 +111,7 @@ async fn github_callback(
     body: Bytes,
 ) -> Reply {
     let body = std::str::from_utf8(&body[..])?;
-    let args: GitHubCallbackArgs = merde::json::from_str(body)?;
+    let args: GitHubCallbackArgs = facet_json::from_str(body)?;
 
     let mod_github = libgithub::load();
 
@@ -131,7 +131,7 @@ async fn github_callback(
                 "INSERT OR REPLACE INTO github_credentials (github_id, data) VALUES (?1, ?2)",
                 rusqlite::params![
                     site_creds.user_info.profile.github_id,
-                    merde::json::to_string(&github_creds)?
+                    facet_json::to_string(&github_creds)?
                 ],
             )?;
             Some(GitHubCallbackResponse {
@@ -141,7 +141,7 @@ async fn github_callback(
         }
         None => None,
     };
-    MerdeJson(res).into_reply()
+    FacetJson(res).into_reply()
 }
 
 fn get_patreon_credentials(
@@ -161,7 +161,7 @@ fn get_patreon_credentials(
             )
         })?;
 
-    merde::json::from_str::<PatreonCredentials>(&pat_creds_payload)
+    facet_json::from_str::<PatreonCredentials>(&pat_creds_payload)
         .map(|creds| creds.into_static())
         .map_err(|_| {
             HttpError::with_status(
@@ -188,7 +188,7 @@ fn get_github_credentials(
             )
         })?;
 
-    merde::json::from_str::<GitHubCredentials>(&github_creds)
+    facet_json::from_str::<GitHubCredentials>(&github_creds)
         .map(|creds| creds.into_static())
         .map_err(|_| {
             HttpError::with_status(
@@ -203,7 +203,7 @@ async fn auth_bundle_update(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
     body: Bytes,
 ) -> Reply {
-    let auth_bundle: AuthBundle = merde::json::from_str(std::str::from_utf8(&body[..])?)?;
+    let auth_bundle: AuthBundle = facet_json::from_str(std::str::from_utf8(&body[..])?)?;
 
     let new_auth_bundle: AuthBundle = if let Some(patreon_id) =
         auth_bundle.user_info.profile.patreon_id
@@ -243,14 +243,14 @@ async fn auth_bundle_update(
         .into_reply();
     };
 
-    MerdeJson(new_auth_bundle).into_reply()
+    FacetJson(new_auth_bundle).into_reply()
 }
 
 async fn objectstore_list_missing(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
     body: Bytes,
 ) -> Reply {
-    let args: ListMissingArgs = merde::json::from_str(std::str::from_utf8(&body[..])?)?;
+    let args: ListMissingArgs = facet_json::from_str(std::str::from_utf8(&body[..])?)?;
     let mut conn = ts.pool.get()?;
 
     // first do a local lookup
@@ -327,7 +327,7 @@ async fn objectstore_list_missing(
         missing
     );
 
-    MerdeJson(ListMissingResponse { missing }).into_reply()
+    FacetJson(ListMissingResponse { missing }).into_reply()
 }
 
 async fn objectstore_put_key(
@@ -372,7 +372,7 @@ async fn revision_upload_revid(
     tracing::debug!(%revision_id, "Uploading revision package");
 
     // Load the revision from JSON
-    let pak: conflux::Pak = merde::json::from_str(std::str::from_utf8(&payload)?)?;
+    let pak: conflux::Pak = facet_json::from_str(std::str::from_utf8(&payload)?)?;
     let pak = pak.into_static();
 
     // Spawn a background task to handle upload, DB insertion, and notification
