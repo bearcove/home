@@ -17,5 +17,6 @@ config-types = { version = "0.1.0", path = "../config-types" }
 conflux = { version = "0.1.0", path = "../conflux" }
 credentials = { version = "0.1.0", path = "../credentials" }
 eyre.workspace = true
+facet = { workspace = true }
 libsearch = { version = "0.1.0", path = "../libsearch" }
 mom-types = { version = "0.1.0", path = "../mom-types" }
