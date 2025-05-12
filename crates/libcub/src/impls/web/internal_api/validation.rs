@@ -3,6 +3,7 @@ use std::sync::Arc;
 use axum::extract::ws;
 use conflux::{AbsoluteUrl, Href, LoadedPage, Route};
 use cub_types::CubTenant;
+use facet::Facet;
 use futures_util::SinkExt;
 use http::Uri;
 use libhttpclient::{HttpClient, StatusCode};
@@ -12,7 +13,8 @@ use crate::impls::{CubTenantImpl, cub_req::CubReqImpl, global_state};
 
 use super::deploy::{Level, LogMessage};
 
-#[derive(Debug)]
+#[derive(Facet, Debug)]
+#[repr(u8)]
 enum ValidationMessage {
     LogMessage(LogMessage),
     RouteResult(RouteResult),
@@ -36,25 +38,25 @@ impl_from!(ValidationComplete);
 impl_from!(BadLink);
 impl_from!(MathError);
 
-#[derive(Debug)]
+#[derive(Facet, Debug)]
 struct RouteResult {
     url: AbsoluteUrl,
     status: u16,
 }
 
-#[derive(Debug)]
+#[derive(Facet, Debug)]
 struct ValidationComplete {
     num_errors: u32,
 }
 
-#[derive(Debug)]
+#[derive(Facet, Debug)]
 struct BadLink {
     route: Route,
     href: Href,
     reason: String,
 }
 
-#[derive(Debug)]
+#[derive(Facet, Debug)]
 struct MathError {
     route: Route,
 }
@@ -78,7 +80,7 @@ impl MsgSender<'_> {
 
         if let Err(e) = self
             .sock
-            .send(ws::Message::text(facet_json::to_string(&msg).unwrap()))
+            .send(ws::Message::text(facet_json::to_string(&msg)))
             .await
         {
             tracing::error!("Failed to send WebSocket message: {}", e);

@@ -6,11 +6,13 @@ use config_types::is_development;
 use conflux::{InputPath, PathMappings};
 use cub_types::CubReq;
 use eyre::Context as _;
+use facet::Facet;
 use http::StatusCode;
 use tracing::warn;
 
 /// Params for opening a file in editor based on its input path
 /// and possibly a byte offset or line number to position the cursor at the right line
+#[derive(Facet)]
 struct OpenInEditorParams {
     // Path to the input file to open
     input_path: InputPath,

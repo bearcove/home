@@ -18,7 +18,7 @@ async fn handle_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>) {
     loop {
         tokio::select! {
             Ok(event) = bx.recv() => {
-                let msg = axum::extract::ws::Message::text(facet_json::to_string(&event).unwrap());
+                let msg = axum::extract::ws::Message::text(facet_json::to_string(&event));
                 if let Err(e) = socket.send(msg).await {
                     tracing::error!("Failed to send WebSocket message: {}", e);
                     break;
