@@ -14,3 +14,4 @@ futures-core = "0.3.31"
 eyre.workspace = true
 autotrait = "0.2.1"
 config-types = { version = "0.1.0", path = "../config-types" }
+facet.workspace = true

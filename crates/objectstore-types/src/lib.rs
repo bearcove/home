@@ -1,6 +1,5 @@
 plait::plait! {
     with crates {
-        merde
         rusqlite
     }
 

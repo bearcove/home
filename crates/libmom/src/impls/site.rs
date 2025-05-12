@@ -1,15 +1,14 @@
 use axum::{
     body::Body,
     http::{
-        header::{self, CONTENT_TYPE},
         StatusCode,
+        header::{self, CONTENT_TYPE},
     },
     response::{IntoResponse, Response},
 };
 use content_type::ContentType;
 use eyre::Report;
 use libterm::FormatAnsiStyle;
-use merde::{DynSerialize, IntoStatic as _};
 use std::{borrow::Cow, sync::Arc};
 use tracing::error;
 
@@ -127,12 +126,6 @@ impl_from!(r2d2::Error);
 impl_from!(rusqlite::Error);
 impl_from!(libobjectstore::Error);
 impl_from!(std::str::Utf8Error);
-
-impl From<merde::MerdeError<'_>> for HttpError {
-    fn from(err: merde::MerdeError<'_>) -> Self {
-        Self::from_report(err.into_static().into())
-    }
-}
 
 impl From<Arc<eyre::Report>> for HttpError {
     fn from(err: Arc<eyre::Report>) -> Self {

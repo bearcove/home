@@ -1,5 +1,4 @@
 use conflux::Route;
-use merde::{DeserOpinions, time::Rfc3339};
 use time::OffsetDateTime;
 
 #[derive(Debug)]
@@ -23,6 +22,7 @@ pub struct Frontmatter {
     pub archive: bool,
 
     /// Code used to allow access to a draft
+    #[facet(rename = "draft-code")]
     pub draft_code: Option<String>,
 
     /// Alternative routes for this page (for redirects)
@@ -95,32 +95,6 @@ pub struct FrontmatterIn {
 
     /// Additional metadata for the page
     pub extra: Option<FrontmatterExtrasIn>,
-}
-
-// TODO: implement defaults via merde's default mechanism
-
-struct FrontMatterInOpinions;
-
-impl DeserOpinions for FrontMatterInOpinions {
-    fn deny_unknown_fields(&self) -> bool {
-        false
-    }
-
-    fn map_key_name<'s>(&self, key: merde::CowStr<'s>) -> merde::CowStr<'s> {
-        if key == "draft-code" {
-            "draft_code".into()
-        } else {
-            key
-        }
-    }
-
-    fn default_field_value<'borrow>(
-        &self,
-        _key: &'borrow str,
-        _slot: merde::FieldSlot<'_, 'borrow>,
-    ) {
-        // don't fill in
-    }
 }
 
 impl From<FrontmatterIn> for Frontmatter {

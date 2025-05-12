@@ -13,7 +13,6 @@ use libhttpclient::{
     HeaderMap, HeaderValue, Uri,
     header::{self},
 };
-use merde::IntoStatic;
 use std::{sync::Arc, time::Instant};
 use tracing::info;
 

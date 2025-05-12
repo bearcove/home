@@ -16,7 +16,6 @@ use itertools::Itertools;
 use libhttpclient::HttpClient;
 use libobjectstore::ObjectStore;
 use libpatreon::{ForcePatreonRefresh, PatreonCredentials, PatreonStore, test_patreon_renewal};
-use merde::IntoStatic;
 use mom_types::Sponsors;
 use objectstore_types::ObjectStoreKey;
 use owo_colors::OwoColorize;

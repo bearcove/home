@@ -5,8 +5,8 @@ use config_types::WebConfig;
 use conflux::{InputPath, InputPathRef, RevisionView, RouteRef, Viewer};
 use itertools::Itertools;
 use minijinja::{Environment, Error, Value, value::Kwargs};
-use rand::seq::SliceRandom;
 use rand::prelude::IndexedRandom;
+use rand::seq::SliceRandom;
 use time::OffsetDateTime;
 
 use crate::{
@@ -234,7 +234,7 @@ fn downcase(input: String) -> Result<String, Error> {
 }
 
 fn to_json(value: Value) -> Result<String, Error> {
-    // TODO: impl merde's `Serialize` for a wrapper of `Value` I guess.
+    // TODO: impl facet for a wrapper of `Value` I guess.
     serde_json::to_string_pretty(&value).map_err(|e| {
         Error::new(
             minijinja::ErrorKind::InvalidOperation,

@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::{AuthBundle, Profile, Tier, UserInfo};
 use eyre::Result;
+use facet::Facet;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
 use time::OffsetDateTime;
 use tracing::debug;
@@ -61,41 +62,48 @@ impl ModImpl {
         let mut credited_patrons: HashSet<String> = Default::default();
         let query = include_str!("github_sponsors.graphql");
 
+        #[derive(Facet)]
         struct GraphqlQuery {
             query: String,
             variables: Variables,
         }
 
+        #[derive(Facet)]
         struct GraphqlResponse {
             data: Option<GraphqlResponseData>,
             errors: Option<Vec<GraphqlError>>,
         }
 
-        #[derive(Debug)]
+        #[derive(Facet, Debug)]
         struct GraphqlError {
             #[allow(dead_code)]
             message: String,
         }
 
+        #[derive(Facet)]
         struct GraphqlResponseData {
             viewer: Viewer,
         }
 
+        #[derive(Facet)]
         struct Viewer {
             sponsors: Sponsors,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct Sponsors {
             pageInfo: PageInfo,
             nodes: Vec<Node>,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct PageInfo {
             endCursor: Option<String>,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct Node {
             login: String,
@@ -103,19 +111,21 @@ impl ModImpl {
             sponsorshipForViewerAsSponsorable: Option<SponsorshipForViewerAsSponsorable>,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct SponsorshipForViewerAsSponsorable {
             privacyLevel: String,
             tier: GitHubTier,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct GitHubTier {
             monthlyPriceInDollars: Option<u32>,
             isOneTime: bool,
         }
 
-        #[derive(Debug)]
+        #[derive(Debug, Facet)]
         struct Variables {
             first: u32,
             after: Option<String>,
@@ -234,19 +244,28 @@ impl ModImpl {
         web: WebConfig,
         github_creds: &GitHubCredentials,
     ) -> Result<(GitHubCredentials, AuthBundle)> {
+        #[derive(Facet)]
         struct GraphqlQuery {
             query: String,
-            variables: Map<'static>,
+            variables: Variables,
         }
 
+        #[derive(Facet)]
+        struct Variables {
+            login: &'static str,
+        }
+
+        #[derive(Facet)]
         struct GraphqlResponse {
             data: GraphqlResponseData,
         }
 
+        #[derive(Facet)]
         struct GraphqlResponseData {
             viewer: Viewer,
             user: User,
         }
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct Viewer {
             databaseId: i64,
@@ -255,15 +274,18 @@ impl ModImpl {
             avatarUrl: String,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct User {
             sponsorshipForViewerAsSponsor: Option<Sponsorship>,
         }
 
+        #[derive(Facet)]
         struct Sponsorship {
             tier: SponsorshipTier,
         }
 
+        #[derive(Facet)]
         #[allow(non_snake_case)]
         struct SponsorshipTier {
             isOneTime: bool,
@@ -277,7 +299,7 @@ impl ModImpl {
         } else {
             "fasterthanlime"
         };
-        let variables = Map::new().with("login", login);
+        let variables = Variables { login };
 
         let res = libhttpclient::load()
             .client()
@@ -357,7 +379,7 @@ impl ModImpl {
         );
 
         let auth_bundle = AuthBundle {
-            expires_at: (OffsetDateTime::now_utc() + time::Duration::days(365)).into(),
+            expires_at: OffsetDateTime::now_utc() + time::Duration::days(365),
             user_info: UserInfo {
                 profile: Profile {
                     full_name: full_name.to_owned(),
@@ -369,7 +391,7 @@ impl ModImpl {
             },
         };
 
-        Ok((github_creds.clone(), auth_bundle.into_static()))
+        Ok((github_creds.clone(), auth_bundle))
     }
 }
 

@@ -1,26 +1,27 @@
+use facet::Facet;
 use serde::Serialize;
 use time::OffsetDateTime;
 
 pub use eyre::{Result, eyre};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct AuthBundle {
     pub user_info: UserInfo,
     pub expires_at: OffsetDateTime,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Facet)]
 pub struct UserInfo {
     pub profile: Profile,
     pub tier: Option<Tier>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Facet)]
 pub struct Tier {
     pub title: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Facet)]
 pub struct Profile {
     pub patreon_id: Option<String>,
     pub github_id: Option<String>,

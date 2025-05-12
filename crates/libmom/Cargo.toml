@@ -56,3 +56,5 @@ autotrait = "0.2.1"
 mom-types = { version = "0.1.0", path = "../mom-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 fs-err = { version = "3.1.0", features = ["tokio"] }
+facet-json.workspace = true
+facet.workspace = true

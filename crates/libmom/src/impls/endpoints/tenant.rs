@@ -18,11 +18,10 @@ use libpatreon::{
     ForcePatreonRefresh, PatreonCallbackArgs, PatreonCallbackResponse, PatreonCredentials,
     PatreonRefreshCredentials, PatreonRefreshCredentialsArgs, PatreonStore,
 };
-use merde::IntoStatic;
 use mom_types::{ListMissingArgs, ListMissingResponse, TenantEventPayload};
 use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
 
-use crate::impls::site::{HttpError, IntoReply, FacetJson, Reply};
+use crate::impls::site::{FacetJson, HttpError, IntoReply, Reply};
 
 use super::tenant_extractor::TenantExtractor;
 

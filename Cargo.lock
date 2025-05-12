@@ -973,6 +973,7 @@ name = "credentials"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "facet",
  "serde",
  "time",
 ]
@@ -1462,7 +1463,7 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.25.1"
+version = "0.26.1"
 dependencies = [
  "facet-core",
  "facet-derive",
@@ -1471,17 +1472,18 @@ dependencies = [
 
 [[package]]
 name = "facet-core"
-version = "0.25.1"
+version = "0.26.1"
 dependencies = [
  "bitflags 2.9.0",
  "camino",
  "impls",
  "ordered-float",
+ "time",
 ]
 
 [[package]]
 name = "facet-derive"
-version = "0.25.1"
+version = "0.26.1"
 dependencies = [
  "facet-core",
  "facet-derive-emit",
@@ -1489,7 +1491,7 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.25.1"
+version = "0.26.1"
 dependencies = [
  "facet-derive-parse",
  "quote",
@@ -1497,14 +1499,14 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.25.1"
+version = "0.26.1"
 dependencies = [
  "unsynn",
 ]
 
 [[package]]
 name = "facet-deserialize"
-version = "0.24.3"
+version = "0.24.5"
 dependencies = [
  "ariadne",
  "facet-core",
@@ -1515,7 +1517,7 @@ dependencies = [
 
 [[package]]
 name = "facet-json"
-version = "0.23.4"
+version = "0.23.6"
 dependencies = [
  "facet-core",
  "facet-deserialize",
@@ -1526,7 +1528,7 @@ dependencies = [
 
 [[package]]
 name = "facet-pretty"
-version = "0.23.4"
+version = "0.23.6"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -1535,7 +1537,7 @@ dependencies = [
 
 [[package]]
 name = "facet-reflect"
-version = "0.25.1"
+version = "0.26.1"
 dependencies = [
  "bitflags 2.9.0",
  "facet-core",
@@ -1544,7 +1546,7 @@ dependencies = [
 
 [[package]]
 name = "facet-serialize"
-version = "0.23.4"
+version = "0.23.6"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -3224,6 +3226,7 @@ dependencies = [
  "config-types",
  "credentials",
  "eyre",
+ "facet",
  "fs-err",
  "futures-core",
  "libhttpclient",
@@ -3353,6 +3356,8 @@ dependencies = [
  "credentials",
  "derivations",
  "eyre",
+ "facet",
+ "facet-json",
  "ffmpeg-sidecar",
  "fs-err",
  "futures-core",
@@ -3431,6 +3436,7 @@ dependencies = [
  "config-types",
  "credentials",
  "eyre",
+ "facet",
  "fs-err",
  "futures-core",
  "jsonapi",
@@ -3449,6 +3455,7 @@ dependencies = [
  "autotrait",
  "config-types",
  "eyre",
+ "facet",
  "futures-core",
  "libhttpclient",
  "tracing",

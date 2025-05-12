@@ -17,7 +17,6 @@ use eyre::Context;
 use facet_pretty::FacetPretty;
 use image_types::{ICodec, PixelDensity};
 use itertools::Itertools;
-use merde::time::Rfc3339;
 use tokio::sync::{Semaphore, mpsc};
 use tracing::{debug, warn};
 use uffmpeg::{ffmpeg_metadata_to_media_props, gather_ffmpeg_meta};

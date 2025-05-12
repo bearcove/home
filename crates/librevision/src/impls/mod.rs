@@ -5,7 +5,6 @@ use conflux::{Pak, PathMappings, RevisionError};
 use cub_types::{CubRevisionState, IndexedRevision};
 use load::load_pak;
 use make::make_revision;
-use merde::IntoStatic as _;
 use tracing::warn;
 
 use crate::{RevisionKind, RevisionSpec};

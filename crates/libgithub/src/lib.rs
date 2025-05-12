@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 use autotrait::autotrait;
+use facet::Facet;
 use futures_core::future::BoxFuture;
 use libhttpclient::HttpClient;
 use std::collections::HashSet;
@@ -77,15 +78,13 @@ pub struct GitHubCallbackArgs {
     pub raw_query: String,
 }
 
-
-
 #[derive(Debug, Clone)]
 pub struct GitHubCallbackResponse {
     pub auth_bundle: AuthBundle,
     pub github_credentials: GitHubCredentials,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct GitHubCredentials {
     /// example: "ajba90sd098w0e98f0w9e8g90a8ed098wgfae_w"
     pub access_token: String,
@@ -94,7 +93,6 @@ pub struct GitHubCredentials {
     /// example: "bearer"
     pub token_type: Option<String>,
 }
-
 
 /// The purpose of the login (to determine the OAuth scopes needed for the login)
 pub enum GitHubLoginPurpose {
