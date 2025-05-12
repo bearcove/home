@@ -57,8 +57,8 @@ async fn github_list_sponsors(
                 eyre::eyre!("rusqlite error: creator needs to log in with GitHub first: {e}")
             })?
     };
-    let github_credentials = facet_json::from_str_owned::<GitHubCredentials>(&github_credentials)
-        .map_err(|e| e.into_static())?;
+    let github_credentials = facet_json::from_str::<GitHubCredentials>(&github_credentials)
+        .map_err(|e| e.into_owned())?;
     let github = libgithub::load();
     github
         .list_sponsors(&ts.ti.tc, client, &github_credentials)

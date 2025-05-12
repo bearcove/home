@@ -482,7 +482,7 @@ impl ModImpl {
         };
 
         let auth_bundle = credentials::AuthBundle {
-            expires_at: (time::OffsetDateTime::now_utc() + patreon_refresh_interval()).into(),
+            expires_at: time::OffsetDateTime::now_utc() + patreon_refresh_interval(),
             user_info,
         };
         Ok(auth_bundle)
@@ -541,17 +541,17 @@ pub struct PatreonCallbackArgs {
     pub raw_query: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct PatreonCallbackResponse {
     pub auth_bundle: AuthBundle,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct PatreonRefreshCredentialsArgs {
     pub patreon_id: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct PatreonRefreshCredentials {
     pub auth_bundle: AuthBundle,
 }

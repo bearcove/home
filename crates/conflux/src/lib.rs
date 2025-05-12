@@ -32,7 +32,7 @@ mod derivations;
 pub use derivations::*;
 
 /// An error that occurred while loading a revision
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct RevisionError(pub String);
 
 impl std::fmt::Display for RevisionError {
@@ -110,7 +110,7 @@ impl CacheBuster for Revision {
 
 pub type Toc = Vec<TocEntry>;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Facet)]
 pub struct TocEntry {
     // 1 through 6
     pub level: u8,
@@ -120,7 +120,8 @@ pub struct TocEntry {
     pub slug: String,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Facet, Debug, PartialEq, Eq, Clone, Copy)]
+#[repr(u8)]
 pub enum PageKind {
     // e.g. `/episodes`
     EpisodesListing,
@@ -200,7 +201,7 @@ fn pagekind_from_path() {
     );
 }
 
-#[derive(Clone)]
+#[derive(Facet, Clone)]
 pub struct LoadedPage {
     /// the tenant this page belongs to
     pub ti: Arc<TenantInfo>,
@@ -281,14 +282,14 @@ pub struct LoadedPage {
 }
 
 /// The thumbnail for a page (if it exists)
-#[derive(Debug, Clone)]
+#[derive(Facet, Debug, Clone)]
 pub struct PageThumb {
     pub path: InputPath,
     pub media: Media,
 }
 
 /// Determines what kind of access someone has to articles etc.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Facet, Debug, Clone, Serialize, Deserialize)]
 pub struct Viewer {
     /// User ID matches admin in config
     pub is_admin: bool,
@@ -300,7 +301,8 @@ pub struct Viewer {
     pub has_silver: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Facet)]
+#[repr(u8)]
 pub enum AccessOverride {
     AdminMeansBronze,
     AdminMeansSilver,
@@ -463,7 +465,7 @@ impl Hash for LoadedPage {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Facet)]
 pub struct VideoInfo {
     pub dual_feature: bool,
     pub tube: Option<String>,
@@ -480,7 +482,7 @@ impl fmt::Debug for LoadedPage {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Facet)]
 pub struct SeriesLink {
     /// the route of the series index page
     pub index_route: Route,
@@ -500,7 +502,7 @@ impl InputPathRef {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Facet)]
 pub struct FromDiskPathError {
     path: Utf8PathBuf,
     base_dir: Utf8PathBuf,
@@ -784,7 +786,7 @@ impl RouteRef {
 
 /// A revision, fully loaded — with tags indexed, series
 /// recognized, etc.
-#[derive(Clone)]
+#[derive(Clone, Facet)]
 pub struct Revision {
     /// the original revision
     pub pak: Pak,
@@ -871,7 +873,8 @@ pub struct Pak {
     pub rc: RevisionConfig,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Facet)]
+#[repr(u8)]
 pub enum Asset {
     // This asset we can serve directly from memory
     Inline {
@@ -1005,7 +1008,7 @@ impl std::fmt::Display for DerivationKind {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Facet)]
 pub struct Part {
     pub title: String,
     pub path: InputPath,
@@ -1013,7 +1016,7 @@ pub struct Part {
 }
 
 /// A 1-based series part number
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Facet)]
 #[serde(transparent)]
 pub struct PartNumber(usize);
 
@@ -1090,7 +1093,7 @@ pub struct Template {
     pub markup: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Facet)]
 pub struct Stylesheet {
     pub path: InputPath,
 
@@ -1098,7 +1101,7 @@ pub struct Stylesheet {
     pub markup: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Facet)]
 pub struct SearchResults {
     pub results: Vec<SearchResult>,
     pub terms: Vec<String>,
@@ -1115,7 +1118,7 @@ impl std::fmt::Debug for SearchResults {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Facet)]
 pub struct SearchResult {
     /// The path itself
     pub page: Arc<LoadedPage>,
@@ -1142,6 +1145,7 @@ impl std::fmt::Debug for SearchResult {
     }
 }
 
+#[derive(Facet)]
 pub struct Completion {
     pub kind: CompletionKind,
     pub text: String,
@@ -1149,14 +1153,14 @@ pub struct Completion {
     pub url: Option<Href>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub enum CompletionKind {
     Term,
     Article,
 }
 
 /// Maps input paths to disk paths
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Facet)]
 pub struct PathMapping {
     input_path: InputPath,
     disk_path: Utf8PathBuf,
@@ -1164,7 +1168,7 @@ pub struct PathMapping {
 
 /// Complete set of mapping between input paths (e.g. `/content/blah.md`)
 /// and disk paths (e.g. `/var/www/content/blah.md`)
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, Facet)]
 pub struct PathMappings {
     entries: Vec<PathMapping>,
 }

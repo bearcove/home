@@ -73,12 +73,12 @@ impl Mod for ModImpl {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct GitHubCallbackArgs {
     pub raw_query: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Facet)]
 pub struct GitHubCallbackResponse {
     pub auth_bundle: AuthBundle,
     pub github_credentials: GitHubCredentials,

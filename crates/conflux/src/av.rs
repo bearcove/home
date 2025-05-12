@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// A media container we know about
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 #[repr(u8)]
 pub enum VContainer {
     /// ISO Base Media File Format (typically .mp4)
@@ -36,7 +36,7 @@ impl std::fmt::Display for VContainer {
 }
 
 /// A video codec we know about
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 #[repr(u8)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum VCodec {
@@ -112,7 +112,7 @@ impl VCodec {
 }
 
 /// An audio codec we know about
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 #[repr(u8)]
 pub enum ACodec {
     Opus,
@@ -138,7 +138,7 @@ impl ACodec {
     }
 }
 
-#[derive(Debug, Clone, Facet)]
+#[derive(Facet, Debug, Clone)]
 pub struct MediaProps {
     /// The kind of media this is
     pub kind: MediaKind,
@@ -185,7 +185,7 @@ pub struct Dimensions {
     pub density: PixelDensity,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Facet)]
 pub struct BitmapVariant {
     pub ic: ICodec,
 
@@ -196,7 +196,7 @@ pub struct BitmapVariant {
 }
 
 /// A container, audio codec and video codec combination.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Facet)]
 pub struct VideoVariant {
     pub route: Route,
     pub container: VContainer,
@@ -224,7 +224,7 @@ impl VideoVariant {
 }
 
 /// A thumbnail for a video
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Facet)]
 pub struct VideoThumbnail {
     pub route: Route,
     pub fmt: ICodec,
@@ -243,6 +243,7 @@ impl VideoThumbnail {
     }
 }
 
+#[derive(Facet)]
 pub struct VideoVariantContentType<'a>(&'a VideoVariant);
 
 impl std::fmt::Display for VideoVariantContentType<'_> {
@@ -297,7 +298,7 @@ pub struct AParams {
     pub channels: Option<FfmpegChannels>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Facet, Clone, Debug)]
 pub struct Media {
     pub props: MediaProps,
 

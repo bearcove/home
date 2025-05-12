@@ -93,13 +93,13 @@ pub(crate) fn global_state() -> &'static MomGlobalState {
 
 impl MomGlobalState {
     pub(crate) fn event_to_message(event: MomEvent) -> ws::Message {
-        let json_string = facet_json::to_string(&event).unwrap();
+        let json_string = facet_json::to_string(&event);
         ws::Message::text(json_string)
     }
 
     pub(crate) fn broadcast_event(&self, event: MomEvent) -> eyre::Result<()> {
         let ev_debug = format!("{event:?}");
-        let event = facet_json::to_string(&event)?;
+        let event = facet_json::to_string(&event);
         match self.bx_event.send(event) {
             Ok(n) => tracing::info!("Broadcast to {n} subscribers: {ev_debug}"),
             Err(_) => tracing::info!("No subscribers for event: {ev_debug}"),
@@ -147,8 +147,7 @@ impl PatreonStore for Pool {
         let creds: Option<String> = stmt.query_row([patreon_id], |row| row.get(0))?;
         if let Some(creds) = creds {
             Ok(Some(
-                facet_json::from_str_owned::<PatreonCredentials>(&creds)
-                    .map_err(|e| e.into_static())?,
+                facet_json::from_str::<PatreonCredentials>(&creds).map_err(|e| e.into_owned())?,
             ))
         } else {
             Ok(None)
@@ -167,7 +166,7 @@ impl PatreonStore for Pool {
                 VALUES (?1, ?2)
                 ON CONFLICT (patreon_id) DO UPDATE SET data = ?2
                 ",
-            rusqlite::params![patreon_id, facet_json::to_string(credentials)?],
+            rusqlite::params![patreon_id, facet_json::to_string(credentials)],
         )?;
         Ok(())
     }
@@ -186,7 +185,7 @@ pub(crate) async fn patreon_refresh_credentials_inner(
 
     info!("Refreshing patreon credentials");
 
-    let mut refresh_creds = pat_creds.into_static();
+    let mut refresh_creds = pat_creds;
     if is_development() && test_patreon_renewal() {
         refresh_creds.access_token = "bad-token-for-testing".into()
     }
@@ -216,7 +215,7 @@ pub(crate) fn save_sponsors_to_db(ts: &MomTenantState, sponsors: Sponsors) -> ey
     // insert new entry
     conn.execute(
         "INSERT INTO sponsors (sponsors_json) VALUES (?1)",
-        [facet_json::to_string(&sponsors)?],
+        [facet_json::to_string(&sponsors)],
     )?;
 
     Ok(())
@@ -235,7 +234,7 @@ pub(crate) fn load_sponsors_from_db(ts: &MomTenantState) -> eyre::Result<Option<
     let res: Result<String, rusqlite::Error> = stmt.query_row([], |row| row.get(0));
     match res {
         Ok(sponsors_json) => Ok(Some(
-            facet_json::from_str_owned::<Sponsors>(&sponsors_json).map_err(|e| e.into_static())?,
+            facet_json::from_str::<Sponsors>(&sponsors_json).map_err(|e| e.into_owned())?,
         )),
         Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
         Err(e) => Err(e.into()),
@@ -280,8 +279,8 @@ pub(crate) async fn load_revision_from_db(ts: &MomTenantState) -> eyre::Result<O
     debug!("Fetching revision data took {duration:?}");
 
     debug!("Deserializing revision data");
-    let revision: Pak = facet_json::from_str_owned(std::str::from_utf8(&bytes[..])?)
-        .map_err(|e| e.into_static())?;
+    let revision: Pak =
+        facet_json::from_str(std::str::from_utf8(&bytes[..])?).map_err(|e| e.into_owned())?;
     Ok(Some(revision))
 }
 
