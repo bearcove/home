@@ -1555,11 +1555,10 @@ dependencies = [
 [[package]]
 name = "facet-yaml"
 version = "0.24.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "049d2e6c54e3ef0f7d7f626f13d13a1c2b13ff224c7d64384826464aa1b2494b"
 dependencies = [
  "facet-core",
  "facet-reflect",
+ "log",
  "yaml-rust2",
 ]
 
