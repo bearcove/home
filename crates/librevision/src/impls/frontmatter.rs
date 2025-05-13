@@ -15,29 +15,36 @@ pub struct Frontmatter {
     pub date: OffsetDateTime,
 
     /// Last update date, if any
+    #[facet(default)]
     pub updated_at: Option<OffsetDateTime>,
 
     /// If true, page is only visible by admins
+    #[facet(default = false)]
     pub draft: bool,
 
     /// Whether the page should be excluded from search indexing
+    #[facet(default = false)]
     pub archive: bool,
 
     /// Code used to allow access to a draft
-    #[facet(rename = "draft-code")]
+    #[facet(rename = "draft-code", default)]
     pub draft_code: Option<String>,
 
     /// Alternative routes for this page (for redirects)
+    #[facet(default)]
     pub aliases: Vec<Route>,
 
     /// Tags associated with the page (useful for listings)
+    #[facet(default)]
     pub tags: Vec<String>,
 
     /// Additional metadata for the page
+    #[facet(default)]
     pub extra: FrontmatterExtras,
 }
 
 #[derive(Facet, Default, Debug)]
+#[facet(default)]
 pub struct FrontmatterExtras {
     // show patreon credits
     pub patreon: bool,
