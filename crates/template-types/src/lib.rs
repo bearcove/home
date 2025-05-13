@@ -4,7 +4,7 @@ use std::{
 };
 
 use config_types::WebConfig;
-use conflux::{InputPath, LoadedPage, RevisionView, Route, RouteRef};
+use conflux::{InputPath, LoadedPage, RevisionView, Route};
 use credentials::UserInfo;
 use facet::Facet;
 use libsearch::Index;

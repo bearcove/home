@@ -359,7 +359,7 @@ impl dyn RequestBuilder {
     pub fn json<'facet>(
         self: Box<Self>,
         body: &impl Facet<'facet>,
-    ) -> Result<Box<dyn RequestBuilder>, DeserError<'static>> {
-        self.json_peek(&Peek::new(body))
+    ) -> Result<Box<dyn RequestBuilder>, Box<DeserError<'static>>> {
+        self.json_peek(&Peek::new(body)).map_err(Box::new)
     }
 }

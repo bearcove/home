@@ -806,7 +806,6 @@ dependencies = [
 name = "conflux"
 version = "0.1.0"
 dependencies = [
- "bytes",
  "camino",
  "closest",
  "config-types",
@@ -1551,6 +1550,17 @@ dependencies = [
  "facet-core",
  "facet-reflect",
  "log",
+]
+
+[[package]]
+name = "facet-yaml"
+version = "0.24.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "049d2e6c54e3ef0f7d7f626f13d13a1c2b13ff224c7d64384826464aa1b2494b"
+dependencies = [
+ "facet-core",
+ "facet-reflect",
+ "yaml-rust2",
 ]
 
 [[package]]
@@ -3493,6 +3503,7 @@ dependencies = [
  "facet",
  "facet-json",
  "facet-pretty",
+ "facet-yaml",
  "fs-err",
  "futures-core",
  "image-types",
@@ -7936,6 +7947,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388c44dc09d76f1536602ead6d325eb532f5c122f17782bd57fb47baeeb767e2"
 dependencies = [
  "lzma-sys",
+]
+
+[[package]]
+name = "yaml-rust2"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "818913695e83ece1f8d2a1c52d54484b7b46d0f9c06beeb2649b9da50d9b512d"
+dependencies = [
+ "arraydeque",
+ "encoding_rs",
+ "hashlink 0.10.0",
 ]
 
 [[package]]
