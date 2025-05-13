@@ -8,6 +8,7 @@ pub struct Frontmatter {
     pub title: String,
 
     /// Jinja2 template to use for rendering — defaults to `page.html`
+    #[facet(default = "page.html".into())]
     pub template: String,
 
     /// Publication date in RFC3339 format, e.g. `2023-10-01T12:00:00Z` (UTC)
@@ -64,55 +65,6 @@ pub struct FrontmatterExtras {
 
     // for a series, marks whether it's still ongoing
     pub ongoing: bool,
-}
-
-pub struct FrontmatterIn {
-    /// Title of the page
-    pub title: String,
-
-    /// Jinja2 template to use for rendering — defaults to `page.html`
-    pub template: Option<String>,
-
-    /// Publication date in RFC3339 format, e.g. `2023-10-01T12:00:00Z` (UTC)
-    pub date: OffsetDateTime,
-
-    /// Last update date, if any
-    pub updated_at: Option<OffsetDateTime>,
-
-    /// If true, page is only visible by admins
-    pub draft: Option<bool>,
-
-    /// Whether the page should be excluded from search indexing
-    pub archive: Option<bool>,
-
-    /// Code used to allow access to a draft
-    pub draft_code: Option<String>,
-
-    /// Alternative routes for this page (for redirects)
-    pub aliases: Option<Vec<Route>>,
-
-    /// Tags associated with the page (useful for listings)
-    pub tags: Option<Vec<String>>,
-
-    /// Additional metadata for the page
-    pub extra: Option<FrontmatterExtrasIn>,
-}
-
-impl From<FrontmatterIn> for Frontmatter {
-    fn from(frontmatter_in: FrontmatterIn) -> Self {
-        Self {
-            title: frontmatter_in.title,
-            template: frontmatter_in.template.unwrap_or("page.html".into()),
-            date: frontmatter_in.date.into(),
-            updated_at: frontmatter_in.updated_at.map(|d| d.into()),
-            draft: frontmatter_in.draft.unwrap_or_default(),
-            archive: frontmatter_in.archive.unwrap_or_default(),
-            draft_code: frontmatter_in.draft_code,
-            aliases: frontmatter_in.aliases.unwrap_or_default(),
-            tags: frontmatter_in.tags.unwrap_or_default(),
-            extra: frontmatter_in.extra.unwrap_or_default().into(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Default)]

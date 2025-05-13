@@ -21,7 +21,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use template_types::{CompileArgs, TemplateCollection};
 use tracing::{self, debug, warn};
 
-use crate::impls::frontmatter::{Frontmatter, FrontmatterIn};
+use crate::impls::frontmatter::Frontmatter;
 
 pub async fn load_pak(
     pak: Pak,
@@ -675,17 +675,9 @@ fn load_single_page(
     let res = mod_markdown
         .process_markdown_to_writer(args)
         .wrap_err_with(|| format!("processing markdown for {path:?}"))?;
-    // let mut deser = YamlDeserializer::new(res.frontmatter.as_deref().unwrap_or_default());
-    // let frontmatter: Frontmatter = deser
-    //     .deserialize::<FrontmatterIn>()
-    //     .map_err(|e| {
-    //         eyre!(
-    //             "yaml deser error for input path {path:?}: {e:?}\nFull YAML markup:\n{}\nError as display: {e}\n",
-    //             res.frontmatter.as_deref().unwrap_or_default()
-    //         )
-    //     })?
-    //     .into();
-    let frontmatter: Frontmatter = todo!();
+
+    let frontmatter: Frontmatter =
+        facet_yaml::from_str(res.frontmatter.as_deref().unwrap_or_default())?;
 
     let reading_time = res.reading_time;
 
