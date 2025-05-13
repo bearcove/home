@@ -36,6 +36,6 @@ rusqlite = { version = "0.35.0", default-features = false, features = ["time"] }
 eyre = "0.6.12"
 tracing = { version = "0.1.41", default-features = false, features = ["std"] }
 minijinja = { version = "2.10.2" }
-facet = { version = "0.26.1", features = ["camino", "ordered-float", "time"] }
-facet-json = { version = "0.23.5" }
-facet-pretty = { version = "0.23.6" }
+facet = { version = "0.27.0", features = ["camino", "ordered-float", "time"] }
+facet-json = { version = "0.24.1" }
+facet-pretty = { version = "0.23.7" }

@@ -204,6 +204,7 @@ macro_rules! plait {
         $(
             #[derive(Clone, Hash, PartialEq, Eq, $crate::facet::Facet)]
             #[repr(transparent)]
+            #[facet(transparent)]
             $(#[$attr])*
             pub struct $name(String);
 

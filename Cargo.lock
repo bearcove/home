@@ -1463,7 +1463,7 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.26.1"
+version = "0.27.0"
 dependencies = [
  "facet-core",
  "facet-derive",
@@ -1472,7 +1472,7 @@ dependencies = [
 
 [[package]]
 name = "facet-core"
-version = "0.26.1"
+version = "0.27.0"
 dependencies = [
  "bitflags 2.9.0",
  "camino",
@@ -1483,7 +1483,7 @@ dependencies = [
 
 [[package]]
 name = "facet-derive"
-version = "0.26.1"
+version = "0.27.0"
 dependencies = [
  "facet-core",
  "facet-derive-emit",
@@ -1491,7 +1491,7 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.26.1"
+version = "0.27.0"
 dependencies = [
  "facet-derive-parse",
  "quote",
@@ -1499,14 +1499,14 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.26.1"
+version = "0.27.0"
 dependencies = [
  "unsynn",
 ]
 
 [[package]]
 name = "facet-deserialize"
-version = "0.24.5"
+version = "0.24.6"
 dependencies = [
  "ariadne",
  "facet-core",
@@ -1517,7 +1517,7 @@ dependencies = [
 
 [[package]]
 name = "facet-json"
-version = "0.23.6"
+version = "0.24.1"
 dependencies = [
  "facet-core",
  "facet-deserialize",
@@ -1528,7 +1528,7 @@ dependencies = [
 
 [[package]]
 name = "facet-pretty"
-version = "0.23.6"
+version = "0.23.7"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -1537,7 +1537,7 @@ dependencies = [
 
 [[package]]
 name = "facet-reflect"
-version = "0.26.1"
+version = "0.27.0"
 dependencies = [
  "bitflags 2.9.0",
  "facet-core",
@@ -1546,7 +1546,7 @@ dependencies = [
 
 [[package]]
 name = "facet-serialize"
-version = "0.23.6"
+version = "0.24.1"
 dependencies = [
  "facet-core",
  "facet-reflect",
