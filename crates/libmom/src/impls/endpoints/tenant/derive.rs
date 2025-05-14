@@ -8,7 +8,7 @@ pub(crate) async fn derive(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
     body: String,
 ) -> Reply {
-    let params: DeriveParams = facet_json::from_str(&body).unwrap();
+    let params: DeriveParams = facet_json::from_str(&body).unwrap_or_else(|e| panic!("{e}"));
 
     // spawn, because the task isn't cancelled even if the request drops — started derivations are
     // finished.

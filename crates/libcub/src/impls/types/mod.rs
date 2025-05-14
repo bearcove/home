@@ -18,6 +18,7 @@ use super::{global_state, vite::start_vite};
 
 #[derive(Facet, Clone)]
 #[repr(u8)]
+#[allow(dead_code)]
 pub enum RevisionBroadcastEvent {
     NewRevision(RevisionId),
     RevisionError(String),

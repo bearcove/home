@@ -22,6 +22,7 @@ pub(super) async fn serve(
 }
 
 #[derive(Debug, Facet)]
+#[expect(dead_code)]
 #[repr(u8)]
 enum DeployAction {
     StartDeploy(StartDeploy),
@@ -33,6 +34,7 @@ struct StartDeploy {
 }
 
 #[derive(Debug, Facet)]
+#[expect(dead_code)]
 #[repr(u8)]
 enum DeployMessage {
     AssetProgress(AssetProgress),

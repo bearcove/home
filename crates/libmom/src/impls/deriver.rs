@@ -12,7 +12,7 @@ use tokio_stream::StreamExt as _;
 
 use crate::impls::{
     MomTenantState,
-    site::{IntoReply, FacetJson, Reply},
+    site::{FacetJson, IntoReply, Reply},
 };
 use mom_types::{
     DeriveJobInfo, DeriveParams, DeriveResponse, DeriveResponseAlreadyInProgress,
@@ -96,7 +96,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
     let before_derive = Instant::now();
 
     let output_data = match &derivation.kind {
-        DerivationKind::Passthrough(_) | DerivationKind::Identity(_) => input_bytes,
+        DerivationKind::Passthrough | DerivationKind::Identity => input_bytes,
         DerivationKind::Bitmap(bitmap) => {
             let input_codec = ICodec::try_from(input.content_type)?;
             // Transcode image using image module

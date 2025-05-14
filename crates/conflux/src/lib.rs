@@ -899,12 +899,6 @@ pub enum Asset {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
-pub struct DerivationIdentity;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
-pub struct DerivationPassthrough;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Facet)]
 pub struct DerivationBitmap {
     pub ic: ICodec,
 
@@ -973,10 +967,10 @@ pub struct DerivationSvgCleanup {
 #[repr(u8)]
 pub enum DerivationKind {
     /// not doing anything special _and_ not cache-busted!
-    Passthrough(DerivationPassthrough),
+    Passthrough,
 
     /// not doing anything special
-    Identity(DerivationIdentity),
+    Identity,
 
     /// transcoding JXL/PNG to AVIF, WEBP
     Bitmap(DerivationBitmap),
@@ -997,8 +991,8 @@ pub enum DerivationKind {
 impl std::fmt::Display for DerivationKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DerivationKind::Passthrough(_) => write!(f, "passthrough"),
-            DerivationKind::Identity(_) => write!(f, "ident"),
+            DerivationKind::Passthrough => write!(f, "passthrough"),
+            DerivationKind::Identity => write!(f, "ident"),
             DerivationKind::Bitmap(bitmap) => write!(f, "bitmap({})", bitmap.ic),
             DerivationKind::Video(video) => {
                 write!(f, "video({}+{} in {})", video.vc, video.ac, video.container)

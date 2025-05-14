@@ -26,6 +26,7 @@ use crate::impls::{
 };
 
 #[derive(Debug, Facet)]
+#[expect(dead_code)]
 #[repr(u8)]
 enum WebSocketMessage {
     Headers(HeadersMessage),
@@ -76,6 +77,7 @@ struct ActionDoneMessage {
 
 #[derive(Debug, Facet)]
 #[repr(u8)]
+#[expect(dead_code)]
 enum Action {
     Replace,
     Append,

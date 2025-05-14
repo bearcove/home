@@ -15,6 +15,7 @@ use super::deploy::{Level, LogMessage};
 
 #[derive(Facet, Debug)]
 #[repr(u8)]
+#[expect(dead_code)]
 enum ValidationMessage {
     LogMessage(LogMessage),
     RouteResult(RouteResult),
