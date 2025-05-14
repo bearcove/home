@@ -103,7 +103,7 @@ async fn finish_login_callback(tr: &CubReqImpl, auth_bundle: Option<AuthBundle>)
 async fn serve_patreon_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<AuthBundle>> {
     let tcli = tr.tenant.tcli();
     let callback_args = PatreonCallbackArgs {
-        raw_query: tr.raw_query().to_owned().into(),
+        raw_query: tr.raw_query().to_owned(),
     };
     let res = tcli.patreon_callback(&callback_args).await?;
     Ok(res.map(|res| res.auth_bundle))

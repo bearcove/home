@@ -4,10 +4,9 @@ use closest::{GetOrHelp, ResourceKind};
 use config_types::{TenantInfo, WebConfig};
 use conflux::{
     ACodec, Asset, BitmapVariant, Derivation, DerivationBitmap, DerivationDrawioRender,
-    DerivationIdentity, DerivationKind, DerivationPassthrough, DerivationSvgCleanup,
-    DerivationVideo, DerivationVideoThumbnail, InputPathRef, LoadedPage, MarkdownRef, Media,
-    MediaKind, Page, PageKind, Pak, Part, PartNumber, PathMappings, Revision, Route, SeriesLink,
-    VCodec, VContainer, VideoInfo, VideoVariant,
+    DerivationKind, DerivationSvgCleanup, DerivationVideo, DerivationVideoThumbnail, InputPathRef,
+    LoadedPage, MarkdownRef, Media, MediaKind, Page, PageKind, Pak, Part, PartNumber, PathMappings,
+    Revision, Route, SeriesLink, VCodec, VContainer, VideoInfo, VideoVariant,
 };
 use content_type::ContentType;
 use cub_types::IndexedRevision;
@@ -50,7 +49,7 @@ pub async fn load_pak(
             // insert as is, derivation hash is the same as the input hash
             let d = Derivation {
                 input: input.path.clone(),
-                kind: DerivationKind::Passthrough(DerivationPassthrough {}),
+                kind: DerivationKind::Passthrough,
             };
             let dinfo = DerivationInfo::new(input, &d);
 
@@ -105,14 +104,14 @@ pub async fn load_pak(
                 // insert as is, derivation hash is the same as the input hash
                 let d = Derivation {
                     input: input.path.clone(),
-                    kind: DerivationKind::Identity(DerivationIdentity {}),
+                    kind: DerivationKind::Identity,
                 };
                 let dinfo = DerivationInfo::new(input, &d);
                 rev.assets.insert(dinfo.route(), Asset::Derivation(d));
             }
             ContentType::WASM | ContentType::Js | ContentType::CSS => {
                 // we serve everything pass-through
-                let dkind = DerivationKind::Passthrough(DerivationPassthrough {});
+                let dkind = DerivationKind::Passthrough;
                 let d = Derivation {
                     input: input.path.clone(),
                     kind: dkind,
@@ -129,7 +128,7 @@ pub async fn load_pak(
                     route_path,
                     Asset::Derivation(Derivation {
                         input: input.path.clone(),
-                        kind: DerivationKind::Identity(DerivationIdentity {}),
+                        kind: DerivationKind::Identity,
                     }),
                 );
             }
@@ -188,7 +187,7 @@ pub async fn load_pak(
                             let derivation = Derivation {
                                 input: path.clone(),
                                 kind: if src_codec == dst_codec && target_width.is_none() {
-                                    DerivationKind::Identity(DerivationIdentity {})
+                                    DerivationKind::Identity
                                 } else {
                                     DerivationKind::Bitmap(DerivationBitmap {
                                         ic: dst_codec,
@@ -229,7 +228,7 @@ pub async fn load_pak(
                     let derivation = Derivation {
                         input: path.clone(),
                         kind: if is_identity {
-                            DerivationKind::Identity(DerivationIdentity {})
+                            DerivationKind::Identity
                         } else {
                             DerivationKind::Video(DerivationVideo {
                                 container: dst_container,
@@ -280,7 +279,7 @@ pub async fn load_pak(
                 // identity derivation
                 let derivation = Derivation {
                     input: path.clone(),
-                    kind: DerivationKind::Identity(DerivationIdentity {}),
+                    kind: DerivationKind::Identity,
                 };
                 let dinfo = DerivationInfo::new(input, &derivation);
                 let route = dinfo.route();

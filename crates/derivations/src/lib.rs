@@ -74,8 +74,8 @@ impl<'a> DerivationInfo<'a> {
 impl DerivationInfo<'_> {
     pub fn content_type(&self) -> ContentType {
         match self.derivation.kind {
-            DerivationKind::Passthrough(_) => self.input.content_type,
-            DerivationKind::Identity(_) => self.input.content_type,
+            DerivationKind::Passthrough => self.input.content_type,
+            DerivationKind::Identity => self.input.content_type,
             DerivationKind::Bitmap(DerivationBitmap { ic, .. }) => ic.content_type(),
             DerivationKind::Video(DerivationVideo { container, .. }) => container.content_type(),
             DerivationKind::VideoThumbnail(DerivationVideoThumbnail { ic }) => ic.content_type(),
@@ -89,11 +89,11 @@ impl DerivationInfo<'_> {
     /// for example.
     fn ext(&self) -> Cow<'_, str> {
         match &self.derivation.kind {
-            DerivationKind::Passthrough(_) => {
+            DerivationKind::Passthrough => {
                 let (_, ext) = self.input.path.explode();
                 ext.into()
             }
-            DerivationKind::Identity(_) => {
+            DerivationKind::Identity => {
                 let (_, ext) = self.input.path.explode();
                 ext.into()
             }
@@ -131,7 +131,7 @@ impl DerivationInfo<'_> {
 
     /// The route the derivation will be served from.
     pub fn route(&self) -> Route {
-        if let DerivationKind::Passthrough(_) = self.derivation.kind {
+        if let DerivationKind::Passthrough = self.derivation.kind {
             // passthrough derivations are not cache-busted (they were already
             // busted by vite (a javascript bundler), for example)
             Route::new(self.input.path.to_string())
@@ -150,7 +150,7 @@ impl DerivationInfo<'_> {
         mixer.mix(self.input.hash.as_ref());
 
         match &self.derivation.kind {
-            DerivationKind::Passthrough(_) | DerivationKind::Identity(_) => {
+            DerivationKind::Passthrough | DerivationKind::Identity => {
                 // for these, we simply return the input hash directly
                 return DerivationHash::new(self.input.hash.to_string());
             }
