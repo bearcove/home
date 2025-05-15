@@ -1558,7 +1558,6 @@ version = "0.24.6"
 dependencies = [
  "facet-core",
  "facet-reflect",
- "log",
  "yaml-rust2",
 ]
 

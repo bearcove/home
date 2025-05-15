@@ -263,9 +263,9 @@ impl RequestBuilder for RequestBuilderImpl {
         })
     }
 
-    fn json_peek(
+    fn json_peek<'a>(
         self: Box<Self>,
-        body: &Peek<'_, '_>,
+        body: Peek<'a, 'a>,
     ) -> Result<Box<dyn RequestBuilder>, DeserError<'static>> {
         let body = facet_json::peek_to_string(body);
 
@@ -356,10 +356,10 @@ impl dyn Response {
 }
 
 impl dyn RequestBuilder {
-    pub fn json<'facet>(
+    pub fn json<'mem: 'facet, 'facet>(
         self: Box<Self>,
-        body: &impl Facet<'facet>,
+        body: &'mem impl Facet<'facet>,
     ) -> Result<Box<dyn RequestBuilder>, DeserError<'static>> {
-        self.json_peek(&Peek::new(body))
+        self.json_peek(Peek::new(body))
     }
 }
