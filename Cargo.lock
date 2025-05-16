@@ -1558,7 +1558,9 @@ version = "0.24.6"
 dependencies = [
  "facet-core",
  "facet-reflect",
+ "facet-serialize",
  "yaml-rust2",
+ "yansi",
 ]
 
 [[package]]
