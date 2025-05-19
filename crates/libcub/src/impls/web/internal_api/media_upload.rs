@@ -478,9 +478,9 @@ async fn handle_ws_inner(
     Ok(())
 }
 
-async fn json_to_socket(
+async fn json_to_socket<'facet>(
     socket: &mut ws::WebSocket,
-    payload: &impl facet::Facet<'_>,
+    payload: &'facet impl facet::Facet<'facet>,
 ) -> eyre::Result<()> {
     let json_string = facet_json::to_string(payload);
     socket.send(ws::Message::text(json_string)).await?;

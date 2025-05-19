@@ -49,7 +49,7 @@ pub struct FacetJson<T>(pub T);
 
 impl<'facet, T> IntoLegacyReply for FacetJson<T>
 where
-    T: Facet<'facet>,
+    T: Facet<'facet> + 'facet,
 {
     fn into_legacy_reply(self) -> LegacyReply {
         let payload = facet_json::to_string(&self.0);
@@ -287,7 +287,7 @@ impl From<RevisionError> for LegacyHttpError {
     }
 }
 
-impl From<DeserError<'_>> for LegacyHttpError {
+impl From<DeserError<'_, '_>> for LegacyHttpError {
     fn from(err: DeserError) -> Self {
         let report = eyre::eyre!("{err:?}");
         Self::from_report(report)

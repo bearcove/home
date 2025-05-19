@@ -106,7 +106,10 @@ pub(crate) enum Level {
     Error,
 }
 
-async fn json_to_socket(socket: &mut ws::WebSocket, payload: &impl Facet<'_>) -> eyre::Result<()> {
+async fn json_to_socket<'facet>(
+    socket: &mut ws::WebSocket,
+    payload: &'facet impl Facet<'facet>,
+) -> eyre::Result<()> {
     let json_string = facet_json::to_string(payload);
     Ok(socket.send(ws::Message::text(json_string)).await?)
 }
