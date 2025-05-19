@@ -20,7 +20,7 @@ pub trait GlobalStateView: Send + Sync + 'static {
 }
 
 unsafe impl<'a> Facet<'a> for dyn GlobalStateView {
-    const SHAPE: &'static facet::Shape = <()>::SHAPE;
+    const SHAPE: &'static facet::Shape<'static> = <()>::SHAPE;
     const VTABLE: &'static facet::ValueVTable = <()>::VTABLE;
 }
 

@@ -452,7 +452,7 @@ impl Index for IndexImpl {
 }
 
 unsafe impl<'a> Facet<'a> for dyn Index {
-    const SHAPE: &'static facet::Shape = <()>::SHAPE;
+    const SHAPE: &'static facet::Shape<'static> = <()>::SHAPE;
     const VTABLE: &'static facet::ValueVTable = <()>::VTABLE;
 }
 
