@@ -21,7 +21,7 @@ jobs:
       - name: Run tests
         run: cargo nextest run --all --release --verbose
   mac-build:
-    runs-on: depot-macos-latest
+    runs-on: macos-latest # TODO: revert to depot-macos-latest
     env:
       BEARDIST_CACHE_DIR: /tmp/cache/beardist
       BEARDIST_ARTIFACT_NAME: aarch64-apple-darwin
