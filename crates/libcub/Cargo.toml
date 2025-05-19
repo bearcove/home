@@ -40,7 +40,7 @@ libwebpage = { path = "../libwebpage" }
 flume = { version = "0.11.1" }
 bytesize = { version = "2.0.1" }
 libimage = { path = "../libimage" }
-tempfile = { version = "3.19.1" }
+tempfile = { version = "3.20.0" }
 uffmpeg = { path = "../../crates/uffmpeg" }
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 libpatreon = { path = "../libpatreon" }

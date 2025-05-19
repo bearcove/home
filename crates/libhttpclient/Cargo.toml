@@ -1,7 +1,6 @@
 [package]
 name = "libhttpclient"
 edition.workspace = true
-rust-version.workspace = true
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -21,7 +20,7 @@ bytes = "1.10.1"
 eyre.workspace = true
 facet.workspace = true
 facet-json.workspace = true
-facet-reflect = "0.27.0"
+facet-reflect = "0.27.2"
 form_urlencoded = "1.2.1"
 futures-core = "0.3.31"
 futures-util = "0.3.31"

@@ -10,7 +10,7 @@ crate-type = ["rlib"]
 quick-xml = { version = "0.37.5" }
 conflux = { path = "../../crates/conflux" }
 tokio = { workspace = true, features = ["time", "process", "sync"] }
-tempfile = { version = "3.19.1" }
+tempfile = { version = "3.20.0" }
 camino = { version = "1.1.9" }
 base64 = { version = "0.22.1" }
 futures-core = "0.3.31"
@@ -19,7 +19,7 @@ eyre.workspace = true
 autotrait = "0.2.1"
 config-types = { version = "0.1.0", path = "../config-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
-lightningcss = "1.0.0-alpha.65"
+lightningcss = "1.0.0-alpha.66"
 which = "7.0.3"
 fs-err = { version = "3.1.0", features = ["tokio"] }
 

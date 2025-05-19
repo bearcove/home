@@ -10,7 +10,7 @@ crate-type = ["rlib"]
 camino = { version = "1.1.9", features = ["serde1"] }
 fs-err = { version = "3.1.0" }
 serde_json = { version = "1.0.140" }
-owo-colors = { version = "4.2.0" }
+owo-colors = { version = "4.2.1" }
 facet-json.workspace = true
 facet-pretty.workspace = true
 autotrait = "0.2.1"

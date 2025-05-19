@@ -5,7 +5,6 @@ resolver = "3"
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.86.0"
 version = "0.1.0"
 authors = ["Amos Wenger <amos@bearcove.eu>"]
 license = "Proprietary"
@@ -36,6 +35,6 @@ rusqlite = { version = "0.35.0", default-features = false, features = ["time"] }
 eyre = "0.6.12"
 tracing = { version = "0.1.41", default-features = false, features = ["std"] }
 minijinja = { version = "2.10.2" }
-facet = { version = "0.27.0", features = ["camino", "ordered-float", "time"] }
-facet-json = { version = "0.24.1" }
-facet-pretty = { version = "0.23.7" }
+facet = { version = "0.27.2", features = ["camino", "ordered-float", "time"] }
+facet-json = { version = "0.24.3" }
+facet-pretty = { version = "0.23.9" }
