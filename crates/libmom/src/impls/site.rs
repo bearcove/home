@@ -28,9 +28,9 @@ impl<T: IntoResponse> IntoReply for T {
 
 pub struct FacetJson<T>(pub T);
 
-impl<'mem: 'facet, 'facet, T> IntoReply for FacetJson<T>
+impl<'facet, T> IntoReply for FacetJson<T>
 where
-    T: Facet<'facet> + 'mem,
+    T: Facet<'facet>,
 {
     fn into_reply(self) -> Reply {
         let payload = facet_json::to_string(&self.0);

@@ -47,42 +47,40 @@ impl Mod for ModImpl {
                     .map_err(|e| eyre::eyre!("jxl rendering error: {}", e))?;
 
                 // Get all channels in an interleaved buffer
-                let buffer = render.image_all_channels();
+                let mut stream = render.stream();
+                let num_channels = stream.channels();
+                let mut buffer =
+                    vec![0f32; (num_channels * stream.width() * stream.height()) as usize];
+                stream.write_to_buffer(&mut buffer[..]);
 
                 // Check the number of color channels to determine if RGB or RGBA
-                let num_channels = render.color_channels().len();
-
                 match num_channels {
                     3 => {
                         // Get the buffer directly which is already in the format we need
-                        let rgb_data: Vec<f32> = buffer.buf().to_vec();
-
                         DynamicImage::from(
                             image::ImageBuffer::<Rgb<f32>, Vec<f32>>::from_raw(
                                 image.width(),
                                 image.height(),
-                                rgb_data,
+                                buffer,
                             )
                             .ok_or_else(|| {
                                 eyre::eyre!("failed to create ImageBuffer from jxl frame (RGB)")
                             })?,
                         )
-                    },
+                    }
                     4 => {
                         // Get the buffer directly which is already in the format we need
-                        let rgba_data: Vec<f32> = buffer.buf().to_vec();
-
                         DynamicImage::from(
                             image::ImageBuffer::<Rgba<f32>, Vec<f32>>::from_raw(
                                 image.width(),
                                 image.height(),
-                                rgba_data,
+                                buffer,
                             )
                             .ok_or_else(|| {
                                 eyre::eyre!("failed to create ImageBuffer from jxl frame (RGBA)")
                             })?,
                         )
-                    },
+                    }
                     _ => {
                         unimplemented!(
                             "unsupported number of color channels in jxl image: {}",
