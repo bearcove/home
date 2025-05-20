@@ -1450,9 +1450,9 @@ dependencies = [
 
 [[package]]
 name = "facet"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a854b85f8d68d052ed9b88bacba47ef445ed1c745d124663ce315197a424d030"
+checksum = "53723b5560921a706e0535c6249ddc880877731578424b9b37b487a417881a7c"
 dependencies = [
  "facet-core",
  "facet-derive",
@@ -1461,9 +1461,9 @@ dependencies = [
 
 [[package]]
 name = "facet-core"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b7e8eeb90eb73c05d3c1281b2a64b702ad61c1677c32b5f1d2e8e733d86310e"
+checksum = "66029b0ef53d6c095a4477c66362fa09d3eb8c8b6ff528a914817cc7480c713d"
 dependencies = [
  "bitflags 2.9.1",
  "camino",
@@ -1474,9 +1474,9 @@ dependencies = [
 
 [[package]]
 name = "facet-derive"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08ccb80a49f6783f53a874563100edcfd83d90c5801fcfc702d0f9c0ec7c2e02"
+checksum = "a4371810d5216deb2144520de8b9e38b4bad5e784a80b6c7f031b6d4bf729ff1"
 dependencies = [
  "facet-core",
  "facet-derive-emit",
@@ -1484,9 +1484,9 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-emit"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bc022b2be3cdd388300c9c469fd20e7c511f4eb90fa0538628b08136a3df031"
+checksum = "81f2ea2753704d087e7dba48cc9e8cdc6cf3e0b46176b456e72ddcc0f73a27d1"
 dependencies = [
  "facet-derive-parse",
  "quote",
@@ -1494,18 +1494,18 @@ dependencies = [
 
 [[package]]
 name = "facet-derive-parse"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "204cc09d6ecda40ac5ea9e7628eba9e6bc67d0b872faca74771f4e13efb45c0b"
+checksum = "b52eab7c3cf07146a1c60974f1cd56073269cd13e3da603cd275de4ea9d9a0a8"
 dependencies = [
  "unsynn",
 ]
 
 [[package]]
 name = "facet-deserialize"
-version = "0.24.8"
+version = "0.24.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fbfcd7332c2d99ebe8d24294d6b688ab581da55d94fd83edc50ec771ff73896"
+checksum = "d5557aa4a9dbb0feee9d4829491f17de87dcd567ca7817090862c2620dddddd8"
 dependencies = [
  "ariadne",
  "facet-core",
@@ -1516,9 +1516,9 @@ dependencies = [
 
 [[package]]
 name = "facet-json"
-version = "0.24.3"
+version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00a5540957b32d092ab83494196727308c1ad650e4f2f206fd31e1cfccf5b822"
+checksum = "6e1d401179d3eb41497d15aa5d994de5d30cee28efc6c6de97ee1f558887304a"
 dependencies = [
  "facet-core",
  "facet-deserialize",
@@ -1529,9 +1529,9 @@ dependencies = [
 
 [[package]]
 name = "facet-pretty"
-version = "0.23.9"
+version = "0.23.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82a9a3b42a2b14b80110d598d7e5585de7b89bca4629e4e7e67feff23bc7bcd6"
+checksum = "b7438e4a26714a25bd819110b19a04f7e771f41c48eb51d6a0f31a3501e7edf2"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -1540,9 +1540,9 @@ dependencies = [
 
 [[package]]
 name = "facet-reflect"
-version = "0.27.2"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcec0958cbdd6db9ab3f663287a0b353ab7fb1b34cd78bf08439ca964890e6ee"
+checksum = "70b35a505cfb45fdbff0115c57bd404caf8db8e591a7d2bdba8494f8605c8c79"
 dependencies = [
  "bitflags 2.9.1",
  "facet-core",
@@ -1551,9 +1551,9 @@ dependencies = [
 
 [[package]]
 name = "facet-serialize"
-version = "0.24.3"
+version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d161f43c7aa388c78531e8b6b8363fe1d73f88504b216701d436181ee75682ea"
+checksum = "3461cc6154d44f929139047e5b456f18736215324c28e4d4e9beefa190f2ffb1"
 dependencies = [
  "facet-core",
  "facet-reflect",
@@ -1562,9 +1562,9 @@ dependencies = [
 
 [[package]]
 name = "facet-yaml"
-version = "0.25.1"
+version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c6a4c05943b97b38fc1708d1dd6b12e0b24a4df3ee1174d82a1d084fefffc86"
+checksum = "43b4e35fd92ab4f9764ceea56f63e77c6b2a363c1bfc92f15846cd40a276bc75"
 dependencies = [
  "facet-core",
  "facet-reflect",
