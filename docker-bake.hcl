@@ -8,20 +8,20 @@ group "default" {
 
 # ARM64 tarball extraction
 target "home-arm64-tar" {
-  target = "home-minimal" # 🔥 override to scratch minimal!
+  target = "home-minimal"
   platforms = ["linux/arm64"]
   output = [
-    "type=tar,dest=aarch64-unknown-linux-gnu.tar.xz,compression=xz,entrypoint=/home"
+    "type=tar,dest=aarch64-unknown-linux-gnu.tar,entrypoint=/home"
   ]
-  tags = [] # prevent accidentally pushing this tar image
+  tags = []
 }
 
 # AMD64 tarball extraction
 target "home-amd64-tar" {
-  target = "home-minimal" # 🔥 override to scratch minimal!
+  target = "home-minimal"
   platforms = ["linux/amd64"]
   output = [
-    "type=tar,dest=x86_64-unknown-linux-gnu.tar.xz,compression=xz,entrypoint=/home"
+    "type=tar,dest=x86_64-unknown-linux-gnu.tar,entrypoint=/home"
   ]
   tags = []
 }
