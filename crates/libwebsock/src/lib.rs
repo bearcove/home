@@ -70,45 +70,17 @@ impl Mod for ModImpl {
             } else if let Ok(ipv6) = host.parse::<std::net::Ipv6Addr>() {
                 ipv6.into()
             } else {
-                let resolv_conf = fs_err::tokio::read_to_string("/etc/resolv.conf")
+                let mut addrs = tokio::net::lookup_host((host, port))
                     .await
-                    .map_err(|e| Error::Any(format!("Failed to read /etc/resolv.conf: {e}")))?;
-                let nameserver = resolv_conf
-                    .lines()
-                    .find(|line| line.starts_with("nameserver"))
-                    .and_then(|line| line.split_whitespace().nth(1))
-                    .and_then(|ip| ip.parse::<std::net::Ipv4Addr>().ok())
-                    .ok_or_else(|| {
-                        Error::Any("No valid nameserver found in /etc/resolv.conf".to_string())
-                    })?;
-                tracing::debug!("Using nameserver {nameserver}");
+                    .map_err(|e| Error::Any(format!("Failed to resolve host: {e}")))?
+                    .map(|sa| match sa {
+                        std::net::SocketAddr::V4(addr) => IpAddr::V4(*addr.ip()),
+                        std::net::SocketAddr::V6(addr) => IpAddr::V6(*addr.ip()),
+                    });
 
-                let config = hickory_resolver::config::ResolverConfig::from_parts(
-                    None,
-                    vec![],
-                    vec![hickory_resolver::config::NameServerConfig {
-                        socket_addr: (nameserver, 53).into(),
-                        protocol: hickory_resolver::config::Protocol::Udp,
-                        tls_dns_name: None,
-                        trust_negative_responses: false,
-                        bind_addr: None,
-                    }],
-                );
-
-                let resolver = hickory_resolver::TokioAsyncResolver::tokio(
-                    config,
-                    hickory_resolver::config::ResolverOpts::default(),
-                );
-                let ipv4_lookup = resolver
-                    .ipv4_lookup(host)
-                    .await
-                    .map_err(|e| Error::Any(e.to_string()))?;
-                ipv4_lookup
-                    .iter()
+                addrs
                     .next()
                     .ok_or_else(|| Error::Any("Failed to resolve host".to_string()))?
-                    .0
-                    .into()
             };
             let dns_elapsed = before_dns.elapsed();
 
