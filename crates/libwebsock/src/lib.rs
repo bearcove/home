@@ -75,7 +75,15 @@ impl Mod for ModImpl {
                     .map_err(|e| Error::Any(format!("Failed to resolve host: {e}")))?
                     .map(|sa| match sa {
                         std::net::SocketAddr::V4(addr) => IpAddr::V4(*addr.ip()),
-                        std::net::SocketAddr::V6(addr) => IpAddr::V6(*addr.ip()),
+                        std::net::SocketAddr::V6(addr) => {
+                            // If it's ::1 (IPv6 localhost), return 127.0.0.1 (IPv4 localhost) instead.
+                            // Unfortunately, not everyone listens on IPv6.
+                            if addr.ip() == &std::net::Ipv6Addr::LOCALHOST {
+                                IpAddr::V4(std::net::Ipv4Addr::LOCALHOST)
+                            } else {
+                                IpAddr::V6(*addr.ip())
+                            }
+                        }
                     });
 
                 addrs
@@ -84,7 +92,6 @@ impl Mod for ModImpl {
             };
             let dns_elapsed = before_dns.elapsed();
 
-            // TODO: don't trouble google dns for localhost...
             tracing::debug!("Resolved {host_and_port} to {ip} in {dns_elapsed:?}");
 
             tracing::debug!("Connecting to {ip}:{port}...");
