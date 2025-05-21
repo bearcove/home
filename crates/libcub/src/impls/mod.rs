@@ -70,7 +70,7 @@ pub(crate) async fn serve(
         base_url: cc.mom_base_url.clone(),
         api_key: Some(cc.mom_api_key.clone()),
     };
-    let (mom_client, mut mev_rx) = setup_mom_client(mom_client_config).await?;
+    let (mom_client, mut mev_rx) = setup_mom_client(mom_client_config.clone()).await?;
 
     let (tenant_infos, mut revs_per_ts, mut sponsors_per_ts) =
         process_mom_good_morning(&cc, &mut mev_rx, web).await?;
@@ -79,17 +79,25 @@ pub(crate) async fn serve(
         mom_client.clone()
     } else {
         {
-            let base_url = "https://mom.bearcove.cloud".to_string();
-            let api_key: MomApiKey = match std::env::var("MOM_API_KEY") {
-                Ok(key) => key.into(),
-                Err(_) => MOM_DEV_API_KEY.to_owned(),
-            };
-            let client = libmomclient::load()
-                .client(MomClientConfig {
+            let force_local = std::env::var("FORCE_LOCAL_MOM")
+                .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+                .unwrap_or(false);
+
+            let mom_client_config = if force_local {
+                mom_client_config
+            } else {
+                let base_url = "https://mom.bearcove.cloud".to_string();
+                let api_key: MomApiKey = match std::env::var("MOM_API_KEY") {
+                    Ok(key) => key.into(),
+                    Err(_) => MOM_DEV_API_KEY.to_owned(),
+                };
+                MomClientConfig {
                     base_url,
                     api_key: Some(api_key),
-                })
-                .await?;
+                }
+            };
+
+            let client = libmomclient::load().client(mom_client_config).await?;
             Arc::from(client)
         }
     };

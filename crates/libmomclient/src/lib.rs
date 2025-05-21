@@ -247,11 +247,28 @@ impl MomTenantClientImpl {
     fn prod_mom_url(&self, relative_path: &str) -> (String, Uri) {
         use config_types::is_development;
 
-        let base_url = if is_development() {
+        use std::sync::OnceLock;
+        static FORCE_LOCAL_MOM_ONCE: OnceLock<bool> = OnceLock::new();
+        let force_local_mom = *FORCE_LOCAL_MOM_ONCE.get_or_init(|| {
+            std::env::var("FORCE_LOCAL_MOM")
+                .map(|val| val == "1" || val.eq_ignore_ascii_case("true"))
+                .unwrap_or(false)
+        });
+
+        let base_url = if is_development() && !force_local_mom {
             production_mom_url().to_string()
         } else {
             self.mcc.base_url.clone()
         };
+        tracing::debug!(
+            is_development = %is_development(),
+            force_local_mom = %force_local_mom,
+            production_mom_url = %production_mom_url(),
+            mcc_base_url = %self.mcc.base_url,
+            selected_base_url = %base_url,
+            "Resolving MOM URL for prod_mom_url"
+        );
+
         let full_path = format!("{}/{}", self.base_path, relative_path);
         let url = format!("{base_url}{full_path}");
         let uri = Uri::from_str(&url).unwrap();
@@ -360,6 +377,17 @@ impl MomTenantClient for MomTenantClientImpl {
             async move {
                 let (_, uri) = self.prod_mom_url(&format!("revision/upload/{revision_id}"));
                 info!("Uploading revision to URL: {}", uri);
+                {
+                    let path = "/tmp/payload.json";
+                    match fs_err::tokio::write(path, &payload).await {
+                        Ok(_) => {
+                            println!("Payload written to: {path}");
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to write payload to {path}: {e}");
+                        }
+                    }
+                }
                 self.hclient
                     .put(uri)
                     .with_auth(&self.mcc)

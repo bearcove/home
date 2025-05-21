@@ -3324,6 +3324,7 @@ dependencies = [
  "credentials",
  "eyre",
  "facet-json",
+ "fs-err",
  "futures-core",
  "libgithub",
  "libhttpclient",
