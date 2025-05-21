@@ -17,7 +17,7 @@ rustflags = [
     # "force:std",
 ]
 
-# [patch.crates-io]
+[patch.crates-io]
 # facet = { path = "../../facet-rs/facet/facet" }
 # facet-core = { path = "../../facet-rs/facet/facet-core" }
 # facet-json = { path = "../../facet-rs/facet/facet-json" }
