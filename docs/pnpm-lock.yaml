@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@bearcove/home-base':
-        specifier: ^12.0.0
-        version: 12.0.0
+        specifier: ^12.0.2
+        version: 12.0.2
       svelte:
         specifier: ^5.28.2
         version: 5.31.1
@@ -46,8 +46,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@bearcove/home-base@12.0.0':
-    resolution: {integrity: sha512-iWC4K5eWqNKHwbR2IWJ1vHmZUuInlqM3SsGoN/sJ4BnbmmL/vB3WjpI0T2+Fiqrz7o8iu1Yr5KuZIWgYeZpFfQ==}
+  '@bearcove/home-base@12.0.2':
+    resolution: {integrity: sha512-4ARZzgR17kudroAJlxFIyElUDSMUySdW1PXQI+VolG4UnzvfWImHPriHgojOHEh+LaIgkY9mgTNS1+znvXSAew==}
 
   '@bufbuild/protobuf@2.4.0':
     resolution: {integrity: sha512-RN9M76x7N11QRihKovEglEjjVCQEA9PRBVnDgk9xw8JHLrcUrp4FpAVSPSH91cNbcTft3u2vpLN4GMbiKY9PJw==}
@@ -920,7 +920,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@bearcove/home-base@12.0.0':
+  '@bearcove/home-base@12.0.2':
     dependencies:
       canvas-confetti: 1.9.3
       debug: 4.4.1
