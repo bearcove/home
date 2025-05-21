@@ -512,7 +512,9 @@ pub struct PatreonCredentials {
     pub refresh_token: String,
     pub expires_in: u32,
     pub scope: String,
+    #[facet(default)]
     pub token_type: Option<String>,
+    #[facet(default)]
     pub version: Option<String>,
 }
 
