@@ -17,8 +17,10 @@ struct OpenInEditorParams {
     // Path to the input file to open
     input_path: InputPath,
     // Byte offset within the file to position cursor at
+    #[facet(default)]
     byte_offset: Option<usize>,
     // Line number to position cursor at
+    #[facet(default)]
     line_number: Option<usize>,
 }
 
