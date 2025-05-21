@@ -802,24 +802,35 @@ pub async fn wake_revision_events(
 
     // Collect all inputs in ROOT_INPUT_PATHS recursively
     let mut current_inputs: HashMap<InputPath, PathMetadata> = HashMap::new();
-    let mut dirs = ROOT_INPUT_PATHS
+    let mut roots = ROOT_INPUT_PATHS
         .iter()
         .map(|&path| mappings.to_disk_path(path).unwrap())
         .collect::<Vec<_>>();
-    while let Some(dir) = dirs.pop() {
-        let mut read_dir = fs_err::tokio::read_dir(dir).await?;
-        while let Some(entry) = read_dir.next_entry().await? {
-            let path = Utf8PathBuf::from_path_buf(entry.path()).unwrap();
-            let metadata = PathMetadata::from(entry.metadata().await?);
-            if is_path_ignored_with_meta(&path, Some(&metadata)).await {
-                continue;
-            }
+    while let Some(path) = roots.pop() {
+        let meta = fs_err::tokio::metadata(&path).await?;
+        let metadata = PathMetadata::from(meta);
 
-            if metadata.is_dir() {
-                dirs.push(path);
-            } else if metadata.is_file() {
-                current_inputs.insert(mappings.to_input_path(&path)?, metadata);
+        if is_path_ignored_with_meta(&path, Some(&metadata)).await {
+            continue;
+        }
+
+        if metadata.is_dir() {
+            let mut read_dir = fs_err::tokio::read_dir(&path).await?;
+            while let Some(entry) = read_dir.next_entry().await? {
+                let entry_path = Utf8PathBuf::from_path_buf(entry.path()).unwrap();
+                let entry_metadata = PathMetadata::from(entry.metadata().await?);
+                if is_path_ignored_with_meta(&entry_path, Some(&entry_metadata)).await {
+                    continue;
+                }
+
+                if entry_metadata.is_dir() {
+                    roots.push(entry_path);
+                } else if entry_metadata.is_file() {
+                    current_inputs.insert(mappings.to_input_path(&entry_path)?, entry_metadata);
+                }
             }
+        } else if metadata.is_file() {
+            current_inputs.insert(mappings.to_input_path(&path)?, metadata);
         }
     }
 
