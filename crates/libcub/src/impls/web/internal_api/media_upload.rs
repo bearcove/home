@@ -61,7 +61,10 @@ struct CommitMessage {
     /// describes the content of the image, for non-sighted users
     alt: String,
     is_figure: bool,
+
+    #[facet(default)]
     attr: Option<String>,
+    #[facet(default)]
     attrlink: Option<String>,
 }
 
