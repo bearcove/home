@@ -67,28 +67,30 @@ impl Mod for ModImpl {
             let before_dns = Instant::now();
             let ip: IpAddr = if let Ok(ipv4) = host.parse::<std::net::Ipv4Addr>() {
                 ipv4.into()
-            } else if let Ok(ipv6) = host.parse::<std::net::Ipv6Addr>() {
-                ipv6.into()
+            } else if let Ok(_ipv6) = host.parse::<std::net::Ipv6Addr>() {
+                // If a literal IPv6 address was given, skip it (since we only want IPv4)
+                return Err(Error::Any(
+                    "IPv6 addresses not supported, only IPv4".to_string(),
+                ));
             } else {
                 let mut addrs = tokio::net::lookup_host((host, port))
                     .await
                     .map_err(|e| Error::Any(format!("Failed to resolve host: {e}")))?
-                    .map(|sa| match sa {
-                        std::net::SocketAddr::V4(addr) => IpAddr::V4(*addr.ip()),
+                    .filter_map(|sa| match sa {
+                        std::net::SocketAddr::V4(addr) => Some(IpAddr::V4(*addr.ip())),
                         std::net::SocketAddr::V6(addr) => {
                             // If it's ::1 (IPv6 localhost), return 127.0.0.1 (IPv4 localhost) instead.
-                            // Unfortunately, not everyone listens on IPv6.
                             if addr.ip() == &std::net::Ipv6Addr::LOCALHOST {
-                                IpAddr::V4(std::net::Ipv4Addr::LOCALHOST)
+                                Some(IpAddr::V4(std::net::Ipv4Addr::LOCALHOST))
                             } else {
-                                IpAddr::V6(*addr.ip())
+                                None
                             }
                         }
                     });
 
-                addrs
-                    .next()
-                    .ok_or_else(|| Error::Any("Failed to resolve host".to_string()))?
+                addrs.next().ok_or_else(|| {
+                    Error::Any("Failed to resolve host (no IPv4 addresses found)".to_string())
+                })?
             };
             let dns_elapsed = before_dns.elapsed();
 
