@@ -147,7 +147,12 @@ impl TenantConfig {
 
     /// Used to derive the secret key for cookie encryption
     pub fn cookie_sauce(&self) -> String {
-        format!("wowee {} needs secret cookies", self.name)
+        if let Some(secrets) = &self.secrets {
+            if let Some(cookie_sauce) = &secrets.cookie_sauce {
+                return cookie_sauce.clone();
+            }
+        }
+        panic!("Cookie sauce not set for tenant {}! This should be derived by Mom from the global secret.", self.name);
     }
 
     /// e.g. for fasterthanli.me in prod, returns "fasterthanli.me".
@@ -439,6 +444,9 @@ pub struct TenantSecrets {
     pub aws: AwsSecrets,
     pub patreon: Option<PatreonSecrets>,
     pub github: Option<GitHubSecrets>,
+    /// Derived cookie sauce for this tenant (derived from global secret)
+    #[facet(optional)]
+    pub cookie_sauce: Option<String>,
 }
 
 #[derive(Facet, Clone, Serialize, Deserialize)]
@@ -530,6 +538,9 @@ pub struct MomSecrets {
     /// Can read/write specific tenants, used by humans
     #[serde(default)]
     pub scoped_api_keys: HashMap<MomApiKey, ScopedMomApiKey>,
+
+    /// Global secret for deriving per-tenant cookie encryption keys
+    pub cookie_sauce: String,
 }
 
 pub const MOM_DEV_API_KEY: &MomApiKeyRef = MomApiKeyRef::from_static("mom_KEY_IN_DEV");
