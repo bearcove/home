@@ -2053,6 +2053,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
 
 [[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
 name = "highlight-types"
 version = "0.1.0"
 dependencies = [
@@ -3284,6 +3290,8 @@ dependencies = [
  "fs-err",
  "futures-core",
  "futures-util",
+ "hex",
+ "hmac",
  "image-types",
  "inflight",
  "itertools 0.14.0",
@@ -3304,6 +3312,7 @@ dependencies = [
  "r2d2_sqlite",
  "rusqlite",
  "serde",
+ "sha2",
  "tempfile",
  "time",
  "tokio",

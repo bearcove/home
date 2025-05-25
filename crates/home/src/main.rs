@@ -120,6 +120,7 @@ async fn real_main() -> eyre::Result<()> {
                     secrets: MomSecrets {
                         readonly_api_key: MOM_DEV_API_KEY.to_owned(),
                         scoped_api_keys: Default::default(),
+                        cookie_sauce: "dev_global_cookie_sauce_secret".to_owned(),
                     },
                 };
 
