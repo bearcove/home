@@ -2098,27 +2098,6 @@ dependencies = [
 [[package]]
 name = "home"
 version = "4.0.0"
-dependencies = [
- "camino",
- "config-types",
- "eyre",
- "fastrand",
- "fs-err",
- "libc",
- "libclap",
- "libconfig",
- "libcub",
- "libdoctor",
- "liberrhandling",
- "libmom",
- "libterm",
- "libtracingsub",
- "mom-types",
- "owo-colors",
- "serde_json",
- "tokio",
- "tracing",
-]
 
 [[package]]
 name = "home-cub"
@@ -2147,6 +2126,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "home-init"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "facet",
+ "facet-args",
+ "fastrand",
+ "fs-err",
+ "serde_json",
+ "skelly",
+ "tokio",
+]
+
+[[package]]
 name = "home-mom"
 version = "0.1.0"
 dependencies = [
@@ -2168,7 +2161,6 @@ dependencies = [
 name = "home-term"
 version = "0.1.0"
 dependencies = [
- "facet",
  "facet-args",
  "facet-pretty",
  "libterm",
