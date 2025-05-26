@@ -16,10 +16,12 @@ camino = "1.1.9"
 config-types = { version = "0.1.0", path = "../../crates/config-types" }
 facet.workspace = true
 facet-args = "0.19.8"
+facet-json.workspace = true
 facet-pretty.workspace = true
+fs-err = "3.1.0"
+libc = "0.2"
 libconfig = { version = "0.1.0", path = "../../crates/libconfig" }
 libcub = { version = "0.1.0", path = "../../crates/libcub" }
-libmom = { version = "0.1.0", path = "../../crates/libmom" }
-mom-types = { version = "0.1.0", path = "../../crates/mom-types" }
+sendfd = "0.4.3"
 skelly = { version = "0.1.0", path = "../../crates/skelly" }
 tokio.workspace = true

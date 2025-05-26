@@ -16,3 +16,5 @@ color-backtrace = { version = "0.7.0" }
 color-eyre = { version = "0.6.4", default-features = false }
 log = "0.4.27"
 owo-colors = "4.2.1"
+tokio = { workspace = true }
+sysinfo = "0.33.1"

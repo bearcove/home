@@ -1,7 +1,3 @@
-#![warn(clippy::std_instead_of_core)]
-#![warn(clippy::std_instead_of_alloc)]
-#![forbid(unsafe_code)]
-
 pub use color_eyre;
 pub use color_eyre::eyre;
 pub use log;
@@ -9,7 +5,8 @@ pub use owo_colors;
 
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use owo_colors::{OwoColorize, Style};
-use std::io::Write;
+use std::{io::Write, time::Duration};
+use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System};
 
 struct SimpleLogger;
 
@@ -127,4 +124,44 @@ pub fn setup() {
         .unwrap_or(LevelFilter::Info);
 
     log::set_max_level(level);
+
+    // Watch parent process if SKELLY_PARENT_PID is set
+    if let Ok(parent_pid_str) = std::env::var("SKELLY_PARENT_PID") {
+        if let Ok(parent_pid) = parent_pid_str.parse::<usize>() {
+            log::debug!("Watching parent process with PID {parent_pid}");
+
+            std::thread::spawn(move || {
+                watch_parent_process(parent_pid);
+            });
+        } else {
+            log::warn!("Invalid SKELLY_PARENT_PID value: {parent_pid_str}");
+        }
+    }
+}
+
+fn watch_parent_process(parent_pid: usize) {
+    let pid = Pid::from(parent_pid);
+    let mut system = System::new();
+
+    loop {
+        system.refresh_processes_specifics(
+            ProcessesToUpdate::Some(&[pid]),
+            true,
+            ProcessRefreshKind::nothing(),
+        );
+
+        if system.process(pid).is_none() {
+            log::warn!("Parent process (PID {parent_pid}) has exited, terminating");
+            std::process::exit(1);
+        }
+
+        std::thread::sleep(Duration::from_secs(1));
+    }
+}
+
+/// Spawn a child process with SKELLY_PARENT_PID set to the current process ID
+pub fn spawn(mut cmd: tokio::process::Command) -> tokio::process::Command {
+    let current_pid = std::process::id();
+    cmd.env("SKELLY_PARENT_PID", current_pid.to_string());
+    cmd
 }
