@@ -180,6 +180,16 @@ fn get_podcast_config(state: &minijinja::State) -> Result<Value, Error> {
     Ok(obj)
 }
 
+fn get_slug(value: String) -> Result<String, Error> {
+    let Some(slash_split) = value.split("/").last() else {
+        return Err(Error::new(minijinja::ErrorKind::InvalidOperation, "No slashes in path to get slug"));
+    };
+    let Some(slug) = slash_split.split('.').next() else {
+        return Err(Error::new(minijinja::ErrorKind::InvalidOperation, "missing content"));
+    };
+    Ok(slug.to_string())
+}
+
 fn get_all_episodes(state: &minijinja::State) -> Result<Value, Error> {
     let viewer = Viewer {
         is_admin: false,
@@ -506,6 +516,7 @@ pub(crate) fn register_all(environment: &mut Environment<'static>) {
     environment.add_function("get_recent_pages", get_recent_pages);
     environment.add_function("get_all_episodes", get_all_episodes);
     environment.add_function("get_podcast_config", get_podcast_config);
+    environment.add_function("get_slug", get_slug);
     environment.add_function("url_encode", url_encode);
     environment.add_function("html_escape", html_escape);
     environment.add_function("get_page_from_route", get_page_from_route);
