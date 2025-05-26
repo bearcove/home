@@ -121,7 +121,14 @@ async fn real_main() -> eyre::Result<()> {
         fs_err::tokio::write(&mom_config_path, mom_config_json).await?;
 
         // Convert tenants HashMap to Vec<TenantConfig> for serialization
-        let tenant_list: Vec<TenantConfig> = tenants.values().map(|ti| ti.tc.clone()).collect();
+        let tenant_list: Vec<TenantConfig> = tenants
+            .values()
+            .map(|ti| {
+                let mut tc = ti.tc.clone();
+                tc.base_dir_for_dev = Some(ti.base_dir.clone());
+                tc
+            })
+            .collect();
 
         // Write tenant config to temp file
         let tenant_config_path = temp_dir.join("tenant-config.json");
@@ -176,7 +183,7 @@ async fn real_main() -> eyre::Result<()> {
             return Err(eyre::eyre!("Failed to duplicate socket fd"));
         }
         cmd.arg("--socket-fd").arg(dup_fd.to_string());
-        
+
         // Set close-on-exec for the original fd but not the duplicate
         unsafe {
             libc::fcntl(child_fd, libc::F_SETFD, libc::FD_CLOEXEC);

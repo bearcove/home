@@ -1288,6 +1288,7 @@ mod tests {
                 domain_aliases: vec![],
                 object_storage: None,
                 secrets: None,
+                base_dir_for_dev: None,
             },
         };
 
