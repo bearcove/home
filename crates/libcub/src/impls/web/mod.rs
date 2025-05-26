@@ -37,6 +37,7 @@ pub(crate) fn web_routes() -> Router {
         .route("/robots.txt", get(robots_txt))
         .route("/whoami", get(whoami))
         .route("/index.xml", get(atom_feed))
+        .route("/podcast-feed-m4a.xml", get(podcast_feed))
         .route("/extra-files/{*path}", get(extra_files))
         .route("/favicon.ico", get(favicon))
         .route("/", get(serve_page_route))
@@ -50,6 +51,10 @@ async fn robots_txt() -> &'static str {
 
 async fn atom_feed(tr: CubReqImpl) -> LegacyReply {
     tr.render(RenderArgs::new("index.xml").with_content_type(ContentType::Atom))
+}
+
+async fn podcast_feed(tr: CubReqImpl) -> LegacyReply {
+    tr.render(RenderArgs::new("podcast-feed-m4a.xml").with_content_type(ContentType::Atom))
 }
 
 /// Render a 404 page using the template

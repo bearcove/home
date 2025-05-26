@@ -276,6 +276,13 @@ impl TenantInfo {
     }
 }
 
+#[derive(Debug, Clone, Facet, Serialize, Deserialize)]
+pub struct Podcast {
+    pub title: String,
+    pub link: String,
+    pub description: String,
+}
+
 /// That config is part of the revision paks — it's stored in `home.config.json` and
 /// contains no secrets at all
 #[derive(Facet, Clone, Default, Serialize, Deserialize)]
@@ -284,6 +291,9 @@ impl TenantInfo {
 pub struct RevisionConfig {
     /// where to push this site in prod?
     pub id: String,
+
+    /// TODO this shouldn't live here
+    pub podcast: Option<Podcast>,
 
     /// note: domains are configured on mom's side so folks can't
     /// randomly override, say, `fasterthanli.me`, with whatever they want.

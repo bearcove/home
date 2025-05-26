@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use closest::{GetOrHelp, ResourceKind};
-use config_types::WebConfig;
-use conflux::{InputPath, InputPathRef, RevisionView, RouteRef, Viewer};
+use config_types::{Podcast, WebConfig};
+use conflux::{InputPath, InputPathRef, PageKind, RevisionView, RouteRef, Viewer};
 use itertools::Itertools;
-use minijinja::{Environment, Error, Value, value::Kwargs};
+use minijinja::{value::Kwargs, Environment, Error, Value};
 use rand::prelude::IndexedRandom;
 use rand::seq::SliceRandom;
 use time::OffsetDateTime;
@@ -165,6 +165,44 @@ fn get_page_from_route(state: &minijinja::State, path: String) -> Result<Value, 
     let page = rev.pages.get_or_help(ResourceKind::Page, path).mj()?;
     let page = page.clone().to_val();
     Ok(page)
+}
+
+fn get_podcast_config(state: &minijinja::State) -> Result<Value, Error> {
+    let rv = get_revision_view(state);
+    let rev = rv.rev().mj()?;
+
+    let pod: Option<Podcast> = rev.pak.rc.podcast.clone();
+    let Some(pod) = pod else {
+        return Err(Error::new(minijinja::ErrorKind::UnknownBlock, "No podcast info!"));
+    };
+    let obj: Value = Value::from_serialize(pod);
+
+    Ok(obj)
+}
+
+fn get_all_episodes(state: &minijinja::State) -> Result<Value, Error> {
+    let viewer = Viewer {
+        is_admin: false,
+        has_bronze: false,
+        has_silver: false,
+    };
+
+    // pages that are article or series_part, and listed, sorted by date descending,
+    // limit to 25 items
+    let rv = get_revision_view(state);
+    let pages = rv
+        .rev()
+        .mj()?
+        .pages
+        .values()
+        .filter(|p| p.kind == PageKind::Episode)
+        .filter(|p| p.is_listed(&viewer))
+        .sorted_by_key(|p| p.date)
+        .rev()
+        .cloned()
+        .map(|p| p.to_val())
+        .collect::<Vec<_>>();
+    Ok(Value::from(pages))
 }
 
 // This is used to generate the RSS feed
@@ -466,6 +504,8 @@ pub(crate) fn register_all(environment: &mut Environment<'static>) {
     environment.add_function("asset_url", asset_url);
     environment.add_function("get_media", get_media);
     environment.add_function("get_recent_pages", get_recent_pages);
+    environment.add_function("get_all_episodes", get_all_episodes);
+    environment.add_function("get_podcast_config", get_podcast_config);
     environment.add_function("url_encode", url_encode);
     environment.add_function("html_escape", html_escape);
     environment.add_function("get_page_from_route", get_page_from_route);

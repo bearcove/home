@@ -3,9 +3,33 @@ use facet::Facet;
 use time::OffsetDateTime;
 
 #[derive(Facet, Debug)]
+pub struct PodcastMeta {
+    // Title: should be gotten from the main frontmatter
+    // url: should be determined automatically from the generated page
+    //   description: we MAYBE could pull this from the page header, but
+    //   we probably want a different custom one.
+    #[facet(default)]
+    description: Option<String>,
+    // subtitle: pull from main frontmatter
+    // files: I think we should pick the file formats in the home.json meta,
+    //   then generate the file names based on the URL slug
+    // TODO: some kind of `Duration` or something instead? Can we load this
+    // from the files themselves?
+    duration: String,
+    /// Extra keywords for this episode, on top of the ones from home.json?
+    #[facet(default)]
+    extra_keywords: Vec<String>,
+    // transcript-url: We can again probably generate this from the file name?
+    length_bytes: usize,
+}
+
+#[derive(Facet, Debug)]
 pub struct Frontmatter {
     /// Title of the page
     pub title: String,
+
+    /// An optional subtitle, usable for punchy asides of the main title
+    // pub subtitle: Option<String>,
 
     /// Jinja2 template to use for rendering — defaults to `page.html`
     #[facet(default = "page.html".into())]
@@ -37,6 +61,10 @@ pub struct Frontmatter {
     /// Tags associated with the page (useful for listings)
     #[facet(default)]
     pub tags: Vec<String>,
+
+    /// Items associated with podcast episodes
+    #[facet(default)]
+    pub podcast: Option<PodcastMeta>,
 
     /// Additional metadata for the page
     #[facet(default)]
