@@ -1,5 +1,5 @@
 use autotrait::autotrait;
-use libclap::TermArgs;
+use facet::Facet;
 
 struct ModImpl;
 
@@ -12,6 +12,22 @@ pub fn load() -> &'static dyn Mod {
 pub enum FormatAnsiStyle {
     Markdown,
     Html,
+}
+
+/// Records a terminal session with colors, ready to paste into markdown
+#[derive(Facet)]
+pub struct Args {
+    /// Enable strict mode
+    #[facet(long)]
+    pub strict: bool,
+
+    /// Print CSS
+    #[facet(long)]
+    pub css: bool,
+    //
+    // /// Positional arguments — TODO: https://github.com/facet-rs/facet/pull/679
+    // #[facet()]
+    // pub args: Vec<String>,
 }
 
 #[autotrait]
@@ -170,7 +186,7 @@ impl Mod for ModImpl {
         performer.finish(style)
     }
 
-    fn run(&self, args: TermArgs) {
+    fn run(&self, args: Args) {
         use owo_colors::OwoColorize;
         use std::io::{Read, Write};
         use std::sync::{Arc, Mutex};
@@ -181,9 +197,9 @@ impl Mod for ModImpl {
             std::process::exit(0);
         }
 
-        eprintln!("✂️ Welcome to terminus, enjoy your favorite shell (set `$SHELL` to override)");
+        eprintln!("✂️ Welcome to home-term, enjoy your favorite shell (set `$SHELL` to override)");
 
-        let child_args = args.args;
+        let child_args: Vec<String> = vec![];
         let pty_system = portable_pty::native_pty_system();
 
         let (w, h) = term_size::dimensions().unwrap_or((80, 24));
