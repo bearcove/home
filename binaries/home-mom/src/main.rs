@@ -17,6 +17,10 @@ struct Args {
     #[facet(long)]
     /// tenant config file
     pub tenant_config: Utf8PathBuf,
+
+    #[facet(long)]
+    /// Unix socket file descriptor for receiving the TCP listener
+    pub socket_fd: Option<i32>,
 }
 
 #[tokio::main]
@@ -37,12 +41,6 @@ async fn real_main() -> eyre::Result<()> {
 
     log::info!("Args: {}", args.pretty());
 
-    assert_eq!(
-        Environment::default(),
-        Environment::Production,
-        "mom subcommand is only for production right now"
-    );
-
     let config = libconfig::load().load_mom_config(&args.mom_config)?;
     let tenant_config = fs_err::tokio::read_to_string(&args.tenant_config).await?;
     let tenant_list: Vec<TenantConfig> =
@@ -60,14 +58,52 @@ async fn real_main() -> eyre::Result<()> {
         })
         .collect();
 
-    let listener = TcpListener::bind("[::]:1118").await?;
+    let port = if let Ok(port_str) = std::env::var("WEB_PORT") {
+        port_str.parse::<u16>().unwrap_or(1118)
+    } else {
+        1118
+    };
+
+    let listener = if let Some(socket_fd) = args.socket_fd {
+        // Receive the TCP listener via Unix socket
+        log::info!("Receiving TCP listener from socket fd {socket_fd}");
+
+        use sendfd::RecvWithFd;
+        use std::os::unix::io::{FromRawFd, RawFd};
+        use std::os::unix::net::UnixStream;
+
+        // Convert the fd to a UnixStream
+        let unix_stream = unsafe { UnixStream::from_raw_fd(socket_fd) };
+
+        // Receive the TCP listener fd
+        let mut buf = [0u8; 1];
+        let mut fds = [0 as RawFd; 1];
+        let (_, fd_count) = unix_stream
+            .recv_with_fd(&mut buf, &mut fds)
+            .map_err(|e| eyre::eyre!("Failed to receive TCP listener fd: {}", e))?;
+
+        if fd_count == 0 {
+            return Err(eyre::eyre!("No file descriptor received"));
+        }
+
+        let tcp_fd = fds[0];
+
+        // Convert to std TcpListener
+        let std_listener = unsafe { std::net::TcpListener::from_raw_fd(tcp_fd) };
+
+        // Convert to tokio TcpListener
+        TcpListener::from_std(std_listener)?
+    } else {
+        // Fallback to binding directly
+        TcpListener::bind(format!("[::]:{port}")).await?
+    };
 
     libmom::load()
         .serve(MomServeArgs {
             config,
             web: WebConfig {
-                env: Environment::Production,
-                port: 999, // doesn't matter in prod — it's not used
+                env: Environment::default(),
+                port,
             },
             tenants,
             listener,
