@@ -40,7 +40,7 @@ pub(crate) async fn serve_edit_asset(tr: CubReqImpl, body: axum::body::Bytes) ->
             .await;
 
         if let Err(e) = status {
-            warn!("Failed to open file: {}", e);
+            warn!("Failed to open file: {e}");
         }
     });
 

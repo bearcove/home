@@ -57,7 +57,7 @@ pub async fn authbundle_load_from_cookies(cookies: &PrivateCookies<'_>) -> Optio
     debug!("Refreshing cookies");
     let creds = match refresh_credentials(&creds).await {
         Err(e) => {
-            warn!("Refreshing credentials failed, will log out: {:?}", e);
+            warn!("Refreshing credentials failed, will log out: {e:?}");
             cookies.remove(cookie.clone().into_owned());
             return None;
         }

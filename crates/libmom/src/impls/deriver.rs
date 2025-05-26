@@ -358,7 +358,7 @@ async fn transcode_media(
                 return Ok(());
             }
             DetailedTranscodeEvent::Error(error) => {
-                log::error!("FFmpeg transcoding error: {}", error);
+                log::error!("FFmpeg transcoding error: {error}");
                 continue;
             }
             DetailedTranscodeEvent::Log { level, message } => {

@@ -163,7 +163,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     let cache_key = di.key(env);
     match tenant.store().get(&cache_key).await {
         Ok(res) => {
-            log::debug!("Found derivation in cache: {:?}", cache_key);
+            log::debug!("Found derivation in cache: {cache_key:?}");
             return res.bytes().await.map_err(|e| {
                 eyre::eyre!(
                     "failed to fetch bytes from upstream for cache key '{}': {}",
@@ -175,9 +175,9 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
         Err(e) => {
             if e.is_not_found() {
                 // all good
-                log::debug!("cache miss: {}", cache_key);
+                log::debug!("cache miss: {cache_key}");
             } else {
-                log::warn!("error while fetching from cache ({}): {}", cache_key, e)
+                log::warn!("error while fetching from cache ({cache_key}): {e}")
             }
         }
     }
@@ -190,8 +190,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
         // in dev, the input might not be on object storage yet, so... check for it and upload it if needed
         if tenant.store().get(&input_key).await.is_err() {
             log::info!(
-                "Uploading input to object storage in development mode: {}",
-                input_key
+                "Uploading input to object storage in development mode: {input_key}"
             );
             let mappings = PathMappings::from_ti(tenant.ti());
             let disk_path = mappings.to_disk_path(&di.input.path)?;
@@ -220,9 +219,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
         }
 
         log::info!(
-            "Asking mom to derive (input_key: {}, route: {})",
-            input_key,
-            route
+            "Asking mom to derive (input_key: {input_key}, route: {route})"
         );
         let res = tcli
             .derive(DeriveParams {
@@ -245,21 +242,21 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
                     di.input.path.explode().1,
                     di.derivation.kind,
                     start.elapsed(),
-                    ByteSize::b(di.input.size).to_string(),
-                    ByteSize::b(donezo.output_size as u64).to_string(),
+                    ByteSize::b(di.input.size),
+                    ByteSize::b(donezo.output_size as u64),
                     donezo.output_size as f64 / di.input.size as f64,
                     route
                 );
                 break;
             }
             DeriveResponse::AlreadyInProgress(inprog) => {
-                log::info!("Derivation {} is already in progress: {:?}", route, inprog);
+                log::info!("Derivation {route} is already in progress: {inprog:?}");
 
                 sleep_ms = std::cmp::min(2000, sleep_ms + 100);
                 tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
             }
             DeriveResponse::TooManyRequests(_) => {
-                log::warn!("Too many requests for derivation {}", route);
+                log::warn!("Too many requests for derivation {route}");
                 sleep_ms = std::cmp::min(5000, sleep_ms * 2);
                 tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
             }
@@ -320,9 +317,7 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
                 tokio::spawn(async move {
                     log::trace!("[WS_PROXY] We made it all the way to the upgrade!!! yay!");
                     log::debug!(
-                        "[WS_PROXY] Proxying from \x1b[32m{}\x1b[0m to vite's websocket at \x1b[33m{}\x1b[0m",
-                        src_uri,
-                        dst_uri
+                        "[WS_PROXY] Proxying from \x1b[32m{src_uri}\x1b[0m to vite's websocket at \x1b[33m{dst_uri}\x1b[0m"
                     );
 
                     log::trace!(
@@ -340,7 +335,7 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
                     {
                         Ok(conn) => conn,
                         Err(e) => {
-                            log::error!("[WS_PROXY] Failed to connect to upstream websocket: {}", e);
+                            log::error!("[WS_PROXY] Failed to connect to upstream websocket: {e}");
                             return;
                         }
                     };
@@ -357,7 +352,7 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
             .await?;
         // Pass along the Sec-WebSocket-Protocol header if present
         if let Some(protocol) = ws_protocol {
-            log::trace!("Adding Sec-WebSocket-Protocol header: {}", protocol);
+            log::trace!("Adding Sec-WebSocket-Protocol header: {protocol}");
             res.headers_mut()
                 .insert("Sec-WebSocket-Protocol", protocol.parse().unwrap());
         } else {
@@ -418,22 +413,20 @@ async fn do_ws_proxy(
         match ev {
             Event::FromUpstream(Some(Ok(msg))) => {
                 log::trace!(
-                    "[WS_PROXY] Upstream → Downstream: forwarding message: {:?}",
-                    msg
+                    "[WS_PROXY] Upstream → Downstream: forwarding message: {msg:?}"
                 );
                 if let Err(e) = downstream.send(msg).await {
-                    log::error!("[WS_PROXY] Error forwarding message to downstream: {}", e);
+                    log::error!("[WS_PROXY] Error forwarding message to downstream: {e}");
                     break;
                 }
                 log::trace!("[WS_PROXY] forwarded to downstream!");
             }
             Event::FromDownstream(Some(Ok(msg))) => {
                 log::trace!(
-                    "[WS_PROXY] Downstream → Upstream: forwarding message: {:?}",
-                    msg
+                    "[WS_PROXY] Downstream → Upstream: forwarding message: {msg:?}"
                 );
                 if let Err(e) = upstream.send(msg).await {
-                    log::error!("[WS_PROXY] Error forwarding message to upstream: {}", e);
+                    log::error!("[WS_PROXY] Error forwarding message to upstream: {e}");
                     break;
                 }
                 log::trace!("[WS_PROXY] forwarded to upstream!");

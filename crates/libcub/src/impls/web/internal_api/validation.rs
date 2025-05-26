@@ -84,7 +84,7 @@ impl MsgSender<'_> {
             .send(ws::Message::text(facet_json::to_string(&msg)))
             .await
         {
-            log::error!("Failed to send WebSocket message: {}", e);
+            log::error!("Failed to send WebSocket message: {e}");
         }
     }
 
@@ -297,11 +297,11 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
         match sock.recv().await {
             Some(Ok(message)) => {
                 if let Ok(text) = message.to_text() {
-                    log::debug!("Received message: {}", text);
+                    log::debug!("Received message: {text}");
                 }
             }
             Some(Err(e)) => {
-                log::debug!("Error receiving message: {}", e);
+                log::debug!("Error receiving message: {e}");
                 break;
             }
             None => {

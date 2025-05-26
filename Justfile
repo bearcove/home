@@ -3,12 +3,14 @@
 serve *args:
     #!/bin/sh
     export RUST_BACKTRACE=0
-    cargo run -- serve {{args}}
+    cargo build
+    ./target/debug/home cub {{args}}
 
 serve-release *args:
     #!/bin/sh
     export RUST_BACKTRACE=0
-    cargo run --release -- serve {{args}}
+    cargo build --release
+    ./target/release/home cub {{args}}
 
 repack:
     beardist build

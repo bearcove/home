@@ -796,7 +796,7 @@ pub fn lrev_make_template_collection(
             }
         };
 
-        debug!("Found template \x1b[33m{}\x1b[0m", name);
+        debug!("Found template \x1b[33m{name}\x1b[0m");
         compile_args
             .templates
             .insert(name.to_string(), template.markup.clone());

@@ -20,7 +20,7 @@ async fn handle_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>) {
             Ok(event) = bx.recv() => {
                 let msg = axum::extract::ws::Message::text(facet_json::to_string(&event));
                 if let Err(e) = socket.send(msg).await {
-                    log::error!("Failed to send WebSocket message: {}", e);
+                    log::error!("Failed to send WebSocket message: {e}");
                     break;
                 }
             }
@@ -31,7 +31,7 @@ async fn handle_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>) {
                         log::debug!("Received message from WebSocket (ignored)");
                     }
                     Err(e) => {
-                        log::error!("Error receiving WebSocket message: {}", e);
+                        log::error!("Error receiving WebSocket message: {e}");
                         break;
                     }
                 }

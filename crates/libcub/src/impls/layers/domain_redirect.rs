@@ -62,7 +62,7 @@ where
                 let response =
                     axum::response::Redirect::temporary(redirect_url.as_str()).into_response();
 
-                log::info!("Redirecting {} to {}", domain, redirect_url);
+                log::info!("Redirecting {domain} to {redirect_url}");
                 Box::pin(async move { Ok(response) })
             }
             _ => {

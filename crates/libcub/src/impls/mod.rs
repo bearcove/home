@@ -187,13 +187,13 @@ pub(crate) async fn serve(
                             match acceptor.accept(socket).await {
                                 Ok(tls_stream) => return (tls_stream, addr),
                                 Err(e) => {
-                                    log::warn!("TLS error: {}", e);
+                                    log::warn!("TLS error: {e}");
                                     continue;
                                 }
                             }
                         }
                         Err(e) => {
-                            log::warn!("TCP accept error: {}", e);
+                            log::warn!("TCP accept error: {e}");
                             continue;
                         }
                     }

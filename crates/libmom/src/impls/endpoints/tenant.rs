@@ -92,7 +92,7 @@ async fn patreon_refresh_credentials(
         .query(patreon_id.to_string())
         .await
         .map_err(|e| {
-            log::error!("Failed to refresh patreon credentials: {}", e);
+            log::error!("Failed to refresh patreon credentials: {e}");
             HttpError::with_status(
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Could not refresh patreon credentials",
@@ -364,7 +364,7 @@ async fn revision_upload_revid(
         .get("revision_id")
         .cloned()
         .ok_or_else(|| eyre::eyre!("Missing revision_id"))?;
-    log::debug!("Uploading revision package; revision_id={}", revision_id);
+    log::debug!("Uploading revision package; revision_id={revision_id}");
 
     // Load the revision from JSON
     let pak: conflux::Pak = facet_json::from_str(std::str::from_utf8(&payload)?)?;

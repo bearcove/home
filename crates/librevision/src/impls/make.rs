@@ -53,7 +53,7 @@ pub async fn is_path_ignored_with_meta(path: &Utf8Path, metadata: Option<&PathMe
                 Ok(metadata) => metadata.is_file(),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => false,
                 Err(e) => {
-                    warn!("Error checking metadata: {}", e);
+                    warn!("Error checking metadata: {e}");
                     false
                 }
             },
@@ -93,12 +93,11 @@ pub async fn make_revision(
                 });
             }
             let create_event_duration = create_event_start.elapsed();
-            log::debug!("Creating initial event took {:?}", create_event_duration);
+            log::debug!("Creating initial event took {create_event_duration:?}");
 
             let from_scratch_duration = from_scratch_start.elapsed();
             log::debug!(
-                "FromScratch revision setup took {:?}",
-                from_scratch_duration
+                "FromScratch revision setup took {from_scratch_duration:?}"
             );
             (pak, events)
         }
@@ -109,8 +108,7 @@ pub async fn make_revision(
             let events = wake_revision_events(prev.rev.as_ref(), &ti).await?;
             let wake_events_duration = wake_events_start.elapsed();
             log::debug!(
-                "Wake revision events generation took {:?}",
-                wake_events_duration
+                "Wake revision events generation took {wake_events_duration:?}"
             );
 
             if events.is_empty() {
@@ -123,7 +121,7 @@ pub async fn make_revision(
             let result = (prev.rev.pak.clone(), events);
 
             let wake_duration = wake_start.elapsed();
-            log::debug!("Wake revision setup took {:?}", wake_duration);
+            log::debug!("Wake revision setup took {wake_duration:?}");
             result
         }
         RevisionKind::Incremental { prev, events } => {
@@ -133,12 +131,12 @@ pub async fn make_revision(
             let result = (prev.pak.clone(), events);
 
             let incremental_duration = incremental_start.elapsed();
-            log::debug!("Incremental revision setup took {:?}", incremental_duration);
+            log::debug!("Incremental revision setup took {incremental_duration:?}");
             result
         }
     };
     let rev_kind_duration = rev_kind_start.elapsed();
-    log::debug!("Revision kind processing took {:?}", rev_kind_duration);
+    log::debug!("Revision kind processing took {rev_kind_duration:?}");
 
     pak.id = generate_rev_id();
 
@@ -146,14 +144,13 @@ pub async fn make_revision(
     let db_create_start = Instant::now();
     let mut db = redb::Database::create(db_path)?;
     let db_create_duration = db_create_start.elapsed();
-    log::debug!("Database creation took {:?}", db_create_duration);
+    log::debug!("Database creation took {db_create_duration:?}");
 
     let integrity_check_start = Instant::now();
     let check_integrity = db.check_integrity();
     let integrity_check_duration = integrity_check_start.elapsed();
     log::debug!(
-        "Database integrity check took {:?}",
-        integrity_check_duration
+        "Database integrity check took {integrity_check_duration:?}"
     );
     match check_integrity {
         Ok(_) => {
@@ -171,7 +168,7 @@ pub async fn make_revision(
                 return Err(eyre::eyre!("Database repair was aborted"));
             }
             redb::DatabaseError::UpgradeRequired(version) => {
-                log::warn!("Database upgrade required to version {}", version);
+                log::warn!("Database upgrade required to version {version}");
                 // Here we could implement an upgrade process
                 // For now, we'll just return an error
                 return Err(eyre::eyre!(
@@ -184,7 +181,7 @@ pub async fn make_revision(
                 return Err(eyre::eyre!("Database storage error"));
             }
             _ => {
-                log::error!("Unknown database error: {:?}", e);
+                log::error!("Unknown database error: {e:?}");
                 return Err(eyre::eyre!("Unknown database error occurred"));
             }
         },
@@ -193,13 +190,13 @@ pub async fn make_revision(
     let begin_write_start = Instant::now();
     let wtx = db.begin_write()?;
     let begin_write_duration = begin_write_start.elapsed();
-    log::debug!("Database begin_write took {:?}", begin_write_duration);
+    log::debug!("Database begin_write took {begin_write_duration:?}");
     let media_props_cache = Arc::new(MediaPropsCache::new(wtx));
 
     let mods_start = Instant::now();
     let mods = RevisionMods::default();
     let mods_duration = mods_start.elapsed();
-    log::debug!("Loading revision mods took {:?}", mods_duration);
+    log::debug!("Loading revision mods took {mods_duration:?}");
 
     let (tx_add, mut rx_add) = mpsc::channel(256);
     let mut cx = MakeContext {
@@ -216,7 +213,7 @@ pub async fn make_revision(
     let unique_start = Instant::now();
     cx.events = cx.events.into_iter().unique().collect();
     let unique_elapsed = unique_start.elapsed();
-    log::debug!("Uniquifying events took {:?}", unique_elapsed);
+    log::debug!("Uniquifying events took {unique_elapsed:?}");
 
     let mut num_events = 0;
     let mut num_add_actions = 0;
@@ -297,7 +294,7 @@ pub async fn make_revision(
         .commit()
         .wrap_err("while committing media props cache")?;
     let commit_duration = commit_start.elapsed();
-    log::debug!("Media props cache commit took {:?}", commit_duration);
+    log::debug!("Media props cache commit took {commit_duration:?}");
 
     // Find the input with path "/home.json"
     let home_json_input_path = InputPath::from("/home.json");
@@ -321,8 +318,7 @@ pub async fn make_revision(
     pak.svg_font_face_collection = Arc::new(gather_svg_font_face_collection(&ti, &rc).await?);
     let font_collection_duration = font_collection_start.elapsed();
     log::debug!(
-        "Gathering SVG font face collection took {:?}",
-        font_collection_duration
+        "Gathering SVG font face collection took {font_collection_duration:?}"
     );
 
     log::info!("Revision config: {}", rc.pretty());
@@ -331,7 +327,7 @@ pub async fn make_revision(
     let load_pak_start = Instant::now();
     let rev = load_pak(pak, ti, prev_rev.as_deref(), mappings, web).await?;
     let load_pak_duration = load_pak_start.elapsed();
-    log::debug!("Loading pak took {:?}", load_pak_duration);
+    log::debug!("Loading pak took {load_pak_duration:?}");
     Ok(rev)
 }
 
@@ -396,8 +392,7 @@ impl MakeContext {
                         };
                         drop(permit);
                         log::debug!(
-                            "Processed in {color}{:?}\x1b[0m: \x1b[33m{path_copy}\x1b[0m",
-                            elapsed
+                            "Processed in {color}{elapsed:?}\x1b[0m: \x1b[33m{path_copy}\x1b[0m"
                         );
                         if let Err(e) = res {
                             log::warn!("Revision error: {e:?}");

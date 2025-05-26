@@ -148,7 +148,7 @@ impl CompressContext {
             }
             Err(err) => {
                 // If compression fails, log the error and return a 500
-                log::error!("Failed to compress response: {:?}", err);
+                log::error!("Failed to compress response: {err:?}");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Failed to compress response",
