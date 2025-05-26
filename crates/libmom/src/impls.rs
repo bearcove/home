@@ -16,12 +16,12 @@ use itertools::Itertools;
 use libhttpclient::HttpClient;
 use libobjectstore::ObjectStore;
 use libpatreon::{ForcePatreonRefresh, PatreonCredentials, PatreonStore, test_patreon_renewal};
+use log::{debug, error, info};
 use mom_types::Sponsors;
 use objectstore_types::ObjectStoreKey;
 use owo_colors::OwoColorize;
 use parking_lot::Mutex;
 use tokio::sync::broadcast;
-use tracing::{debug, error, info};
 
 use crate::impls::db::mom_db_pool;
 use mom_types::{
@@ -101,8 +101,8 @@ impl MomGlobalState {
         let ev_debug = format!("{event:?}");
         let event = facet_json::to_string(&event);
         match self.bx_event.send(event) {
-            Ok(n) => tracing::info!("Broadcast to {n} subscribers: {ev_debug}"),
-            Err(_) => tracing::info!("No subscribers for event: {ev_debug}"),
+            Ok(n) => log::info!("Broadcast to {n} subscribers: {ev_debug}"),
+            Err(_) => log::info!("No subscribers for event: {ev_debug}"),
         }
 
         Ok(())
@@ -339,7 +339,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                     Box::pin(async move {
                         let res = sponsors::get_sponsors(&ts).await?;
                         if let Err(e) = save_sponsors_to_db(ts.as_ref(), res.clone()) {
-                            tracing::error!("Failed to save sponsors to DB: {e}")
+                            log::error!("Failed to save sponsors to DB: {e}")
                         }
                         ts.broadcast_event(TenantEventPayload::SponsorsUpdated(res.clone()))?;
 
@@ -403,7 +403,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
             loop {
                 match ts.sponsors_inflight.query(()).await {
                     Ok(sponsors) => {
-                        tracing::debug!(
+                        log::debug!(
                             "[{}] Fetched {} sponsors",
                             tenant_name,
                             sponsors.sponsors.len()
@@ -411,7 +411,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         *ts.sponsors.lock() = Some(sponsors);
                     }
                     Err(e) => {
-                        tracing::debug!("[{}] Failed to fetch sponsors: {e} / {e:?}", tenant_name)
+                        log::debug!("[{}] Failed to fetch sponsors: {e} / {e:?}", tenant_name)
                     }
                 }
                 tokio::time::sleep(interval).await;
@@ -424,16 +424,16 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         match load_revision_from_db(ts).await {
             Ok(Some(revision)) => {
                 *ts.pak.lock() = Some(revision);
-                tracing::debug!(
+                log::debug!(
                     "Loaded latest revision from database for tenant {}",
                     ts.ti.tc.name
                 );
             }
             Ok(None) => {
-                tracing::debug!("No revision found in database for tenant {}", ts.ti.tc.name);
+                log::debug!("No revision found in database for tenant {}", ts.ti.tc.name);
             }
             Err(e) => {
-                tracing::error!(
+                log::error!(
                     "Failed to load revision from database for tenant {}: {e}",
                     ts.ti.tc.name
                 );

@@ -3,7 +3,7 @@ use conflux::{InputPath, PathMappings};
 use eyre::Context as _;
 use facet::Facet;
 use http::StatusCode;
-use tracing::warn;
+use log::warn;
 
 use crate::impls::{
     cub_req::CubReqImpl,

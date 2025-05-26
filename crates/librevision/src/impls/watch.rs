@@ -11,9 +11,9 @@ use conflux::{PathMappings, ROOT_INPUT_PATHS};
 use cub_types::{CubTenant, PathMetadata};
 use eyre::Result;
 use itertools::Itertools;
+use log::{info, warn};
 use std::{collections::VecDeque, sync::Arc, time::Duration};
 use tokio::sync::mpsc;
-use tracing::{info, warn};
 
 /// Start watching for file changes, trigger a new revision
 /// when they do change
@@ -32,7 +32,7 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
             match watch_rx.recv_many(&mut events, 100).await {
                 0 => break 'recv,
                 n => {
-                    tracing::info!("[{prefix}] Received {n} fs events",);
+                    log::info!("[{prefix}] Received {n} fs events",);
                 }
             };
             loop {
@@ -47,7 +47,7 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
                         break 'recv;
                     }
                     Ok(n) => {
-                        tracing::info!("Received additional {n} events");
+                        log::info!("Received additional {n} events");
                     }
                     Err(_) => {
                         break;
@@ -59,12 +59,12 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
 
             let kind = if let Some(prev) = &rs.rev {
                 if rs.err.is_some() {
-                    tracing::info!(
+                    log::info!(
                         "[{prefix}] Have previous revision but also have error, making a wake revision"
                     );
                     RevisionKind::Wake { prev: prev.clone() }
                 } else {
-                    tracing::info!("[{prefix}] Making incremental revision");
+                    log::info!("[{prefix}] Making incremental revision");
                     // TODO: Do not unwrap, just mark a revision error instead.
                     let events = convert_watcher_events_to_input_events(events, &mappings)
                         .await
@@ -75,7 +75,7 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
                     }
                 }
             } else {
-                tracing::info!("[{prefix}] No previous good revision, making from scratch");
+                log::info!("[{prefix}] No previous good revision, making from scratch");
                 RevisionKind::FromScratch
             };
             let spec = RevisionSpec {

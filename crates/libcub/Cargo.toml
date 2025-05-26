@@ -21,7 +21,6 @@ axum = { version = "0.8.4", default-features = false, features = [
 tokio = { workspace = true, features = ["full"] }
 tower = { version = "0.5.2", features = ["steer"] }
 tower-cookies = { version = "0.11.0", features = ["private"] }
-tracing = { workspace = true }
 eyre = { workspace = true }
 time = { version = "0.3.41", features = ["formatting"] }
 parking_lot = { version = "0.12.3" }
@@ -80,3 +79,4 @@ arboard = "3.5.0"
 fs-err = { version = "3.1.0", features = ["tokio"] }
 facet-json.workspace = true
 facet.workspace = true
+log = "0.4.27"

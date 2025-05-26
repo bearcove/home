@@ -89,7 +89,7 @@ impl Mod for ModImpl {
             }
         }
 
-        tracing::trace!(
+        log::trace!(
             "==== Highlighting code: {} bytes with tag {}",
             params.source.len(),
             params.tag
@@ -168,8 +168,8 @@ impl Mod for ModImpl {
                         .get(lang_name)
                         .and_then(|lang| lang.conf.as_ref());
                     match &res {
-                        Some(_) => tracing::trace!("💉 Injecting {lang_name}"),
-                        None => tracing::trace!("No language found for {lang_name} injection"),
+                        Some(_) => log::trace!("💉 Injecting {lang_name}"),
+                        None => log::trace!("No language found for {lang_name} injection"),
                     }
                     res
                 })?;
@@ -179,15 +179,15 @@ impl Mod for ModImpl {
                 let highlight = highlight.unwrap();
                 match highlight {
                     HighlightEvent::Source { start, end } => {
-                        tracing::trace!("Escaping code from {start} to {end}");
+                        log::trace!("Escaping code from {start} to {end}");
                         write_code_escaped(w, &params.source[start..end]).unwrap();
                     }
                     HighlightEvent::HighlightStart(Highlight(i)) => {
-                        tracing::trace!("Starting highlight {} (.hh{i})", HIGHLIGHT_NAMES[i]);
+                        log::trace!("Starting highlight {} (.hh{i})", HIGHLIGHT_NAMES[i]);
                         write!(w, r#"<i class=hh{i}>"#).unwrap();
                     }
                     HighlightEvent::HighlightEnd => {
-                        tracing::trace!("Ending highlight");
+                        log::trace!("Ending highlight");
                         write!(w, r#"</i>"#).unwrap();
                     }
                 }
@@ -223,7 +223,7 @@ impl Default for ModImpl {
             cache: if std::env::var("MOD_HIGHLIGHT_NO_CACHE").is_err() {
                 Some(dumbcache::Cache::new("highlight", 1024))
             } else {
-                tracing::warn!("highlighting cache disabled");
+                log::warn!("highlighting cache disabled");
                 None
             },
         };
@@ -741,7 +741,7 @@ pub(crate) mod impls {
     pub(crate) fn write_code_escaped(w: &mut dyn io::Write, input: &str) -> eyre::Result<()> {
         let mut start: Option<usize> = None;
 
-        tracing::trace!("Escaping code: {input:?}");
+        log::trace!("Escaping code: {input:?}");
 
         for (i, c) in input.char_indices() {
             match c {

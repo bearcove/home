@@ -128,7 +128,7 @@ impl CubTenant for CubTenantImpl {
                     .save_pak_to_disk_as_active(&pak, &info)
                     .await
                     .unwrap();
-                tracing::info!(
+                log::info!(
                     "[{tenant_name}] Saving pak to disk took {:?}",
                     before_save.elapsed()
                 );
@@ -145,8 +145,8 @@ impl CubTenant for CubTenantImpl {
             .bx_rev
             .send(RevisionBroadcastEvent::NewRevision(rev_id.clone()))
         {
-            Ok(n) => tracing::info!("Notified {n} clients about {rev_id}"),
-            Err(e) => tracing::error!("Failed to broadcast revision: {e}"),
+            Ok(n) => log::info!("Notified {n} clients about {rev_id}"),
+            Err(e) => log::error!("Failed to broadcast revision: {e}"),
         }
     }
 
@@ -171,9 +171,9 @@ impl CubTenant for CubTenantImpl {
             .send(RevisionBroadcastEvent::RevisionError(err_for_clients.0))
         {
             Ok(n) => {
-                tracing::warn!("Notified {n} clients about an error building a revision: {e}")
+                log::warn!("Notified {n} clients about an error building a revision: {e}")
             }
-            Err(e) => tracing::error!("Failed to broadcast revision: {e}"),
+            Err(e) => log::error!("Failed to broadcast revision: {e}"),
         }
     }
 

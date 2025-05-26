@@ -27,7 +27,7 @@ pub(crate) fn internal_api_routes() -> Router {
                 }
 
                 let path = req.uri().path();
-                tracing::info!("Blocking access to {path} in production");
+                log::info!("Blocking access to {path} in production");
                 axum::http::Response::builder()
                     .status(StatusCode::NOT_FOUND)
                     .body(axum::body::Body::empty())

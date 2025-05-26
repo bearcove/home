@@ -92,7 +92,7 @@ async fn patreon_refresh_credentials(
         .query(patreon_id.to_string())
         .await
         .map_err(|e| {
-            tracing::error!("Failed to refresh patreon credentials: {}", e);
+            log::error!("Failed to refresh patreon credentials: {}", e);
             HttpError::with_status(
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Could not refresh patreon credentials",
@@ -290,8 +290,8 @@ async fn objectstore_list_missing(
 
         match client.post(uri).json(&args)?.send_and_expect_200().await {
             Err(e) => {
-                tracing::warn!("Failed to query production mom: {e}");
-                tracing::warn!("...ignoring");
+                log::warn!("Failed to query production mom: {e}");
+                log::warn!("...ignoring");
             }
             Ok(res) => {
                 let remote_res = res
@@ -315,7 +315,7 @@ async fn objectstore_list_missing(
         }
     }
 
-    tracing::debug!(
+    log::debug!(
         "{}/{} keys are missing: {:#?}",
         missing.len(),
         args.objects_to_query.len(),
@@ -336,11 +336,11 @@ async fn objectstore_put_key(
         .ok_or_else(|| eyre::eyre!("Missing key"))?;
     let key = ObjectStoreKeyRef::from_str(&key);
     let size = payload.len();
-    tracing::debug!(%key, %size, "Putting asset into object store");
+    log::debug!("Putting asset into object store: key={key}, size={size}",);
 
     // Upload to cloud storage
     let result = ts.object_store.put(key, payload).await?;
-    tracing::debug!(e_tag = ?result.e_tag, "Uploaded to object store");
+    log::debug!("Uploaded to object store. e_tag={:?}", result.e_tag);
 
     // Insert into the database
     {
@@ -364,7 +364,7 @@ async fn revision_upload_revid(
         .get("revision_id")
         .cloned()
         .ok_or_else(|| eyre::eyre!("Missing revision_id"))?;
-    tracing::debug!(%revision_id, "Uploading revision package");
+    log::debug!("Uploading revision package; revision_id={}", revision_id);
 
     // Load the revision from JSON
     let pak: conflux::Pak = facet_json::from_str(std::str::from_utf8(&payload)?)?;
@@ -376,7 +376,10 @@ async fn revision_upload_revid(
         // Upload to cloud storage (for backup)
         let key = ObjectStoreKey::new(format!("revpaks/{revision_id}"));
         let result = object_store.put(&key, payload.clone()).await?;
-        tracing::debug!(e_tag = ?result.e_tag, "Uploaded revision package to object store");
+        log::debug!(
+            "Uploaded revision package to object store, e_tag={:?}",
+            result.e_tag
+        );
 
         // Insert into the database
         {

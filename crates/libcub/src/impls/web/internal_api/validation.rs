@@ -84,7 +84,7 @@ impl MsgSender<'_> {
             .send(ws::Message::text(facet_json::to_string(&msg)))
             .await
         {
-            tracing::error!("Failed to send WebSocket message: {}", e);
+            log::error!("Failed to send WebSocket message: {}", e);
         }
     }
 
@@ -165,14 +165,14 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
                 match task {
                     Task::CheckRoute { route } => {
                         let url = format!("{base_url}{route}");
-                        tracing::debug!("Working checking {url}");
+                        log::debug!("Working checking {url}");
 
                         let response = client.get(Uri::try_from(&url).unwrap()).send().await;
                         let status = match response {
                             Ok(res) => res.status(),
                             Err(_) => StatusCode::from_u16(255).unwrap(),
                         };
-                        tracing::debug!("Status {status} for {url}");
+                        log::debug!("Status {status} for {url}");
                         res_tx
                             .send_async(Result::RouteChecked { route, status })
                             .await
@@ -189,12 +189,12 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
                         }
 
                         for href in page.links.iter() {
-                            tracing::debug!("checking href {href}");
+                            log::debug!("checking href {href}");
 
                             let url = match Url::parse(href.as_str()) {
                                 Ok(url) => url,
                                 Err(e) => {
-                                    tracing::debug!("Failed to parse href {href}: {e}");
+                                    log::debug!("Failed to parse href {href}: {e}");
                                     continue;
                                 }
                             };
@@ -223,7 +223,7 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
                     }
                 }
             }
-            tracing::debug!("Worker done checking routes");
+            log::debug!("Worker done checking routes");
         });
     }
     drop(res_tx);
@@ -245,7 +245,7 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
             .await
             .unwrap();
     }
-    tracing::debug!("Done sending tasks");
+    log::debug!("Done sending tasks");
 
     // Close the task channel
     drop(task_tx);
@@ -280,7 +280,7 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
             }
         }
     }
-    tracing::debug!("Done receiving results!");
+    log::debug!("Done receiving results!");
 
     ms.info(format!(
         "Validated {total_routes} routes, {num_bad_routes} bad routes"
@@ -297,15 +297,15 @@ async fn handle_validation(mut sock: ws::WebSocket, ts: Arc<CubTenantImpl>) {
         match sock.recv().await {
             Some(Ok(message)) => {
                 if let Ok(text) = message.to_text() {
-                    tracing::debug!("Received message: {}", text);
+                    log::debug!("Received message: {}", text);
                 }
             }
             Some(Err(e)) => {
-                tracing::debug!("Error receiving message: {}", e);
+                log::debug!("Error receiving message: {}", e);
                 break;
             }
             None => {
-                tracing::debug!("WebSocket connection closed");
+                log::debug!("WebSocket connection closed");
                 break;
             }
         }

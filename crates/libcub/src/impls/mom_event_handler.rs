@@ -14,7 +14,7 @@ pub(crate) fn spawn_mom_event_handler(mut mev_rx: mpsc::Receiver<MomEvent>, web:
             let ev = mev_rx.recv().await.unwrap();
             match ev {
                 MomEvent::GoodMorning(_gm) => {
-                    tracing::warn!(
+                    log::warn!(
                         "Received a good morning later than expected. Probably we got reconnected."
                     );
                 }
@@ -29,7 +29,7 @@ pub(crate) fn spawn_mom_event_handler(mut mev_rx: mpsc::Receiver<MomEvent>, web:
                     {
                         Some(ts) => ts,
                         None => {
-                            tracing::warn!("Got message for unknown tenant {tn}");
+                            log::warn!("Got message for unknown tenant {tn}");
                             continue;
                         }
                     };
@@ -62,7 +62,7 @@ fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: Sponsors) {
 
 async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak>, web: WebConfig) {
     if is_development() {
-        tracing::info!("Received a pak from mom, ignoring since we're in development");
+        log::info!("Received a pak from mom, ignoring since we're in development");
         return;
     }
 
@@ -82,7 +82,7 @@ async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak>, web: Web
         {
             Ok(lrev) => lrev,
             Err(e) => {
-                tracing::error!("Failed to load revision: {e}");
+                log::error!("Failed to load revision: {e}");
                 return;
             }
         }

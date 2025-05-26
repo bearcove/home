@@ -211,7 +211,9 @@ fn from_spec_put_multipart_opts(opts: PutMultipartOpts) -> object_store::PutMult
 
 fn from_spec_getrange(range: GetRange) -> object_store::GetRange {
     match range {
-        GetRange::Bounded(range) => object_store::GetRange::Bounded(range.start as u64..range.end as u64),
+        GetRange::Bounded(range) => {
+            object_store::GetRange::Bounded(range.start as u64..range.end as u64)
+        }
         GetRange::Offset(offset) => object_store::GetRange::Offset(offset as u64),
         GetRange::Suffix(suffix) => object_store::GetRange::Suffix(suffix as u64),
     }
@@ -375,19 +377,13 @@ impl ObjectStore for LayeredStore {
                 tokio::spawn(async move {
                     match store.put_opts(&key, payload, opts).await {
                         Ok(result) => {
-                            tracing::debug!(
-                                "Successfully put \x1b[32m{}\x1b[0m in \x1b[32m{}\x1b[0m",
-                                key,
-                                name
+                            log::debug!(
+                                "Successfully put \x1b[32m{key}\x1b[0m in \x1b[32m{name}\x1b[0m"
                             );
                             Ok(result)
                         }
                         Err(e) => {
-                            tracing::warn!(
-                                "Failed to put object in store: {}, error: {:?}",
-                                name,
-                                e
-                            );
+                            log::warn!("Failed to put object in store: {name}, error: {e:?}");
                             Err(e)
                         }
                     }
@@ -411,7 +407,7 @@ impl ObjectStore for LayeredStore {
         key: &ObjectStoreKeyRef,
         opts: GetOptions,
     ) -> BoxFuture<'_, Result<Box<dyn GetResult>>> {
-        tracing::trace!(%key, "layered store get");
+        log::trace!("layered store get: {key}");
         let key = key.to_owned();
 
         Box::pin(async move {
@@ -428,11 +424,16 @@ impl ObjectStore for LayeredStore {
             let mut found: Option<(usize, Box<dyn GetResult>)> = None;
 
             for (index, layer) in self.stores.iter().enumerate() {
-                tracing::trace!(%key, %index, desc = layer.store.desc(), "trying layer");
+                log::trace!(
+                    "trying layer: key={}, index={}, desc={}",
+                    key,
+                    index,
+                    layer.store.desc()
+                );
 
                 match layer.store.get_opts(&key, opts.clone()).await {
                     Ok(result) => {
-                        tracing::debug!(
+                        log::debug!(
                             "found object \x1b[32m{}\x1b[0m in \x1b[32m{}\x1b[0m",
                             key,
                             layer.name
@@ -441,7 +442,13 @@ impl ObjectStore for LayeredStore {
                         break;
                     }
                     Err(e) => {
-                        tracing::trace!(%key, %index, desc = layer.store.desc(), ?e, "layer error");
+                        log::trace!(
+                            "layer error: key={}, index={}, desc={}, error={}",
+                            key,
+                            index,
+                            layer.store.desc(),
+                            e
+                        );
                         if matches!(e.kind, ErrorKind::NotFound) {
                             continue;
                         }
@@ -469,15 +476,10 @@ impl ObjectStore for LayeredStore {
 
                         match store.put_opts(&key, payload, opts).await {
                             Ok(_) => {
-                                tracing::debug!(
-                                    "Successfully inserted object in higher layer: {}",
-                                    name
-                                )
+                                log::debug!("Successfully inserted object in higher layer: {name}")
                             }
-                            Err(e) => tracing::warn!(
-                                "Failed to insert object in higher layer: {}, error: {:?}",
-                                name,
-                                e
+                            Err(e) => log::warn!(
+                                "Failed to insert object in higher layer: {name}, error: {e}"
                             ),
                         }
                     }

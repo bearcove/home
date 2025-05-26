@@ -8,7 +8,7 @@ use cub_types::CubReq;
 use eyre::Context as _;
 use facet::Facet;
 use http::StatusCode;
-use tracing::warn;
+use log::warn;
 
 /// Params for opening a file in editor based on its input path
 /// and possibly a byte offset or line number to position the cursor at the right line
@@ -57,7 +57,7 @@ pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Byte
     };
 
     let editor = "zed";
-    tracing::info!("Opening editor {editor} on {line_arg}");
+    log::info!("Opening editor {editor} on {line_arg}");
 
     tokio::spawn(async move {
         let status = tokio::process::Command::new(editor)

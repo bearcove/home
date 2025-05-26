@@ -1,6 +1,6 @@
 use config_types::Environment;
+use log::{error, warn};
 use tokio::signal::unix::SignalKind;
-use tracing::{error, warn};
 
 /// This async function returns or resolves whenever we receive sigint or sigterm.
 pub(crate) async fn setup_graceful_shutdown() {

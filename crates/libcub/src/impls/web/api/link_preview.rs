@@ -8,7 +8,7 @@ use std::sync::{LazyLock, Mutex};
 
 use crate::impls::cub_req::CubReqImpl;
 use crate::impls::global_state;
-use crate::impls::reply::{IntoLegacyReply, LegacyHttpError, LegacyReply, FacetJson};
+use crate::impls::reply::{FacetJson, IntoLegacyReply, LegacyHttpError, LegacyReply};
 
 static LINK_CACHE: LazyLock<Mutex<LinkCache>> = LazyLock::new(|| Mutex::new(LinkCache::new()));
 
@@ -20,14 +20,14 @@ pub(crate) async fn serve_link_preview(
     let href = match query.get("href") {
         Some(value) => value.to_owned(),
         None => {
-            tracing::warn!("Missing href parameter, returning BAD_REQUEST");
+            log::warn!("Missing href parameter, returning BAD_REQUEST");
             return LegacyHttpError::with_status(StatusCode::BAD_REQUEST, "Missing href parameter")
                 .into_legacy_reply();
         }
     };
 
     if LINK_CACHE.lock().unwrap().negative_cache.contains(&href) {
-        tracing::warn!("Href found in negative cache, returning NOT_FOUND for {href}");
+        log::warn!("Href found in negative cache, returning NOT_FOUND for {href}");
         return LegacyHttpError::with_status(StatusCode::NOT_FOUND, "").into_legacy_reply();
     }
 
@@ -39,7 +39,7 @@ pub(crate) async fn serve_link_preview(
     }
 
     if let Some(cached_info) = LINK_CACHE.lock().unwrap().get(&href) {
-        tracing::info!("Cache hit for {href}, returning cached information");
+        log::info!("Cache hit for {href}, returning cached information");
         let mut response = FacetJson(cached_info).into_legacy_reply()?;
         add_cache_control_headers(&mut response);
         return Ok(response);
@@ -78,7 +78,7 @@ pub(crate) async fn serve_link_preview(
     let parsed_href = match url::Url::parse(&href) {
         Ok(url) => url,
         Err(e) => {
-            tracing::warn!("Failed to parse href {href}: {e}");
+            log::warn!("Failed to parse href {href}: {e}");
             return LegacyHttpError::with_status(StatusCode::NOT_FOUND, "").into_legacy_reply();
         }
     };
@@ -103,7 +103,7 @@ pub(crate) async fn serve_link_preview(
         let input_path = match query.get("input-path") {
             Some(value) => value,
             None => {
-                tracing::warn!("Missing input-path parameter, returning BAD_REQUEST");
+                log::warn!("Missing input-path parameter, returning BAD_REQUEST");
                 return LegacyHttpError::with_status(
                     StatusCode::BAD_REQUEST,
                     "Missing input-path parameter",
@@ -111,12 +111,12 @@ pub(crate) async fn serve_link_preview(
                 .into_legacy_reply();
             }
         };
-        tracing::info!("Getting link preview for input-path: {input_path}");
+        log::info!("Getting link preview for input-path: {input_path}");
         let input_path = InputPathRef::from_str(input_path);
 
         let irev = rcx.tenant_ref().rev()?;
         let page = irev.rev.pages.get(input_path).ok_or_else(|| {
-            tracing::warn!("No page found for input-path {input_path}, returning NOT_FOUND");
+            log::warn!("No page found for input-path {input_path}, returning NOT_FOUND");
             LegacyHttpError::with_status(StatusCode::NOT_FOUND, "")
         })?;
 
@@ -125,15 +125,15 @@ pub(crate) async fn serve_link_preview(
             .iter()
             .any(|h| canonicalize_url(&rcx, h.as_str()).as_str() == href.as_str())
         {
-            tracing::warn!("Link {href} not found in page links, returning NOT_FOUND");
+            log::warn!("Link {href} not found in page links, returning NOT_FOUND");
             if let Some(closest_link) = page.links.iter().max_by(|a, b| {
                 strsim::jaro_winkler(href.as_str(), a.as_str())
                     .partial_cmp(&strsim::jaro_winkler(href.as_str(), b.as_str()))
                     .unwrap_or(std::cmp::Ordering::Equal)
             }) {
-                tracing::warn!("{href} not found, did you mean {closest_link}?");
+                log::warn!("{href} not found, did you mean {closest_link}?");
             } else {
-                tracing::warn!("{href} not found, no links in page");
+                log::warn!("{href} not found, no links in page");
             }
 
             LINK_CACHE.lock().unwrap().insert_negative(&href);
@@ -141,20 +141,20 @@ pub(crate) async fn serve_link_preview(
         }
     }
 
-    tracing::info!("Fetching webpage info for {href}");
+    log::info!("Fetching webpage info for {href}");
     let webpage = libwebpage::load();
 
     let info_future = webpage.webpage_info(href.clone());
     let info = match info_future.await {
         Ok(info) => info,
         Err(e) => {
-            tracing::warn!("Error fetching webpage info for {href}: {:?}", e);
+            log::warn!("Error fetching webpage info for {href}: {:?}", e);
             LINK_CACHE.lock().unwrap().insert_negative(&href);
             return LegacyHttpError::with_status(StatusCode::NOT_FOUND, "").into_legacy_reply();
         }
     };
 
-    tracing::info!("Caching info for {href}");
+    log::info!("Caching info for {href}");
     LINK_CACHE
         .lock()
         .unwrap()

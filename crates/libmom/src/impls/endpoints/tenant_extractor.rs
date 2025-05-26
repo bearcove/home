@@ -29,7 +29,7 @@ where
             match axum::extract::Path::<PathParts>::from_request_parts(parts, state).await {
                 Ok(p) => p.0,
                 Err(e) => {
-                    tracing::warn!("path should have :tenant_name, but got {e}");
+                    log::warn!("path should have :tenant_name, but got {e}");
                     return Err((StatusCode::BAD_REQUEST, e.to_string()).into_reply());
                 }
             };

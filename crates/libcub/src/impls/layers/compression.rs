@@ -84,7 +84,7 @@ struct CompressContext {
 impl CompressContext {
     async fn call(self) -> Response<Body> {
         if !should_compress(self.res.headers()) {
-            tracing::trace!(
+            log::trace!(
                 "Not compressing response with content-type: {:?}",
                 self.res.headers().get(http::header::CONTENT_TYPE)
             );
@@ -98,7 +98,7 @@ impl CompressContext {
         {
             Some(ae) => ae,
             None => {
-                tracing::debug!("No Accept-Encoding header");
+                log::debug!("No Accept-Encoding header");
                 return Response::from_parts(parts, body);
             }
         };
@@ -107,7 +107,7 @@ impl CompressContext {
         let bytes = match axum::body::to_bytes(body, limit).await {
             Ok(bytes) => bytes,
             Err(e) => {
-                tracing::warn!("Failed to buffer response to compress it: {e}");
+                log::warn!("Failed to buffer response to compress it: {e}");
                 return (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Failed to buffer response to compress it",
@@ -134,7 +134,7 @@ impl CompressContext {
                     HeaderValue::from_str(&content_length.to_string()).unwrap(),
                 );
                 if let Some(encoding) = result.content_encoding {
-                    tracing::trace!(
+                    log::trace!(
                         "🗜️ Spent \x1b[33m{elapsed:?}\x1b[0m on \x1b[36m{encoding}\x1b[0m to save \x1b[32m{savings_percentage:.2}%\x1b[0m (\x1b[35m{old_size}\x1b[0m => \x1b[35m{new_size}\x1b[0m)",
                         elapsed = start.elapsed(),
                         savings_percentage = (1.0 - (new_size as f64 / old_size as f64)) * 100.0,
@@ -148,7 +148,7 @@ impl CompressContext {
             }
             Err(err) => {
                 // If compression fails, log the error and return a 500
-                tracing::error!(%err, "Failed to compress response");
+                log::error!("Failed to compress response: {:?}", err);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Failed to compress response",

@@ -42,16 +42,16 @@ pub struct FFmpegTranscode {
 impl Drop for FFmpegTranscode {
     fn drop(&mut self) {
         if let Some(pid) = self.process_id.take() {
-            tracing::warn!(
+            log::warn!(
                 "FFmpegTranscode dropped before completion, killing process {}",
                 pid
             );
             // Try SIGTERM first
             if let Err(e) = signal::kill(Pid::from_raw(pid as i32), Signal::SIGTERM) {
-                tracing::error!("Failed to send SIGTERM to FFmpeg process: {}", e);
+                log::error!("Failed to send SIGTERM to FFmpeg process: {}", e);
                 // If SIGTERM fails, try SIGKILL
                 if let Err(e) = signal::kill(Pid::from_raw(pid as i32), Signal::SIGKILL) {
-                    tracing::error!("Failed to send SIGKILL to FFmpeg process: {}", e);
+                    log::error!("Failed to send SIGKILL to FFmpeg process: {}", e);
                 }
             }
         }
@@ -95,12 +95,12 @@ impl FFmpegTranscode {
 
         // Spawn FFmpeg process
         let mut child = cmd.spawn().map_err(|e| {
-            tracing::error!("Failed to spawn FFmpeg process: {}", e);
+            log::error!("Failed to spawn FFmpeg process: {}", e);
             eyre!("Failed to spawn FFmpeg process: {}", e)
         })?;
 
         let process_id = child.as_inner().id();
-        tracing::info!(
+        log::info!(
             "FFmpeg process spawned with PID: {}, input: \x1b[36m{}\x1b[0m, output: \x1b[32m{}\x1b[0m, command: \x1b[33m{}\x1b[0m",
             process_id,
             input_path.display(),
@@ -113,7 +113,7 @@ impl FFmpegTranscode {
         std::thread::spawn(move || {
             let result = handle_ffmpeg_events(child, tx);
             if let Err(e) = result {
-                tracing::error!("Error handling FFmpeg events: {}", e);
+                log::error!("Error handling FFmpeg events: {}", e);
             }
         });
 
@@ -130,7 +130,7 @@ fn handle_ffmpeg_events(
     tx: mpsc::Sender<DetailedTranscodeEvent>,
 ) -> eyre::Result<()> {
     let iter = child.iter().map_err(|e| {
-        tracing::error!("Failed to create iterator over FFmpeg events: {}", e);
+        log::error!("Failed to create iterator over FFmpeg events: {}", e);
         eyre!("Failed to create iterator over FFmpeg events: {}", e)
     })?;
 
@@ -181,7 +181,7 @@ fn handle_ffmpeg_events(
                     props.vp = None;
                 }
 
-                tracing::debug!("Transcoding progress: {:?}", progress);
+                log::debug!("Transcoding progress: {:?}", progress);
                 DetailedTranscodeEvent::Progress(TranscodingProgress {
                     frame: progress.frame,
                     fps: progress.fps,
@@ -196,13 +196,11 @@ fn handle_ffmpeg_events(
                                     if let Some(fps) = video_params.frame_rate {
                                         progress.frame as f64 / fps
                                     } else {
-                                        tracing::warn!(
-                                            "No frame rate available, defaulting to 0.0"
-                                        );
+                                        log::warn!("No frame rate available, defaulting to 0.0");
                                         0.0
                                     }
                                 } else {
-                                    tracing::warn!(
+                                    log::warn!(
                                         "No video parameters available (props = {props:?}), defaulting to 0.0"
                                     );
                                     0.0
@@ -233,7 +231,7 @@ fn handle_ffmpeg_events(
                 if error.contains("No streams found") {
                     continue;
                 }
-                tracing::error!("ffmpeg-sidecar error: {}", error);
+                log::error!("ffmpeg-sidecar error: {}", error);
                 log_messages.push(format!("[ERROR] ffmpeg-sidecar error: {error}"));
                 continue;
             }
@@ -242,7 +240,7 @@ fn handle_ffmpeg_events(
 
         // If send fails, the receiver was dropped - time to stop
         if tx.blocking_send(event).is_err() {
-            tracing::warn!("Event receiver dropped, stopping FFmpeg event processing");
+            log::warn!("Event receiver dropped, stopping FFmpeg event processing");
             return Ok(());
         }
     }

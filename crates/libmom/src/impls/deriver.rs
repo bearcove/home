@@ -26,7 +26,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
     let mut info = {
         let mut locks = ts.derive_jobs.lock();
         if let Some(info) = locks.get(&params) {
-            tracing::info!("Derive already in progress: {info:?}");
+            log::info!("Derive already in progress: {info:?}");
             let mut res = FacetJson(DeriveResponse::AlreadyInProgress(
                 DeriveResponseAlreadyInProgress {
                     info: format!("derive already in progress: {info:#?}"),
@@ -55,7 +55,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
         fn drop(&mut self) {
             let mut locks = self.ts.derive_jobs.lock();
             locks.remove(&self.params);
-            tracing::debug!(
+            log::debug!(
                 "Removed derivation job for \x1b[32m{:?}\x1b[0m on \x1b[36m{}\x1b[0m",
                 self.params.derivation.kind,
                 self.params.input.key()
@@ -131,12 +131,12 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
                 tokio::select! {
                     ev = rx.recv() => {
                         if let Some(TranscodeEvent::Progress(progress)) = ev {
-                            tracing::info!("Transcode progress: {progress}");
+                            log::info!("Transcode progress: {progress}");
                             info.last_ping = Instant::now();
                             info.last_progress = Some(progress);
                             broadcast_info(&info);
                         } else {
-                            tracing::debug!("Transcode progress channel closed");
+                            log::debug!("Transcode progress channel closed");
                             break transcode_task.await?;
                         }
                     }
@@ -167,12 +167,12 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
                 tokio::select! {
                     ev = rx.recv() => {
                         if let Some(TranscodeEvent::Progress(progress)) = ev {
-                            tracing::info!("Transcode progress: {progress}");
+                            log::info!("Transcode progress: {progress}");
                             info.last_ping = Instant::now();
                             info.last_progress = Some(progress);
                             broadcast_info(&info);
                         } else {
-                            tracing::debug!("Transcode progress channel closed");
+                            log::debug!("Transcode progress channel closed");
                             break transcode_task.await?;
                         }
                     }
@@ -214,7 +214,7 @@ pub async fn do_derive(ts: Arc<MomTenantState>, params: DeriveParams) -> Reply {
     let write_duration = before_write.elapsed();
     let input_type = dinfo.input.content_type;
     let output_description = &dinfo.derivation.kind;
-    tracing::info!(
+    log::info!(
         "\x1b[36m{} => {}\x1b[0m took \x1b[32m{:?}\x1b[0m (load={:?}, derive={:?}, write={:?}) (\x1b[34m{}\x1b[0m => \x1b[34m{}\x1b[0m, e.g. \x1b[35m{:.2}x\x1b[0m)",
         input_type,
         output_description,
@@ -358,7 +358,7 @@ async fn transcode_media(
                 return Ok(());
             }
             DetailedTranscodeEvent::Error(error) => {
-                tracing::error!("FFmpeg transcoding error: {}", error);
+                log::error!("FFmpeg transcoding error: {}", error);
                 continue;
             }
             DetailedTranscodeEvent::Log { level, message } => {

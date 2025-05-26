@@ -31,10 +31,10 @@ pub(crate) async fn upload(
 
 async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<MomTenantState>) {
     if let Err(e) = handle_ws_inner(&mut socket, ts).await {
-        tracing::warn!("Error in media transcode socket: {:?}", e);
+        log::warn!("Error in media transcode socket: {:?}", e);
         let error_message = WebSocketMessage::Error(format!("Error: {e}"));
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
-            tracing::error!("Failed to send error message to websocket: {}", send_err);
+            log::error!("Failed to send error message to websocket: {}", send_err);
         }
     }
 
@@ -81,7 +81,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
     let start_time = Instant::now();
     let permit = acquire_ffmpeg_encode_permit().await;
     let elapsed = start_time.elapsed();
-    tracing::info!("Time taken to acquire FFmpeg encode permit: {:?}", elapsed);
+    log::info!("Time taken to acquire FFmpeg encode permit: {:?}", elapsed);
     let mut transcode_task = std::pin::pin!(transcode_media_data(
         input_data,
         headers.target_format,
@@ -94,11 +94,11 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
             ev = rx.recv() => {
                 if let Some(ev) = ev {
                     if let TranscodeEvent::Progress(progress) = &ev {
-                        tracing::info!("Transcode progress: {}", progress);
+                        log::info!("Transcode progress: {}", progress);
                     }
                     json_to_socket(socket, &WebSocketMessage::TranscodingEvent(ev)).await?;
                 } else {
-                    tracing::debug!("Transcode progress channel closed");
+                    log::debug!("Transcode progress channel closed");
                     break transcode_task.await?;
                 }
             }
@@ -144,12 +144,12 @@ pub(crate) async fn transcode(
     let start_time = Instant::now();
     let permit = acquire_ffmpeg_encode_permit().await;
     let elapsed = start_time.elapsed();
-    tracing::info!("Time taken to acquire FFmpeg encode permit: {:?}", elapsed);
+    log::info!("Time taken to acquire FFmpeg encode permit: {:?}", elapsed);
 
     let mut info = {
         let mut locks = ts.transcode_jobs.lock();
         if let Some(info) = locks.get(&params) {
-            tracing::info!("Transcode already in progress: {info:?}");
+            log::info!("Transcode already in progress: {info:?}");
             let mut res = FacetJson(TranscodeResponse::AlreadyInProgress(
                 TranscodeResponseAlreadyInProgress {
                     info: format!("Transcode already in progress: {info:#?}"),
@@ -178,7 +178,7 @@ pub(crate) async fn transcode(
         fn drop(&mut self) {
             let mut locks = self.ts.transcode_jobs.lock();
             locks.remove(&self.params);
-            tracing::info!("Removed transcode job for params: {:?}", self.params);
+            log::info!("Removed transcode job for params: {:?}", self.params);
         }
     }
     let _guard = RemoveOnDrop {
@@ -210,7 +210,7 @@ pub(crate) async fn transcode(
             ev = rx.recv() => {
                 if let Some(ev) = ev {
                     if let TranscodeEvent::Progress(progress) = ev {
-                        tracing::info!("Transcode progress: {progress}");
+                        log::info!("Transcode progress: {progress}");
                         info.last_ping = Instant::now();
                         info.last_progress = Some(progress);
 
@@ -220,7 +220,7 @@ pub(crate) async fn transcode(
                         }
                     }
                 } else {
-                    tracing::debug!("Transcode progress channel closed");
+                    log::debug!("Transcode progress channel closed");
                     break transcode_task.await?;
                 }
             }

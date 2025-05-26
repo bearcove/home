@@ -3,7 +3,7 @@ use config_types::is_development;
 use eyre::Context as _;
 use facet::Facet;
 use http::StatusCode;
-use tracing::{info, warn};
+use log::{info, warn};
 
 /// Params for writing text to system clipboard
 #[derive(Facet)]

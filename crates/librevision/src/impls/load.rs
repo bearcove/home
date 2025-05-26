@@ -15,10 +15,10 @@ use eyre::{Context, eyre};
 use image_types::{ICodec, LogicalPixels, PixelDensity};
 use itertools::Itertools;
 use libsearch::Index;
+use log::{self, debug, warn};
 use markdown_types::ProcessMarkdownArgs;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use template_types::{CompileArgs, TemplateCollection};
-use tracing::{self, debug, warn};
 
 use crate::impls::frontmatter::Frontmatter;
 
@@ -53,7 +53,7 @@ pub async fn load_pak(
             };
             let dinfo = DerivationInfo::new(input, &d);
 
-            tracing::debug!(
+            log::debug!(
                 "For dist asset, inserting passthrough derivation: {input_path} => {dinfo:#?}"
             );
             rev.assets
@@ -318,7 +318,7 @@ pub async fn load_pak(
     }
     recompute_asset_routes(&mut rev)?;
 
-    tracing::debug!(
+    log::debug!(
         "Loaded {} inputs in {:?}",
         rev.pak.inputs.len(),
         before_input.elapsed()
@@ -346,11 +346,11 @@ pub async fn load_pak(
 
     let template_start = Instant::now();
     let templates = lrev_make_template_collection(&mut rev).wrap_err("compiling templates")?;
-    tracing::debug!("Compiled templates in {:?}", template_start.elapsed());
+    log::debug!("Compiled templates in {:?}", template_start.elapsed());
 
     let markdown_load_start = Instant::now();
     let mod_markdown = libmarkdown::load();
-    tracing::debug!(
+    log::debug!(
         "Loaded markdown module in {:?}",
         markdown_load_start.elapsed()
     );
@@ -358,7 +358,7 @@ pub async fn load_pak(
     let page_sort_start = Instant::now();
     let mut input_pages: Vec<&InputPathRef> = rev.pak.pages.keys().map(|p| p.as_ref()).collect();
     input_pages.sort_by_key(|p| p.as_str());
-    tracing::debug!(
+    log::debug!(
         "Sorted {} input pages in {:?}",
         input_pages.len(),
         page_sort_start.elapsed()
@@ -385,44 +385,44 @@ pub async fn load_pak(
                             let prev_input_hash = prev_input.map(|input| &input.hash);
                             let curr_input_hash = curr_input.map(|input| &input.hash);
                             if prev_input_hash.is_none() || curr_input_hash.is_none() {
-                                tracing::warn!("hash is none for {dep}");
+                                log::warn!("hash is none for {dep}");
                             }
                             let different = prev_input_hash != curr_input_hash;
                             if different {
-                                tracing::info!(
+                                log::info!(
                                     "For \x1b[32m{path:?}\x1b[0m\n\
                                      dep \x1b[33m{dep}\x1b[0m hash went \x1b[31m{prev_input_hash:?}\x1b[0m => \x1b[32m{curr_input_hash:?}\x1b[0m"
                                 );
                             } else {
-                                tracing::trace!("Page \x1b[32m{path:?}\x1b[0m has the same hash for {dep}");
+                                log::trace!("Page \x1b[32m{path:?}\x1b[0m has the same hash for {dep}");
                             }
                             different
                         });
 
                         if deps_changed {
-                            tracing::trace!(
+                            log::trace!(
                                 "Page \x1b[32m{path:?}\x1b[0m has a changed dep, not re-using"
                             );
                             None
                         } else {
-                            tracing::trace!(
+                            log::trace!(
                                 "Page \x1b[32m{path:?}\x1b[0m has not changed and none of its {} deps have changed, re-using",
                                 prev_page.deps.len()
                             );
                             prev.pages.get(&prev_page.path)
                         }
                     } else {
-                        tracing::trace!("Page \x1b[32m{path:?}\x1b[0m has changed, not re-using");
+                        log::trace!("Page \x1b[32m{path:?}\x1b[0m has changed, not re-using");
                         None
                     }
                 } else {
-                    tracing::trace!(
+                    log::trace!(
                         "Page \x1b[32m{path:?}\x1b[0m not found in previous revision, not re-using"
                     );
                     None
                 }
             } else {
-                tracing::trace!("No previous revision available, not re-using any pages");
+                log::trace!("No previous revision available, not re-using any pages");
                 None
             }
         };
@@ -433,7 +433,7 @@ pub async fn load_pak(
             to_build.push(page.clone());
         }
     }
-    tracing::debug!(
+    log::debug!(
         "Calculated dependencies in {:?}",
         before_calculate_deps.elapsed()
     );
@@ -482,7 +482,7 @@ pub async fn load_pak(
     let built_pages = built.len();
     let total_pages = built.len() + reused.len();
     let elapsed = start.elapsed();
-    tracing::info!(
+    log::info!(
         "Built \x1b[32m{built_pages}\x1b[0m/\x1b[33m{total_pages}\x1b[0m pages in \x1b[36m{elapsed:?}\x1b[0m",
     );
 
@@ -491,7 +491,7 @@ pub async fn load_pak(
         mark_series_links(lpage)?;
     }
 
-    tracing::debug!(
+    log::debug!(
         "Marked series links for {} pages in {:?}",
         built.len(),
         series_links_start.elapsed()
@@ -506,7 +506,7 @@ pub async fn load_pak(
             .chain(reused)
             .map(|p| (p.path.clone(), p)),
     );
-    tracing::debug!("Extended pages in {:?}", extend_start.elapsed());
+    log::debug!("Extended pages in {:?}", extend_start.elapsed());
 
     let aliases_start = Instant::now();
     for page in rev.pages.values() {
@@ -514,7 +514,7 @@ pub async fn load_pak(
             rev.page_routes.insert(alias.clone(), page.path.clone());
         }
     }
-    tracing::debug!(
+    log::debug!(
         "Added page aliases to routes in {:?}",
         aliases_start.elapsed()
     );
@@ -531,7 +531,7 @@ pub async fn load_pak(
                 .insert(link.part_number, lpage.clone());
         }
     }
-    tracing::debug!(
+    log::debug!(
         "Collected series parts in {:?}",
         series_parts_start.elapsed()
     );
@@ -620,7 +620,7 @@ pub async fn load_pak(
             indexer.insert(path.clone(), page);
         }
     }
-    tracing::debug!(
+    log::debug!(
         "Indexed {} pages in {:?}",
         rev.pages.len(),
         before_index.elapsed()
@@ -628,7 +628,7 @@ pub async fn load_pak(
 
     let before_commit = Instant::now();
     let index = indexer.commit();
-    tracing::debug!("Committed search index in {:?}", before_commit.elapsed());
+    log::debug!("Committed search index in {:?}", before_commit.elapsed());
 
     Ok(IndexedRevision {
         rev: Arc::new(rev),
@@ -657,7 +657,7 @@ fn load_single_page(
     let path = &page.path;
     let route_path = path.to_route_path();
 
-    tracing::debug!("Building \x1b[32m{path:?}\x1b[0m => route \x1b[36m{route_path:?}\x1b[0m");
+    log::debug!("Building \x1b[32m{path:?}\x1b[0m => route \x1b[36m{route_path:?}\x1b[0m");
     let mut html_buffer = Vec::with_capacity(page.markup.len() * 4);
     let args = ProcessMarkdownArgs {
         path: path.as_ref(),
@@ -802,7 +802,7 @@ pub fn lrev_make_template_collection(
             .insert(name.to_string(), template.markup.clone());
     }
 
-    tracing::trace!("{} templates total", compile_args.templates.len());
+    log::trace!("{} templates total", compile_args.templates.len());
 
     let modtpl = libtemplate::load();
     let coll = modtpl.make_collection(compile_args)?;

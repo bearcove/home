@@ -318,7 +318,7 @@ pub(crate) struct Performer {
 
 impl Perform for Performer {
     fn print(&mut self, c: char) {
-        tracing::trace!(
+        log::trace!(
             "print: {} ({}) - style: {:?}\r",
             c,
             c as u64,
@@ -379,7 +379,7 @@ impl Perform for Performer {
         if self.strict {
             panic!("unsupported: hook: {}", _action as char);
         } else {
-            tracing::warn!("unsupported: hook: {}", _action as char);
+            log::warn!("unsupported: hook: {}", _action as char);
         }
     }
 
@@ -387,7 +387,7 @@ impl Perform for Performer {
         if self.strict {
             panic!("unsupported: put: {_byte}");
         } else {
-            tracing::warn!("unsupported: put: {}", _byte);
+            log::warn!("unsupported: put: {_byte}");
         }
     }
 
@@ -395,16 +395,12 @@ impl Perform for Performer {
         if self.strict {
             panic!("unsupported: unhook");
         } else {
-            tracing::warn!("unsupported: unhook");
+            log::warn!("unsupported: unhook");
         }
     }
 
     fn osc_dispatch(&mut self, _params: &[&[u8]], _bell_terminated: bool) {
-        tracing::trace!(
-            "osc_dispatch: params={:?}, bell_terminated={}",
-            _params,
-            _bell_terminated
-        );
+        log::trace!("osc_dispatch: params={_params:?}, bell_terminated={_bell_terminated}");
         // OSC can be used for various things, like setting window title,
         // clipboard content, color palette, etc. — we don't really need
         // it right now, so let's just ignore it.
@@ -421,7 +417,7 @@ impl Perform for Performer {
             return;
         }
 
-        tracing::trace!(
+        log::trace!(
             "csi_dispatch: {:?} {:?} {} {:?}\r",
             params,
             intermediates,
@@ -790,7 +786,7 @@ impl Perform for Performer {
     }
 
     fn esc_dispatch(&mut self, _intermediates: &[u8], _ignore: bool, _byte: u8) {
-        tracing::debug!("esc_dispatch: {:?} {:?}", _intermediates, _byte as char);
+        log::debug!("esc_dispatch: {:?} {:?}", _intermediates, _byte as char);
     }
 }
 
@@ -893,8 +889,7 @@ impl Performer {
                                 classes.push(format!("fg-{c}").into());
                             }
                             AnyColor::Rgb(r, g, b) => {
-                                style_directives
-                                    .push(format!("color:#{r:02x}{g:02x}{b:02x}"));
+                                style_directives.push(format!("color:#{r:02x}{g:02x}{b:02x}"));
                             }
                             AnyColor::AnsiValue(c) => {
                                 classes.push(format!("fg-ansi{c}").into());
@@ -909,8 +904,7 @@ impl Performer {
                                 classes.push(format!("bg-{c}").into());
                             }
                             AnyColor::Rgb(r, g, b) => {
-                                style_directives
-                                    .push(format!("background:#{r:02x}{g:02x}{b:02x}"));
+                                style_directives.push(format!("background:#{r:02x}{g:02x}{b:02x}"));
                             }
                             AnyColor::AnsiValue(c) => {
                                 classes.push(format!("bg-ansi{c}").into());

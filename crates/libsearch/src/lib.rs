@@ -150,7 +150,7 @@ impl IndexImpl {
         let body = self.schema.get_field("body").unwrap();
         query_parser.set_field_boost(title, 3.0);
 
-        tracing::debug!("query = {query}");
+        log::debug!("query = {query}");
 
         let (query, _errs) = query_parser.parse_query_lenient(&query);
 
@@ -171,19 +171,19 @@ impl IndexImpl {
 
         query.query_terms(&mut |term, _positions_required| {
             if let Some(s) = term.value().as_str() {
-                tracing::debug!("found term: {s}");
+                log::debug!("found term: {s}");
                 results.terms.push(s.to_string());
             }
         });
 
-        tracing::debug!(
+        log::debug!(
             "page = {page}, offset = {offset}, per_page = {per_page}, num_results = {num_results}"
         );
 
         let top_docs =
             searcher.search(&query, &TopDocs::with_limit(per_page).and_offset(offset))?;
 
-        tracing::debug!("num top docs = {}", top_docs.len());
+        log::debug!("num top docs = {}", top_docs.len());
 
         let mut title_snippet_generator = SnippetGenerator::create(&searcher, &*query, title)?;
         title_snippet_generator.set_max_num_chars(150);
@@ -257,19 +257,19 @@ impl IndexImpl {
                 word_boundaries.push(body_snippet.fragment().len());
             }
 
-            tracing::debug!("Found {} word boundaries", word_boundaries.len());
+            log::debug!("Found {} word boundaries", word_boundaries.len());
 
             // Use collapsed ranges instead of original ranges
             for r in &collapsed_ranges {
-                tracing::debug!("Dealing with range {:?}", r);
-                tracing::debug!("Using word_boundaries to find two words before");
+                log::debug!("Dealing with range {r:?}");
+                log::debug!("Using word_boundaries to find two words before");
 
                 // Find two words before the highlighted range
                 let mut prefix_start_idx = 0;
                 let prefix_end = r.start;
                 let mut second_last_boundary = 0;
 
-                tracing::debug!(
+                log::debug!(
                     "Finding two words before the highlighted range that starts at {}",
                     r.start
                 );
@@ -279,13 +279,11 @@ impl IndexImpl {
                     if boundary < r.start {
                         second_last_boundary = prefix_start_idx;
                         prefix_start_idx = boundary;
-                        tracing::debug!(
-                            "Found boundaries: second last = {}, last = {}",
-                            second_last_boundary,
-                            prefix_start_idx
+                        log::debug!(
+                            "Found boundaries: second last = {second_last_boundary}, last = {prefix_start_idx}"
                         );
                     } else {
-                        tracing::debug!("Stopping at boundary {} since it's >= r.start", boundary);
+                        log::debug!("Stopping at boundary {boundary} since it's >= r.start");
                         break;
                     }
                 }
@@ -295,17 +293,17 @@ impl IndexImpl {
                     prefix_start_idx = second_last_boundary;
                 }
 
-                tracing::debug!("Selected prefix_start_idx = {}", prefix_start_idx);
+                log::debug!("Selected prefix_start_idx = {prefix_start_idx}");
 
                 // Extract highlighted text
                 let text = &body_snippet.fragment()[r.clone()];
-                tracing::debug!("Highlighted text: '{}'", text);
+                log::debug!("Highlighted text: '{text}'");
 
                 // Extract prefix from fragment
                 let prefix = &body_snippet.fragment()[prefix_start_idx..prefix_end];
 
                 // Debug print fragments and their components
-                tracing::debug!(
+                log::debug!(
                     "Fragment parts: prefix='{}' text='{}'",
                     prefix.trim(),
                     text.trim()
@@ -316,15 +314,15 @@ impl IndexImpl {
                     fragment_urlencode(prefix.trim().as_bytes()),
                     fragment_urlencode(text.trim().as_bytes())
                 );
-                tracing::debug!("Created fragment: {}", fragment);
+                log::debug!("Created fragment: {fragment}");
                 fragments.push(fragment);
             }
             let fragments = format!(":~:{}", fragments.join("&"));
 
             let body_snippet = body_snippet.to_html();
 
-            tracing::debug!("title snippet = {title_snippet}");
-            tracing::debug!("body snippet = {body_snippet}");
+            log::debug!("title snippet = {title_snippet}");
+            log::debug!("body snippet = {body_snippet}");
 
             results.results.push(SearchResult {
                 body_snippet: Html::new(body_snippet),
@@ -366,7 +364,7 @@ impl IndexImpl {
 
             let (query, errs) = query_parser.parse_query_lenient(&query_str);
             for err in errs {
-                tracing::warn!("query error: {err}");
+                log::warn!("query error: {err}");
             }
 
             let mut title_snippet_generator = SnippetGenerator::create(&searcher, &*query, title)?;
@@ -381,13 +379,13 @@ impl IndexImpl {
                     .get_first(self.schema.get_field("path").unwrap())
                     .unwrap();
                 let doc_path = InputPath::new(doc_path.as_str().unwrap().to_owned());
-                tracing::debug!("score = {score}, doc_path = {doc_path}");
+                log::debug!("score = {score}, doc_path = {doc_path}");
 
                 if score >= 1.5 {
                     let page = rev.pages.get(&doc_path).unwrap().clone();
 
                     let title_snippet = title_snippet_generator.snippet(&page.title).to_html();
-                    tracing::debug!("title snippet = {title_snippet}");
+                    log::debug!("title snippet = {title_snippet}");
 
                     results.push(Completion {
                         kind: CompletionKind::Article,
@@ -427,7 +425,7 @@ impl Index for IndexImpl {
         match self.autocomplete_inner(rv, viewer, query, web) {
             Ok(results) => results,
             Err(e) => {
-                tracing::warn!("Failed to autocomplete: {e}");
+                log::warn!("Failed to autocomplete: {e}");
                 Default::default()
             }
         }
@@ -444,7 +442,7 @@ impl Index for IndexImpl {
         match self.search_inner(rv, viewer, query, per_page, page_number) {
             Ok(results) => results,
             Err(e) => {
-                tracing::warn!("Failed to search index: {e}");
+                log::warn!("Failed to search index: {e}");
                 Default::default()
             }
         }

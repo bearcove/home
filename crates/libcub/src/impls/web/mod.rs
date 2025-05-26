@@ -70,7 +70,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
             let file = rx.tenant_ref().ti().base_dir.join(file);
             let editor = "zed";
 
-            tracing::info!("Opening editor {editor} for file {file}");
+            log::info!("Opening editor {editor} for file {file}");
 
             tokio::spawn(async move {
                 if let Err(e) = tokio::process::Command::new(editor)
@@ -78,7 +78,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
                     .status()
                     .await
                 {
-                    tracing::error!("Failed to open editor: {}", e);
+                    log::error!("Failed to open editor: {}", e);
                 }
             });
 
@@ -103,7 +103,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
                 return Ok(Redirect::to(&cdn_url).into_response());
             }
 
-            tracing::warn!("{e}");
+            log::warn!("{e}");
             return render_404(rx);
         }
     };
@@ -111,7 +111,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
     let page = match irev.rev.pages.get_or_help(ResourceKind::Page, page_path) {
         Ok(page) => page.clone(),
         Err(e) => {
-            tracing::error!("Failed to get page: {}", e);
+            log::error!("Failed to get page: {}", e);
             return render_404(rx);
         }
     };
@@ -132,7 +132,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
                     rx.path,
                     page.draft_code.as_ref().unwrap()
                 );
-                tracing::info!("Adding draft_code to URL for easy sharing: {redirect_url}");
+                log::info!("Adding draft_code to URL for easy sharing: {redirect_url}");
                 return Redirect::temporary(&redirect_url)
                     .into_response()
                     .into_legacy_reply();
@@ -147,7 +147,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
         } else {
             format!("{}?{}", page.route, rx.raw_query())
         };
-        tracing::info!("Redirecting to {redirect_target}");
+        log::info!("Redirecting to {redirect_target}");
         return Redirect::temporary(&redirect_target).into_legacy_reply();
     }
 
@@ -172,7 +172,7 @@ async fn extra_files(
 ) -> LegacyReply {
     let viewer = tr.viewer()?;
     if !(viewer.has_bronze || viewer.is_admin) {
-        tracing::warn!("Unauthorized access attempt to extra files");
+        log::warn!("Unauthorized access attempt to extra files");
         return Err(LegacyHttpError::with_status(
             StatusCode::FORBIDDEN,
             "extra files are only available to Bronze sponsors and above",
@@ -180,7 +180,7 @@ async fn extra_files(
     }
 
     if path.contains("..") {
-        tracing::warn!("Path traversal attempt: {}", path);
+        log::warn!("Path traversal attempt: {}", path);
         return Err(LegacyHttpError::with_status(
             StatusCode::BAD_REQUEST,
             "path traversal not allowed",
@@ -193,7 +193,7 @@ async fn extra_files(
         Some("mp3") => ContentType::MP3,
         Some("flac") => ContentType::FLAC,
         _ => {
-            tracing::warn!("Unsupported file type requested: {}", path);
+            log::warn!("Unsupported file type requested: {}", path);
             return Err(LegacyHttpError::with_status(
                 StatusCode::NOT_FOUND,
                 "unsupported file type",
@@ -203,7 +203,7 @@ async fn extra_files(
 
     let store = tr.tenant.store.clone();
     let key = ObjectStoreKey::new(format!("extra-files/{path}"));
-    tracing::info!(
+    log::info!(
         "Fetching object store key \x1b[33m{key}\x1b[0m for extra file \x1b[33m{path}\x1b[0m"
     );
 

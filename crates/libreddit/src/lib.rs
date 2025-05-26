@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 
 pub use eyre::Result;
 use libhttpclient::form_urlencoded;
-use tracing::{debug, info, trace};
+use log::{debug, info, trace};
 
 use config_types::RedditSecrets;
 use libhttpclient::HttpClient;
@@ -112,7 +112,7 @@ impl Mod for ModImpl {
                 }
 
                 let token = res.json::<RedditAccessToken>().await?;
-                trace!(?token, "got reddit token");
+                trace!("got reddit token: {}", token.access_token);
 
                 let expires_at = Instant::now() + Duration::from_secs(token.expires_in);
                 access_token = AccessToken {
@@ -175,7 +175,7 @@ impl Mod for ModImpl {
 
             let info = res.json::<Info>().await?;
 
-            debug!("info = {:#?}", info);
+            debug!("info = {info:#?}");
 
             let submission_url = info
                 .data
@@ -191,7 +191,7 @@ impl Mod for ModImpl {
             match submission_url {
                 Some(url) => {
                     // TODO: cache those in the database
-                    info!(submission_url = %url, "found previous submission");
+                    info!("Found previous submission: {url}");
                     Ok(Some(url.to_string()))
                 }
                 None => {

@@ -62,7 +62,7 @@ impl Mod for ModImpl {
                     80
                 });
             let host_and_port = format!("{host}:{port}");
-            tracing::debug!("Resolving {host_and_port}");
+            log::debug!("Resolving {host_and_port}");
 
             let before_dns = Instant::now();
             let ip: IpAddr = if let Ok(ipv4) = host.parse::<std::net::Ipv4Addr>() {
@@ -94,9 +94,9 @@ impl Mod for ModImpl {
             };
             let dns_elapsed = before_dns.elapsed();
 
-            tracing::debug!("Resolved {host_and_port} to {ip} in {dns_elapsed:?}");
+            log::debug!("Resolved {host_and_port} to {ip} in {dns_elapsed:?}");
 
-            tracing::debug!("Connecting to {ip}:{port}...");
+            log::debug!("Connecting to {ip}:{port}...");
             let before_tcp = Instant::now();
             let stream = tokio::net::TcpStream::connect((ip, port))
                 .await
@@ -107,8 +107,8 @@ impl Mod for ModImpl {
                 .set_nodelay(true)
                 .map_err(|e| Error::Any(format!("Failed to set TCP_NODELAY: {e}")))?;
 
-            tracing::debug!("TCP connection established in {tcp_elapsed:?}");
-            tracing::debug!("Doing websocket handshake...");
+            log::debug!("TCP connection established in {tcp_elapsed:?}");
+            log::debug!("Doing websocket handshake...");
 
             let before_handshake = Instant::now();
             let (ws_stream, _) = tokio_tungstenite::client_async_tls_with_config(
@@ -119,12 +119,12 @@ impl Mod for ModImpl {
             )
             .await
             .map_err(|e| {
-                tracing::warn!("WebSocket handshake failed: {e}");
+                log::warn!("WebSocket handshake failed: {e}");
                 Error::Any(format!("Failed to complete WebSocket handshake: {e}"))
             })?;
             let handshake_elapsed = before_handshake.elapsed();
 
-            tracing::debug!("WebSocket handshake completed in {handshake_elapsed:?}");
+            log::debug!("WebSocket handshake completed in {handshake_elapsed:?}");
 
             Ok(Box::new(WebSocketStreamImpl::new(ws_stream)) as Box<dyn WebSocketStream>)
         })
