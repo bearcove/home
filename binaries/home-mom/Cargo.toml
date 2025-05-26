@@ -13,7 +13,14 @@ categories.workspace = true
 
 [dependencies]
 camino = "1.1.9"
+config-types = { version = "0.1.0", path = "../../crates/config-types" }
 facet.workspace = true
 facet-args = "0.19.7"
+facet-json.workspace = true
 facet-pretty.workspace = true
+fs-err = { version = "3.1.0", features = ["tokio"] }
+libconfig = { version = "0.1.0", path = "../../crates/libconfig" }
+libmom = { version = "0.1.0", path = "../../crates/libmom" }
+mom-types = { version = "0.1.0", path = "../../crates/mom-types" }
 skelly = { version = "0.1.0", path = "../../crates/skelly" }
+tokio.workspace = true

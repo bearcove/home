@@ -2125,10 +2125,17 @@ name = "home-mom"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "config-types",
  "facet",
  "facet-args",
+ "facet-json",
  "facet-pretty",
+ "fs-err",
+ "libconfig",
+ "libmom",
+ "mom-types",
  "skelly",
+ "tokio",
 ]
 
 [[package]]
