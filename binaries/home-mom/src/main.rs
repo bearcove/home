@@ -25,6 +25,8 @@ async fn main() -> eyre::Result<()> {
 }
 
 async fn real_main() -> eyre::Result<()> {
+    skelly::setup();
+
     let args = std::env::args().skip(1).collect::<Vec<String>>();
     let args_str: Vec<&'static str> = args
         .into_iter()
