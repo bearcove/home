@@ -17,22 +17,6 @@ use mom_types::{GoodMorning, MomEvent, TenantInitialState};
 mod tenant;
 mod tenant_extractor;
 
-/// Derives a per-tenant cookie sauce from the global secret using HMAC-SHA256
-/// Returns a 64-character hex string that's deterministic and unique per tenant
-/// Uses HMAC to be secure even if tenant names become user-controlled in the future
-fn derive_cookie_sauce(global_sauce: &str, tenant_name: &TenantDomain) -> String {
-    use hmac::{Hmac, Mac};
-    use sha2::Sha256;
-
-    type HmacSha256 = Hmac<Sha256>;
-
-    let mut mac =
-        HmacSha256::new_from_slice(global_sauce.as_bytes()).expect("HMAC can take key of any size");
-    mac.update(tenant_name.as_str().as_bytes());
-    let result = mac.finalize();
-    hex::encode(result.into_bytes())
-}
-
 /// Inserted in the request context to indicate that the used API key is
 #[derive(Clone, Debug)]
 pub enum KeyPermissions {
@@ -204,7 +188,7 @@ async fn handle_socket(mut socket: ws::WebSocket) {
         if let Some(ref mut secrets) = tc.secrets {
             if secrets.cookie_sauce.is_none() {
                 let global_cookie_sauce = &gs.config.secrets.cookie_sauce;
-                let derived_sauce = derive_cookie_sauce(global_cookie_sauce, tn);
+                let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, tn);
                 secrets.cookie_sauce = Some(derived_sauce);
             }
         }
