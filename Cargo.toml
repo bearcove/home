@@ -20,9 +20,6 @@ debug = 1
 split-debuginfo = "unpacked"
 incremental = true
 
-[profile.dev.package.backtrace]
-opt-level = 3
-
 [profile.release]
 debug = 1
 lto = "off"
