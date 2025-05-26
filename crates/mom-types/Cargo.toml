@@ -18,7 +18,10 @@ conflux = { version = "0.1.0", path = "../conflux" }
 derivations = { version = "0.1.0", path = "../derivations" }
 eyre.workspace = true
 facet.workspace = true
+hex = "0.4"
+hmac = "0.12"
 image-types = { version = "0.1.0", path = "../image-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 serde = { workspace = true, features = ["derive"] }
+sha2 = "0.10"
 tokio.workspace = true

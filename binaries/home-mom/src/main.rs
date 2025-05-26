@@ -47,16 +47,43 @@ async fn real_main() -> eyre::Result<()> {
         facet_json::from_str(&tenant_config).map_err(|e| e.into_owned())?;
     let tenants: HashMap<TenantDomain, TenantInfo> = tenant_list
         .into_iter()
-        .map(|tc| {
-            (
+        .map(|mut tc| -> eyre::Result<(TenantDomain, TenantInfo)> {
+            // Derive cookie sauce if not already set and secrets exist
+            if let Some(ref mut secrets) = tc.secrets {
+                if secrets.cookie_sauce.is_none() {
+                    let global_cookie_sauce = &config.secrets.cookie_sauce;
+                    let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
+                    secrets.cookie_sauce = Some(derived_sauce);
+                }
+            } else if Environment::default() == Environment::Development {
+                // In development, create dummy secrets with derived cookie sauce
+                log::info!("Creating dev secrets for tenant {}", tc.name);
+                let global_cookie_sauce = &config.secrets.cookie_sauce;
+                let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
+                
+                tc.secrets = Some(config_types::TenantSecrets {
+                    aws: config_types::AwsSecrets {
+                        access_key_id: "dev-access-key".to_string(),
+                        secret_access_key: "dev-secret-key".to_string(),
+                    },
+                    patreon: None,
+                    github: None,
+                    cookie_sauce: Some(derived_sauce),
+                });
+            } else {
+                // In production, this is an error
+                return Err(eyre::eyre!("No secrets configured for tenant {}", tc.name));
+            }
+            
+            Ok((
                 tc.name.clone(),
                 TenantInfo {
                     base_dir: config.tenant_data_dir.join(tc.name.as_str()),
                     tc,
                 },
-            )
+            ))
         })
-        .collect();
+        .collect::<eyre::Result<HashMap<_, _>>>()?;
 
     let port = if let Ok(port_str) = std::env::var("WEB_PORT") {
         port_str.parse::<u16>().unwrap_or(1118)
