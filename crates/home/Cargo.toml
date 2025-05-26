@@ -4,25 +4,5 @@ edition = "2024"
 version = "4.0.0"
 
 [dependencies]
-eyre = "0.6.12"
-tokio = { version = "1.45.0", features = ["full"] }
-libc = "0.2.172"
-liberrhandling = { version = "0.1.0", path = "../liberrhandling" }
-libconfig = { version = "0.1.0", path = "../libconfig" }
-libclap = { path = "../libclap" }
-libterm = { path = "../libterm" }
-libcub = { path = "../libcub" }
-libmom = { path = "../libmom" }
-libtracingsub = { path = "../libtracingsub" }
-serde_json = "1.0.140"
-fastrand = "2.3.0"
-camino = "1.1.9"
-libdoctor = { version = "0.1.0", path = "../libdoctor" }
-owo-colors = "4.2.1"
-tracing.workspace = true
-config-types = { version = "0.1.0", path = "../config-types" }
-mom-types = { version = "0.1.0", path = "../mom-types" }
-fs-err = { version = "3.1.0", features = ["tokio"] }
 
 [features]
-minijinja = []

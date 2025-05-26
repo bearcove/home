@@ -3,6 +3,7 @@
 // messages have a _little_ personality and some cheer through emojis, but not too much.
 
 use camino::Utf8Path;
+use skelly::eyre;
 use std::fmt;
 use std::process::Command;
 
