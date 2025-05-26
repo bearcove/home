@@ -14,11 +14,16 @@ use std::io::Write;
 struct SimpleLogger;
 
 impl Log for SimpleLogger {
-    fn enabled(&self, _metadata: &Metadata) -> bool {
-        true
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        // Only log entries at or above the max level filter from log.
+        metadata.level() <= log::max_level()
     }
 
     fn log(&self, record: &Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
+
         // Create style based on log level
         let level_style = match record.level() {
             Level::Error => Style::new().fg_rgb::<243, 139, 168>(), // Catppuccin red (Maroon)
@@ -65,7 +70,9 @@ pub fn setup() {
     ];
 
     fn should_ignore_frame(name: &str) -> bool {
-        IGNORE_FRAME_PREFIXES.iter().any(|prefix| name.starts_with(prefix))
+        IGNORE_FRAME_PREFIXES
+            .iter()
+            .any(|prefix| name.starts_with(prefix))
     }
 
     // color-eyre filter
@@ -112,5 +119,12 @@ pub fn setup() {
 
     let logger = Box::new(SimpleLogger);
     log::set_boxed_logger(logger).unwrap();
-    log::set_max_level(LevelFilter::Trace);
+
+    // Respect RUST_LOG, fallback to Trace if not set or invalid
+    let level = std::env::var("RUST_LOG")
+        .ok()
+        .and_then(|val| val.parse::<LevelFilter>().ok())
+        .unwrap_or(LevelFilter::Info);
+
+    log::set_max_level(level);
 }
