@@ -1,0 +1,19 @@
+[package]
+name = "home-mom"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+camino = "1.1.9"
+facet.workspace = true
+facet-args = "0.19.7"
+facet-pretty.workspace = true
+skelly = { version = "0.1.0", path = "../../crates/skelly" }

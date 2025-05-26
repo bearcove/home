@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*"]
+members = ["binaries/*", "crates/*"]
 exclude = []
 resolver = "3"
 
@@ -20,8 +20,8 @@ debug = 1
 split-debuginfo = "unpacked"
 incremental = true
 
-[profile.dev.package."*"]
-opt-level = 2
+[profile.dev.package.backtrace]
+opt-level = 3
 
 [profile.release]
 debug = 1
@@ -35,6 +35,6 @@ rusqlite = { version = "0.35.0", default-features = false, features = ["time"] }
 eyre = "0.6.12"
 tracing = { version = "0.1.41", default-features = false, features = ["std"] }
 minijinja = { version = "2.10.2" }
-facet = { version = "0.27.4", features = ["camino", "ordered-float", "time"] }
-facet-json = { version = "0.24.5" }
-facet-pretty = { version = "0.23.11" }
+facet = { version = "0.27.6", features = ["camino", "ordered-float", "time"] }
+facet-json = { version = "0.24.7" }
+facet-pretty = { version = "0.23.13" }

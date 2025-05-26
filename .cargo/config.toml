@@ -24,3 +24,4 @@ rustflags = [
 # facet-pretty = { path = "../../facet-rs/facet/facet-pretty" }
 # facet-reflect = { path = "../../facet-rs/facet/facet-reflect" }
 # facet-yaml = { path = "../../facet-rs/facet/facet-yaml" }
+# facet-deserialize = { path = "../../facet-rs/facet/facet-deserialize" }
