@@ -148,7 +148,7 @@ pub(crate) async fn serve_link_preview(
     let info = match info_future.await {
         Ok(info) => info,
         Err(e) => {
-            log::warn!("Error fetching webpage info for {href}: {:?}", e);
+            log::warn!("Error fetching webpage info for {href}: {e:?}");
             LINK_CACHE.lock().unwrap().insert_negative(&href);
             return LegacyHttpError::with_status(StatusCode::NOT_FOUND, "").into_legacy_reply();
         }

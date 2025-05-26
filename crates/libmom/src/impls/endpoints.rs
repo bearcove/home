@@ -211,12 +211,12 @@ async fn handle_socket(mut socket: ws::WebSocket) {
 
     let msg = MomGlobalState::event_to_message(MomEvent::GoodMorning(gm));
     if let Err(e) = socket.send(msg).await {
-        log::error!("Failed to send good morning: {}", e);
+        log::error!("Failed to send good morning: {e}");
         return;
     }
 
     if let Err(e) = socket.flush().await {
-        log::error!("Failed to flush WebSocket message: {}", e);
+        log::error!("Failed to flush WebSocket message: {e}");
         return;
     }
 
@@ -226,11 +226,11 @@ async fn handle_socket(mut socket: ws::WebSocket) {
             Ok(json_payload) = rx.recv() => {
                 let msg = ws::Message::text(json_payload);
                 if let Err(e) = socket.send(msg).await {
-                    log::error!("Failed to send WebSocket message: {}", e);
+                    log::error!("Failed to send WebSocket message: {e}");
                     break;
                 }
                 if let Err(e) = socket.flush().await {
-                    log::error!("Failed to flush WebSocket message: {}", e);
+                    log::error!("Failed to flush WebSocket message: {e}");
                     break;
                 }
             }
@@ -241,7 +241,7 @@ async fn handle_socket(mut socket: ws::WebSocket) {
                         log::debug!("Received message from WebSocket (ignored)");
                     }
                     Err(e) => {
-                        log::error!("Error receiving WebSocket message: {}", e);
+                        log::error!("Error receiving WebSocket message: {e}");
                         break;
                     }
                 }

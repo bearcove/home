@@ -98,10 +98,10 @@ pub(crate) async fn serve_media_upload(
 
 async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>) {
     if let Err(e) = handle_ws_inner(&mut socket, ts).await {
-        log::warn!("Error in image upload socket: {:?}", e);
+        log::warn!("Error in image upload socket: {e:?}");
         let error_message = WebSocketMessage::Error(format!("Error: {e}"));
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
-            log::error!("Failed to send error message to websocket: {}", send_err);
+            log::error!("Failed to send error message to websocket: {send_err}");
         }
     }
 }
@@ -131,7 +131,7 @@ async fn handle_ws_inner(
 
                 match message {
                     WebSocketMessage::Headers(h) => {
-                        log::info!("Received headers: {:?}", h);
+                        log::info!("Received headers: {h:?}");
                         headers = Some(h);
 
                         if std::env::var("ACTIVATE_SAFARI").is_ok() {
@@ -148,7 +148,7 @@ async fn handle_ws_inner(
                         }
                     }
                     WebSocketMessage::UploadDone(u) => {
-                        log::debug!("Received upload done: {:?}", u);
+                        log::debug!("Received upload done: {u:?}");
                         if u.uploaded_size != input_len as u64 {
                             return Err(eyre!("Uploaded size does not match received bytes"));
                         }
@@ -175,7 +175,7 @@ async fn handle_ws_inner(
     }
 
     let headers = headers.ok_or_else(|| eyre!("Headers not received"))?;
-    log::debug!("Processing image upload with headers: {:?}", headers,);
+    log::debug!("Processing image upload with headers: {headers:?}",);
     if input_len != headers.file_size as usize {
         return Err(eyre!(
             "Received file size ({}) does not match expected size ({})",
@@ -228,7 +228,7 @@ async fn handle_ws_inner(
             let src_ic = match props.ic.as_ref() {
                 Some(ic) => *ic,
                 None => {
-                    log::warn!("Unknown image codec, raw ffmpeg metadata: {:?}", props);
+                    log::warn!("Unknown image codec, raw ffmpeg metadata: {props:?}");
                     return Err(eyre!("Unknown image codec"));
                 }
             };
@@ -303,7 +303,7 @@ async fn handle_ws_inner(
                     if bytes_read == 0 {
                         break;
                     }
-                    log::info!("Uploading chunk of {} bytes", bytes_read);
+                    log::info!("Uploading chunk of {bytes_read} bytes");
                     uploader
                         .upload_chunk(buffer[..bytes_read].to_vec().into())
                         .await?;
@@ -361,11 +361,11 @@ async fn handle_ws_inner(
     let commit = loop {
         match socket.recv().await {
             Some(Ok(ws::Message::Text(text))) => {
-                log::debug!("Received text message: {}", text);
+                log::debug!("Received text message: {text}");
                 let message: WebSocketMessage =
                     facet_json::from_str(&text).map_err(|e| e.into_owned())?;
                 if let WebSocketMessage::Commit(c) = message {
-                    log::debug!("Received commit: {:?}", c);
+                    log::debug!("Received commit: {c:?}");
                     break c;
                 }
             }
@@ -374,14 +374,14 @@ async fn handle_ws_inner(
                 return Err(eyre!("WebSocket closed before receiving Commit message"));
             }
             Some(Err(e)) => {
-                log::error!("Error receiving WebSocket message: {:?}", e);
+                log::error!("Error receiving WebSocket message: {e:?}");
                 return Err(eyre!("WebSocket error: {}", e));
             }
             None => {
                 return Err(eyre!("WebSocket connection closed unexpectedly"));
             }
             other => {
-                log::error!("Unexpected WebSocket message: {:?}", other);
+                log::error!("Unexpected WebSocket message: {other:?}");
                 return Err(eyre!("Unexpected WebSocket message"));
             }
         }
@@ -395,8 +395,7 @@ async fn handle_ws_inner(
     let output_path = page_dir.join(&final_image_name);
 
     log::debug!(
-        "Moving converted image to final location: {:?}",
-        output_path
+        "Moving converted image to final location: {output_path:?}"
     );
     fs::create_dir_all(&page_dir).await?;
     fs::rename(temp_output_path, &output_path).await?;

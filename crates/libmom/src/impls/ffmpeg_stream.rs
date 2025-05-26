@@ -43,15 +43,14 @@ impl Drop for FFmpegTranscode {
     fn drop(&mut self) {
         if let Some(pid) = self.process_id.take() {
             log::warn!(
-                "FFmpegTranscode dropped before completion, killing process {}",
-                pid
+                "FFmpegTranscode dropped before completion, killing process {pid}"
             );
             // Try SIGTERM first
             if let Err(e) = signal::kill(Pid::from_raw(pid as i32), Signal::SIGTERM) {
-                log::error!("Failed to send SIGTERM to FFmpeg process: {}", e);
+                log::error!("Failed to send SIGTERM to FFmpeg process: {e}");
                 // If SIGTERM fails, try SIGKILL
                 if let Err(e) = signal::kill(Pid::from_raw(pid as i32), Signal::SIGKILL) {
-                    log::error!("Failed to send SIGKILL to FFmpeg process: {}", e);
+                    log::error!("Failed to send SIGKILL to FFmpeg process: {e}");
                 }
             }
         }
@@ -95,7 +94,7 @@ impl FFmpegTranscode {
 
         // Spawn FFmpeg process
         let mut child = cmd.spawn().map_err(|e| {
-            log::error!("Failed to spawn FFmpeg process: {}", e);
+            log::error!("Failed to spawn FFmpeg process: {e}");
             eyre!("Failed to spawn FFmpeg process: {}", e)
         })?;
 
@@ -113,7 +112,7 @@ impl FFmpegTranscode {
         std::thread::spawn(move || {
             let result = handle_ffmpeg_events(child, tx);
             if let Err(e) = result {
-                log::error!("Error handling FFmpeg events: {}", e);
+                log::error!("Error handling FFmpeg events: {e}");
             }
         });
 
@@ -130,7 +129,7 @@ fn handle_ffmpeg_events(
     tx: mpsc::Sender<DetailedTranscodeEvent>,
 ) -> eyre::Result<()> {
     let iter = child.iter().map_err(|e| {
-        log::error!("Failed to create iterator over FFmpeg events: {}", e);
+        log::error!("Failed to create iterator over FFmpeg events: {e}");
         eyre!("Failed to create iterator over FFmpeg events: {}", e)
     })?;
 
@@ -181,7 +180,7 @@ fn handle_ffmpeg_events(
                     props.vp = None;
                 }
 
-                log::debug!("Transcoding progress: {:?}", progress);
+                log::debug!("Transcoding progress: {progress:?}");
                 DetailedTranscodeEvent::Progress(TranscodingProgress {
                     frame: progress.frame,
                     fps: progress.fps,
@@ -231,7 +230,7 @@ fn handle_ffmpeg_events(
                 if error.contains("No streams found") {
                     continue;
                 }
-                log::error!("ffmpeg-sidecar error: {}", error);
+                log::error!("ffmpeg-sidecar error: {error}");
                 log_messages.push(format!("[ERROR] ffmpeg-sidecar error: {error}"));
                 continue;
             }

@@ -78,7 +78,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
                     .status()
                     .await
                 {
-                    log::error!("Failed to open editor: {}", e);
+                    log::error!("Failed to open editor: {e}");
                 }
             });
 
@@ -111,7 +111,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
     let page = match irev.rev.pages.get_or_help(ResourceKind::Page, page_path) {
         Ok(page) => page.clone(),
         Err(e) => {
-            log::error!("Failed to get page: {}", e);
+            log::error!("Failed to get page: {e}");
             return render_404(rx);
         }
     };
@@ -180,7 +180,7 @@ async fn extra_files(
     }
 
     if path.contains("..") {
-        log::warn!("Path traversal attempt: {}", path);
+        log::warn!("Path traversal attempt: {path}");
         return Err(LegacyHttpError::with_status(
             StatusCode::BAD_REQUEST,
             "path traversal not allowed",
@@ -193,7 +193,7 @@ async fn extra_files(
         Some("mp3") => ContentType::MP3,
         Some("flac") => ContentType::FLAC,
         _ => {
-            log::warn!("Unsupported file type requested: {}", path);
+            log::warn!("Unsupported file type requested: {path}");
             return Err(LegacyHttpError::with_status(
                 StatusCode::NOT_FOUND,
                 "unsupported file type",

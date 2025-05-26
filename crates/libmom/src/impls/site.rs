@@ -69,7 +69,7 @@ impl HttpError {
         );
         for (i, e) in err.chain().enumerate() {
             if i > 0 {
-                error!("Caused by: {}", e);
+                error!("Caused by: {e}");
             }
         }
 

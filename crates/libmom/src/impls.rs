@@ -411,7 +411,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         *ts.sponsors.lock() = Some(sponsors);
                     }
                     Err(e) => {
-                        log::debug!("[{}] Failed to fetch sponsors: {e} / {e:?}", tenant_name)
+                        log::debug!("[{tenant_name}] Failed to fetch sponsors: {e} / {e:?}")
                     }
                 }
                 tokio::time::sleep(interval).await;

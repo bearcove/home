@@ -35,12 +35,12 @@ pub(crate) async fn serve_write_to_clipboard(body: axum::body::Bytes) -> LegacyR
                     );
                 }
                 Err(e) => {
-                    warn!("Failed to write to clipboard: {}", e);
+                    warn!("Failed to write to clipboard: {e}");
                     return Err(eyre::eyre!("Failed to write to clipboard: {}", e));
                 }
             },
             Err(e) => {
-                warn!("Failed to access clipboard: {}", e);
+                warn!("Failed to access clipboard: {e}");
                 return Err(eyre::eyre!("Failed to access clipboard: {}", e));
             }
         }

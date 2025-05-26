@@ -57,7 +57,4 @@ image-types = { version = "0.1.0", path = "../image-types" }
 fs-err = { version = "3.1.0", features = ["tokio"] }
 facet-json.workspace = true
 facet.workspace = true
-sha2 = "0.10.9"
-hmac = "0.12.1"
-hex = "0.4.3"
 log = "0.4.27"

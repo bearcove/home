@@ -121,7 +121,7 @@ async fn handle_deploy_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>,
             message: format!("Error: {e}"),
         });
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
-            log::error!("Failed to send error message to websocket: {}", send_err);
+            log::error!("Failed to send error message to websocket: {send_err}");
         }
     }
 }
@@ -192,8 +192,7 @@ async fn run_vite_build_and_update_revision(
         .expect("No mapping found for /dist path");
 
     log::info!(
-        "[{tenant_name}] Using temporary build directory: {}",
-        vite_build_dir
+        "[{tenant_name}] Using temporary build directory: {vite_build_dir}"
     );
 
     // Run npm build command with real-time output streaming
@@ -485,7 +484,7 @@ async fn handle_deploy_socket_inner(
                     .get(&key)
                     .ok_or_else(|| eyre::eyre!("Input not found in revision for key: {}", key))?;
                 let disk_path = mappings.to_disk_path(&key)?;
-                log::debug!("Reading input file from disk path: {:?}", disk_path);
+                log::debug!("Reading input file from disk path: {disk_path:?}");
                 let before_read = Instant::now();
                 let payload = match fs_err::tokio::read(&disk_path).await {
                     Ok(data) => data,
@@ -514,10 +513,7 @@ async fn handle_deploy_socket_inner(
                 let upload_time = before_upload.elapsed();
 
                 log::info!(
-                    "Uploaded input {:?} (read: {:?}, upload: {:?})",
-                    key,
-                    read_time,
-                    upload_time
+                    "Uploaded input {key:?} (read: {read_time:?}, upload: {upload_time:?})"
                 );
 
                 Ok(())

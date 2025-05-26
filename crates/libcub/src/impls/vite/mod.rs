@@ -225,8 +225,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
                         // Print a user-friendly message with the URL to visit
                         let base_url = ti.tc.web_base_url(web);
                         info!(
-                            "[{tenant_name}] Visit your site at: 🌐 \x1b[32m\x1b]8;;{}\x1b\\{}\x1b]8;;\x1b\\\x1b[0m",
-                            base_url, base_url
+                            "[{tenant_name}] Visit your site at: 🌐 \x1b[32m\x1b]8;;{base_url}\x1b\\{base_url}\x1b]8;;\x1b\\\x1b[0m"
                         );
 
                         // Skip printing this line to avoid confusing the user

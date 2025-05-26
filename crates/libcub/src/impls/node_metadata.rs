@@ -26,8 +26,7 @@ pub(crate) async fn load_node_metadata() -> eyre::Result<NodeMetadata> {
 
     if is_production() && !found_metadata {
         warn!(
-            "Expected metadata file to exist at {}, but it does not",
-            node_metadata_path
+            "Expected metadata file to exist at {node_metadata_path}, but it does not"
         );
     }
 

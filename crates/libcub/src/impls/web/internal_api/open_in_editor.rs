@@ -66,7 +66,7 @@ pub(crate) async fn serve_open_in_editor(rcx: CubReqImpl, body: axum::body::Byte
             .await;
 
         if let Err(e) = status {
-            warn!("Failed to open editor: {}", e);
+            warn!("Failed to open editor: {e}");
         }
     });
 

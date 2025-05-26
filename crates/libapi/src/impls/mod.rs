@@ -28,7 +28,7 @@ pub(crate) async fn serve_comments(rcx: Box<dyn CubReq>) -> HReply {
     let submission_url_res = libreddit::load().get_submission(reddit_secrets, url).await;
     let redirect_url = match submission_url_res {
         Err(e) => {
-            log::warn!("Reddit API error: {}", e);
+            log::warn!("Reddit API error: {e}");
             submit_url
         }
         Ok(maybe) => maybe.unwrap_or(submit_url),

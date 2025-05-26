@@ -376,7 +376,7 @@ impl MomTenantClient for MomTenantClientImpl {
             let revision_id: &RevisionIdRef = id;
             async move {
                 let (_, uri) = self.prod_mom_url(&format!("revision/upload/{revision_id}"));
-                info!("Uploading revision to URL: {}", uri);
+                info!("Uploading revision to URL: {uri}");
                 {
                     let path = "/tmp/payload.json";
                     match fs_err::tokio::write(path, &payload).await {

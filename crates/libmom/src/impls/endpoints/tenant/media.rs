@@ -31,10 +31,10 @@ pub(crate) async fn upload(
 
 async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<MomTenantState>) {
     if let Err(e) = handle_ws_inner(&mut socket, ts).await {
-        log::warn!("Error in media transcode socket: {:?}", e);
+        log::warn!("Error in media transcode socket: {e:?}");
         let error_message = WebSocketMessage::Error(format!("Error: {e}"));
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
-            log::error!("Failed to send error message to websocket: {}", send_err);
+            log::error!("Failed to send error message to websocket: {send_err}");
         }
     }
 
@@ -81,7 +81,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
     let start_time = Instant::now();
     let permit = acquire_ffmpeg_encode_permit().await;
     let elapsed = start_time.elapsed();
-    log::info!("Time taken to acquire FFmpeg encode permit: {:?}", elapsed);
+    log::info!("Time taken to acquire FFmpeg encode permit: {elapsed:?}");
     let mut transcode_task = std::pin::pin!(transcode_media_data(
         input_data,
         headers.target_format,
@@ -94,7 +94,7 @@ async fn handle_ws_inner(socket: &mut ws::WebSocket, _ts: Arc<MomTenantState>) -
             ev = rx.recv() => {
                 if let Some(ev) = ev {
                     if let TranscodeEvent::Progress(progress) = &ev {
-                        log::info!("Transcode progress: {}", progress);
+                        log::info!("Transcode progress: {progress}");
                     }
                     json_to_socket(socket, &WebSocketMessage::TranscodingEvent(ev)).await?;
                 } else {
@@ -144,7 +144,7 @@ pub(crate) async fn transcode(
     let start_time = Instant::now();
     let permit = acquire_ffmpeg_encode_permit().await;
     let elapsed = start_time.elapsed();
-    log::info!("Time taken to acquire FFmpeg encode permit: {:?}", elapsed);
+    log::info!("Time taken to acquire FFmpeg encode permit: {elapsed:?}");
 
     let mut info = {
         let mut locks = ts.transcode_jobs.lock();

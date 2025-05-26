@@ -125,7 +125,7 @@ pub async fn start_watching(tenant: Arc<dyn CubTenant>, web: WebConfig) -> Resul
                             .unwrap();
                     }
                 }
-                Err(e) => warn!("Watch error: {:?}", e),
+                Err(e) => warn!("Watch error: {e:?}"),
             }
         }
     });

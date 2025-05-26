@@ -367,7 +367,7 @@ impl CubReq for CubReqImpl {
                 {
                     Ok(onup) => onup,
                     Err(e) => {
-                        log::warn!("Failed to upgrade to WebSocket: {}", e);
+                        log::warn!("Failed to upgrade to WebSocket: {e}");
                         return Err(HError::Internal {
                             err: "failed websocket upgrade".into(),
                         });
