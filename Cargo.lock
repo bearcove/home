@@ -1461,9 +1461,9 @@ dependencies = [
 
 [[package]]
 name = "facet-args"
-version = "0.19.7"
+version = "0.19.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc0aaa48e51ff50207bafc53bad45e167c435a15a71cdb912202077bc090aacb"
+checksum = "c100a88d6d9e87c837f37dd766dd93ec7859e4fa55f7b491ae9273a591aeee68"
 dependencies = [
  "facet-core",
  "facet-deserialize",
@@ -2121,6 +2121,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "home-cub"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "config-types",
+ "facet",
+ "facet-args",
+ "facet-pretty",
+ "libconfig",
+ "libcub",
+ "libmom",
+ "mom-types",
+ "skelly",
+ "tokio",
+]
+
+[[package]]
+name = "home-doctor"
+version = "0.1.0"
+dependencies = [
+ "libdoctor",
+ "skelly",
+ "tokio",
+]
+
+[[package]]
 name = "home-mom"
 version = "0.1.0"
 dependencies = [
@@ -2137,6 +2163,10 @@ dependencies = [
  "skelly",
  "tokio",
 ]
+
+[[package]]
+name = "home-term"
+version = "0.1.0"
 
 [[package]]
 name = "html-escape"

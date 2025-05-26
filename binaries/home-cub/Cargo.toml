@@ -1,0 +1,25 @@
+[package]
+name = "home-cub"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+camino = "1.1.9"
+config-types = { version = "0.1.0", path = "../../crates/config-types" }
+facet.workspace = true
+facet-args = "0.19.8"
+facet-pretty.workspace = true
+libconfig = { version = "0.1.0", path = "../../crates/libconfig" }
+libcub = { version = "0.1.0", path = "../../crates/libcub" }
+libmom = { version = "0.1.0", path = "../../crates/libmom" }
+mom-types = { version = "0.1.0", path = "../../crates/mom-types" }
+skelly = { version = "0.1.0", path = "../../crates/skelly" }
+tokio.workspace = true
