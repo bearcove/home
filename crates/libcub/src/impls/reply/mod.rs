@@ -11,10 +11,10 @@ use facet::Facet;
 use facet_json::DeserError;
 use http::header::CONTENT_TYPE;
 use libterm::FormatAnsiStyle;
+use log::error;
 use rand::prelude::IndexedRandom;
 use rand::rng;
 use std::borrow::Cow;
-use tracing::error;
 use ulid::Ulid;
 
 /// The type returned by HTTP handlers in our application
@@ -130,7 +130,7 @@ impl LegacyHttpError {
                 r#"<pre class="trace home-ansi">{err_string}<div class="backtrace">{backtrace}</div></pre>"#
             )
         };
-        tracing::error!("Backtrace:\n{trace_content}");
+        log::error!("Backtrace:\n{trace_content}");
         if is_production() {
             trace_content = "".into();
         }

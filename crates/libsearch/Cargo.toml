@@ -14,8 +14,8 @@ indicium = { version = "0.6.5", features = [
     "simple",
 ], default-features = false }
 tantivy = { version = "0.22.0" }
-tracing = { workspace = true }
 percent-encoding = "2.3.1"
 config-types = { version = "0.1.0", path = "../config-types" }
 autotrait = "0.2.1"
 facet.workspace = true
+log = "0.4.27"

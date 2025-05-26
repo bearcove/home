@@ -58,7 +58,7 @@ where
         let host = match host_extract::ExtractedHost::from_headers(&parts.uri, &parts.headers) {
             Some(host) => host,
             None => {
-                tracing::warn!(
+                log::warn!(
                     "No host found for request uri {} / host header {:?}",
                     parts.uri,
                     parts.headers.get(header::HOST)
@@ -73,7 +73,7 @@ where
             Some(DomainResolution::Tenant(ts)) => ts.clone(),
             Some(DomainResolution::Redirect { tenant, .. }) => tenant.clone(),
             None => {
-                tracing::warn!("No tenant found for domain {domain}");
+                log::warn!("No tenant found for domain {domain}");
                 let msg = if Environment::default().is_dev() {
                     let global_state = super::global_state();
                     let available_tenants = global_state
@@ -160,7 +160,7 @@ pub struct RenderArgs {
 
 impl RenderArgs {
     pub fn new(template_name: impl Into<String>) -> Self {
-        let template_name = template_name.into();
+        let template_name: String = template_name.into();
         let content_type =
             ContentType::guess_from_path(&template_name).unwrap_or(ContentType::HTML);
         Self {
@@ -204,7 +204,7 @@ impl CubReqImpl {
     pub fn render(&self, args: RenderArgs) -> LegacyReply {
         if let Some(page) = args.page.as_ref() {
             let access = can_access(self, page)?;
-            tracing::debug!("\x1b[1;32m{}\x1b[0m {access:?}", page.route);
+            log::debug!("\x1b[1;32m{}\x1b[0m {access:?}", page.route);
 
             if matches!(access, CanAccess::No(_)) {
                 return self.render_inner(RenderArgs::new("404.html"));
@@ -281,12 +281,14 @@ impl CubReqImpl {
                 &rendered[head_end_index..]
             )
         } else {
-            tracing::warn!(
-                "Unable to find </head> tag in rendered content. Head insert not applied."
-            );
+            log::warn!("Unable to find </head> tag in rendered content. Head insert not applied.");
             rendered
         };
-        tracing::debug!(?template_name, elapsed = ?start.elapsed(), "Done rendering");
+        log::debug!(
+            "Done rendering: template_name = {:?}, elapsed = {:?}",
+            template_name,
+            start.elapsed()
+        );
 
         let body = Bytes::from(rendered);
         let response = (
@@ -365,7 +367,7 @@ impl CubReq for CubReqImpl {
                 {
                     Ok(onup) => onup,
                     Err(e) => {
-                        tracing::warn!("Failed to upgrade to WebSocket: {}", e);
+                        log::warn!("Failed to upgrade to WebSocket: {}", e);
                         return Err(HError::Internal {
                             err: "failed websocket upgrade".into(),
                         });

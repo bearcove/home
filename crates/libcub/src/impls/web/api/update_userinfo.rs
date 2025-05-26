@@ -29,7 +29,7 @@ pub(crate) async fn serve_update_userinfo(mut tr: CubReqImpl) -> LegacyReply {
 
     let tcli = tr.tenant.tcli();
     let new_auth_bundle = tcli.update_auth_bundle(auth_bundle).await?;
-    tracing::info!("New auth bundle: {new_auth_bundle:#?}");
+    log::info!("New auth bundle: {new_auth_bundle:#?}");
     tr.auth_bundle = Some(new_auth_bundle.clone());
     let viewer = tr.viewer()?;
 

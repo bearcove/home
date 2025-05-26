@@ -14,7 +14,6 @@ derivations = { version = "0.1.0", path = "../../crates/derivations" }
 http-range = { version = "0.1.5" }
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 tokio = { workspace = true }
-tracing = { workspace = true }
 libwebsock = { version = "0.1.0", path = "../libwebsock" }
 hattip = { version = "0.1.0", path = "../../crates/hattip" }
 futures-core = "0.3.31"
@@ -24,3 +23,4 @@ mom-types = { version = "0.1.0", path = "../mom-types" }
 eyre.workspace = true
 autotrait = "0.2.1"
 fs-err = { version = "3.1.0", features = ["tokio"] }
+log = "0.4.27"

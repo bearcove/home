@@ -20,7 +20,6 @@ ravif = { version = "0.11.12" }
 rgb = { version = "0.8.50" }
 webp = { version = "0.3.0" }
 jxl-oxide = { version = "0.12.2" }
-tracing = { version = "0.1.41" }
 jpegxl-rs = { version = "0.11.2", features = ["vendored"] }
 tempfile = { version = "3.20.0" }
 fs-err = { version = "3.1.0" }
@@ -28,6 +27,7 @@ num_cpus = { version = "1.16.0" }
 autotrait = "0.2.1"
 eyre.workspace = true
 image-types = { version = "0.1.0", path = "../image-types" }
+log = "0.4.27"
 
 [features]
 default = ["impl"]

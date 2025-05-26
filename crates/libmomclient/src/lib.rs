@@ -13,8 +13,8 @@ use libhttpclient::{
     HeaderMap, HeaderValue, Uri,
     header::{self},
 };
+use log::info;
 use std::{sync::Arc, time::Instant};
-use tracing::info;
 
 use bytes::Bytes;
 use conflux::RevisionIdRef;
@@ -80,7 +80,7 @@ impl Mod for ModImpl {
                         .unwrap();
 
                     'connect_loop: loop {
-                        tracing::debug!(%uri, "Connecting to mom...");
+                        log::debug!("Connecting to mom... ({uri})");
                         async fn random_sleep() {
                             let jitter = rand::random::<u64>() % 500;
                             tokio::time::sleep(std::time::Duration::from_millis(1000 + jitter))
@@ -106,32 +106,32 @@ impl Mod for ModImpl {
                         {
                             Ok(Ok(res)) => res,
                             Ok(Err(e)) => {
-                                tracing::warn!("Failed to connect to mom: {}", e);
+                                log::warn!("Failed to connect to mom: {e}");
                                 random_sleep().await;
                                 continue 'connect_loop;
                             }
                             Err(_) => {
-                                tracing::warn!("Timeout connecting to mom");
+                                log::warn!("Timeout connecting to mom");
                                 random_sleep().await;
                                 continue 'connect_loop;
                             }
                         };
                         let elapsed = before.elapsed();
-                        tracing::info!(%uri, ?elapsed, "🧸 mom connection established!");
+                        log::info!("🧸 mom connection established! uri={uri} elapsed={elapsed:?}");
 
                         #[allow(unused_labels)]
                         'receive_loop: loop {
                             let before_recv = Instant::now();
                             let ev = match ws.receive().await {
                                 None => {
-                                    tracing::warn!("Connection closed by mom");
-                                    tracing::warn!("...will reconnect now");
+                                    log::warn!("Connection closed by mom");
+                                    log::warn!("...will reconnect now");
                                     continue 'connect_loop;
                                 }
                                 Some(Ok(ev)) => ev,
                                 Some(Err(e)) => {
-                                    tracing::warn!("Failed to receive mom event: {e}");
-                                    tracing::warn!("...will reconnect now");
+                                    log::warn!("Failed to receive mom event: {e}");
+                                    log::warn!("...will reconnect now");
                                     continue 'connect_loop;
                                 }
                             };
@@ -146,9 +146,9 @@ impl Mod for ModImpl {
                             let ev = facet_json::from_str::<MomEvent>(&ev)
                                 .map_err(|e| e.into_owned())?;
                             let elapsed = before_recv.elapsed();
-                            tracing::debug!(?ev, ?elapsed, "Got event from mom");
+                            log::debug!("Got event from mom: ev={ev:?}, elapsed={elapsed:?}");
 
-                            _ = ev_tx.send(ev).await;
+                            let _ = ev_tx.send(ev).await;
                         }
                     }
                 }
@@ -157,8 +157,8 @@ impl Mod for ModImpl {
             tokio::spawn(async move {
                 let res: Result<()> = relay_fut.await;
                 if let Err(e) = res {
-                    tracing::error!("Failed to relay mom events: {e}");
-                    tracing::error!(
+                    log::error!("Failed to relay mom events: {e}");
+                    log::error!(
                         "Is the local mom newer? Maybe? If the schema changed, you can develop locally by exporting the environment variable FORCE_LOCAL_MOM=1"
                     );
                 }
@@ -260,13 +260,13 @@ impl MomTenantClientImpl {
         } else {
             self.mcc.base_url.clone()
         };
-        tracing::debug!(
-            is_development = %is_development(),
-            force_local_mom = %force_local_mom,
-            production_mom_url = %production_mom_url(),
-            mcc_base_url = %self.mcc.base_url,
-            selected_base_url = %base_url,
-            "Resolving MOM URL for prod_mom_url"
+        log::debug!(
+            "Resolving MOM URL for prod_mom_url: is_development={}, force_local_mom={}, production_mom_url={}, mcc_base_url={}, selected_base_url={}",
+            config_types::is_development(),
+            force_local_mom,
+            production_mom_url(),
+            self.mcc.base_url,
+            base_url
         );
 
         let full_path = format!("{}/{}", self.base_path, relative_path);
@@ -483,7 +483,7 @@ impl MediaUploader for MediaUploaderImpl {
         mut chunk_receiver: Box<dyn ChunkReceiver + 'a>,
     ) -> BoxFuture<'a, Result<()>> {
         Box::pin(async move {
-            tracing::debug!("Sending UploadDone message with size {uploaded_size}");
+            log::debug!("Sending UploadDone message with size {uploaded_size}");
             let msg = WebSocketMessage::UploadDone(UploadDoneMessage { uploaded_size });
             let json = facet_json::to_string(&msg);
             self.ws.send_text(json).await?;
@@ -491,7 +491,7 @@ impl MediaUploader for MediaUploaderImpl {
             let mut received_bytes = 0;
 
             loop {
-                tracing::trace!("Waiting for next websocket message...");
+                log::trace!("Waiting for next websocket message...");
                 let msg = match self.ws.receive().await {
                     Some(frame) => frame,
                     None => {
@@ -510,7 +510,7 @@ impl MediaUploader for MediaUploaderImpl {
                             }
                             WebSocketMessage::TranscodingComplete(complete) => {
                                 let size = complete.output_size;
-                                tracing::info!(
+                                log::info!(
                                     "Transcoding complete! Expecting {size} bytes of output"
                                 );
 
@@ -519,16 +519,14 @@ impl MediaUploader for MediaUploaderImpl {
                                     let res = match self.ws.receive().await {
                                         Some(res) => res,
                                         None => {
-                                            tracing::error!(
-                                                "WebSocket connection closed unexpectedly"
-                                            );
+                                            log::error!("WebSocket connection closed unexpectedly");
                                             bail!("WebSocket connection closed unexpectedly");
                                         }
                                     };
                                     match res? {
                                         libwebsock::Frame::Binary(chunk) => {
                                             received_bytes += chunk.len();
-                                            tracing::trace!(
+                                            log::trace!(
                                                 "Received chunk of {} bytes ({}/{} total)",
                                                 chunk.len(),
                                                 received_bytes,
@@ -538,7 +536,7 @@ impl MediaUploader for MediaUploaderImpl {
                                             chunk_receiver.on_chunk(chunk).await?;
 
                                             if received_bytes == size {
-                                                tracing::info!(
+                                                log::info!(
                                                     "Successfully received complete response ({size} bytes)"
                                                 );
                                                 return Ok(());
@@ -551,7 +549,7 @@ impl MediaUploader for MediaUploaderImpl {
                                 }
                             }
                             WebSocketMessage::Error(err) => {
-                                tracing::error!("Received error from transcoding server: {err}");
+                                log::error!("Received error from transcoding server: {err}");
                                 bail!("{err}");
                             }
                             _ => {

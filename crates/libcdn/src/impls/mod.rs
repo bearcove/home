@@ -11,7 +11,6 @@ use eyre::bail;
 use hattip::http::Uri;
 use libhttpclient::HttpClient;
 use mom_types::{DeriveParams, DeriveResponse};
-use tracing::{debug, trace, warn};
 
 use hattip::prelude::*;
 use hattip::to_herror;
@@ -23,7 +22,7 @@ pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HRe
     let web = rcx.web();
     let env = web.env;
     let route = rcx.route();
-    tracing::debug!("Serving asset \x1b[1;32m{route}\x1b[0m");
+    log::debug!("Serving asset \x1b[1;32m{route}\x1b[0m");
 
     // TODO: websocket upgrade
     if env.is_dev() && route.as_str().starts_with("/dist") {
@@ -42,19 +41,19 @@ pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HRe
             content,
             content_type,
         } => {
-            trace!("Found inline asset route");
+            log::trace!("Found inline asset route");
             let body = HBody::from(content.clone());
             asset_response_builder(tenant.tc(), web, *content_type)
                 .body(body)
                 .into_reply()
         }
         Asset::Derivation(derivation) => {
-            trace!("Found derivation asset route");
+            log::trace!("Found derivation asset route");
             let input = rev.pak.inputs.get(&derivation.input).ok_or_else(|| {
-                warn!("Input not found for path: {:?}", &derivation.input);
+                log::warn!("Input not found for path: {:?}", &derivation.input);
                 HError::with_status(StatusCode::NOT_FOUND, "input not found for path")
             })?;
-            trace!("Found derivation input: {}", input.path);
+            log::trace!("Found derivation input: {}", input.path);
 
             let di = DerivationInfo::new(input, derivation);
             let content_type = di.content_type();
@@ -100,7 +99,7 @@ pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HRe
         }
         Asset::AcceptBasedRedirect { options } => {
             if options.is_empty() {
-                tracing::error!("No options available for accept-based redirect");
+                log::error!("No options available for accept-based redirect");
                 return Err(HError::with_status(
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "No options available for accept-based redirect",
@@ -114,7 +113,7 @@ pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HRe
                     // we have right now — if `image/jxl` is explicitly listed, we can use it. `image/*` does not
                     // actually support `image/jxl`.
                     if accept.contains(ct.as_str()) {
-                        debug!(
+                        log::debug!(
                             "\x1b[36mPicked \x1b[35m{}\x1b[36m for Accept: \x1b[33m{accept}\x1b[0m",
                             ct.as_str()
                         );
@@ -164,7 +163,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     let cache_key = di.key(env);
     match tenant.store().get(&cache_key).await {
         Ok(res) => {
-            tracing::debug!(?cache_key, "Found derivation in cache");
+            log::debug!("Found derivation in cache: {:?}", cache_key);
             return res.bytes().await.map_err(|e| {
                 eyre::eyre!(
                     "failed to fetch bytes from upstream for cache key '{}': {}",
@@ -176,12 +175,12 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
         Err(e) => {
             if e.is_not_found() {
                 // all good
-                tracing::debug!(%cache_key, "cache miss");
+                log::debug!("cache miss: {}", cache_key);
             } else {
-                tracing::warn!(%cache_key, %e, "error while fetching from cache")
+                log::warn!("error while fetching from cache ({}): {}", cache_key, e)
             }
         }
-    };
+    }
 
     // kindly ask mom to run the derivation
     let tcli = tenant.tcli();
@@ -190,14 +189,21 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     if env.is_dev() {
         // in dev, the input might not be on object storage yet, so... check for it and upload it if needed
         if tenant.store().get(&input_key).await.is_err() {
-            tracing::info!(%input_key, "Uploading input to object storage in development mode");
+            log::info!(
+                "Uploading input to object storage in development mode: {}",
+                input_key
+            );
             let mappings = PathMappings::from_ti(tenant.ti());
             let disk_path = mappings.to_disk_path(&di.input.path)?;
             // TODO: don't buffer the whole file in memory
             let bytes = fs_err::tokio::read(&disk_path).await?;
             tenant.store().put(&input_key, bytes.into()).await?;
         } else {
-            tracing::info!(%input_key, object_store = %tenant.store().desc(), "Input is already in object storage");
+            log::info!(
+                "Input is already in object storage: {}, object_store = {}",
+                input_key,
+                tenant.store().desc()
+            );
         }
     }
 
@@ -210,10 +216,14 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     loop {
         tries += 1;
         if tries > max_tries {
-            bail!("max retries ({tries}) exceeded waiting for derivation");
+            bail!("max retries ({}) exceeded waiting for derivation", tries);
         }
 
-        tracing::info!(%input_key, %route, "Asking mom to derive");
+        log::info!(
+            "Asking mom to derive (input_key: {}, route: {})",
+            input_key,
+            route
+        );
         let res = tcli
             .derive(DeriveParams {
                 input: di.input.clone(),
@@ -225,10 +235,12 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
                 let written_to = donezo.dest;
                 if written_to != cache_key {
                     bail!(
-                        "derivation output key ({written_to}) does not match expected key ({cache_key})"
+                        "derivation output key ({}) does not match expected key ({})",
+                        written_to,
+                        cache_key
                     );
                 }
-                tracing::info!(
+                log::info!(
                     "\x1b[36m{} => {}\x1b[0m took \x1b[32m{:?}\x1b[0m (\x1b[34m{}\x1b[0m => \x1b[34m{}\x1b[0m, e.g. \x1b[35m{:.2}x\x1b[0m) \x1b[33m{}\x1b[0m",
                     di.input.path.explode().1,
                     di.derivation.kind,
@@ -241,13 +253,13 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
                 break;
             }
             DeriveResponse::AlreadyInProgress(inprog) => {
-                tracing::info!("Derivation {route} is already in progress: {inprog:?}");
+                log::info!("Derivation {} is already in progress: {:?}", route, inprog);
 
                 sleep_ms = std::cmp::min(2000, sleep_ms + 100);
                 tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
             }
             DeriveResponse::TooManyRequests(_) => {
-                tracing::warn!("Too many requests for derivation {route}");
+                log::warn!("Too many requests for derivation {}", route);
                 sleep_ms = std::cmp::min(5000, sleep_ms * 2);
                 tokio::time::sleep(Duration::from_millis(sleep_ms)).await;
             }
@@ -286,10 +298,10 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
         .path_and_query(src_uri.path_and_query().unwrap().clone())
         .build()
         .unwrap();
-    tracing::debug!("Proxying \x1b[32m{src_uri}\x1b[0m => \x1b[33m{dst_uri}\x1b[0m");
+    log::debug!("Proxying \x1b[32m{src_uri}\x1b[0m => \x1b[33m{dst_uri}\x1b[0m");
 
     if rcx.has_ws() {
-        tracing::debug!("Has websocket upgrade!!");
+        log::debug!("Has websocket upgrade!!");
 
         let dst_uri = Uri::builder()
             .scheme("ws")
@@ -306,14 +318,14 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
         let mut res = rcx
             .on_ws_upgrade(Box::new(|downstream_ws| {
                 tokio::spawn(async move {
-                    tracing::trace!("[WS_PROXY] We made it all the way to the upgrade!!! yay!");
-                    tracing::debug!(
+                    log::trace!("[WS_PROXY] We made it all the way to the upgrade!!! yay!");
+                    log::debug!(
                         "[WS_PROXY] Proxying from \x1b[32m{}\x1b[0m to vite's websocket at \x1b[33m{}\x1b[0m",
                         src_uri,
                         dst_uri
                     );
 
-                    tracing::trace!(
+                    log::trace!(
                         "[WS_PROXY] Incoming ws request headers: {headers}",
                         headers = src_headers
                             .iter()
@@ -328,28 +340,28 @@ async fn proxy_to_vite(rcx: Box<dyn CubReq>) -> HReply {
                     {
                         Ok(conn) => conn,
                         Err(e) => {
-                            tracing::error!("[WS_PROXY] Failed to connect to upstream websocket: {}", e);
+                            log::error!("[WS_PROXY] Failed to connect to upstream websocket: {}", e);
                             return;
                         }
                     };
 
-                    tracing::trace!("[WS_PROXY] Connected!");
+                    log::trace!("[WS_PROXY] Connected!");
 
                     let res: eyre::Result<()> = do_ws_proxy( upstream, downstream_ws).await;
                     match res {
-                        Ok(_) => tracing::debug!("WebSocket connection closed gracefully"),
-                        Err(e) => tracing::error!("Error in websocket connection: {e}"),
+                        Ok(_) => log::debug!("WebSocket connection closed gracefully"),
+                        Err(e) => log::error!("Error in websocket connection: {e}"),
                     }
                 });
             }))
             .await?;
         // Pass along the Sec-WebSocket-Protocol header if present
         if let Some(protocol) = ws_protocol {
-            tracing::trace!("Adding Sec-WebSocket-Protocol header: {}", protocol);
+            log::trace!("Adding Sec-WebSocket-Protocol header: {}", protocol);
             res.headers_mut()
                 .insert("Sec-WebSocket-Protocol", protocol.parse().unwrap());
         } else {
-            tracing::trace!("No Sec-WebSocket-Protocol header present");
+            log::trace!("No Sec-WebSocket-Protocol header present");
         }
 
         Ok(res)
@@ -394,7 +406,7 @@ async fn do_ws_proxy(
     }
 
     loop {
-        tracing::trace!("[WS_PROXY] Waiting for message from either peer...");
+        log::trace!("[WS_PROXY] Waiting for message from either peer...");
         let ev = tokio::select! {
             // Handle messages from upstream (vite) to downstream (client)
             upstream_msg = upstream.receive() => Event::FromUpstream(upstream_msg),
@@ -405,45 +417,45 @@ async fn do_ws_proxy(
 
         match ev {
             Event::FromUpstream(Some(Ok(msg))) => {
-                tracing::trace!(
+                log::trace!(
                     "[WS_PROXY] Upstream → Downstream: forwarding message: {:?}",
                     msg
                 );
                 if let Err(e) = downstream.send(msg).await {
-                    tracing::error!("[WS_PROXY] Error forwarding message to downstream: {e}");
+                    log::error!("[WS_PROXY] Error forwarding message to downstream: {}", e);
                     break;
                 }
-                tracing::trace!("[WS_PROXY] forwarded to downstream!");
+                log::trace!("[WS_PROXY] forwarded to downstream!");
             }
             Event::FromDownstream(Some(Ok(msg))) => {
-                tracing::trace!(
+                log::trace!(
                     "[WS_PROXY] Downstream → Upstream: forwarding message: {:?}",
                     msg
                 );
                 if let Err(e) = upstream.send(msg).await {
-                    tracing::error!("[WS_PROXY] Error forwarding message to upstream: {e}");
+                    log::error!("[WS_PROXY] Error forwarding message to upstream: {}", e);
                     break;
                 }
-                tracing::trace!("[WS_PROXY] forwarded to upstream!");
+                log::trace!("[WS_PROXY] forwarded to upstream!");
             }
             Event::FromUpstream(None) => {
-                tracing::trace!("[WS_PROXY] Received None from upstream, closing connection");
+                log::trace!("[WS_PROXY] Received None from upstream, closing connection");
                 break;
             }
             Event::FromDownstream(None) => {
-                tracing::trace!("[WS_PROXY] Received None from downstream, closing connection");
+                log::trace!("[WS_PROXY] Received None from downstream, closing connection");
                 break;
             }
             Event::FromUpstream(Some(Err(e))) => {
-                tracing::error!("[WS_PROXY] Error receiving message from upstream: {e}");
+                log::error!("[WS_PROXY] Error receiving message from upstream: {e}");
                 break;
             }
             Event::FromDownstream(Some(Err(e))) => {
-                tracing::error!("[WS_PROXY] Error receiving message from downstream: {e}");
+                log::error!("[WS_PROXY] Error receiving message from downstream: {e}");
                 break;
             }
         }
     }
-    tracing::trace!("[WS_PROXY] Stopping websocket connection");
+    log::trace!("[WS_PROXY] Stopping websocket connection");
     Ok(())
 }

@@ -91,7 +91,7 @@ impl Mod for ModImpl {
             }
 
             let creds = res.json::<PatreonCredentials>().await?;
-            tracing::info!(
+            log::info!(
                 "Successfully obtained Patreon token with scope {}",
                 &creds.scope
             );
@@ -116,7 +116,7 @@ impl Mod for ModImpl {
             match res {
                 Ok(auth_bundle) => Ok((creds, auth_bundle)),
                 Err(e) => {
-                    tracing::warn!("Couldn't get user profile, will refresh: {}", e);
+                    log::warn!("Couldn't get user profile, will refresh: {e}");
 
                     let tok_params = {
                         let patreon_secrets = tc.patreon_secrets()?;
@@ -128,17 +128,15 @@ impl Mod for ModImpl {
                             .append_pair("client_secret", &patreon_secrets.oauth_client_secret)
                             .finish()
                     };
-
                     let client = libhttpclient::load().client();
                     let uri = Uri::from_static("https://www.patreon.com/api/oauth2/token");
-                    tracing::info!(%uri, "Refresh params: {tok_params:#?}");
+                    log::info!("Refresh params: {tok_params}, uri: {uri}");
                     let res = client
                         .post(uri)
                         .form(tok_params)
                         .send()
                         .await
                         .wrap_err("POST to /api/oauth2/token for refresh")?;
-
                     let status = res.status();
                     if !status.is_success() {
                         let error = res
@@ -150,7 +148,7 @@ impl Mod for ModImpl {
 
                     let pat_creds = res.json::<PatreonCredentials>().await?;
 
-                    tracing::info!("Successfully refreshed! New credentials: {pat_creds:#?}");
+                    log::info!("Successfully refreshed! New credentials: {pat_creds:#?}");
                     let site_creds = self.to_auth_bundle_once(rc, &pat_creds).await?;
 
                     let patreon_id = site_creds.user_info.profile.patreon_id()?;
@@ -207,8 +205,8 @@ impl Mod for ModImpl {
             let mut num_page = 0;
             loop {
                 num_page += 1;
-                tracing::info!("Fetching Patreon page {num_page}");
-                tracing::debug!("Fetch uri: {api_uri}");
+                log::info!("Fetching Patreon page {num_page}");
+                log::debug!("Fetch uri: {api_uri}");
 
                 let res = client
                     .get(api_uri.clone())
@@ -250,18 +248,15 @@ impl Mod for ModImpl {
                                                 credited_patrons
                                                     .insert(full_name.trim().to_string());
                                             } else {
-                                                tracing::trace!("Tier {title} not credited");
+                                                log::trace!("Tier {title} not credited");
                                             }
                                         }
                                     } else {
-                                        tracing::trace!("Tier for id {} not found", tier_id.id);
+                                        log::trace!("Tier for id {} not found", tier_id.id);
                                     }
                                 }
                             } else {
-                                tracing::trace!(
-                                    "No currently_entitled_tiers for member: {}",
-                                    full_name
-                                );
+                                log::trace!("No currently_entitled_tiers for member: {full_name}");
                             }
                         }
                     }
@@ -333,29 +328,29 @@ impl ModImpl {
         }
 
         let payload: String = res.text().await?;
-        tracing::info!("Got Patreon response: {payload}");
+        log::info!("Got Patreon response: {payload}");
 
-        tracing::info!("Parsing Patreon JsonApiDocument from payload");
+        log::info!("Parsing Patreon JsonApiDocument from payload");
         let doc: jsonapi::model::DocumentData =
             match serde_json::from_str::<jsonapi::api::JsonApiDocument>(&payload)? {
                 jsonapi::api::JsonApiDocument::Data(doc) => {
-                    tracing::info!("Successfully parsed JsonApiDocument as Data");
+                    log::info!("Successfully parsed JsonApiDocument as Data");
                     doc
                 }
                 jsonapi::api::JsonApiDocument::Error(errors) => {
-                    tracing::info!("JsonApiDocument contains errors: {:?}", errors);
-                    return Err(eyre::eyre!("jsonapi errors: {:?}", errors));
+                    log::info!("JsonApiDocument contains errors: {errors:?}");
+                    return Err(eyre::eyre!("jsonapi errors: {errors:?}"));
                 }
             };
 
-        tracing::info!("Extracting user from primary data");
+        log::info!("Extracting user from primary data");
         let user = match &doc.data {
             Some(jsonapi::api::PrimaryData::Single(user)) => {
-                tracing::info!("Found top-level user resource");
+                log::info!("Found top-level user resource");
                 user
             }
             _ => {
-                tracing::info!("No top-level user resource found");
+                log::info!("No top-level user resource found");
                 return Err(eyre::eyre!("no top-level user resource"));
             }
         };
@@ -367,24 +362,24 @@ impl ModImpl {
             full_name: String,
             thumb_url: String,
         }
-        tracing::info!("Getting user attributes");
+        log::info!("Getting user attributes");
         let user_attrs: UserAttributes = user.get_attributes()?;
-        tracing::info!(
+        log::info!(
             "Found user attributes: full_name={}, thumb_url={}",
             user_attrs.full_name,
             user_attrs.thumb_url
         );
 
-        tracing::info!("Getting user memberships");
+        log::info!("Getting user memberships");
         let memberships = user.get_multi_relationship(&doc, "memberships")?;
-        tracing::info!("Found {} memberships", memberships.len());
+        log::info!("Found {} memberships", memberships.len());
 
         'each_membership: for (i, &membership) in memberships.iter().enumerate() {
-            tracing::info!("Processing membership #{}", i + 1);
+            log::info!("Processing membership #{}", i + 1);
 
             let campaign = match membership.get_single_relationship(&doc, "campaign") {
                 Ok(campaign) => {
-                    tracing::info!(
+                    log::info!(
                         "Found campaign for membership #{}: id={}",
                         i + 1,
                         campaign.id
@@ -392,19 +387,19 @@ impl ModImpl {
                     campaign
                 }
                 Err(e) => {
-                    tracing::warn!("{e}, skipping campaign for membership #{}", i + 1);
+                    log::warn!("{e}, skipping campaign for membership #{}", i + 1);
                     continue;
                 }
             };
 
             let campaign_match = rc.patreon_campaign_ids.contains(&campaign.id);
-            tracing::info!(
+            log::info!(
                 "Campaign {} is in our configured campaign_ids: {}",
                 campaign.id,
                 campaign_match
             );
             if !campaign_match {
-                tracing::info!(
+                log::info!(
                     "Skipping campaign {} (not in our configured list)",
                     campaign.id
                 );
@@ -413,63 +408,61 @@ impl ModImpl {
 
             let tiers = match membership.get_multi_relationship(&doc, "currently_entitled_tiers") {
                 Ok(tiers) => {
-                    tracing::info!("Found {} tiers for membership #{}", tiers.len(), i + 1);
+                    log::info!("Found {} tiers for membership #{}", tiers.len(), i + 1);
                     tiers
                 }
                 Err(e) => {
-                    tracing::warn!("{e}, skipping tiers for membership #{}", i + 1);
+                    log::warn!("{e}, skipping tiers for membership #{}", i + 1);
                     continue;
                 }
             };
 
             if let Some(tier) = tiers.first() {
-                tracing::info!("Processing first tier: id={}", tier.id);
+                log::info!("Processing first tier: id={}", tier.id);
 
                 #[derive(Debug, serde::Deserialize)]
                 struct TierAttributes {
                     title: String,
                 }
                 let tier_attrs: TierAttributes = tier.get_attributes()?;
-                tracing::info!("Tier title: {}", tier_attrs.title);
+                log::info!("Tier title: {}", tier_attrs.title);
 
                 tier_title = Some(tier_attrs.title);
-                tracing::info!(
+                log::info!(
                     "Found matching tier '{}' - breaking from membership loop",
                     tier_title.as_ref().unwrap()
                 );
                 break 'each_membership;
             } else {
-                tracing::info!("No tiers found for this membership");
+                log::info!("No tiers found for this membership");
             }
         }
 
-        tracing::info!("Creating profile with patreon_id={}", user.id);
+        log::info!("Creating profile with patreon_id={}", user.id);
         let profile = credentials::Profile {
             patreon_id: Some(user.id.clone()),
             github_id: None,
             full_name: user_attrs.full_name,
             thumb_url: user_attrs.thumb_url,
         };
-
         let has_tier = tier_title.is_some();
-        tracing::info!("User has tier from memberships: {}", has_tier);
+        log::info!("User has tier from memberships: {has_tier}");
 
         let is_admin = rc.admin_patreon_ids.contains(&user.id);
-        tracing::info!("User is in admin_patreon_ids list: {}", is_admin);
-
+        log::info!("User is in admin_patreon_ids list: {is_admin}");
         let tier_title = if has_tier {
-            tracing::info!("Using tier from membership: {:?}", tier_title);
+            log::info!("Using tier from membership: {tier_title:?}");
             tier_title
         } else if is_admin {
             let creator_tier = creator_tier_name();
-            tracing::info!("User is admin, using creator tier: {:?}", creator_tier);
+            log::info!("User is admin, using creator tier: {creator_tier:?}");
             creator_tier
         } else {
-            tracing::info!("User has no tier and is not admin");
+            log::info!("User has no tier and is not admin");
             None
         };
 
-        tracing::info!(
+        log::info!(
             "Patreon user \x1b[32m{:?}\x1b[0m logged in (ID: \x1b[33m{:?}\x1b[0m, tier: \x1b[36m{:?}\x1b[0m)",
             profile.full_name,
             user.id,

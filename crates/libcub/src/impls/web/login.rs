@@ -9,10 +9,10 @@ use credentials::UserInfo;
 use cub_types::{CubReq, CubTenant};
 use libgithub::GitHubLoginPurpose;
 use libpatreon::PatreonCallbackArgs;
+use log::info;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies};
-use tracing::info;
 
 pub(crate) fn login_routes() -> Router {
     Router::new()
@@ -55,7 +55,7 @@ fn set_return_to_cookie(cookies: &PrivateCookies<'_>, params: &Form<LoginParams>
 }
 
 async fn serve_login_with_patreon(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
-    tracing::info!("Initiating login with Patreon");
+    log::info!("Initiating login with Patreon");
     set_return_to_cookie(&tr.cookies, &params);
 
     let patreon = libpatreon::load();
@@ -64,7 +64,7 @@ async fn serve_login_with_patreon(tr: CubReqImpl, params: Form<LoginParams>) -> 
 }
 
 async fn serve_login_with_github(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
-    tracing::info!("Initiating login with GitHub");
+    log::info!("Initiating login with GitHub");
     set_return_to_cookie(&tr.cookies, &params);
 
     let purpose = if params.admin_login {
@@ -93,7 +93,7 @@ async fn finish_login_callback(tr: &CubReqImpl, auth_bundle: Option<AuthBundle>)
             tr.cookies.add(just_logged_in_cookie);
         }
     } else {
-        tracing::info!("Login flow was cancelled (that's okay!)");
+        log::info!("Login flow was cancelled (that's okay!)");
     }
 
     let location = tr.get_and_remove_return_to_cookie();

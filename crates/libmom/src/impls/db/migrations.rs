@@ -1,8 +1,8 @@
 use eyre::Result;
-use rusqlite::{named_params, Connection, Transaction};
+use log::info;
+use rusqlite::{Connection, Transaction, named_params};
 use std::collections::HashSet;
 use time::OffsetDateTime;
-use tracing::info;
 
 macro_rules! include_migrations {
     ($($module:ident),* $(,)?) => {

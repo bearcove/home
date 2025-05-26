@@ -360,7 +360,7 @@ impl Mod for ModImpl {
         }
 
         let res = child.wait().unwrap();
-        tracing::debug!("child exited: {}", res);
+        log::debug!("child exited: {res}");
 
         // send None to output_tx which will cause the output_rx thread to exit
         let _ = output_tx.send(None);

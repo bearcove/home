@@ -4,8 +4,8 @@ use config_types::{TenantInfo, WebConfig, is_production};
 use conflux::{Pak, PathMappings, RevisionError};
 use cub_types::{CubRevisionState, IndexedRevision};
 use load::load_pak;
+use log::warn;
 use make::make_revision;
-use tracing::warn;
 
 use crate::{RevisionKind, RevisionSpec};
 
@@ -63,7 +63,7 @@ pub(crate) async fn load_initial_revision(ti: Arc<TenantInfo>, web: WebConfig) -
             }
 
             // if we're in dev, look for changes and apply them
-            tracing::debug!("Looking for changes, making a wake revision");
+            log::debug!("Looking for changes, making a wake revision");
             match make_revision(
                 ti.clone(),
                 RevisionSpec {
@@ -113,7 +113,7 @@ pub(crate) async fn load_initial_revision(ti: Arc<TenantInfo>, web: WebConfig) -
     .await
     {
         Ok(indexed_rev) => {
-            tracing::debug!("Successfully created a new revision from scratch");
+            log::debug!("Successfully created a new revision from scratch");
             if let Err(err) = save_pak_to_disk_as_active(&indexed_rev.rev.pak, ti.as_ref()).await {
                 warn!("Failed to save pak to disk: {err}");
             }

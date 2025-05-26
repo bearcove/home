@@ -35,7 +35,6 @@ rusqlite = { workspace = true, default-features = false, features = ["time"] }
 serde = { version = "1.0.219", features = ["derive"] }
 time = { version = "0.3.41", features = ["formatting"] }
 tokio = { version = "1.45.0", features = ["full"] }
-tracing = { version = "0.1.41" }
 url = { version = "2.5.4" }
 tempfile = { version = "3.20.0" }
 ffmpeg-sidecar = { version = "2.0.5" }
@@ -61,3 +60,4 @@ facet.workspace = true
 sha2 = "0.10.9"
 hmac = "0.12.1"
 hex = "0.4.3"
+log = "0.4.27"

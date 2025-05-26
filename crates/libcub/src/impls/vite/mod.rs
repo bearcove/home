@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use config_types::{Environment, TenantDomain, TenantInfo, WebConfig};
 use http::Uri;
+use log::info;
 use regex;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tracing::info;
 
 /// Generates a `.home/vite.config.js` and `tsconfig.json`
 async fn generate_vite_configs(ti: &TenantInfo, web: WebConfig) -> eyre::Result<()> {
@@ -41,7 +41,7 @@ async fn generate_vite_configs(ti: &TenantInfo, web: WebConfig) -> eyre::Result<
         .await
         .map_err(|e| eyre::eyre!("[{tenant_name}] Failed to write vite config: {e}"))?;
 
-    tracing::debug!("[{tenant_name}] Installing required vite dev dependencies");
+    log::debug!("[{tenant_name}] Installing required vite dev dependencies");
 
     // Helper function to run pnpm install commands
     async fn run_pnpm_install(
@@ -72,7 +72,7 @@ async fn generate_vite_configs(ti: &TenantInfo, web: WebConfig) -> eyre::Result<
                 "[{tenant_name}] Failed to install {dep_type} dependencies: {error_msg}"
             ));
         } else {
-            tracing::debug!("[{tenant_name}] Successfully installed {dep_type} dependencies");
+            log::debug!("[{tenant_name}] Successfully installed {dep_type} dependencies");
         }
 
         Ok(())
@@ -109,7 +109,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
 
     let tenant_name = ti.tc.name.clone();
 
-    tracing::debug!("[{tenant_name}] Installing pnpm dependencies");
+    log::debug!("[{tenant_name}] Installing pnpm dependencies");
     let output = tokio::process::Command::new("pnpm")
         .arg("i")
         .current_dir(&ti.base_dir)
@@ -118,7 +118,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
         .map_err(|e| eyre::eyre!("Failed to execute npm i: {}", e))?;
 
     if !output.status.success() {
-        tracing::warn!(
+        log::warn!(
             "pnpm install failed: {}",
             String::from_utf8_lossy(&output.stderr)
         );
@@ -134,16 +134,14 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
         if pid_file_path.exists() {
             if let Ok(pid_str) = fs_err::tokio::read_to_string(&pid_file_path).await {
                 if let Ok(pid) = pid_str.trim().parse::<i32>() {
-                    tracing::debug!("[{tenant_name}] Killing previous vite process with PID {pid}");
+                    log::debug!("[{tenant_name}] Killing previous vite process with PID {pid}");
                     if let Err(e) = nix::sys::signal::kill(
                         nix::unistd::Pid::from_raw(pid),
                         nix::sys::signal::Signal::SIGKILL,
                     ) {
                         // Don't log ESRCH errors (No such process)
                         if !matches!(e, nix::Error::ESRCH) {
-                            tracing::warn!(
-                                "[{tenant_name}] Failed to kill previous vite process: {e}"
-                            );
+                            log::warn!("[{tenant_name}] Failed to kill previous vite process: {e}");
                         }
                     }
                 }
@@ -151,7 +149,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
             let _ = fs_err::tokio::remove_file(&pid_file_path).await;
         }
 
-        tracing::debug!("[{tenant_name}] Starting vite");
+        log::debug!("[{tenant_name}] Starting vite");
         let base_dir_clone = base_dir.clone();
         // this is a oneshot in spirit
         let (tx, mut rx) = tokio::sync::mpsc::channel(16);
@@ -188,7 +186,7 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
             fs_err::tokio::write(&pid_file_path, pid.to_string())
                 .await
                 .unwrap_or_else(|e| {
-                    tracing::warn!("[{tenant_name}] Failed to write PID file for vite: {e}");
+                    log::warn!("[{tenant_name}] Failed to write PID file for vite: {e}");
                 });
 
             let stdout = child.stdout.take().expect("Failed to capture stdout");
@@ -245,13 +243,13 @@ pub(crate) async fn start_vite(ti: Arc<TenantInfo>, web: WebConfig) -> eyre::Res
             match child.wait().await {
                 Ok(status) => {
                     if !status.success() {
-                        tracing::error!(
+                        log::error!(
                             "[{tenant_name}] Frontend vite process exited with status: {status}"
                         );
                     }
                 }
                 Err(e) => {
-                    tracing::error!("[{tenant_name}] Error waiting for frontend vite process: {e}")
+                    log::error!("[{tenant_name}] Error waiting for frontend vite process: {e}")
                 }
             }
         });

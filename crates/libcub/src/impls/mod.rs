@@ -18,6 +18,7 @@ use layers::{
 };
 use libmomclient::{MomClient, MomClientConfig, MomEventListener};
 use librevision::{RevisionKind, RevisionSpec};
+use log::{info, warn};
 use mom_event_handler::spawn_mom_event_handler;
 use mom_types::{MomEvent, Sponsors};
 use node_metadata::{NodeMetadata, load_node_metadata};
@@ -32,7 +33,6 @@ use tokio::{
 };
 use tower::{ServiceBuilder, ServiceExt as _, steer::Steer, util::BoxCloneService};
 use tower_cookies::CookieManagerLayer;
-use tracing::{info, warn};
 use types::CubDynamicState;
 
 pub mod access_control;
@@ -187,13 +187,13 @@ pub(crate) async fn serve(
                             match acceptor.accept(socket).await {
                                 Ok(tls_stream) => return (tls_stream, addr),
                                 Err(e) => {
-                                    tracing::warn!("TLS error: {}", e);
+                                    log::warn!("TLS error: {}", e);
                                     continue;
                                 }
                             }
                         }
                         Err(e) => {
-                            tracing::warn!("TCP accept error: {}", e);
+                            log::warn!("TCP accept error: {}", e);
                             continue;
                         }
                     }
@@ -521,9 +521,9 @@ async fn setup_app_routes(
                     let status = response.status();
                     if !(path.starts_with("/health")  || (path.starts_with("/dist") && is_development())) {
                         if let Some(q) = query {
-                            tracing::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m\x1b[90m?\x1b[0m\x1b[32m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, q, status.as_u16(), duration);
+                            log::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m\x1b[90m?\x1b[0m\x1b[32m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, q, status.as_u16(), duration);
                         } else {
-                            tracing::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, status.as_u16(), duration);
+                            log::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, status.as_u16(), duration);
                         }
                     }
                     response

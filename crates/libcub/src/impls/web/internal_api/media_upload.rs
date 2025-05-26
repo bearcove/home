@@ -98,10 +98,10 @@ pub(crate) async fn serve_media_upload(
 
 async fn handle_ws(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>) {
     if let Err(e) = handle_ws_inner(&mut socket, ts).await {
-        tracing::warn!("Error in image upload socket: {:?}", e);
+        log::warn!("Error in image upload socket: {:?}", e);
         let error_message = WebSocketMessage::Error(format!("Error: {e}"));
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
-            tracing::error!("Failed to send error message to websocket: {}", send_err);
+            log::error!("Failed to send error message to websocket: {}", send_err);
         }
     }
 }
@@ -111,7 +111,7 @@ async fn handle_ws_inner(
     tenant: Arc<CubTenantImpl>,
 ) -> eyre::Result<()> {
     if !is_development() {
-        tracing::debug!("Image upload attempted in non-development mode");
+        log::debug!("Image upload attempted in non-development mode");
         return Err(eyre!("Image upload is only available in development mode"));
     }
 
@@ -131,7 +131,7 @@ async fn handle_ws_inner(
 
                 match message {
                     WebSocketMessage::Headers(h) => {
-                        tracing::info!("Received headers: {:?}", h);
+                        log::info!("Received headers: {:?}", h);
                         headers = Some(h);
 
                         if std::env::var("ACTIVATE_SAFARI").is_ok() {
@@ -141,14 +141,14 @@ async fn handle_ws_inner(
                                 .spawn()
                                 .is_err()
                             {
-                                tracing::debug!("Failed to activate Safari");
+                                log::debug!("Failed to activate Safari");
                             } else {
-                                tracing::info!("Activated Safari");
+                                log::info!("Activated Safari");
                             }
                         }
                     }
                     WebSocketMessage::UploadDone(u) => {
-                        tracing::debug!("Received upload done: {:?}", u);
+                        log::debug!("Received upload done: {:?}", u);
                         if u.uploaded_size != input_len as u64 {
                             return Err(eyre!("Uploaded size does not match received bytes"));
                         }
@@ -158,7 +158,7 @@ async fn handle_ws_inner(
                 }
             }
             ws::Message::Binary(data) => {
-                tracing::debug!(
+                log::debug!(
                     "Received binary data of length: {}, total bytes received: {}",
                     data.len(),
                     input_len + data.len()
@@ -167,7 +167,7 @@ async fn handle_ws_inner(
                 file.write_all(&data).await?;
             }
             ws::Message::Close(_) => {
-                tracing::info!("WebSocket gracefully closed");
+                log::info!("WebSocket gracefully closed");
                 return Ok(());
             }
             _ => {}
@@ -175,7 +175,7 @@ async fn handle_ws_inner(
     }
 
     let headers = headers.ok_or_else(|| eyre!("Headers not received"))?;
-    tracing::debug!("Processing image upload with headers: {:?}", headers,);
+    log::debug!("Processing image upload with headers: {:?}", headers,);
     if input_len != headers.file_size as usize {
         return Err(eyre!(
             "Received file size ({}) does not match expected size ({})",
@@ -212,7 +212,7 @@ async fn handle_ws_inner(
     let output_filename = format!("output{}", media_type.output_extension());
     let temp_output_path = temp_dir.path().join(output_filename);
 
-    tracing::debug!("Preparing to run {media_type} conversion command");
+    log::debug!("Preparing to run {media_type} conversion command");
     let start_time = std::time::Instant::now();
 
     match media_type {
@@ -228,7 +228,7 @@ async fn handle_ws_inner(
             let src_ic = match props.ic.as_ref() {
                 Some(ic) => *ic,
                 None => {
-                    tracing::warn!("Unknown image codec, raw ffmpeg metadata: {:?}", props);
+                    log::warn!("Unknown image codec, raw ffmpeg metadata: {:?}", props);
                     return Err(eyre!("Unknown image codec"));
                 }
             };
@@ -303,7 +303,7 @@ async fn handle_ws_inner(
                     if bytes_read == 0 {
                         break;
                     }
-                    tracing::info!("Uploading chunk of {} bytes", bytes_read);
+                    log::info!("Uploading chunk of {} bytes", bytes_read);
                     uploader
                         .upload_chunk(buffer[..bytes_read].to_vec().into())
                         .await?;
@@ -319,10 +319,10 @@ async fn handle_ws_inner(
                         chunk: Vec<u8>,
                     ) -> futures_core::future::BoxFuture<'_, eyre::Result<()>> {
                         Box::pin(async move {
-                            tracing::info!("Received chunk of size {} bytes", chunk.len());
+                            log::info!("Received chunk of size {} bytes", chunk.len());
                             self.file.write_all(&chunk).await?;
                             self.file.sync_all().await?;
-                            tracing::info!("Chunk written and synced to file");
+                            log::info!("Chunk written and synced to file");
                             Ok(())
                         })
                     }
@@ -332,7 +332,7 @@ async fn handle_ws_inner(
                     file: fs_err::tokio::File::create(&temp_output_path).await?,
                 };
 
-                tracing::info!("Starting to download and write video chunks");
+                log::info!("Starting to download and write video chunks");
                 uploader
                     .done_and_download_result(input_len, Box::new(receiver))
                     .await?;
@@ -340,16 +340,16 @@ async fn handle_ws_inner(
                 Ok(())
             };
 
-            tracing::info!("Video download and writing completed");
+            log::info!("Video download and writing completed");
             tokio::try_join!(relay_progress_fut, conver_fut)?;
         }
     };
 
     let duration = start_time.elapsed();
-    tracing::debug!("{media_type} conversion completed in {duration:?}");
+    log::debug!("{media_type} conversion completed in {duration:?}");
     let result_size = fs::metadata(&temp_output_path).await?.len();
 
-    tracing::debug!("{media_type} conversion successful, sending ConversionDone message");
+    log::debug!("{media_type} conversion successful, sending ConversionDone message");
     json_to_socket(
         socket,
         &WebSocketMessage::ConversionDone(ConversionDoneMessage {
@@ -361,27 +361,27 @@ async fn handle_ws_inner(
     let commit = loop {
         match socket.recv().await {
             Some(Ok(ws::Message::Text(text))) => {
-                tracing::debug!("Received text message: {}", text);
+                log::debug!("Received text message: {}", text);
                 let message: WebSocketMessage =
                     facet_json::from_str(&text).map_err(|e| e.into_owned())?;
                 if let WebSocketMessage::Commit(c) = message {
-                    tracing::debug!("Received commit: {:?}", c);
+                    log::debug!("Received commit: {:?}", c);
                     break c;
                 }
             }
             Some(Ok(ws::Message::Close(_))) => {
-                tracing::debug!("Received close message");
+                log::debug!("Received close message");
                 return Err(eyre!("WebSocket closed before receiving Commit message"));
             }
             Some(Err(e)) => {
-                tracing::error!("Error receiving WebSocket message: {:?}", e);
+                log::error!("Error receiving WebSocket message: {:?}", e);
                 return Err(eyre!("WebSocket error: {}", e));
             }
             None => {
                 return Err(eyre!("WebSocket connection closed unexpectedly"));
             }
             other => {
-                tracing::error!("Unexpected WebSocket message: {:?}", other);
+                log::error!("Unexpected WebSocket message: {:?}", other);
                 return Err(eyre!("Unexpected WebSocket message"));
             }
         }
@@ -394,7 +394,7 @@ async fn handle_ws_inner(
     let final_image_name = format!("{name}{suffix}{extension}");
     let output_path = page_dir.join(&final_image_name);
 
-    tracing::debug!(
+    log::debug!(
         "Moving converted image to final location: {:?}",
         output_path
     );
@@ -437,7 +437,7 @@ async fn handle_ws_inner(
 
     let markdown = lines.join("\n");
 
-    tracing::debug!("Reading page content");
+    log::debug!("Reading page content");
     let mut content = fs::read_to_string(&page_disk_path).await?;
 
     let paragraph_start = content[..headers.paragraph_byte_offset as usize]
@@ -450,7 +450,7 @@ async fn handle_ws_inner(
         .map(|i| i + headers.paragraph_byte_offset as usize)
         .unwrap_or(content.len());
 
-    tracing::debug!("Updating page content with new image markdown");
+    log::debug!("Updating page content with new image markdown");
     match headers.action {
         Action::Append => {
             content.insert_str(paragraph_end, &format!("\n\n{markdown}"));
@@ -467,17 +467,17 @@ async fn handle_ws_inner(
         }
     }
 
-    tracing::debug!("Writing updated page content");
+    log::debug!("Writing updated page content");
     fs::write(&page_disk_path, content).await?;
 
-    tracing::debug!("Sending ActionDone message");
+    log::debug!("Sending ActionDone message");
     json_to_socket(
         socket,
         &WebSocketMessage::ActionDone(ActionDoneMessage { done: true }),
     )
     .await?;
 
-    tracing::debug!("Image upload process completed successfully");
+    log::debug!("Image upload process completed successfully");
     Ok(())
 }
 

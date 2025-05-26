@@ -1,9 +1,9 @@
 use config_types::Environment;
 use http::Uri;
 use libpatreon::{PatreonRefreshCredentials, PatreonRefreshCredentialsArgs};
+use log::{debug, warn};
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies, cookie::SameSite};
-use tracing::{debug, warn};
 
 // Export these types for use in the crate
 pub use credentials::AuthBundle;
@@ -42,7 +42,7 @@ pub async fn authbundle_load_from_cookies(cookies: &PrivateCookies<'_>) -> Optio
     let creds: AuthBundle = match facet_json::from_str(cookie.value()) {
         Ok(v) => v,
         Err(e) => {
-            warn!(?e, "Got undeserializable cookie, removing");
+            warn!("Got undeserializable cookie, removing: {e}");
             cookies.remove(cookie.clone().into_owned());
             return None;
         }

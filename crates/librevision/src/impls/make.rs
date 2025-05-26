@@ -17,8 +17,8 @@ use eyre::Context;
 use facet_pretty::FacetPretty;
 use image_types::{ICodec, PixelDensity};
 use itertools::Itertools;
+use log::{debug, warn};
 use tokio::sync::{Semaphore, mpsc};
-use tracing::{debug, warn};
 use uffmpeg::{ffmpeg_metadata_to_media_props, gather_ffmpeg_meta};
 use ulid::Ulid;
 
@@ -93,10 +93,10 @@ pub async fn make_revision(
                 });
             }
             let create_event_duration = create_event_start.elapsed();
-            tracing::debug!("Creating initial event took {:?}", create_event_duration);
+            log::debug!("Creating initial event took {:?}", create_event_duration);
 
             let from_scratch_duration = from_scratch_start.elapsed();
-            tracing::debug!(
+            log::debug!(
                 "FromScratch revision setup took {:?}",
                 from_scratch_duration
             );
@@ -108,14 +108,14 @@ pub async fn make_revision(
             let wake_events_start = Instant::now();
             let events = wake_revision_events(prev.rev.as_ref(), &ti).await?;
             let wake_events_duration = wake_events_start.elapsed();
-            tracing::debug!(
+            log::debug!(
                 "Wake revision events generation took {:?}",
                 wake_events_duration
             );
 
             if events.is_empty() {
                 // no wake events, return previous revision
-                tracing::debug!("No wake events, returning previous revision");
+                log::debug!("No wake events, returning previous revision");
                 return Ok(prev);
             }
 
@@ -123,7 +123,7 @@ pub async fn make_revision(
             let result = (prev.rev.pak.clone(), events);
 
             let wake_duration = wake_start.elapsed();
-            tracing::debug!("Wake revision setup took {:?}", wake_duration);
+            log::debug!("Wake revision setup took {:?}", wake_duration);
             result
         }
         RevisionKind::Incremental { prev, events } => {
@@ -133,12 +133,12 @@ pub async fn make_revision(
             let result = (prev.pak.clone(), events);
 
             let incremental_duration = incremental_start.elapsed();
-            tracing::debug!("Incremental revision setup took {:?}", incremental_duration);
+            log::debug!("Incremental revision setup took {:?}", incremental_duration);
             result
         }
     };
     let rev_kind_duration = rev_kind_start.elapsed();
-    tracing::debug!("Revision kind processing took {:?}", rev_kind_duration);
+    log::debug!("Revision kind processing took {:?}", rev_kind_duration);
 
     pak.id = generate_rev_id();
 
@@ -146,32 +146,32 @@ pub async fn make_revision(
     let db_create_start = Instant::now();
     let mut db = redb::Database::create(db_path)?;
     let db_create_duration = db_create_start.elapsed();
-    tracing::debug!("Database creation took {:?}", db_create_duration);
+    log::debug!("Database creation took {:?}", db_create_duration);
 
     let integrity_check_start = Instant::now();
     let check_integrity = db.check_integrity();
     let integrity_check_duration = integrity_check_start.elapsed();
-    tracing::debug!(
+    log::debug!(
         "Database integrity check took {:?}",
         integrity_check_duration
     );
     match check_integrity {
         Ok(_) => {
-            tracing::debug!("Database integrity check passed");
+            log::debug!("Database integrity check passed");
         }
         Err(e) => match e {
             redb::DatabaseError::DatabaseAlreadyOpen => {
-                tracing::warn!("Database is already open, attempting to reopen");
+                log::warn!("Database is already open, attempting to reopen");
                 // Attempt to reopen or wait and retry
                 // For now, we'll just return an error
                 return Err(eyre::eyre!("Database is already open"));
             }
             redb::DatabaseError::RepairAborted => {
-                tracing::error!("Database repair was aborted");
+                log::error!("Database repair was aborted");
                 return Err(eyre::eyre!("Database repair was aborted"));
             }
             redb::DatabaseError::UpgradeRequired(version) => {
-                tracing::warn!("Database upgrade required to version {}", version);
+                log::warn!("Database upgrade required to version {}", version);
                 // Here we could implement an upgrade process
                 // For now, we'll just return an error
                 return Err(eyre::eyre!(
@@ -180,11 +180,11 @@ pub async fn make_revision(
                 ));
             }
             redb::DatabaseError::Storage(_storage_error) => {
-                tracing::error!("Database storage error occurred");
+                log::error!("Database storage error occurred");
                 return Err(eyre::eyre!("Database storage error"));
             }
             _ => {
-                tracing::error!("Unknown database error: {:?}", e);
+                log::error!("Unknown database error: {:?}", e);
                 return Err(eyre::eyre!("Unknown database error occurred"));
             }
         },
@@ -193,13 +193,13 @@ pub async fn make_revision(
     let begin_write_start = Instant::now();
     let wtx = db.begin_write()?;
     let begin_write_duration = begin_write_start.elapsed();
-    tracing::debug!("Database begin_write took {:?}", begin_write_duration);
+    log::debug!("Database begin_write took {:?}", begin_write_duration);
     let media_props_cache = Arc::new(MediaPropsCache::new(wtx));
 
     let mods_start = Instant::now();
     let mods = RevisionMods::default();
     let mods_duration = mods_start.elapsed();
-    tracing::debug!("Loading revision mods took {:?}", mods_duration);
+    log::debug!("Loading revision mods took {:?}", mods_duration);
 
     let (tx_add, mut rx_add) = mpsc::channel(256);
     let mut cx = MakeContext {
@@ -216,12 +216,12 @@ pub async fn make_revision(
     let unique_start = Instant::now();
     cx.events = cx.events.into_iter().unique().collect();
     let unique_elapsed = unique_start.elapsed();
-    tracing::debug!("Uniquifying events took {:?}", unique_elapsed);
+    log::debug!("Uniquifying events took {:?}", unique_elapsed);
 
     let mut num_events = 0;
     let mut num_add_actions = 0;
 
-    tracing::debug!("Make revision init took {:?}", init_start.elapsed());
+    log::debug!("Make revision init took {:?}", init_start.elapsed());
     let start = Instant::now();
 
     while let Some(ev) = cx.events.pop_front() {
@@ -249,7 +249,7 @@ pub async fn make_revision(
             }
         }
         if num_processed > 0 {
-            tracing::debug!("Processed {num_processed} add actions in a loop turn");
+            log::debug!("Processed {num_processed} add actions in a loop turn");
         }
     }
 
@@ -269,7 +269,7 @@ pub async fn make_revision(
         while let Some(ev) = rx_add.recv().await {
             num_add_actions += 1;
             ev.apply(&mut pak)?;
-            tracing::debug!("Applied while draining, soon we'll be actually drained I guess...");
+            log::debug!("Applied while draining, soon we'll be actually drained I guess...");
         }
         Ok::<_, eyre::Report>(())
     })
@@ -277,12 +277,12 @@ pub async fn make_revision(
     {
         Ok(result) => result?,
         Err(_) => {
-            tracing::warn!("Timeout waiting for add actions to complete");
+            log::warn!("Timeout waiting for add actions to complete");
         }
     }
 
     let elapsed = start.elapsed();
-    tracing::info!(
+    log::info!(
         "Processed \x1b[33m{num_events}\x1b[0m events in \x1b[36m{elapsed:?}\x1b[0m (\x1b[32m{num_add_actions}\x1b[0m add actions)"
     );
 
@@ -290,14 +290,14 @@ pub async fn make_revision(
     let media_props_cache = Arc::try_unwrap(media_props_cache).unwrap_or_else(|_| {
         panic!("The Media props cache should not be in any more tasks by now.")
     });
-    tracing::debug!("Media props cache stats: {}", media_props_cache.get_stats());
+    log::debug!("Media props cache stats: {}", media_props_cache.get_stats());
 
     let commit_start = Instant::now();
     media_props_cache
         .commit()
         .wrap_err("while committing media props cache")?;
     let commit_duration = commit_start.elapsed();
-    tracing::debug!("Media props cache commit took {:?}", commit_duration);
+    log::debug!("Media props cache commit took {:?}", commit_duration);
 
     // Find the input with path "/home.json"
     let home_json_input_path = InputPath::from("/home.json");
@@ -320,18 +320,18 @@ pub async fn make_revision(
     let font_collection_start = Instant::now();
     pak.svg_font_face_collection = Arc::new(gather_svg_font_face_collection(&ti, &rc).await?);
     let font_collection_duration = font_collection_start.elapsed();
-    tracing::debug!(
+    log::debug!(
         "Gathering SVG font face collection took {:?}",
         font_collection_duration
     );
 
-    tracing::info!("Revision config: {}", rc.pretty());
+    log::info!("Revision config: {}", rc.pretty());
     pak.rc = rc;
 
     let load_pak_start = Instant::now();
     let rev = load_pak(pak, ti, prev_rev.as_deref(), mappings, web).await?;
     let load_pak_duration = load_pak_start.elapsed();
-    tracing::debug!("Loading pak took {:?}", load_pak_duration);
+    log::debug!("Loading pak took {:?}", load_pak_duration);
     Ok(rev)
 }
 
@@ -349,7 +349,7 @@ struct MakeContext {
 
 impl MakeContext {
     async fn process_event(&mut self, ev: InputEvent) -> eyre::Result<()> {
-        tracing::trace!("Processing event: {ev:#?}");
+        log::trace!("Processing event: {ev:#?}");
         match ev {
             InputEvent::Created { path, metadata } => {
                 if metadata.is_file {
@@ -395,12 +395,12 @@ impl MakeContext {
                             "\x1b[31m" // red
                         };
                         drop(permit);
-                        tracing::debug!(
+                        log::debug!(
                             "Processed in {color}{:?}\x1b[0m: \x1b[33m{path_copy}\x1b[0m",
                             elapsed
                         );
                         if let Err(e) = res {
-                            tracing::warn!("Revision error: {e:?}");
+                            log::warn!("Revision error: {e:?}");
                             _ = tx.send(AddAction::Error(e));
                         };
                     });
@@ -462,7 +462,7 @@ impl MakeContext {
                     .filter(|p| p.as_str().starts_with(input_path.as_str()))
                     .cloned()
                     .collect::<Vec<_>>();
-                tracing::debug!(
+                log::debug!(
                     "Removing {} files, all that start with {}",
                     to_remove.len(),
                     input_path,
@@ -587,7 +587,7 @@ async fn revision_added(
 
     let content_type =
         ContentType::guess_from_path(path.as_str()).unwrap_or(ContentType::OctetStream);
-    tracing::debug!(
+    log::debug!(
         "Added: \x1b[35m{content_type}\x1b[0m \x1b[33m{path}\x1b[0m~\x1b[36m{hash}\x1b[0m (last mod \x1b[32m{mtime}\x1b[0m)"
     );
 
@@ -844,10 +844,10 @@ pub async fn wake_revision_events(
 
             let modtime: time::OffsetDateTime = metadata.mtime;
             let meta_changed = if prev_input.size != metadata.len {
-                tracing::debug!("File size changed: {input_path}");
+                log::debug!("File size changed: {input_path}");
                 true
             } else if prev_input.mtime != modtime {
-                tracing::debug!("File modtime changed: {input_path}");
+                log::debug!("File modtime changed: {input_path}");
                 true
             } else {
                 // same everything
@@ -859,7 +859,7 @@ pub async fn wake_revision_events(
                 let contents = fs_err::tokio::read(mappings.to_disk_path(input_path)?).await?;
                 let hash = input_hash_from_contents(&contents);
                 if hash != prev_input.hash {
-                    tracing::debug!("File modtime + hash changed: {input_path}");
+                    log::debug!("File modtime + hash changed: {input_path}");
                     Outcome::ContentsChanged
                 } else {
                     // metadata changed but hash is the same

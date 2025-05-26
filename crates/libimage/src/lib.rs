@@ -231,7 +231,7 @@ impl Mod for ModImpl {
         };
 
         let duration_transcode = start_transcode.elapsed();
-        tracing::info!(
+        log::info!(
             "\x1b[36m{:?}\x1b[0m => \x1b[36m{:?}\x1b[0m, load: \x1b[33m{:?}\x1b[0m, resize: \x1b[33m{:?}\x1b[0m, transcode: \x1b[33m{:?}\x1b[0m, total: \x1b[33m{:?}\x1b[0m",
             ifmt,
             ofmt,

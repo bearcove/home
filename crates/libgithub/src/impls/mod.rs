@@ -5,8 +5,8 @@ use credentials::{AuthBundle, Profile, Tier, UserInfo};
 use eyre::Result;
 use facet::Facet;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
+use log::debug;
 use time::OffsetDateTime;
-use tracing::debug;
 
 use crate::{GitHubCallbackArgs, GitHubCredentials, ModImpl};
 
@@ -45,7 +45,7 @@ impl ModImpl {
             .map_err(|e| eyre::eyre!("While getting GitHub access token: {e}"))?;
 
         let creds = res.json::<GitHubCredentials>().await?;
-        tracing::info!(
+        log::info!(
             "Successfully obtained GitHub token with scope {}",
             &creds.scope
         );
@@ -184,7 +184,7 @@ impl ModImpl {
 
                 for error in errors {
                     if !is_error_ignored(&error) {
-                        tracing::error!("GitHub API error: {:?}", error);
+                        log::error!("GitHub API error: {error:?}");
                     }
                 }
                 // still return the sponsors we got so far
@@ -195,7 +195,7 @@ impl ModImpl {
                 Some(data) => data,
                 None => {
                     let err = eyre::eyre!("got no data from GitHub API");
-                    tracing::error!("{err}");
+                    log::error!("{err}");
                     // still return the sponsors we got so far
                     return Ok(credited_patrons);
                 }
@@ -370,7 +370,7 @@ impl ModImpl {
                 }
             });
 
-        tracing::info!(
+        log::info!(
             "GitHub user \x1b[33m{:?}\x1b[0m (ID: \x1b[36m{:?}\x1b[0m, name: \x1b[32m{:?}\x1b[0m, tier: \x1b[35m{:?}\x1b[0m) logged in",
             viewer.login,
             viewer.databaseId,

@@ -7,9 +7,9 @@ use axum::routing::get;
 use axum::{Router, extract::FromRequestParts};
 use config_types::{MomApiKeyRef, TenantDomain, is_development};
 use futures_util::SinkExt;
+use log::{error, info, warn};
 use tenant_extractor::TenantExtractor;
 use tokio::signal::unix::SignalKind;
-use tracing::{error, info, warn};
 
 use crate::impls::{MomGlobalState, global_state};
 use mom_types::{GoodMorning, MomEvent, TenantInitialState};
@@ -109,9 +109,9 @@ pub(super) async fn serve(listener: tokio::net::TcpListener) -> Result<()> {
                     let status = response.status();
                     if !path.starts_with("/health") {
                         if let Some(q) = query {
-                            tracing::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m\x1b[90m?\x1b[0m\x1b[32m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, q, status.as_u16(), duration);
+                            log::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m\x1b[90m?\x1b[0m\x1b[32m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, q, status.as_u16(), duration);
                         } else {
-                            tracing::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, status.as_u16(), duration);
+                            log::info!("\x1b[36m{}\x1b[0m \x1b[33m{}\x1b[0m -> \x1b[35m{}\x1b[0m (took {:?})", method, path, status.as_u16(), duration);
                         }
                     }
                     response
@@ -174,7 +174,7 @@ async fn handle_socket(mut socket: ws::WebSocket) {
     for (tn, ts) in gs.tenants.iter() {
         let revision = ts.pak.lock().clone();
         let sponsors = ts.sponsors.lock().clone();
-        tracing::info!(
+        log::info!(
             "in good morning, for tenant {}, sending {} sponsors (-1 means None)",
             tn,
             sponsors
@@ -211,26 +211,26 @@ async fn handle_socket(mut socket: ws::WebSocket) {
 
     let msg = MomGlobalState::event_to_message(MomEvent::GoodMorning(gm));
     if let Err(e) = socket.send(msg).await {
-        tracing::error!("Failed to send good morning: {}", e);
+        log::error!("Failed to send good morning: {}", e);
         return;
     }
 
     if let Err(e) = socket.flush().await {
-        tracing::error!("Failed to flush WebSocket message: {}", e);
+        log::error!("Failed to flush WebSocket message: {}", e);
         return;
     }
 
-    tracing::info!("Starting WebSocket message loop");
+    log::info!("Starting WebSocket message loop");
     loop {
         tokio::select! {
             Ok(json_payload) = rx.recv() => {
                 let msg = ws::Message::text(json_payload);
                 if let Err(e) = socket.send(msg).await {
-                    tracing::error!("Failed to send WebSocket message: {}", e);
+                    log::error!("Failed to send WebSocket message: {}", e);
                     break;
                 }
                 if let Err(e) = socket.flush().await {
-                    tracing::error!("Failed to flush WebSocket message: {}", e);
+                    log::error!("Failed to flush WebSocket message: {}", e);
                     break;
                 }
             }
@@ -238,10 +238,10 @@ async fn handle_socket(mut socket: ws::WebSocket) {
                 match result {
                     Ok(_) => {
                         // Ignore received messages
-                        tracing::debug!("Received message from WebSocket (ignored)");
+                        log::debug!("Received message from WebSocket (ignored)");
                     }
                     Err(e) => {
-                        tracing::error!("Error receiving WebSocket message: {}", e);
+                        log::error!("Error receiving WebSocket message: {}", e);
                         break;
                     }
                 }
@@ -249,5 +249,5 @@ async fn handle_socket(mut socket: ws::WebSocket) {
             else => break,
         }
     }
-    tracing::info!("WebSocket message loop ended");
+    log::info!("WebSocket message loop ended");
 }

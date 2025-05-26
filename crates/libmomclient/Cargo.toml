@@ -12,7 +12,6 @@ conflux = { path = "../../crates/conflux" }
 # impl deps
 rand = { version = "0.9.1" }
 tokio = { workspace = true, features = ["time"] }
-tracing = { version = "0.1.41" }
 credentials = { path = "../../crates/credentials" }
 libpatreon = { path = "../libpatreon" }
 bytes = "1.10.1"
@@ -27,3 +26,4 @@ autotrait = "0.2.1"
 mom-types = { version = "0.1.0", path = "../mom-types" }
 facet-json.workspace = true
 fs-err = { version = "3.1.0", features = ["tokio"] }
+log = "0.4.27"

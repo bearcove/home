@@ -11,8 +11,8 @@ use eyre::Report;
 use facet::Facet;
 use facet_json::DeserError;
 use libterm::FormatAnsiStyle;
+use log::error;
 use std::{borrow::Cow, sync::Arc};
-use tracing::error;
 
 pub(crate) type Reply = Result<Response, HttpError>;
 
@@ -102,7 +102,7 @@ impl HttpError {
                 r#"<pre class="trace home-ansi">{err_string_colored}<div class="backtrace">{backtrace}</div></pre>"#
             )
         };
-        tracing::error!("Backtrace:\n{trace_content}");
+        log::error!("Backtrace:\n{trace_content}");
 
         let body = "Internal server error".to_string();
         HttpError::Internal { err: body }

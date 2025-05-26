@@ -3030,7 +3030,7 @@ dependencies = [
  "cub-types",
  "hattip",
  "libreddit",
- "tracing",
+ "log",
  "url 2.5.4",
 ]
 
@@ -3058,9 +3058,9 @@ dependencies = [
  "http-range",
  "libhttpclient",
  "libwebsock",
+ "log",
  "mom-types",
  "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -3141,6 +3141,7 @@ dependencies = [
  "libterm",
  "libwebpage",
  "libwebsock",
+ "log",
  "mom-types",
  "nix 0.30.1",
  "objectstore-types",
@@ -3162,7 +3163,6 @@ dependencies = [
  "tokio-rustls 0.24.1",
  "tower",
  "tower-cookies",
- "tracing",
  "uffmpeg",
  "ulid",
  "url 2.5.4",
@@ -3221,8 +3221,8 @@ dependencies = [
  "fs-err",
  "futures-core",
  "libhttpclient",
+ "log",
  "time",
- "tracing",
  "url 2.5.4",
 ]
 
@@ -3234,8 +3234,8 @@ dependencies = [
  "dumbcache",
  "eyre",
  "highlight-types",
+ "log",
  "nerdfonts",
- "tracing",
  "tree-sitter-collection",
 ]
 
@@ -3275,11 +3275,11 @@ dependencies = [
  "image-types",
  "jpegxl-rs",
  "jxl-oxide",
+ "log",
  "num_cpus",
  "ravif",
  "rgb",
  "tempfile",
- "tracing",
  "webp",
 ]
 
@@ -3366,6 +3366,7 @@ dependencies = [
  "libpatreon",
  "libsvg",
  "libterm",
+ "log",
  "mom-types",
  "nix 0.30.1",
  "objectstore-types",
@@ -3380,7 +3381,6 @@ dependencies = [
  "time",
  "tokio",
  "tokio-stream",
- "tracing",
  "uffmpeg",
  "url 2.5.4",
 ]
@@ -3402,11 +3402,11 @@ dependencies = [
  "libhttpclient",
  "libpatreon",
  "libwebsock",
+ "log",
  "mom-types",
  "objectstore-types",
  "rand 0.9.1",
  "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -3418,10 +3418,10 @@ dependencies = [
  "config-types",
  "futures-core",
  "futures-util",
+ "log",
  "object_store",
  "objectstore-types",
  "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -3437,10 +3437,10 @@ dependencies = [
  "futures-core",
  "jsonapi",
  "libhttpclient",
+ "log",
  "serde",
  "serde_json",
  "time",
- "tracing",
  "url 2.5.4",
 ]
 
@@ -3454,7 +3454,7 @@ dependencies = [
  "facet",
  "futures-core",
  "libhttpclient",
- "tracing",
+ "log",
  "url 2.5.4",
 ]
 
@@ -3498,6 +3498,7 @@ dependencies = [
  "libsearch",
  "libsvg",
  "libtemplate",
+ "log",
  "markdown-types",
  "rayon",
  "redb",
@@ -3505,7 +3506,6 @@ dependencies = [
  "template-types",
  "time",
  "tokio",
- "tracing",
  "uffmpeg",
  "ulid",
  "wildmatch",
@@ -3522,9 +3522,9 @@ dependencies = [
  "facet",
  "html-escape",
  "indicium",
+ "log",
  "percent-encoding 2.3.1",
  "tantivy",
- "tracing",
 ]
 
 [[package]]
@@ -3600,13 +3600,13 @@ dependencies = [
  "displaydoc",
  "facet",
  "fs-err",
+ "log",
  "nix 0.30.1",
  "owo-colors",
  "portable-pty",
  "shell-quote",
  "term_size",
  "termion",
- "tracing",
  "which",
 ]
 
@@ -3655,11 +3655,11 @@ dependencies = [
  "futures-util",
  "http",
  "libhttpclient",
+ "log",
  "rubicon",
  "rustls 0.23.27",
  "tokio",
  "tokio-tungstenite 0.23.1",
- "tracing",
 ]
 
 [[package]]

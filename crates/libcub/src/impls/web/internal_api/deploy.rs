@@ -121,7 +121,7 @@ async fn handle_deploy_socket(mut socket: ws::WebSocket, ts: Arc<CubTenantImpl>,
             message: format!("Error: {e}"),
         });
         if let Err(send_err) = json_to_socket(&mut socket, &error_message).await {
-            tracing::error!("Failed to send error message to websocket: {}", send_err);
+            log::error!("Failed to send error message to websocket: {}", send_err);
         }
     }
 }
@@ -191,7 +191,7 @@ async fn run_vite_build_and_update_revision(
         .to_disk_path(&InputPath::from_static("/dist"))
         .expect("No mapping found for /dist path");
 
-    tracing::info!(
+    log::info!(
         "[{tenant_name}] Using temporary build directory: {}",
         vite_build_dir
     );
@@ -419,11 +419,11 @@ async fn handle_deploy_socket_inner(
 
     let gs = global_state();
 
-    tracing::info!("[{tenant_name}] Making mom tenant client");
+    log::info!("[{tenant_name}] Making mom tenant client");
     let tcli: Arc<dyn MomTenantClient> =
         Arc::from(gs.mom_deploy_client.mom_tenant_client(tenant_name.clone()));
 
-    tracing::info!("[{tenant_name}] Listing missing assets...");
+    log::info!("[{tenant_name}] Listing missing assets...");
     let missing_assets = tcli
         .objectstore_list_missing(&ListMissingArgs {
             objects_to_query: rev
@@ -485,7 +485,7 @@ async fn handle_deploy_socket_inner(
                     .get(&key)
                     .ok_or_else(|| eyre::eyre!("Input not found in revision for key: {}", key))?;
                 let disk_path = mappings.to_disk_path(&key)?;
-                tracing::debug!("Reading input file from disk path: {:?}", disk_path);
+                log::debug!("Reading input file from disk path: {:?}", disk_path);
                 let before_read = Instant::now();
                 let payload = match fs_err::tokio::read(&disk_path).await {
                     Ok(data) => data,
@@ -513,7 +513,7 @@ async fn handle_deploy_socket_inner(
                 tcli.put_asset(&input.key(), payload.into()).await?;
                 let upload_time = before_upload.elapsed();
 
-                tracing::info!(
+                log::info!(
                     "Uploaded input {:?} (read: {:?}, upload: {:?})",
                     key,
                     read_time,

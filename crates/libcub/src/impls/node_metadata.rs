@@ -1,6 +1,6 @@
 use config_types::is_production;
 use facet::Facet;
-use tracing::warn;
+use log::warn;
 
 #[derive(Facet)]
 pub(crate) struct NodeMetadata {
