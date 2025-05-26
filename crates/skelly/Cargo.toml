@@ -1,0 +1,18 @@
+[package]
+name = "skelly"
+description = "Sets up logging etc. for home binaries"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+color-backtrace = { version = "0.7.0" }
+color-eyre = { version = "0.6.4", default-features = false }
+log = "0.4.27"
+owo-colors = "4.2.1"

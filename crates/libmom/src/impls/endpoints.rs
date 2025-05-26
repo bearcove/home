@@ -21,13 +21,13 @@ mod tenant_extractor;
 /// Returns a 64-character hex string that's deterministic and unique per tenant
 /// Uses HMAC to be secure even if tenant names become user-controlled in the future
 fn derive_cookie_sauce(global_sauce: &str, tenant_name: &TenantDomain) -> String {
-    use sha2::Sha256;
     use hmac::{Hmac, Mac};
-    
+    use sha2::Sha256;
+
     type HmacSha256 = Hmac<Sha256>;
-    
-    let mut mac = HmacSha256::new_from_slice(global_sauce.as_bytes())
-        .expect("HMAC can take key of any size");
+
+    let mut mac =
+        HmacSha256::new_from_slice(global_sauce.as_bytes()).expect("HMAC can take key of any size");
     mac.update(tenant_name.as_str().as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
@@ -204,7 +204,7 @@ async fn handle_socket(mut socket: ws::WebSocket) {
         if let Some(ref mut secrets) = tc.secrets {
             if secrets.cookie_sauce.is_none() {
                 let global_cookie_sauce = &gs.config.secrets.cookie_sauce;
-                let derived_sauce = derive_cookie_sauce(global_cookie_sauce, &tn);
+                let derived_sauce = derive_cookie_sauce(global_cookie_sauce, tn);
                 secrets.cookie_sauce = Some(derived_sauce);
             }
         }

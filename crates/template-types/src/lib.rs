@@ -46,7 +46,6 @@ impl TemplateCollection for () {
     }
 }
 
-#[derive(Facet)]
 pub struct RenderTemplateArgs<'a> {
     pub template_name: &'a str,
 
