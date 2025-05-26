@@ -52,7 +52,8 @@ async fn real_main() -> eyre::Result<()> {
             if let Some(ref mut secrets) = tc.secrets {
                 if secrets.cookie_sauce.is_none() {
                     let global_cookie_sauce = &config.secrets.cookie_sauce;
-                    let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
+                    let derived_sauce =
+                        mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
                     secrets.cookie_sauce = Some(derived_sauce);
                 }
             } else if Environment::default() == Environment::Development {
@@ -60,7 +61,7 @@ async fn real_main() -> eyre::Result<()> {
                 log::info!("Creating dev secrets for tenant {}", tc.name);
                 let global_cookie_sauce = &config.secrets.cookie_sauce;
                 let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
-                
+
                 tc.secrets = Some(config_types::TenantSecrets {
                     aws: config_types::AwsSecrets {
                         access_key_id: "dev-access-key".to_string(),
@@ -74,11 +75,14 @@ async fn real_main() -> eyre::Result<()> {
                 // In production, this is an error
                 return Err(eyre::eyre!("No secrets configured for tenant {}", tc.name));
             }
-            
+
             Ok((
                 tc.name.clone(),
                 TenantInfo {
-                    base_dir: config.tenant_data_dir.join(tc.name.as_str()),
+                    base_dir: tc
+                        .base_dir_for_dev
+                        .clone()
+                        .unwrap_or_else(|| config.tenant_data_dir.join(tc.name.as_str())),
                     tc,
                 },
             ))

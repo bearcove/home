@@ -132,6 +132,9 @@ pub struct TenantConfig {
 
     /// tenant-specific secrets (patreon/github oauth etc.)
     pub secrets: Option<TenantSecrets>,
+
+    /// a base directory used only in development, specified by cub fot the dev mom
+    pub base_dir_for_dev: Option<Utf8PathBuf>,
 }
 
 impl TenantConfig {
@@ -142,6 +145,7 @@ impl TenantConfig {
             domain_aliases: Default::default(),
             object_storage: None,
             secrets: None,
+            base_dir_for_dev: None,
         }
     }
 
@@ -152,7 +156,10 @@ impl TenantConfig {
                 return cookie_sauce.clone();
             }
         }
-        panic!("Cookie sauce not set for tenant {}! This should be derived by Mom from the global secret.", self.name);
+        panic!(
+            "Cookie sauce not set for tenant {}! This should be derived by Mom from the global secret.",
+            self.name
+        );
     }
 
     /// e.g. for fasterthanli.me in prod, returns "fasterthanli.me".

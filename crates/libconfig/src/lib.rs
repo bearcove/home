@@ -30,9 +30,7 @@ impl Mod for ModImpl {
                 // ignore, that's the default
             } else {
                 eprintln!("Error: Please specify either a config file or tenant roots, not both.");
-                eprintln!(
-                    "You provided --config {config_path:?} and tenant roots {roots:?}"
-                );
+                eprintln!("You provided --config {config_path:?} and tenant roots {roots:?}");
                 eprintln!(
                     "Use either `serve --config cub-config.json` or `serve tenant1.com/ tenant2.org/ etc.`"
                 );
@@ -82,9 +80,7 @@ impl Mod for ModImpl {
 
             let public_config_path = root.join("home.json");
             if !public_config_path.exists() {
-                eprintln!(
-                    "Error: Public config file {public_config_path} does not exist."
-                );
+                eprintln!("Error: Public config file {public_config_path} does not exist.");
                 std::process::exit(1);
             }
 
@@ -100,6 +96,7 @@ impl Mod for ModImpl {
                 object_storage: None,
                 domain_aliases: Default::default(),
                 secrets: None,
+                base_dir_for_dev: None,
             };
             let ti = TenantInfo { base_dir, tc };
             bundle.tenants.insert(tenant, ti);
