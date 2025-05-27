@@ -5,14 +5,16 @@ COPY rust-toolchain.toml .
 RUN cargo binstall -y cargo-chef sccache
 ENV RUSTC_WRAPPER=sccache SCCACHE_DIR=/sccache
 
-FROM base AS planner
+###
+
+FROM base AS planner-mom
 WORKDIR /app
 COPY . .
-RUN cargo chef prepare --recipe-path recipe.json
+RUN cargo chef prepare --bin mom --recipe-path recipe.json
 
-FROM base AS builder
+FROM base AS builder-mom
 WORKDIR /app
-COPY --from=planner /app/recipe.json recipe.json
+COPY --from=planner-mom /app/recipe.json recipe.json
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
@@ -21,10 +23,48 @@ COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
-    cargo build --release && mkdir -p /app && cp target/release/home /app/
+    cargo build --release --bin home-mom && mkdir -p /app && cp target/release/home-mom /app/
+
+####
+FROM base AS planner-serve
+WORKDIR /app
+COPY . .
+RUN cargo chef prepare --bin serve --recipe-path recipe.json
+
+FROM base AS builder-serve
+WORKDIR /app
+COPY --from=planner-serve /app/recipe.json recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+    cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+    cargo build --release --bin home-serve && mkdir -p /app && cp target/release/home-serve /app/
+
+####
+FROM base AS planner-wrapper
+WORKDIR /app
+COPY . .
+RUN cargo chef prepare --bin home --recipe-path recipe.json
+
+FROM base AS builder-wrapper
+WORKDIR /app
+COPY --from=planner-wrapper /app/recipe.json recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+    cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+    cargo build --release --bin home && mkdir -p /app && cp target/release/home /app/
 
 ####################################################################################################
-FROM ghcr.io/bearcove/base AS home
+FROM ghcr.io/bearcove/base AS home-mom
 
 RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive \
@@ -81,9 +121,34 @@ RUN set -eux; \
     chmod +x /usr/local/bin/home-drawio && \
     rm -f /tmp/home-drawio.tar.xz
 
-COPY --from=builder /app/home /usr/bin/home
+COPY --from=builder /app/home-mom /usr/bin/
+
+####
+FROM ghcr.io/bearcove/base AS home-serve
+
+RUN set -eux; \
+    export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y \
+    iproute2 \
+    iputils-ping \
+    dnsutils \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    echo "Checking for required tools..." && \
+    which curl || (echo "curl not found" && exit 1) && \
+    which tar || (echo "tar not found" && exit 1) && \
+    which ip || (echo "ip not found" && exit 1) && \
+    which ping || (echo "ping not found" && exit 1) && \
+    which dig || (echo "dig not found" && exit 1) && \
+    which nslookup || (echo "nslookup not found" && exit 1)
+
+COPY --from=builder /app/home-serve /usr/bin/
 
 ####################################################################################################
 FROM scratch AS home-minimal
 
-COPY --from=builder /app/home /home
+COPY --from=builder-mom /app/home-mom /
+COPY --from=builder-serve /app/home-serve /
+COPY --from=builder-wrapper /app/home /

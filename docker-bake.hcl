@@ -1,6 +1,7 @@
 group "default" {
   targets = [
-    "home",
+    "home-mom",
+    "home-serve",
     "home-arm64-tar",
     "home-amd64-tar",
   ]
@@ -26,15 +27,29 @@ target "home-amd64-tar" {
   tags = []
 }
 
-# Manifest merging both registries and base target settings
-target "home" {
-  tags = ["ghcr.io/bearcove/home:latest"]
+target "home-mom" {
+  tags = ["ghcr.io/bearcove/home-mom:latest"]
   platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]
-  target = "home"
+  target = "home-mom"
   pull = true
   labels = {
-    "org.opencontainers.image.title" = "home"
+    "org.opencontainers.image.title" = "home-mom"
+    "org.opencontainers.image.source" = "https://github.com/bearcove/home"
+  }
+  env = {
+    "DEPOT_TOKEN" = "${DEPOT_TOKEN}"
+  }
+}
+
+target "home-serve" {
+  tags = ["ghcr.io/bearcove/home-serve:latest"]
+  platforms = ["linux/amd64", "linux/arm64"]
+  output = ["type=registry"]
+  target = "home-serve"
+  pull = true
+  labels = {
+    "org.opencontainers.image.title" = "home-serve"
     "org.opencontainers.image.source" = "https://github.com/bearcove/home"
   }
   env = {

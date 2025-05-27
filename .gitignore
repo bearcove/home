@@ -1,4 +1,5 @@
 *.tar.xz
+*.tar
 local_data
 target
 dist

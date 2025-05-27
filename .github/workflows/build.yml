@@ -58,7 +58,7 @@ jobs:
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             export ARCHIVE_NAME="aarch64-apple-darwin.tar.xz"
             export LC_ALL=en_US.UTF-8
-            tar -cJf "$ARCHIVE_NAME" -C target/release home
+            tar -cJf "$ARCHIVE_NAME" -C target/release home home-mom home-serve
             # Ensure the release exists before uploading artifacts
             if ! GH_TOKEN="${GH_READWRITE_TOKEN}" gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
               GH_TOKEN="${GH_READWRITE_TOKEN}" gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --title "${GITHUB_REF_NAME}" --notes ""
