@@ -1,11 +1,16 @@
-use conflux::Route;
+use conflux::{PodcastMeta, Route};
 use facet::Facet;
 use time::OffsetDateTime;
+
 
 #[derive(Facet, Debug)]
 pub struct Frontmatter {
     /// Title of the page
     pub title: String,
+
+    /// An optional subtitle, usable for punchy asides of the main title
+    #[facet(default)]
+    pub subtitle: Option<String>,
 
     /// Jinja2 template to use for rendering — defaults to `page.html`
     #[facet(default = "page.html".into())]
@@ -37,6 +42,10 @@ pub struct Frontmatter {
     /// Tags associated with the page (useful for listings)
     #[facet(default)]
     pub tags: Vec<String>,
+
+    /// Items associated with podcast episodes
+    #[facet(default)]
+    pub podcast: Option<PodcastMeta>,
 
     /// Additional metadata for the page
     #[facet(default)]
