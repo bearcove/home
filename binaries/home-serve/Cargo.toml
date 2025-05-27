@@ -1,5 +1,5 @@
 [package]
-name = "home-cub"
+name = "home-serve"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true

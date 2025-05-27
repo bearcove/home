@@ -2100,25 +2100,6 @@ name = "home"
 version = "4.0.0"
 
 [[package]]
-name = "home-cub"
-version = "0.1.0"
-dependencies = [
- "camino",
- "config-types",
- "facet",
- "facet-args",
- "facet-json",
- "facet-pretty",
- "fs-err",
- "libc",
- "libconfig",
- "libcub",
- "sendfd",
- "skelly",
- "tokio",
-]
-
-[[package]]
 name = "home-doctor"
 version = "0.1.0"
 dependencies = [
@@ -2155,6 +2136,25 @@ dependencies = [
  "libconfig",
  "libmom",
  "mom-types",
+ "sendfd",
+ "skelly",
+ "tokio",
+]
+
+[[package]]
+name = "home-serve"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "config-types",
+ "facet",
+ "facet-args",
+ "facet-json",
+ "facet-pretty",
+ "fs-err",
+ "libc",
+ "libconfig",
+ "libcub",
  "sendfd",
  "skelly",
  "tokio",
