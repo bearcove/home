@@ -18,7 +18,7 @@ struct Args {
     /// tenant config file
     pub tenant_config: Utf8PathBuf,
 
-    #[facet(long)]
+    #[facet(long, default)]
     /// Unix socket file descriptor for receiving the TCP listener
     pub socket_fd: Option<i32>,
 }
