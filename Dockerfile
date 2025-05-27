@@ -121,7 +121,7 @@ RUN set -eux; \
     chmod +x /usr/local/bin/home-drawio && \
     rm -f /tmp/home-drawio.tar.xz
 
-COPY --from=builder /app/home-mom /usr/bin/
+COPY --from=builder-mom /app/home-mom /usr/bin/
 
 ####
 FROM ghcr.io/bearcove/base AS home-serve
@@ -144,7 +144,7 @@ RUN set -eux; \
     which dig || (echo "dig not found" && exit 1) && \
     which nslookup || (echo "nslookup not found" && exit 1)
 
-COPY --from=builder /app/home-serve /usr/bin/
+COPY --from=builder-serve /app/home-serve /usr/bin/
 
 ####################################################################################################
 FROM scratch AS home-minimal
