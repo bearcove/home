@@ -12,6 +12,14 @@ serve-release *args:
     cargo build --release
     ./target/release/home serve {{args}}
 
+install:
+    #!/bin/sh
+    cargo build --release
+    mkdir -p ~/.cargo/bin
+    cp ./target/release/home ~/.cargo/bin/
+    cp ./target/release/home-* ~/.cargo/bin/ 2>/dev/null || true
+
+
 repack:
     beardist build
     ./repack.sh
