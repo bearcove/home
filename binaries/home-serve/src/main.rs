@@ -235,7 +235,7 @@ async fn real_main() -> eyre::Result<()> {
         "Starting up cub, who expects a mom at: {}",
         cc.mom_base_url.blue()
     );
-    libcub::load()
+    if let Err(e) = libcub::load()
         .serve(
             cc,
             cub_ln,
@@ -247,4 +247,11 @@ async fn real_main() -> eyre::Result<()> {
         )
         .await
         .map_err(|err| eyre::eyre!(err.to_string()))
+    {
+        eprintln!("Failed to serve cub: {e}");
+        std::process::exit(1);
+    };
+
+    eprintln!("cub is done, exiting");
+    std::process::exit(0);
 }
