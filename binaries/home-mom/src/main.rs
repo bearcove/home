@@ -45,20 +45,38 @@ async fn real_main() -> eyre::Result<()> {
     let tenant_config = fs_err::tokio::read_to_string(&args.tenant_config).await?;
     let tenant_list: Vec<TenantConfig> =
         facet_json::from_str(&tenant_config).map_err(|e| e.into_owned())?;
+    log::info!("Tenant list: {}", tenant_list.pretty());
+
     let tenants: HashMap<TenantDomain, TenantInfo> = tenant_list
         .into_iter()
         .map(|mut tc| -> eyre::Result<(TenantDomain, TenantInfo)> {
+            log::info!("Processing tenant: {}", tc.name);
+
             // Derive cookie sauce if not already set and secrets exist
             if let Some(ref mut secrets) = tc.secrets {
+                log::info!(
+                    "Found secrets for tenant {}. Checking cookie_sauce...",
+                    tc.name
+                );
                 if secrets.cookie_sauce.is_none() {
+                    log::info!(
+                        "No cookie_sauce set for tenant {}. Deriving from global cookie_sauce...",
+                        tc.name
+                    );
                     let global_cookie_sauce = &config.secrets.cookie_sauce;
                     let derived_sauce =
                         mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
                     secrets.cookie_sauce = Some(derived_sauce);
+                    log::info!("Set derived cookie_sauce for tenant {}.", tc.name);
+                } else {
+                    log::info!("Tenant {} already has a cookie_sauce set.", tc.name);
                 }
             } else if Environment::default() == Environment::Development {
                 // In development, create dummy secrets with derived cookie sauce
-                log::info!("Creating dev secrets for tenant {}", tc.name);
+                log::info!(
+                    "No secrets found for tenant {} in development. Creating dev secrets.",
+                    tc.name
+                );
                 let global_cookie_sauce = &config.secrets.cookie_sauce;
                 let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
 
@@ -71,21 +89,33 @@ async fn real_main() -> eyre::Result<()> {
                     github: None,
                     cookie_sauce: Some(derived_sauce),
                 });
+                log::info!("Dev secrets created for tenant {}.", tc.name);
             } else {
                 // In production, this is an error
+                log::info!(
+                    "No secrets configured for tenant {} in production. Returning error.",
+                    tc.name
+                );
                 return Err(eyre::eyre!("No secrets configured for tenant {}", tc.name));
             }
 
-            Ok((
-                tc.name.clone(),
-                TenantInfo {
-                    base_dir: tc
-                        .base_dir_for_dev
-                        .clone()
-                        .unwrap_or_else(|| config.tenant_data_dir.join(tc.name.as_str())),
-                    tc,
-                },
-            ))
+            let base_dir = tc.base_dir_for_dev.clone().unwrap_or_else(|| {
+                let dir = config.tenant_data_dir.join(tc.name.as_str());
+                log::info!(
+                    "No base_dir_for_dev set for tenant {}, using default: {}",
+                    tc.name,
+                    dir
+                );
+                dir
+            });
+
+            log::info!(
+                "Setting up TenantInfo for tenant {} with base_dir: {}",
+                tc.name,
+                base_dir
+            );
+
+            Ok((tc.name.clone(), TenantInfo { base_dir, tc }))
         })
         .collect::<eyre::Result<HashMap<_, _>>>()?;
 

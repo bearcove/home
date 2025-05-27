@@ -292,6 +292,12 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         listener,
     } = args;
 
+    log::info!(
+        "Serving with {} tenants: {}",
+        tenants.len(),
+        tenants.keys().join(", ")
+    );
+
     // compute initial global state
     {
         let (tx_event, rx_event) = broadcast::channel(16);
@@ -306,7 +312,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         };
 
         for (tn, ti) in tenants {
-            eprintln!("Setting up tenant {}", tn.blue());
+            log::info!("Setting up tenant {}", tn.blue());
 
             let object_store = derivations::objectstore_for_tenant(&ti, gs.web.env).await?;
             let tn_for_creds = tn.clone();
@@ -320,7 +326,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                 }),
                 sponsors_inflight: InflightSlots::new(move |_| {
                     let gs = global_state();
-                    eprintln!(
+                    log::info!(
                         "Grabbing sponsors inflight for tenant {}; gs has {} tenants",
                         tn_for_sponsors.blue(),
                         gs.tenants.len().yellow()
