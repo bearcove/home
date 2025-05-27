@@ -205,6 +205,19 @@ fn pagekind_from_path() {
     );
 }
 
+#[derive(Facet, Debug, Clone, Serialize, Deserialize)]
+pub struct PodcastMeta {
+    boop: bool,
+    // #[facet(default)]
+    // description: Option<String>,
+    // duration: String,
+    // /// Extra keywords for this episode, on top of the ones from home.json?
+    // #[facet(default)]
+    // extra_keywords: Vec<String>,
+    // // transcript-url: We can again probably generate this from the file name?
+    // length_bytes: u64,
+}
+
 #[derive(Facet, Clone)]
 pub struct LoadedPage {
     /// the tenant this page belongs to
@@ -253,6 +266,8 @@ pub struct LoadedPage {
     pub aliases: Vec<Route>,
     pub tags: Vec<String>,
     pub ongoing: bool,
+    pub subtitle: Option<String>,
+    pub podcast: Option<PodcastMeta>,
 
     pub draft_code: Option<String>,
 

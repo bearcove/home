@@ -355,6 +355,8 @@ impl Object for LoadedPageVal {
             "hide_metadata" => self.hide_metadata.into(),
             "series_link" => self.series_link.clone().map(Value::from_serialize).into(),
             "parts" => Value::from_serialize(&self.parts),
+            "subtitle" => self.subtitle.clone().into(),
+            "podcast" => Value::from_serialize(self.podcast.as_ref()?),
 
             "created_or_updated_at" => self.updated_at.unwrap_or(self.date).mj(),
             "is_old" => {

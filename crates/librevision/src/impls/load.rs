@@ -717,6 +717,8 @@ fn load_single_page(
         hide_comments: frontmatter.extra.hide_comments,
         hide_metadata: frontmatter.extra.hide_metadata,
         ongoing: frontmatter.extra.ongoing,
+        subtitle: frontmatter.subtitle,
+        podcast: frontmatter.podcast,
 
         // TODO: fill these in
         rust_version: None,
