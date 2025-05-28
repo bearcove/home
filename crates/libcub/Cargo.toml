@@ -81,7 +81,9 @@ fs-err = { version = "3.1.0", features = ["tokio"] }
 facet-json.workspace = true
 facet.workspace = true
 log = "0.4.27"
-reqwest = "0.12.17"
+reqwest = { version = "0.12.15", default-features = false, features = [
+    "rustls-tls-native-roots",
+] }
 owo-colors = "4.2.1"
 jsonwebtoken = { workspace = true }
 base64 = "0.22.1"
