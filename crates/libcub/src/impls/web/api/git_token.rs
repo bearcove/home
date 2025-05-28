@@ -22,9 +22,24 @@ pub struct GitTokenRequest {
 }
 
 pub async fn serve_git_token(tr: CubReqImpl, Json(req): Json<GitTokenRequest>) -> LegacyReply {
+    log::info!("serve_git_token: Processing request for repo: {}", req.repo);
+    
+    // Check if auth_bundle exists
+    if tr.auth_bundle.is_none() {
+        log::warn!("serve_git_token: No auth_bundle present in request");
+        return Err(LegacyHttpError::with_status(
+            StatusCode::UNAUTHORIZED, 
+            "Authentication required"
+        ));
+    }
+    
     // Validate user is authenticated
     let viewer = tr.viewer()?;
+    log::info!("serve_git_token: Viewer status - is_admin: {}, has_bronze: {}, has_silver: {}", 
+        viewer.is_admin, viewer.has_bronze, viewer.has_silver);
+    
     if !viewer.has_bronze {
+        log::warn!("serve_git_token: User does not have Bronze tier");
         return Err(LegacyHttpError::with_status(
             StatusCode::FORBIDDEN,
             "Git access requires Bronze tier or higher",
@@ -32,13 +47,21 @@ pub async fn serve_git_token(tr: CubReqImpl, Json(req): Json<GitTokenRequest>) -
     }
 
     // Get the auth bundle to access user profile
-    let auth_bundle = tr.auth_bundle.as_ref().ok_or_else(|| {
-        LegacyHttpError::with_status(StatusCode::UNAUTHORIZED, "Authentication required")
-    })?;
-    let global_id = auth_bundle.user_info.profile.global_id().map_err(|_| {
+    let auth_bundle = tr.auth_bundle.as_ref().unwrap();
+    log::info!("serve_git_token: Auth bundle present, getting global_id");
+    
+    let global_id = auth_bundle.user_info.profile.global_id().map_err(|e| {
+        log::error!("serve_git_token: Failed to get global_id: {}", e);
+        log::error!("serve_git_token: Profile details - patreon_id: {:?}, github_id: {:?}, email: {:?}", 
+            auth_bundle.user_info.profile.patreon_id,
+            auth_bundle.user_info.profile.github_id,
+            auth_bundle.user_info.profile.email
+        );
         LegacyHttpError::with_status(StatusCode::UNAUTHORIZED, "No valid authentication found")
     })?;
 
+    log::info!("serve_git_token: Got global_id: {}", global_id);
+    
     // Generate JWT token with 31 day expiration
     let duration_secs = 31 * 24 * 60 * 60;
     let cookie_sauce = tr.tenant.tc().cookie_sauce();
@@ -54,6 +77,8 @@ pub async fn serve_git_token(tr: CubReqImpl, Json(req): Json<GitTokenRequest>) -
     let web_base_url = tr.tenant.tc().web_base_url(tr.web());
     let clone_url = format!("{}/extras/{}.git", web_base_url, req.repo);
 
+    log::info!("serve_git_token: Successfully generated token for repo: {}", req.repo);
+    
     Ok(Json(GitTokenResponse {
         token,
         clone_url,

@@ -211,6 +211,7 @@ async fn serve_login_for_dev(tr: CubReqImpl) -> LegacyReply {
     let profile = credentials::Profile {
         patreon_id,
         github_id,
+        email: None,
         full_name: "Admin (Dev)".to_string(),
         thumb_url: "https://placehold.co/32".to_string(), // Placeholder URL
     };

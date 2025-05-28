@@ -442,6 +442,7 @@ impl ModImpl {
         let profile = credentials::Profile {
             patreon_id: Some(user.id.clone()),
             github_id: None,
+            email: None,
             full_name: user_attrs.full_name,
             thumb_url: user_attrs.thumb_url,
         };

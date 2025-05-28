@@ -13,6 +13,7 @@ use axum::{
     routing::{post, put},
 };
 use credentials::AuthBundle;
+use time::{Duration, OffsetDateTime};
 use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse, GitHubCredentials};
 use libpatreon::{
     ForcePatreonRefresh, PatreonCallbackArgs, PatreonCallbackResponse, PatreonCredentials,
@@ -233,10 +234,36 @@ async fn auth_bundle_update(
         let rc = ts.rc()?;
         let (_gh_creds, auth_bundle) = mod_github.to_auth_bundle(&rc, web, github_creds).await?;
         auth_bundle
+    } else if let Some(ref email) = auth_bundle.user_info.profile.email {
+        // For email-based auth, refresh from Stripe
+        log::info!("Refreshing auth bundle for email user: {}", email);
+        
+        let client = global_state().client.clone();
+        let stripe_user_info = libstripe::load()
+            .lookup_user_by_email(&ts.ti.tc, client, &email)
+            .await
+            .unwrap_or_else(|e| {
+                log::error!("Failed to lookup user in Stripe: {e}");
+                None
+            });
+        
+        if let Some(user_info) = stripe_user_info {
+            // User found in Stripe with subscription
+            AuthBundle {
+                expires_at: OffsetDateTime::now_utc() + Duration::days(30),
+                user_info,
+            }
+        } else {
+            // Return the original auth bundle with updated expiration
+            AuthBundle {
+                expires_at: OffsetDateTime::now_utc() + Duration::days(30),
+                user_info: auth_bundle.user_info,
+            }
+        }
     } else {
         return HttpError::with_status(
             StatusCode::BAD_REQUEST,
-            "AuthBundle must contain either a patreon_id or github_id",
+            "AuthBundle must contain either a patreon_id, github_id, or email",
         )
         .into_reply();
     };

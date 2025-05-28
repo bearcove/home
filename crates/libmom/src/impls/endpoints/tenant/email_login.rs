@@ -142,6 +142,7 @@ pub async fn validate_login_code(
                     full_name: req.email.clone(),
                     patreon_id: None,
                     github_id: None,
+                    email: Some(req.email.clone()),
                     thumb_url: format!("https://www.gravatar.com/avatar/{}?d=identicon&s=200", email_hash),
                 },
                 tier: None,

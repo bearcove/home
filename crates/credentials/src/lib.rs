@@ -25,6 +25,9 @@ pub struct Tier {
 pub struct Profile {
     pub patreon_id: Option<String>,
     pub github_id: Option<String>,
+    
+    // Email address for email-based authentication
+    pub email: Option<String>,
 
     // for GitHub that's `name ?? login`
     pub full_name: String,
@@ -52,6 +55,9 @@ impl Profile {
         }
         if let Some(id) = &self.github_id {
             return Ok(format!("github:{id}"));
+        }
+        if let Some(email) = &self.email {
+            return Ok(format!("email:{email}"));
         }
         Err(eyre!("no global id"))
     }

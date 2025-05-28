@@ -385,6 +385,7 @@ impl ModImpl {
                     full_name: full_name.to_owned(),
                     patreon_id: None,
                     github_id: Some(viewer_github_user_id.clone()),
+                    email: None,
                     thumb_url: viewer.avatarUrl.to_owned(),
                 },
                 tier,
