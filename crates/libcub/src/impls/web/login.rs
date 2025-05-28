@@ -272,7 +272,12 @@ async fn serve_login_with_email_post(tr: CubReqImpl, Form(form): Form<EmailLogin
     };
     
     match tcli.email_generate_code(&request).await {
-        Ok(_response) => {
+        Ok(response) => {
+            // Log the code in development mode
+            if is_development() {
+                log::info!("Email login code for {}: {}", form.email, response.code);
+            }
+            
             // Store email in cookie for verification page
             let mut email_cookie = Cookie::new("email_login", form.email);
             email_cookie.set_path("/");

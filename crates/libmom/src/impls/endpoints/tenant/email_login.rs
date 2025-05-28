@@ -18,13 +18,25 @@ pub async fn generate_login_code(
         return HttpError::with_status(StatusCode::BAD_REQUEST, "Invalid email format").into_reply();
     }
 
-    // Generate a 6-digit numeric code using time-based randomness
+    // Generate a 6-digit numeric code using time and hash
     use std::time::{SystemTime, UNIX_EPOCH};
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    let code = format!("{:06}", (timestamp % 1_000_000) as u32);
+    
+    // Create a better seed by combining timestamp with email
+    let mut hasher = DefaultHasher::new();
+    timestamp.hash(&mut hasher);
+    req.email.hash(&mut hasher);
+    let hash_value = hasher.finish();
+    
+    // Generate code from the hash, ensuring 6 digits
+    let code_num = (hash_value % 900_000) + 100_000;
+    let code = format!("{:06}", code_num);
     
     // Generate unique ID for this login attempt
     let id = format!("email-login-{}", timestamp);
@@ -53,6 +65,7 @@ pub async fn generate_login_code(
         }
     } else {
         log::warn!("Email service not configured, cannot send login code to {}", req.email);
+        log::info!("Development mode - login code for {}: {}", req.email, code);
     }
 
     FacetJson(GenerateLoginCodeResponse {
