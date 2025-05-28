@@ -2137,6 +2137,7 @@ dependencies = [
  "libmom",
  "mom-types",
  "sendfd",
+ "serde_json",
  "skelly",
  "tokio",
 ]

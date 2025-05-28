@@ -43,8 +43,8 @@ async fn real_main() -> eyre::Result<()> {
 
     let config = libconfig::load().load_mom_config(&args.mom_config)?;
     let tenant_config = fs_err::tokio::read_to_string(&args.tenant_config).await?;
-    let tenant_list: Vec<TenantConfig> =
-        facet_json::from_str(&tenant_config).map_err(|e| e.into_owned())?;
+    log::info!("Tenant config payload: {tenant_config}");
+    let tenant_list: Vec<TenantConfig> = serde_json::from_str(&tenant_config)?;
     log::info!("Tenant list: {}", tenant_list.pretty());
 
     let tenants: HashMap<TenantDomain, TenantInfo> = tenant_list
