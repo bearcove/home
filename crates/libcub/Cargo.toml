@@ -74,16 +74,14 @@ mom-types = { version = "0.1.0", path = "../mom-types" }
 image-types = { version = "0.1.0", path = "../image-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 rcgen = "0.13.2"
-rustls = "0.21.12"
-tokio-rustls = "0.24.1"
+rustls = "0.23.0"
+tokio-rustls = "0.26.0"
 arboard = "3.5.0"
 fs-err = { version = "3.1.0", features = ["tokio"] }
 facet-json.workspace = true
 facet.workspace = true
 log = "0.4.27"
-reqwest = { version = "0.12.15", default-features = false, features = [
-    "rustls-tls-native-roots",
-] }
+reqwest = "0.12.17"
 owo-colors = "4.2.1"
 jsonwebtoken = { workspace = true }
 base64 = "0.22.1"
