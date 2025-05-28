@@ -95,6 +95,36 @@ async fn real_main() -> eyre::Result<()> {
                     }
                 };
 
+                // Check for stripe credentials in environment variables
+                let stripe_credentials = std::env::var("HOME_STRIPE_SECRET_KEY").ok().map(|secret_key| {
+                    log::info!("Found stripe secret key in environment variables for tenant {}", tc.name);
+                    
+                    // Parse tier mapping from environment variables
+                    let bronze_ids = std::env::var("HOME_STRIPE_BRONZE_IDS")
+                        .ok()
+                        .map(|s| s.split(',').map(|id| id.trim().to_string()).collect())
+                        .unwrap_or_default();
+                    
+                    let silver_ids = std::env::var("HOME_STRIPE_SILVER_IDS")
+                        .ok()
+                        .map(|s| s.split(',').map(|id| id.trim().to_string()).collect())
+                        .unwrap_or_default();
+                    
+                    let gold_ids = std::env::var("HOME_STRIPE_GOLD_IDS")
+                        .ok()
+                        .map(|s| s.split(',').map(|id| id.trim().to_string()).collect())
+                        .unwrap_or_default();
+                    
+                    config_types::StripeSecrets {
+                        secret_key,
+                        tier_mapping: config_types::StripeTierMapping {
+                            bronze_ids,
+                            silver_ids,
+                            gold_ids,
+                        }
+                    }
+                });
+
                 tc.secrets = Some(config_types::TenantSecrets {
                     aws: config_types::AwsSecrets {
                         access_key_id: "dev-access-key".to_string(),
@@ -102,7 +132,7 @@ async fn real_main() -> eyre::Result<()> {
                     },
                     patreon: None,
                     github: None,
-                    stripe: None,
+                    stripe: stripe_credentials,
                     git: git_credentials,
                     cookie_sauce: Some(derived_sauce),
                 });
