@@ -102,6 +102,7 @@ async fn real_main() -> eyre::Result<()> {
                     },
                     patreon: None,
                     github: None,
+                    stripe: None,
                     git: git_credentials,
                     cookie_sauce: Some(derived_sauce),
                 });
