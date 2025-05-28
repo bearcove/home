@@ -80,6 +80,21 @@ async fn real_main() -> eyre::Result<()> {
                 let global_cookie_sauce = &config.secrets.cookie_sauce;
                 let derived_sauce = mom_types::derive_cookie_sauce(global_cookie_sauce, &tc.name);
 
+                // Check for git credentials in environment variables
+                let git_credentials = match (
+                    std::env::var("HOME_GIT_USERNAME"),
+                    std::env::var("HOME_GIT_PASSWORD")
+                ) {
+                    (Ok(username), Ok(password)) => {
+                        log::info!("Found git credentials in environment variables for tenant {}", tc.name);
+                        Some(config_types::GitCredentials { username, password })
+                    }
+                    _ => {
+                        log::info!("No git credentials found in environment variables (HOME_GIT_USERNAME, HOME_GIT_PASSWORD) for tenant {}", tc.name);
+                        None
+                    }
+                };
+
                 tc.secrets = Some(config_types::TenantSecrets {
                     aws: config_types::AwsSecrets {
                         access_key_id: "dev-access-key".to_string(),
@@ -87,6 +102,7 @@ async fn real_main() -> eyre::Result<()> {
                     },
                     patreon: None,
                     github: None,
+                    git: git_credentials,
                     cookie_sauce: Some(derived_sauce),
                 });
                 log::info!("Dev secrets created for tenant {}.", tc.name);

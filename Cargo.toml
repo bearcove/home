@@ -34,3 +34,4 @@ minijinja = { version = "2.10.2" }
 facet = { version = "0.27.7", features = ["camino", "ordered-float", "time"] }
 facet-json = { version = "0.24.8" }
 facet-pretty = { version = "0.23.14" }
+jsonwebtoken = "9.3"

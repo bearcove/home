@@ -451,6 +451,8 @@ pub struct TenantSecrets {
     pub aws: AwsSecrets,
     pub patreon: Option<PatreonSecrets>,
     pub github: Option<GitHubSecrets>,
+    /// Git credentials for read-only access to repositories
+    pub git: Option<GitCredentials>,
     /// Derived cookie sauce for this tenant (derived from global secret)
     #[facet(optional)]
     pub cookie_sauce: Option<String>,
@@ -461,6 +463,15 @@ pub struct TenantSecrets {
 pub struct AwsSecrets {
     pub access_key_id: String,
     pub secret_access_key: String,
+}
+
+#[derive(Facet, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GitCredentials {
+    /// Username for git authentication (e.g., a deploy key or token name)
+    pub username: String,
+    /// Password/token for git authentication (e.g., personal access token)
+    pub password: String,
 }
 
 #[derive(Facet, Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
