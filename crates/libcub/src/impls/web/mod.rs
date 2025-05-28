@@ -27,6 +27,7 @@ use http::{
     header::{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS},
 };
 use objectstore_types::ObjectStoreKey;
+use owo_colors::OwoColorize;
 
 pub(crate) fn web_routes() -> Router {
     Router::new()
@@ -38,6 +39,7 @@ pub(crate) fn web_routes() -> Router {
         .route("/whoami", get(whoami))
         .route("/index.xml", get(atom_feed))
         .route("/extra-files/{*path}", get(extra_files))
+        .route("/extras/{*path}", get(extras_git).post(extras_git))
         .route("/favicon.ico", get(favicon))
         .route("/", get(serve_page_route))
         .route("/{*path}", get(serve_page_route))
@@ -233,4 +235,141 @@ async fn favicon(rcx: CubReqImpl) -> LegacyReply {
         .rev
         .asset_url(rcx.web(), InputPathRef::from_str("/content/favicon.png"))?;
     Ok(Redirect::temporary(url.as_str()).into_response())
+}
+
+static GIT_CLIENT: std::sync::OnceLock<reqwest::Client> = std::sync::OnceLock::new();
+
+fn git_client() -> &'static reqwest::Client {
+    GIT_CLIENT.get_or_init(reqwest::Client::new)
+}
+
+async fn extras_git(
+    axum::extract::Path(path): axum::extract::Path<String>,
+    req: Request,
+) -> impl IntoResponse {
+    use axum::body::to_bytes;
+    use axum::http::{HeaderMap, StatusCode};
+    use axum::response::IntoResponse;
+    use http::Method;
+
+    // Get the query string, if any, and append to the target URL
+    let original_uri = req.uri();
+    let target_url = if let Some(query) = original_uri.query() {
+        format!("https://code.bearcove.cloud/ftl-extras/{path}?{query}")
+    } else {
+        format!("https://code.bearcove.cloud/ftl-extras/{path}")
+    };
+
+    // Log incoming request details
+    log::info!("Incoming request to /extras/{path}");
+    log::info!("  Method: {}", req.method());
+    log::info!("  URI: {}", req.uri());
+    log::info!("  Headers:");
+    for (name, value) in req.headers() {
+        log::info!("    {}: {:?}", name.blue(), value.yellow());
+    }
+
+    // Clone headers before consuming the request
+    let headers = req.headers().clone();
+    let method = req.method().clone();
+
+    // Determine the HTTP method
+    let mut proxy_req = match method {
+        Method::GET => git_client().get(&target_url),
+        Method::POST => {
+            // Read the body from the axum request
+            let body = req.into_body();
+            let body_bytes = match to_bytes(body, 10 * 1024 * 1024).await {
+                Ok(b) => b,
+                Err(e) => {
+                    log::error!("Failed to read POST body: {e}");
+                    return (StatusCode::BAD_REQUEST, format!("Failed to read body: {e}"))
+                        .into_response();
+                }
+            };
+            git_client().post(&target_url).body(body_bytes)
+        }
+        // If you want to support more HTTP methods, add match arms here.
+        m => {
+            log::warn!("Unsupported method for proxy: {m:?}");
+            return (
+                StatusCode::METHOD_NOT_ALLOWED,
+                format!("Method {m} not supported"),
+            )
+                .into_response();
+        }
+    };
+
+    // Forward all headers from the original request
+    for (header_name, header_value) in headers.iter() {
+        if header_name == http::header::HOST {
+            log::info!("  Overriding Host header to: code.bearcove.cloud");
+            proxy_req = proxy_req.header(header_name, "code.bearcove.cloud");
+            continue;
+        }
+        log::info!(
+            "  Forwarding request header: {}: {:?}",
+            header_name.to_string().blue(),
+            header_value.to_str().unwrap_or("<binary>").yellow()
+        );
+        proxy_req = proxy_req.header(header_name, header_value);
+    }
+
+    log::info!("Proxying request to: {target_url}");
+
+    match proxy_req.send().await {
+        Ok(resp) => {
+            let status = resp.status();
+            log::info!("Response from upstream:");
+            log::info!("  Status: {}", status.blue());
+            log::info!("  Headers:");
+            for (k, v) in resp.headers() {
+                log::info!("    {}: {:?}", k.yellow(), v.green());
+            }
+
+            let mut headers = HeaderMap::new();
+            // Denylist: don't forward hop-by-hop or sensitive headers.
+            // See RFC 7230 section 6.1 and common hop-by-hop headers.
+            const DENYLIST: &[&str] = &[];
+            for (k, v) in resp.headers() {
+                let k_str = k.as_str();
+                if DENYLIST.iter().any(|deny| k_str.eq_ignore_ascii_case(deny)) {
+                    log::info!(
+                        "  Not forwarding denylisted header: {}: {:?}",
+                        k.red(),
+                        v.blue()
+                    );
+                    continue;
+                }
+                log::info!(
+                    "  Forwarding response header: {}: {:?}",
+                    k.green(),
+                    v.blue()
+                );
+                headers.insert(k, v.clone());
+            }
+
+            // For git operations, we need to stream the response instead of buffering
+            let body_stream = resp.bytes_stream();
+            
+            log::info!("Returning response with status: {status}");
+            
+            // Convert the stream to axum body
+            use axum::body::Body;
+            use futures_util::StreamExt;
+            
+            let body = Body::from_stream(body_stream.map(|result| {
+                result.map_err(|e| {
+                    log::error!("Error streaming proxy body: {e}");
+                    std::io::Error::new(std::io::ErrorKind::Other, e)
+                })
+            }));
+            
+            (status, headers, body).into_response()
+        }
+        Err(e) => {
+            log::error!("Proxy request failed: {e}");
+            (StatusCode::BAD_GATEWAY, format!("Proxy error: {e}")).into_response()
+        }
+    }
 }
