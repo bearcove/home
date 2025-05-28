@@ -451,6 +451,7 @@ pub struct TenantSecrets {
     pub aws: AwsSecrets,
     pub patreon: Option<PatreonSecrets>,
     pub github: Option<GitHubSecrets>,
+    pub stripe: Option<StripeSecrets>,
     /// Git credentials for read-only access to repositories
     pub git: Option<GitCredentials>,
     /// Derived cookie sauce for this tenant (derived from global secret)
@@ -542,6 +543,24 @@ pub struct GitHubSecrets {
 
 #[derive(Clone, Facet, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct StripeSecrets {
+    pub secret_key: String,
+    pub tier_mapping: StripeTierMapping,
+}
+
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StripeTierMapping {
+    /// Product or price IDs that map to Bronze tier
+    pub bronze_ids: Vec<String>,
+    /// Product or price IDs that map to Silver tier  
+    pub silver_ids: Vec<String>,
+    /// Product or price IDs that map to Gold tier
+    pub gold_ids: Vec<String>,
+}
+
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RedditSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
@@ -559,6 +578,31 @@ pub struct MomSecrets {
 
     /// Global secret for deriving per-tenant cookie encryption keys
     pub cookie_sauce: String,
+
+    /// Email configuration for sending login codes
+    pub email: Option<EmailConfig>,
+}
+
+#[derive(Clone, Facet, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EmailConfig {
+    /// SMTP server hostname
+    pub smtp_host: String,
+    
+    /// SMTP server port
+    pub smtp_port: u16,
+    
+    /// SMTP username
+    pub smtp_username: String,
+    
+    /// SMTP password
+    pub smtp_password: String,
+    
+    /// From email address
+    pub from_email: String,
+    
+    /// From name
+    pub from_name: String,
 }
 
 pub const MOM_DEV_API_KEY: &MomApiKeyRef = MomApiKeyRef::from_static("mom_KEY_IN_DEV");

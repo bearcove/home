@@ -4,7 +4,7 @@ use derivations::DerivationInfo;
 use facet::Facet;
 use media_types::{TargetFormat, TranscodingProgress};
 use objectstore_types::ObjectStoreKey;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use config_types::{MomConfig, TenantConfig, TenantDomain, TenantInfo, WebConfig};
@@ -386,4 +386,32 @@ pub fn derive_cookie_sauce(global_sauce: &str, tenant_name: &TenantDomain) -> St
     mac.update(tenant_name.as_str().as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
+}
+
+// Email login types
+use credentials::AuthBundle;
+use time::OffsetDateTime;
+
+#[derive(Debug, Deserialize, Facet)]
+pub struct GenerateLoginCodeRequest {
+    pub email: String,
+}
+
+#[derive(Debug, Serialize, Facet)]
+pub struct GenerateLoginCodeResponse {
+    pub code: String,
+    pub expires_at: OffsetDateTime,
+}
+
+#[derive(Debug, Deserialize, Facet)]
+pub struct ValidateLoginCodeRequest {
+    pub email: String,
+    pub code: String,
+    pub ip_address: Option<String>,
+    pub user_agent: Option<String>,
+}
+
+#[derive(Debug, Facet)]
+pub struct ValidateLoginCodeResponse {
+    pub auth_bundle: AuthBundle,
 }

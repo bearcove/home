@@ -13,6 +13,10 @@ use log::info;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies};
+use mom_types::{
+    GenerateLoginCodeRequest,
+    ValidateLoginCodeRequest,
+};
 
 pub(crate) fn login_routes() -> Router {
     Router::new()
@@ -22,6 +26,8 @@ pub(crate) fn login_routes() -> Router {
         .route("/patreon/callback", get(serve_patreon_callback))
         .route("/github", get(serve_login_with_github))
         .route("/github/callback", get(serve_github_callback))
+        .route("/email", get(serve_login_with_email).post(serve_login_with_email_post))
+        .route("/email/verify", get(serve_email_verify).post(serve_email_verify_post))
         .route("/debug-credentials", get(serve_debug_credentials))
         .route("/logout", get(serve_logout))
 }
@@ -232,4 +238,125 @@ async fn serve_login_for_dev(tr: CubReqImpl) -> LegacyReply {
 
     // Don't use return_to for dev login, just go home
     Redirect::to("/").into_legacy_reply()
+}
+
+// Email login flow
+
+#[derive(Deserialize)]
+struct EmailLoginForm {
+    email: String,
+    #[serde(default)]
+    return_to: Option<String>,
+}
+
+async fn serve_login_with_email(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
+    let return_to = params.return_to.as_deref().unwrap_or("/");
+    let args = RenderArgs::new("login-email.html")
+        .with_global("return_to", return_to);
+    tr.render(args)
+}
+
+async fn serve_login_with_email_post(tr: CubReqImpl, Form(form): Form<EmailLoginForm>) -> LegacyReply {
+    // Store return_to in cookie for later
+    if let Some(return_to) = &form.return_to {
+        let mut cookie = Cookie::new("return_to", return_to.clone());
+        cookie.set_path("/");
+        cookie.set_expires(time::OffsetDateTime::now_utc() + time::Duration::minutes(30));
+        tr.cookies.add(cookie);
+    }
+
+    // Request login code from mom
+    let tcli = tr.tenant.tcli();
+    let request = GenerateLoginCodeRequest {
+        email: form.email.clone(),
+    };
+    
+    match tcli.email_generate_code(&request).await {
+        Ok(_response) => {
+            // Store email in cookie for verification page
+            let mut email_cookie = Cookie::new("email_login", form.email);
+            email_cookie.set_path("/");
+            email_cookie.set_expires(time::OffsetDateTime::now_utc() + time::Duration::minutes(15));
+            tr.cookies.add(email_cookie);
+            
+            // Redirect to verification page
+            Redirect::to("/login/email/verify").into_legacy_reply()
+        }
+        Err(e) => {
+            log::error!("Failed to generate login code: {e}");
+            let args = RenderArgs::new("login-email.html")
+                .with_global("error", "Failed to send login code. Please try again.")
+                .with_global("email", form.email)
+                .with_global("return_to", form.return_to.as_deref().unwrap_or("/"));
+            tr.render(args)
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct EmailVerifyForm {
+    code: String,
+}
+
+async fn serve_email_verify(tr: CubReqImpl) -> LegacyReply {
+    // Get email from cookie
+    let email = tr.cookies.get("email_login")
+        .and_then(|c| c.value_trimmed().parse::<String>().ok())
+        .unwrap_or_default();
+    
+    if email.is_empty() {
+        return Redirect::to("/login/email").into_legacy_reply();
+    }
+    
+    let args = RenderArgs::new("login-email-verify.html")
+        .with_global("email", email);
+    tr.render(args)
+}
+
+async fn serve_email_verify_post(tr: CubReqImpl, Form(form): Form<EmailVerifyForm>) -> LegacyReply {
+    // Get email from cookie
+    let email = match tr.cookies.get("email_login") {
+        Some(cookie) => cookie.value_trimmed().to_string(),
+        None => {
+            return Redirect::to("/login/email").into_legacy_reply();
+        }
+    };
+    
+    // Get client IP and user agent for security tracking
+    let ip_address = tr.parts.headers
+        .get("x-forwarded-for")
+        .or_else(|| tr.parts.headers.get("x-real-ip"))
+        .and_then(|h| h.to_str().ok())
+        .map(|s| s.to_string());
+    
+    let user_agent = tr.parts.headers
+        .get("user-agent")
+        .and_then(|h| h.to_str().ok())
+        .map(|s| s.to_string());
+    
+    // Validate code with mom
+    let tcli = tr.tenant.tcli();
+    let request = ValidateLoginCodeRequest {
+        email: email.clone(),
+        code: form.code.clone(),
+        ip_address,
+        user_agent,
+    };
+    
+    match tcli.email_validate_code(&request).await {
+        Ok(response) => {
+            // Clear email cookie
+            tr.cookies.remove(Cookie::from("email_login"));
+            
+            // Set auth bundle and redirect
+            finish_login_callback(&tr, Some(response.auth_bundle)).await
+        }
+        Err(e) => {
+            log::error!("Failed to validate login code: {e}");
+            let args = RenderArgs::new("login-email-verify.html")
+                .with_global("email", email)
+                .with_global("error", "Invalid or expired code. Please try again.");
+            tr.render(args)
+        }
+    }
 }

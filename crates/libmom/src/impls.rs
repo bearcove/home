@@ -32,6 +32,7 @@ use mom_types::{
 mod db;
 mod deriver;
 mod endpoints;
+mod email;
 mod ffmpeg;
 mod ffmpeg_stream;
 mod site;
@@ -52,6 +53,9 @@ pub(crate) struct MomGlobalState {
 
     /// web config (mostly just port)
     pub(crate) web: WebConfig,
+    
+    /// email service (if configured)
+    pub(crate) email_service: Option<Arc<email::EmailService>>,
 }
 
 pub(crate) struct MomTenantState {
@@ -303,12 +307,29 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         let (tx_event, rx_event) = broadcast::channel(16);
         drop(rx_event);
 
+        let email_service = if let Some(email_config) = &config.secrets.email {
+            match email::EmailService::new(email_config) {
+                Ok(service) => {
+                    log::info!("Email service configured successfully");
+                    Some(Arc::new(service))
+                }
+                Err(e) => {
+                    log::error!("Failed to configure email service: {e}");
+                    None
+                }
+            }
+        } else {
+            log::info!("Email configuration not provided, email login will not be available");
+            None
+        };
+
         let mut gs = MomGlobalState {
             client: Arc::from(libhttpclient::load().client()),
             bx_event: tx_event,
             tenants: Default::default(),
             config: Arc::new(config),
             web,
+            email_service,
         };
 
         for (tn, ti) in tenants {

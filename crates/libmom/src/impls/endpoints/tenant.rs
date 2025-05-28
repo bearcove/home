@@ -27,6 +27,7 @@ use super::tenant_extractor::TenantExtractor;
 
 mod derive;
 mod media;
+mod email_login;
 
 pub fn tenant_routes() -> Router {
     Router::new()
@@ -43,6 +44,8 @@ pub fn tenant_routes() -> Router {
         .route("/media/transcode", post(media::transcode))
         .route("/derive", post(derive::derive))
         .route("/revision/upload/{revision_id}", put(revision_upload_revid))
+        .route("/email/generate-code", post(email_login::generate_login_code))
+        .route("/email/validate-code", post(email_login::validate_login_code))
 }
 
 async fn patreon_callback(

@@ -25,3 +25,5 @@ objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 serde = { workspace = true, features = ["derive"] }
 sha2 = "0.10"
 tokio.workspace = true
+credentials = { version = "0.1.0", path = "../credentials" }
+time = { version = "0.3.41" }

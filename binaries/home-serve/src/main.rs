@@ -106,12 +106,54 @@ async fn real_main() -> eyre::Result<()> {
         fs_err::tokio::create_dir_all(&temp_dir).await?;
 
         // Create mom config
+        // Check for email configuration from environment variables
+        let email_config = match (
+            std::env::var("SMTP_HOST").ok(),
+            std::env::var("SMTP_PORT").ok(),
+            std::env::var("SMTP_USERNAME").ok(),
+            std::env::var("SMTP_PASSWORD").ok(),
+            std::env::var("SMTP_FROM_EMAIL").ok(),
+            std::env::var("SMTP_FROM_NAME").ok(),
+        ) {
+            (Some(host), Some(port), Some(username), Some(password), Some(from_email), Some(from_name)) => {
+                match port.parse::<u16>() {
+                    Ok(port_num) => {
+                        log::info!("Email configuration found in environment variables");
+                        Some(config_types::EmailConfig {
+                            smtp_host: host,
+                            smtp_port: port_num,
+                            smtp_username: username,
+                            smtp_password: password,
+                            from_email,
+                            from_name,
+                        })
+                    }
+                    Err(e) => {
+                        log::warn!("Invalid SMTP_PORT value: {}", e);
+                        None
+                    }
+                }
+            }
+            _ => {
+                log::info!("Email configuration not found in environment variables. Email login will work but won't send actual emails.");
+                log::info!("To enable email sending, set all of these environment variables:");
+                log::info!("  SMTP_HOST       - SMTP server hostname (e.g., smtp.gmail.com)");
+                log::info!("  SMTP_PORT       - SMTP server port (e.g., 587)");
+                log::info!("  SMTP_USERNAME   - SMTP username/email");
+                log::info!("  SMTP_PASSWORD   - SMTP password");
+                log::info!("  SMTP_FROM_EMAIL - From email address");
+                log::info!("  SMTP_FROM_NAME  - From name (e.g., 'Your Site Name')");
+                None
+            }
+        };
+
         let mom_conf = MomConfig {
             tenant_data_dir: Utf8PathBuf::from("/tmp/tenant_data"),
             secrets: MomSecrets {
                 readonly_api_key: MOM_DEV_API_KEY.to_owned(),
                 scoped_api_keys: Default::default(),
                 cookie_sauce: "dev_global_cookie_sauce_secret".to_owned(),
+                email: email_config,
             },
         };
 

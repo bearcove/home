@@ -48,6 +48,7 @@ futures-core = "0.3.31"
 owo-colors = "4.2.1"
 itertools = "0.14.0"
 libgithub = { version = "0.1.0", path = "../libgithub" }
+libstripe = { version = "0.1.0", path = "../libstripe" }
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 config-types = { version = "0.1.0", path = "../config-types" }
 objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
@@ -58,3 +59,4 @@ fs-err = { version = "3.1.0", features = ["tokio"] }
 facet-json.workspace = true
 facet.workspace = true
 log = "0.4.27"
+lettre = { version = "0.11", features = ["tokio1", "tokio1-native-tls", "builder", "smtp-transport"] }

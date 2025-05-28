@@ -6,6 +6,8 @@ use mom_types::{
     DeriveParams, DeriveResponse, ListMissingArgs, ListMissingResponse, MomEvent, TranscodeParams,
     TranscodeResponse,
     media_types::{HeadersMessage, TranscodeEvent, UploadDoneMessage, WebSocketMessage},
+    GenerateLoginCodeRequest, GenerateLoginCodeResponse,
+    ValidateLoginCodeRequest, ValidateLoginCodeResponse,
 };
 use std::str::FromStr;
 
@@ -330,6 +332,34 @@ impl MomTenantClient for MomTenantClientImpl {
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
                 Ok(res.json::<PatreonRefreshCredentials>().await?)
+            }
+        })
+    }
+
+    fn email_generate_code<'fut>(
+        &'fut self,
+        body: &'fut GenerateLoginCodeRequest,
+    ) -> BoxFuture<'fut, Result<GenerateLoginCodeResponse>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("email/generate-code");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                Ok(res.json::<GenerateLoginCodeResponse>().await?)
+            }
+        })
+    }
+
+    fn email_validate_code<'fut>(
+        &'fut self,
+        body: &'fut ValidateLoginCodeRequest,
+    ) -> BoxFuture<'fut, Result<ValidateLoginCodeResponse>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("email/validate-code");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                Ok(res.json::<ValidateLoginCodeResponse>().await?)
             }
         })
     }
