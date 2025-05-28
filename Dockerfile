@@ -3,6 +3,7 @@ FROM ghcr.io/bearcove/beardist AS base
 
 COPY rust-toolchain.toml .
 RUN cargo binstall -y cargo-chef sccache
+RUN apt-get update && apt-get install --no-install-recommends -y libssl-dev && rm -rf /var/lib/apt/lists/*
 ENV RUSTC_WRAPPER=sccache SCCACHE_DIR=/sccache
 
 ###
