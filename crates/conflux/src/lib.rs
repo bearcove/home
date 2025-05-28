@@ -277,6 +277,9 @@ pub struct LoadedPage {
 
     pub video_info: VideoInfo,
 
+    // git repository name for cloning (e.g. "my-repo" for /extras/my-repo.git)
+    pub git_repo: Option<String>,
+
     // media info of `path/to/page/_index.md/../_thumb.jxl`, if it exists
     // (ie. `path/to/page/_thumb.jxl`)
     pub thumb: Option<PageThumb>,

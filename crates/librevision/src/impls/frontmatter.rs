@@ -72,6 +72,10 @@ pub struct FrontmatterExtras {
 
     // for a series, marks whether it's still ongoing
     pub ongoing: bool,
+
+    // git repository name for cloning (e.g. "my-repo" for /extras/my-repo.git)
+    #[facet(default)]
+    pub git_repo: Option<String>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -85,6 +89,7 @@ pub struct FrontmatterExtrasIn {
     pub youtube: Option<String>,
     pub duration: Option<u64>,
     pub ongoing: Option<bool>,
+    pub git_repo: Option<String>,
 }
 
 impl From<FrontmatterExtrasIn> for FrontmatterExtras {
@@ -99,6 +104,7 @@ impl From<FrontmatterExtrasIn> for FrontmatterExtras {
             youtube: frontmatter_extras_in.youtube,
             duration: frontmatter_extras_in.duration,
             ongoing: frontmatter_extras_in.ongoing.unwrap_or_default(),
+            git_repo: frontmatter_extras_in.git_repo,
         }
     }
 }

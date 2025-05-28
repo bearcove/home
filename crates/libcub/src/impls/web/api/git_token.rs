@@ -39,8 +39,8 @@ pub async fn serve_git_token(tr: CubReqImpl, Json(req): Json<GitTokenRequest>) -
         LegacyHttpError::with_status(StatusCode::UNAUTHORIZED, "No valid authentication found")
     })?;
 
-    // Generate JWT token with 24 hour expiration
-    let duration_secs = 24 * 60 * 60;
+    // Generate JWT token with 31 day expiration
+    let duration_secs = 31 * 24 * 60 * 60;
     let cookie_sauce = tr.tenant.tc().cookie_sauce();
     let token = generate_git_clone_token(global_id, &cookie_sauce, duration_secs).map_err(|e| {
         log::error!("Failed to generate git token: {e}");

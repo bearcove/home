@@ -717,6 +717,7 @@ fn load_single_page(
         hide_comments: frontmatter.extra.hide_comments,
         hide_metadata: frontmatter.extra.hide_metadata,
         ongoing: frontmatter.extra.ongoing,
+        git_repo: frontmatter.extra.git_repo,
 
         // TODO: fill these in
         rust_version: None,

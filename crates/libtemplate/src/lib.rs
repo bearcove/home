@@ -344,6 +344,7 @@ impl Object for LoadedPageVal {
             "date" => self.date.mj(),
             "draft" => self.draft.into(),
             "archive" => self.archive.into(),
+            "git_repo" => self.git_repo.clone().into(),
             "aliases" => Value::from_serialize(&self.aliases),
             "tags" => Value::from_serialize(&self.tags),
             "draft_code" => self.draft_code.clone().into(),
