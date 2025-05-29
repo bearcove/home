@@ -5,6 +5,7 @@ use lettre::{
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
 };
 use config_types::EmailConfig;
+use log::{debug, info, error, trace};
 
 pub struct EmailService {
     mailer: AsyncSmtpTransport<Tokio1Executor>,
@@ -14,6 +15,10 @@ pub struct EmailService {
 
 impl EmailService {
     pub fn new(config: &EmailConfig) -> Result<Self> {
+        info!("Initializing email service with SMTP host: {}:{}", config.smtp_host, config.smtp_port);
+        debug!("Email service config - from: {} <{}>, username: {}", 
+            config.from_name, config.from_email, config.smtp_username);
+        
         let creds = Credentials::new(config.smtp_username.clone(), config.smtp_password.clone());
 
         let mailer = AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.smtp_host)?
@@ -21,6 +26,7 @@ impl EmailService {
             .credentials(creds)
             .build();
 
+        info!("Email service initialized successfully");
         Ok(Self {
             mailer,
             from_email: config.from_email.clone(),
@@ -29,7 +35,11 @@ impl EmailService {
     }
 
     pub async fn send_login_code(&self, to_email: &str, code: &str, tenant_name: &str) -> Result<()> {
+        info!("Preparing to send login code email to {} for tenant {}", to_email, tenant_name);
+        debug!("Login code: {} (expires in 15 minutes)", code);
+        
         let subject = format!("Your login code for {}", tenant_name);
+        trace!("Email subject: {}", subject);
         
         let body = format!(
             r#"Hello!
@@ -44,7 +54,9 @@ Thanks,
 The {} team"#,
             code, tenant_name
         );
+        trace!("Email body length: {} chars", body.len());
 
+        debug!("Building email message from {} <{}> to {}", self.from_name, self.from_email, to_email);
         let email = Message::builder()
             .from(format!("{} <{}>", self.from_name, self.from_email).parse()?)
             .to(to_email.parse()?)
@@ -52,8 +64,22 @@ The {} team"#,
             .header(ContentType::TEXT_PLAIN)
             .body(body)?;
 
-        self.mailer.send(email).await?;
+        info!("Sending email via SMTP...");
+        let send_start = std::time::Instant::now();
         
-        Ok(())
+        match self.mailer.send(email).await {
+            Ok(response) => {
+                let duration = send_start.elapsed();
+                info!("Email sent successfully to {} in {:?}", to_email, duration);
+                debug!("SMTP response: {:?}", response);
+                Ok(())
+            }
+            Err(e) => {
+                let duration = send_start.elapsed();
+                error!("Failed to send email to {} after {:?}: {}", to_email, duration, e);
+                debug!("SMTP error details: {:?}", e);
+                Err(e.into())
+            }
+        }
     }
 }

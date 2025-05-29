@@ -308,18 +308,30 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         drop(rx_event);
 
         let email_service = if let Some(email_config) = &config.secrets.email {
+            log::info!("Email configuration found, initializing email service...");
+            log::debug!("Email config - SMTP host: {}:{}, from: {} <{}>", 
+                email_config.smtp_host, email_config.smtp_port, 
+                email_config.from_name, email_config.from_email);
+            
             match email::EmailService::new(email_config) {
                 Ok(service) => {
-                    log::info!("Email service configured successfully");
+                    log::info!("✅ Email service configured successfully");
+                    log::info!("Email login functionality is now available");
                     Some(Arc::new(service))
                 }
                 Err(e) => {
-                    log::error!("Failed to configure email service: {e}");
+                    log::error!("❌ Failed to configure email service: {}", e);
+                    log::debug!("Email service initialization error details: {:?}", e);
+                    log::warn!("Email login will not be available due to configuration error");
                     None
                 }
             }
         } else {
-            log::info!("Email configuration not provided, email login will not be available");
+            log::info!("No email configuration provided in config.secrets.email");
+            log::warn!("Email login functionality will not be available");
+            if is_development() {
+                log::info!("Development mode: login codes will be logged to console instead");
+            }
             None
         };
 
