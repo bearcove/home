@@ -12,7 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-facet-args = "0.19.8"
+facet-args = "0.19.9"
 facet-pretty.workspace = true
 libterm = { version = "0.1.0", path = "../../crates/libterm" }
 skelly = { version = "0.1.0", path = "../../crates/skelly" }

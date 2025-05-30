@@ -18,10 +18,11 @@ rustflags = [
 ]
 
 [patch.crates-io]
-# facet = { path = "../../facet-rs/facet/facet" }
-# facet-core = { path = "../../facet-rs/facet/facet-core" }
-# facet-json = { path = "../../facet-rs/facet/facet-json" }
-# facet-pretty = { path = "../../facet-rs/facet/facet-pretty" }
-# facet-reflect = { path = "../../facet-rs/facet/facet-reflect" }
-# facet-yaml = { path = "../../facet-rs/facet/facet-yaml" }
-# facet-deserialize = { path = "../../facet-rs/facet/facet-deserialize" }
+facet = { path = "../../facet-rs/facet/facet" }
+facet-core = { path = "../../facet-rs/facet/facet-core" }
+facet-json = { path = "../../facet-rs/facet/facet-json" }
+facet-args = { path = "../../facet-rs/facet/facet-args" }
+facet-pretty = { path = "../../facet-rs/facet/facet-pretty" }
+facet-reflect = { path = "../../facet-rs/facet/facet-reflect" }
+facet-yaml = { path = "../../facet-rs/facet/facet-yaml" }
+facet-deserialize = { path = "../../facet-rs/facet/facet-deserialize" }
