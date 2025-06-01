@@ -82,17 +82,16 @@ The {tenant_name} team"#,
         match self.mailer.send(email).await {
             Ok(response) => {
                 let duration = send_start.elapsed();
-                info!("Email sent successfully to {} in {:?}", to_email, duration);
-                debug!("SMTP response: {:?}", response);
+                info!("Email sent successfully to {to_email} in {duration:?}");
+                debug!("SMTP response: {response:?}");
                 Ok(())
             }
             Err(e) => {
                 let duration = send_start.elapsed();
                 error!(
-                    "Failed to send email to {} after {:?}: {}",
-                    to_email, duration, e
+                    "Failed to send email to {to_email} after {duration:?}: {e}"
                 );
-                debug!("SMTP error details: {:?}", e);
+                debug!("SMTP error details: {e:?}");
                 Err(e.into())
             }
         }

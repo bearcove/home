@@ -274,7 +274,7 @@ async fn extras_git(
                 log::info!("Valid JWT token for user: {}", claims.sub.green());
             }
             Err(e) => {
-                log::warn!("Invalid JWT token: {}", e);
+                log::warn!("Invalid JWT token: {e}");
                 return (
                     StatusCode::UNAUTHORIZED,
                     [("WWW-Authenticate", "Basic realm=\"Git Access\"")],
@@ -369,7 +369,7 @@ async fn extras_git(
         use base64::{engine::general_purpose::STANDARD, Engine};
         let auth_string = format!("{}:{}", git_creds.username, git_creds.password);
         let encoded = STANDARD.encode(&auth_string);
-        let auth_header = format!("Basic {}", encoded);
+        let auth_header = format!("Basic {encoded}");
         proxy_req = proxy_req.header(http::header::AUTHORIZATION, auth_header);
         log::info!("  Added git credentials for upstream");
     } else {
@@ -422,7 +422,7 @@ async fn extras_git(
             let body = Body::from_stream(body_stream.map(|result| {
                 result.map_err(|e| {
                     log::error!("Error streaming proxy body: {e}");
-                    std::io::Error::new(std::io::ErrorKind::Other, e)
+                    std::io::Error::other(e)
                 })
             }));
             

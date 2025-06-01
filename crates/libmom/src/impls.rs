@@ -320,8 +320,8 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                     Some(Arc::new(service))
                 }
                 Err(e) => {
-                    log::error!("❌ Failed to configure email service: {}", e);
-                    log::debug!("Email service initialization error details: {:?}", e);
+                    log::error!("❌ Failed to configure email service: {e}");
+                    log::debug!("Email service initialization error details: {e:?}");
                     log::warn!("Email login will not be available due to configuration error");
                     None
                 }

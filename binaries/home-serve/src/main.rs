@@ -129,7 +129,7 @@ async fn real_main() -> eyre::Result<()> {
                         })
                     }
                     Err(e) => {
-                        log::warn!("Invalid SMTP_PORT value: {}", e);
+                        log::warn!("Invalid SMTP_PORT value: {e}");
                         None
                     }
                 }

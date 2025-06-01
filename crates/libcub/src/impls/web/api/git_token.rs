@@ -51,7 +51,7 @@ pub async fn serve_git_token(tr: CubReqImpl, Json(req): Json<GitTokenRequest>) -
     log::info!("serve_git_token: Auth bundle present, getting global_id");
     
     let global_id = auth_bundle.user_info.profile.global_id().map_err(|e| {
-        log::error!("serve_git_token: Failed to get global_id: {}", e);
+        log::error!("serve_git_token: Failed to get global_id: {e}");
         log::error!("serve_git_token: Profile details - patreon_id: {:?}, github_id: {:?}, email: {:?}", 
             auth_bundle.user_info.profile.patreon_id,
             auth_bundle.user_info.profile.github_id,
@@ -60,7 +60,7 @@ pub async fn serve_git_token(tr: CubReqImpl, Json(req): Json<GitTokenRequest>) -
         LegacyHttpError::with_status(StatusCode::UNAUTHORIZED, "No valid authentication found")
     })?;
 
-    log::info!("serve_git_token: Got global_id: {}", global_id);
+    log::info!("serve_git_token: Got global_id: {global_id}");
     
     // Generate JWT token with 31 day expiration
     let duration_secs = 31 * 24 * 60 * 60;

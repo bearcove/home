@@ -236,11 +236,11 @@ async fn auth_bundle_update(
         auth_bundle
     } else if let Some(ref email) = auth_bundle.user_info.profile.email {
         // For email-based auth, refresh from Stripe
-        log::info!("Refreshing auth bundle for email user: {}", email);
+        log::info!("Refreshing auth bundle for email user: {email}");
         
         let client = global_state().client.clone();
         let stripe_user_info = libstripe::load()
-            .lookup_user_by_email(&ts.ti.tc, client, &email)
+            .lookup_user_by_email(&ts.ti.tc, client, email)
             .await
             .unwrap_or_else(|e| {
                 log::error!("Failed to lookup user in Stripe: {e}");

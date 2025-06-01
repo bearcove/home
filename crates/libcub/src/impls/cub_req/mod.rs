@@ -400,8 +400,8 @@ impl WebSocketStream for WsWrapper {
             let msg = match frame {
                 libwebsock::Message::Text(text) => ws::Message::text(text.as_str()),
                 libwebsock::Message::Binary(bytes) => ws::Message::binary(bytes),
-                libwebsock::Message::Ping(data) => ws::Message::Ping(data.into()),
-                libwebsock::Message::Pong(data) => ws::Message::Pong(data.into()),
+                libwebsock::Message::Ping(data) => ws::Message::Ping(data),
+                libwebsock::Message::Pong(data) => ws::Message::Pong(data),
                 libwebsock::Message::Close(frame) => {
                     ws::Message::Close(frame.map(|f| ws::CloseFrame {
                         code: f.code.into(),
@@ -450,9 +450,9 @@ impl WebSocketStream for WsWrapper {
                 Ok(msg) => {
                     let frame = match msg {
                         ws::Message::Text(text) => libwebsock::Message::Text(text.as_str().into()),
-                        ws::Message::Binary(bytes) => libwebsock::Message::Binary(bytes.into()),
-                        ws::Message::Ping(bytes) => libwebsock::Message::Ping(bytes.into()),
-                        ws::Message::Pong(bytes) => libwebsock::Message::Pong(bytes.into()),
+                        ws::Message::Binary(bytes) => libwebsock::Message::Binary(bytes),
+                        ws::Message::Ping(bytes) => libwebsock::Message::Ping(bytes),
+                        ws::Message::Pong(bytes) => libwebsock::Message::Pong(bytes),
                         ws::Message::Close(frame) => {
                             // axum's CloseFrame is tungstenite::protocol::CloseFrame
                             // libwebsock::CloseFrame needs to be constructed from tungstenite's CloseFrame
