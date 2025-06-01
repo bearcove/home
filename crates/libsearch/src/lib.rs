@@ -7,11 +7,12 @@ use conflux::{CompletionKind, Html, SearchResult};
 
 use facet::Facet;
 use tantivy::{
-    SnippetGenerator, TantivyDocument,
+    TantivyDocument,
     collector::{Count, TopDocs},
     schema::{
         INDEXED, IndexRecordOption, STORED, Schema, TEXT, TextFieldIndexing, TextOptions, Value,
     },
+    snippet::SnippetGenerator,
 };
 
 pub use eyre::Result;

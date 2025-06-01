@@ -13,7 +13,7 @@ use pulldown_cmark::{
     Alignment, CodeBlockKind, CowStr, Event, HeadingLevel, LinkType, MetadataBlockKind, Options,
     Parser, Tag, TagEnd,
 };
-use saphyr::{Yaml, yaml::YamlLoader};
+use saphyr::{LoadableYamlNode, Yaml};
 
 use conflux::{InputPath, InputPathRef, Markdown, TocEntry};
 use libmath::MathMode;
@@ -603,6 +603,21 @@ impl<'a> Formatter<'a> {
                         "<a href=\"#fnref:{label}\" class=\"footnote-backref\">&#8617;</a>"
                     )?;
                 }
+                Tag::DefinitionList => {
+                    // ignore
+                }
+                Tag::DefinitionListTitle => {
+                    // ignore
+                }
+                Tag::DefinitionListDefinition => {
+                    // ignore
+                }
+                Tag::Superscript => {
+                    // ignore
+                }
+                Tag::Subscript => {
+                    // ignore
+                }
             },
             Event::End(tag) => match tag {
                 TagEnd::MetadataBlock(MetadataBlockKind::YamlStyle) => match self.pop() {
@@ -617,13 +632,13 @@ impl<'a> Formatter<'a> {
                     Some((StackItem::ShortPlus { plain_text }, _)) => {
                         // parse shortcode arguments as YAML
                         trace!("Parsing shortcode arguments as YAML: {plain_text:?}");
-                        let yaml_values = YamlLoader::load_from_str(&plain_text)?;
+                        let yaml_values = Yaml::load_from_str(&plain_text)?;
                         if yaml_values.len() != 1 {
                             bail!("Expected 1 YAML value, got {yaml_values:?}");
                         }
                         let yaml_value = yaml_values.into_iter().next().unwrap();
                         let yaml_value = match yaml_value {
-                            Yaml::Hash(h) => h,
+                            Yaml::Mapping(h) => h,
                             _ => {
                                 bail!("Expected YAML Hash, got {yaml_value:?}");
                             }
@@ -635,7 +650,7 @@ impl<'a> Formatter<'a> {
                         }
                         let (shortcode_name, shortcode_args) = yaml_value.iter().next().unwrap();
                         let shortcode_name = match shortcode_name {
-                            Yaml::String(s) if s.starts_with(':') => &s[1..],
+                            Yaml::Value(saphyr::Scalar::String(s)) if s.starts_with(':') => &s[1..],
                             _ => bail!("Shortcode name must be a string starting with ':'"),
                         };
 
@@ -870,7 +885,7 @@ impl<'a> Formatter<'a> {
                         bail!("Unexpected: wanted to end item, got {other:?}");
                     }
                 },
-                TagEnd::BlockQuote => {
+                TagEnd::BlockQuote { .. } => {
                     match self.pop() {
                         Some((item, pp)) => match item {
                             StackItem::Blockquote => {
@@ -948,6 +963,21 @@ impl<'a> Formatter<'a> {
                 }
                 TagEnd::FootnoteDefinition => {
                     self.writer()?.write_all(b"</div>")?;
+                }
+                TagEnd::DefinitionList => {
+                    // ignore
+                }
+                TagEnd::DefinitionListTitle => {
+                    // ignore
+                }
+                TagEnd::DefinitionListDefinition => {
+                    // ignore
+                }
+                TagEnd::Superscript => {
+                    // ignore
+                }
+                TagEnd::Subscript => {
+                    // ignore
                 }
             },
             Event::FootnoteReference(label) => {
@@ -1169,26 +1199,26 @@ impl<'a> Formatter<'a> {
 fn yaml_to_data_object(yaml: &Yaml) -> eyre::Result<DataObject> {
     let mut data_object = DataObject::new();
 
-    if let Yaml::Null = yaml {
+    if let Yaml::Value(saphyr::Scalar::Null) = yaml {
         // no args, that's ok
         return Ok(data_object);
     }
 
-    if let Yaml::Hash(hash) = yaml {
+    if let Yaml::Mapping(hash) = yaml {
         for (key, value) in hash {
             let key_str = match key {
-                Yaml::String(s) => s,
+                Yaml::Value(saphyr::Scalar::String(s)) => s,
                 _ => bail!("Unsupported key type: {:?}", key),
             };
 
             let data_value = match value {
-                Yaml::String(s) => DataValue::String(s.clone()),
-                Yaml::Integer(i) => DataValue::Number(*i as i32),
-                Yaml::Boolean(b) => DataValue::Boolean(*b),
+                Yaml::Value(saphyr::Scalar::String(s)) => DataValue::String(s.to_string()),
+                Yaml::Value(saphyr::Scalar::Integer(i)) => DataValue::Number(*i as i32),
+                Yaml::Value(saphyr::Scalar::Boolean(b)) => DataValue::Boolean(*b),
                 _ => bail!("Unsupported value type: {:?}", value),
             };
 
-            data_object.insert(key_str.clone(), data_value);
+            data_object.insert(key_str.to_string(), data_value);
         }
         Ok(data_object)
     } else {

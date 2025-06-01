@@ -3,11 +3,10 @@ use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use eyre::bail;
 use futures_core::future::BoxFuture;
 use mom_types::{
-    DeriveParams, DeriveResponse, ListMissingArgs, ListMissingResponse, MomEvent, TranscodeParams,
-    TranscodeResponse,
-    media_types::{HeadersMessage, TranscodeEvent, UploadDoneMessage, WebSocketMessage},
-    GenerateLoginCodeRequest, GenerateLoginCodeResponse,
+    DeriveParams, DeriveResponse, GenerateLoginCodeRequest, GenerateLoginCodeResponse,
+    ListMissingArgs, ListMissingResponse, MomEvent, TranscodeParams, TranscodeResponse,
     ValidateLoginCodeRequest, ValidateLoginCodeResponse,
+    media_types::{HeadersMessage, TranscodeEvent, UploadDoneMessage, WebSocketMessage},
 };
 use std::str::FromStr;
 
@@ -139,7 +138,7 @@ impl Mod for ModImpl {
                             };
 
                             let ev = match ev {
-                                libwebsock::Frame::Text(ev) => ev,
+                                libwebsock::Message::Text(ev) => ev,
                                 _ => {
                                     bail!("Expected text frame")
                                 }
@@ -502,7 +501,7 @@ impl MediaUploader for MediaUploaderImpl {
 
     fn upload_chunk(&mut self, chunk: Bytes) -> BoxFuture<'_, Result<()>> {
         Box::pin(async move {
-            self.ws.send_binary(chunk.to_vec()).await?;
+            self.ws.send_binary(chunk).await?;
             Ok(())
         })
     }
@@ -529,7 +528,7 @@ impl MediaUploader for MediaUploaderImpl {
                     }
                 }?;
                 match msg {
-                    libwebsock::Frame::Text(text) => {
+                    libwebsock::Message::Text(text) => {
                         let msg: WebSocketMessage =
                             facet_json::from_str(&text).map_err(|e| e.into_owned())?;
                         match msg {
@@ -554,7 +553,7 @@ impl MediaUploader for MediaUploaderImpl {
                                         }
                                     };
                                     match res? {
-                                        libwebsock::Frame::Binary(chunk) => {
+                                        libwebsock::Message::Binary(chunk) => {
                                             received_bytes += chunk.len();
                                             log::trace!(
                                                 "Received chunk of {} bytes ({}/{} total)",
@@ -601,7 +600,7 @@ pub trait TranscodingEventListener: Send + Sync + 'static {
 }
 
 pub trait ChunkReceiver: Send + Sync {
-    fn on_chunk(&mut self, chunk: Vec<u8>) -> BoxFuture<'_, Result<()>>;
+    fn on_chunk(&mut self, chunk: Bytes) -> BoxFuture<'_, Result<()>>;
 }
 
 trait WithAuth {

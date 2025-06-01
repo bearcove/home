@@ -14,7 +14,7 @@ use mom_types::{DeriveParams, DeriveResponse};
 
 use hattip::prelude::*;
 use hattip::to_herror;
-use libwebsock::{Frame, WebSocketStream};
+use libwebsock::{Message, WebSocketStream};
 
 pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HReply {
     let tenant = rcx.tenant_owned();
@@ -189,9 +189,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
     if env.is_dev() {
         // in dev, the input might not be on object storage yet, so... check for it and upload it if needed
         if tenant.store().get(&input_key).await.is_err() {
-            log::info!(
-                "Uploading input to object storage in development mode: {input_key}"
-            );
+            log::info!("Uploading input to object storage in development mode: {input_key}");
             let mappings = PathMappings::from_ti(tenant.ti());
             let disk_path = mappings.to_disk_path(&di.input.path)?;
             // TODO: don't buffer the whole file in memory
@@ -218,9 +216,7 @@ async fn derive(rcx: &dyn CubReq, di: DerivationInfo<'_>) -> eyre::Result<Bytes>
             bail!("max retries ({}) exceeded waiting for derivation", tries);
         }
 
-        log::info!(
-            "Asking mom to derive (input_key: {input_key}, route: {route})"
-        );
+        log::info!("Asking mom to derive (input_key: {input_key}, route: {route})");
         let res = tcli
             .derive(DeriveParams {
                 input: di.input.clone(),
@@ -396,8 +392,8 @@ async fn do_ws_proxy(
     mut downstream: Box<dyn WebSocketStream>,
 ) -> eyre::Result<()> {
     enum Event {
-        FromUpstream(Option<Result<Frame, libhttpclient::Error>>),
-        FromDownstream(Option<Result<Frame, libhttpclient::Error>>),
+        FromUpstream(Option<Result<Message, libhttpclient::Error>>),
+        FromDownstream(Option<Result<Message, libhttpclient::Error>>),
     }
 
     loop {
@@ -412,9 +408,7 @@ async fn do_ws_proxy(
 
         match ev {
             Event::FromUpstream(Some(Ok(msg))) => {
-                log::trace!(
-                    "[WS_PROXY] Upstream → Downstream: forwarding message: {msg:?}"
-                );
+                log::trace!("[WS_PROXY] Upstream → Downstream: forwarding message: {msg:?}");
                 if let Err(e) = downstream.send(msg).await {
                     log::error!("[WS_PROXY] Error forwarding message to downstream: {e}");
                     break;
@@ -422,9 +416,7 @@ async fn do_ws_proxy(
                 log::trace!("[WS_PROXY] forwarded to downstream!");
             }
             Event::FromDownstream(Some(Ok(msg))) => {
-                log::trace!(
-                    "[WS_PROXY] Downstream → Upstream: forwarding message: {msg:?}"
-                );
+                log::trace!("[WS_PROXY] Downstream → Upstream: forwarding message: {msg:?}");
                 if let Err(e) = upstream.send(msg).await {
                     log::error!("[WS_PROXY] Error forwarding message to upstream: {e}");
                     break;

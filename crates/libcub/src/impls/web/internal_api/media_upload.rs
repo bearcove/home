@@ -7,6 +7,7 @@ use eyre::eyre;
 use facet::Facet;
 use futures_core::future::BoxFuture;
 use image_types::ICodec;
+use libhttpclient::Bytes;
 use libmomclient::TranscodingEventListener;
 use mom_types::media_types::{self, TargetFormat, TranscodingProgress};
 use std::sync::Arc;
@@ -316,7 +317,7 @@ async fn handle_ws_inner(
                 impl libmomclient::ChunkReceiver for ChunkReceiver {
                     fn on_chunk(
                         &mut self,
-                        chunk: Vec<u8>,
+                        chunk: Bytes,
                     ) -> futures_core::future::BoxFuture<'_, eyre::Result<()>> {
                         Box::pin(async move {
                             log::info!("Received chunk of size {} bytes", chunk.len());
@@ -394,9 +395,7 @@ async fn handle_ws_inner(
     let final_image_name = format!("{name}{suffix}{extension}");
     let output_path = page_dir.join(&final_image_name);
 
-    log::debug!(
-        "Moving converted image to final location: {output_path:?}"
-    );
+    log::debug!("Moving converted image to final location: {output_path:?}");
     fs::create_dir_all(&page_dir).await?;
     fs::rename(temp_output_path, &output_path).await?;
 

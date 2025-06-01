@@ -1,5 +1,7 @@
 use autotrait::autotrait;
+use libhttpclient::Bytes;
 use std::net::IpAddr;
+pub use tokio_tungstenite::tungstenite::{Message, protocol::frame::CloseFrame};
 
 use http::{HeaderMap, Uri};
 use rubicon as _;
@@ -15,21 +17,6 @@ struct ModImpl;
 pub fn load() -> &'static dyn Mod {
     static MOD: ModImpl = ModImpl;
     &MOD
-}
-
-#[derive(Debug)]
-pub struct CloseFrame {
-    pub code: u16,
-    pub reason: String,
-}
-
-#[derive(Debug)]
-pub enum Frame {
-    Text(String),
-    Binary(Vec<u8>),
-    Ping(Vec<u8>),
-    Pong(Vec<u8>),
-    Close(Option<CloseFrame>),
 }
 
 #[autotrait]
@@ -150,56 +137,30 @@ impl WebSocketStreamImpl {
 
 #[autotrait(!Sync)]
 impl WebSocketStream for WebSocketStreamImpl {
-    fn send(&mut self, frame: Frame) -> BoxFuture<'_, Result<(), Error>> {
+    fn send(&mut self, frame: Message) -> BoxFuture<'_, Result<(), Error>> {
         use futures_util::SinkExt;
-        use tokio_tungstenite::tungstenite as tung;
         Box::pin(async move {
-            let msg = match frame {
-                Frame::Text(text) => tung::Message::Text(text),
-                Frame::Binary(data) => tung::Message::Binary(data),
-                Frame::Ping(data) => tung::Message::Ping(data),
-                Frame::Pong(data) => tung::Message::Pong(data),
-                Frame::Close(frame) => {
-                    tung::Message::Close(frame.map(|f| tung::protocol::CloseFrame {
-                        code: tung::protocol::frame::coding::CloseCode::from(f.code),
-                        reason: f.reason.into(),
-                    }))
-                }
-            };
             self.inner
-                .send(msg)
+                .send(frame)
                 .await
                 .map_err(|e| Error::Any(e.to_string()))?;
             Ok(())
         })
     }
 
-    fn send_binary(&mut self, msg: Vec<u8>) -> BoxFuture<'_, Result<(), Error>> {
-        Box::pin(async move { self.send(Frame::Binary(msg)).await })
+    fn send_binary(&mut self, msg: Bytes) -> BoxFuture<'_, Result<(), Error>> {
+        Box::pin(async move { self.send(Message::Binary(msg)).await })
     }
 
     fn send_text(&mut self, msg: String) -> BoxFuture<'_, Result<(), Error>> {
-        Box::pin(async move { self.send(Frame::Text(msg)).await })
+        Box::pin(async move { self.send(Message::Text(msg.into())).await })
     }
 
-    fn receive(&mut self) -> BoxFuture<'_, Option<Result<Frame, Error>>> {
+    fn receive(&mut self) -> BoxFuture<'_, Option<Result<Message, Error>>> {
         use futures_util::StreamExt;
-        use tokio_tungstenite::tungstenite as tung;
         Box::pin(async move {
             let res = match self.inner.next().await? {
-                Ok(msg) => Ok(match msg {
-                    tung::Message::Binary(data) => Frame::Binary(data),
-                    tung::Message::Text(text) => Frame::Text(text),
-                    tung::Message::Close(close) => Frame::Close(close.map(|cf| CloseFrame {
-                        code: cf.code.into(),
-                        reason: cf.reason.into_owned(),
-                    })),
-                    tung::Message::Ping(data) => Frame::Ping(data),
-                    tung::Message::Pong(data) => Frame::Pong(data),
-                    tung::Message::Frame(_) => {
-                        unreachable!("amos doesn't love tungstenite's design")
-                    }
-                }),
+                Ok(msg) => Ok(msg),
                 Err(e) => Err(Error::Any(e.to_string())),
             };
             Some(res)

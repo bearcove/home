@@ -1,9 +1,9 @@
 use autotrait::autotrait;
-use config_types::{TenantConfig, StripeTierMapping};
+use config_types::{StripeTierMapping, TenantConfig};
 use credentials::{Profile, Tier, UserInfo};
 use eyre::Result;
 use futures_core::future::BoxFuture;
-use libhttpclient::{HttpClient, Uri, HeaderName, HeaderValue};
+use libhttpclient::{HeaderName, HeaderValue, HttpClient, Uri};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -12,7 +12,6 @@ struct ModImpl;
 pub fn load() -> &'static dyn Mod {
     &ModImpl
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StripeCustomer {
@@ -64,42 +63,54 @@ impl Mod for ModImpl {
         email: &'fut str,
     ) -> BoxFuture<'fut, Result<Option<UserInfo>>> {
         Box::pin(async move {
-            log::info!("Starting Stripe user lookup for email: {}", email);
-            
+            log::info!("Starting Stripe user lookup for email: {email}");
+
             let stripe_secrets = match tc.secrets.as_ref().and_then(|s| s.stripe.as_ref()) {
                 Some(config) => {
                     log::debug!("Found Stripe configuration for tenant");
                     config
-                },
+                }
                 None => {
                     log::warn!("No Stripe configuration found for tenant");
                     return Ok(None);
                 }
             };
 
-            log::debug!("Using Stripe tier mapping: gold={:?}, silver={:?}, bronze={:?}", 
+            log::debug!(
+                "Using Stripe tier mapping: gold={:?}, silver={:?}, bronze={:?}",
                 stripe_secrets.tier_mapping.gold_ids,
                 stripe_secrets.tier_mapping.silver_ids,
                 stripe_secrets.tier_mapping.bronze_ids
             );
 
             // Search for customer by email
-            let customer = match search_customer_by_email(&client, &stripe_secrets.secret_key, email).await? {
-                Some(customer) => {
-                    log::info!("Found Stripe customer: id={}, email={}, name={:?}", 
-                        customer.id, customer.email, customer.name);
-                    log::debug!("Customer has {} subscriptions", customer.subscriptions.data.len());
-                    customer
-                },
-                None => {
-                    log::info!("No Stripe customer found for email: {}", email);
-                    return Ok(None);
-                }
-            };
+            let customer =
+                match search_customer_by_email(&client, &stripe_secrets.secret_key, email).await? {
+                    Some(customer) => {
+                        log::info!(
+                            "Found Stripe customer: id={}, email={}, name={:?}",
+                            customer.id,
+                            customer.email,
+                            customer.name
+                        );
+                        log::debug!(
+                            "Customer has {} subscriptions",
+                            customer.subscriptions.data.len()
+                        );
+                        customer
+                    }
+                    None => {
+                        log::info!("No Stripe customer found for email: {email}");
+                        return Ok(None);
+                    }
+                };
 
             // Check for active subscriptions
-            let tier = determine_tier_from_subscriptions(&customer.subscriptions, &stripe_secrets.tier_mapping);
-            
+            let tier = determine_tier_from_subscriptions(
+                &customer.subscriptions,
+                &stripe_secrets.tier_mapping,
+            );
+
             log::info!("Determined tier for customer {}: {:?}", customer.id, tier);
 
             // Create user info
@@ -114,8 +125,11 @@ impl Mod for ModImpl {
                 tier,
             };
 
-            log::info!("Successfully created UserInfo for {}: tier={:?}", 
-                email, user_info.tier);
+            log::info!(
+                "Successfully created UserInfo for {}: tier={:?}",
+                email,
+                user_info.tier
+            );
 
             Ok(Some(user_info))
         })
@@ -127,59 +141,67 @@ async fn search_customer_by_email(
     api_key: &str,
     email: &str,
 ) -> Result<Option<StripeCustomer>> {
-    let url = format!("https://api.stripe.com/v1/customers/search?query=email:'{}'&expand[]=data.subscriptions", email);
-    log::debug!("Stripe API URL: {}", url);
-    
+    let url = format!(
+        "https://api.stripe.com/v1/customers/search?query=email:'{email}'&expand[]=data.subscriptions",
+    );
+    log::debug!("Stripe API URL: {url}");
     let uri: Uri = url.parse()?;
-    
-    log::debug!("Making Stripe API request for email: {}", email);
-    
+    log::debug!("Making Stripe API request for email: {email}");
     let response = client
         .get(uri)
         .bearer_auth(api_key)
         .header(
             HeaderName::from_static("stripe-version"),
-            HeaderValue::from_static("2020-08-27")
+            HeaderValue::from_static("2020-08-27"),
         )
         .send()
         .await?;
-
     let status = response.status();
-    log::debug!("Stripe API response status: {}", status);
+    log::debug!("Stripe API response status: {status}");
 
     if !status.is_success() {
         let error_text = response.text().await?;
-        log::error!("Stripe API error (status {}): {}", status, error_text);
-        
+        log::error!("Stripe API error (status {status}): {error_text}");
         // Parse the error to provide more context
         if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_text) {
             if let Some(error_obj) = error_json.get("error") {
-                log::error!("Stripe error details: type={}, code={}, message={}", 
-                    error_obj.get("type").and_then(|v| v.as_str()).unwrap_or("unknown"),
-                    error_obj.get("code").and_then(|v| v.as_str()).unwrap_or("unknown"),
-                    error_obj.get("message").and_then(|v| v.as_str()).unwrap_or("unknown")
+                log::error!(
+                    "Stripe error details: type={}, code={}, message={}",
+                    error_obj
+                        .get("type")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("unknown"),
+                    error_obj
+                        .get("code")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("unknown"),
+                    error_obj
+                        .get("message")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("unknown")
                 );
             }
         }
-        
+
         return Ok(None);
     }
-
     let response_text = response.text().await?;
-    log::trace!("Stripe API raw response: {}", response_text);
-    
+    log::trace!("Stripe API raw response: {response_text}");
     let search_response: StripeCustomerSearchResponse = match serde_json::from_str(&response_text) {
         Ok(resp) => resp,
         Err(e) => {
-            log::error!("Failed to parse Stripe response: {}", e);
-            log::error!("Response text was: {}", response_text);
+            log::error!("Failed to parse Stripe response: {e}");
+            log::error!("Response text was: {response_text}");
             return Err(e.into());
         }
     };
-    
-    log::info!("Stripe search returned {} customers for email: {}", 
-        search_response.data.len(), email);
-    
+
+    log::info!(
+        "Stripe search returned {} customers for email: {}",
+        search_response.data.len(),
+        email
+    );
+
     // Return the first customer if found
     Ok(search_response.data.into_iter().next())
 }
@@ -188,19 +210,32 @@ fn determine_tier_from_subscriptions(
     subscriptions: &StripeSubscriptionList,
     tier_mapping: &StripeTierMapping,
 ) -> Option<Tier> {
-    log::debug!("Determining tier from {} subscriptions", subscriptions.data.len());
-    
+    log::debug!(
+        "Determining tier from {} subscriptions",
+        subscriptions.data.len()
+    );
+
     // Only consider active subscriptions
-    let active_subs: Vec<_> = subscriptions.data.iter()
+    let active_subs: Vec<_> = subscriptions
+        .data
+        .iter()
         .filter(|sub| {
             let is_active = sub.status == "active" || sub.status == "trialing";
-            log::debug!("Subscription {}: status={}, active={}", sub.id, sub.status, is_active);
+            log::debug!(
+                "Subscription {}: status={}, active={}",
+                sub.id,
+                sub.status,
+                is_active
+            );
             is_active
         })
         .collect();
 
-    log::info!("Found {} active subscriptions out of {} total", 
-        active_subs.len(), subscriptions.data.len());
+    log::info!(
+        "Found {} active subscriptions out of {} total",
+        active_subs.len(),
+        subscriptions.data.len()
+    );
 
     if active_subs.is_empty() {
         log::debug!("No active subscriptions found");
@@ -213,11 +248,18 @@ fn determine_tier_from_subscriptions(
         for item in &sub.items.data {
             let price_id = &item.price.id;
             let product_id = &item.price.product;
-            log::trace!("  Checking item: price_id={}, product_id={}", price_id, product_id);
-            
-            if tier_mapping.gold_ids.contains(price_id) || tier_mapping.gold_ids.contains(product_id) {
-                log::info!("Found Gold tier match: price_id={}, product_id={}", price_id, product_id);
-                return Some(Tier { title: "Gold".to_string() });
+            log::trace!(
+                "  Checking item: price_id={price_id}, product_id={product_id}",
+                price_id = price_id,
+                product_id = product_id
+            );
+            if tier_mapping.gold_ids.contains(price_id)
+                || tier_mapping.gold_ids.contains(product_id)
+            {
+                log::info!("Found Gold tier match: price_id={price_id}, product_id={product_id}");
+                return Some(Tier {
+                    title: "Gold".to_string(),
+                });
             }
         }
     }
@@ -227,11 +269,15 @@ fn determine_tier_from_subscriptions(
         for item in &sub.items.data {
             let price_id = &item.price.id;
             let product_id = &item.price.product;
-            log::trace!("  Checking item: price_id={}, product_id={}", price_id, product_id);
-            
-            if tier_mapping.silver_ids.contains(price_id) || tier_mapping.silver_ids.contains(product_id) {
-                log::info!("Found Silver tier match: price_id={}, product_id={}", price_id, product_id);
-                return Some(Tier { title: "Silver".to_string() });
+            log::trace!("  Checking item: price_id={price_id}, product_id={product_id}",);
+
+            if tier_mapping.silver_ids.contains(price_id)
+                || tier_mapping.silver_ids.contains(product_id)
+            {
+                log::info!("Found Silver tier match: price_id={price_id}, product_id={product_id}",);
+                return Some(Tier {
+                    title: "Silver".to_string(),
+                });
             }
         }
     }
@@ -241,11 +287,15 @@ fn determine_tier_from_subscriptions(
         for item in &sub.items.data {
             let price_id = &item.price.id;
             let product_id = &item.price.product;
-            log::trace!("  Checking item: price_id={}, product_id={}", price_id, product_id);
-            
-            if tier_mapping.bronze_ids.contains(price_id) || tier_mapping.bronze_ids.contains(product_id) {
-                log::info!("Found Bronze tier match: price_id={}, product_id={}", price_id, product_id);
-                return Some(Tier { title: "Bronze".to_string() });
+            log::trace!("  Checking item: price_id={price_id}, product_id={product_id}");
+
+            if tier_mapping.bronze_ids.contains(price_id)
+                || tier_mapping.bronze_ids.contains(product_id)
+            {
+                log::info!("Found Bronze tier match: price_id={price_id}, product_id={product_id}");
+                return Some(Tier {
+                    title: "Bronze".to_string(),
+                });
             }
         }
     }
@@ -256,25 +306,31 @@ fn determine_tier_from_subscriptions(
     log::warn!("Price/Product IDs in active subscriptions:");
     for sub in &active_subs {
         for item in &sub.items.data {
-            log::warn!("  - price_id={}, product_id={}", item.price.id, item.price.product);
+            log::warn!(
+                "  - price_id={}, product_id={}",
+                item.price.id,
+                item.price.product
+            );
         }
     }
-    Some(Tier { title: "Bronze".to_string() })
+    Some(Tier {
+        title: "Bronze".to_string(),
+    })
 }
 
 fn gravatar_url(email: &str) -> String {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
-    
+
     let normalized_email = email.to_lowercase().trim().to_string();
-    log::trace!("Generating gravatar URL for email: {} (normalized: {})", email, normalized_email);
-    
+    log::trace!("Generating gravatar URL for email: {email} (normalized: {normalized_email})");
+
     let mut hasher = DefaultHasher::new();
     normalized_email.hash(&mut hasher);
     let hash = hasher.finish();
-    
-    let url = format!("https://www.gravatar.com/avatar/{:x}?d=identicon&s=200", hash);
-    log::trace!("Generated gravatar URL: {}", url);
-    
+
+    let url = format!("https://www.gravatar.com/avatar/{hash:x}?d=identicon&s=200");
+    log::trace!("Generated gravatar URL: {url}");
+
     url
 }

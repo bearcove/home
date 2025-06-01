@@ -390,23 +390,27 @@ impl CubReq for CubReqImpl {
     }
 }
 
-/// Compatibility wrapper between
+/// Compatibility wrapper between axum and libwebsock (tungstenite)
 struct WsWrapper(axum::extract::ws::WebSocket);
 
 impl WebSocketStream for WsWrapper {
-    fn send(&mut self, frame: libwebsock::Frame) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
+    fn send(&mut self, frame: libwebsock::Message) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             use axum::extract::ws;
             let msg = match frame {
-                libwebsock::Frame::Text(text) => ws::Message::text(text),
-                libwebsock::Frame::Binary(bytes) => ws::Message::binary(bytes),
-                libwebsock::Frame::Ping(data) => ws::Message::Ping(data.into()),
-                libwebsock::Frame::Pong(data) => ws::Message::Pong(data.into()),
-                libwebsock::Frame::Close(frame) => {
+                libwebsock::Message::Text(text) => ws::Message::text(text.as_str()),
+                libwebsock::Message::Binary(bytes) => ws::Message::binary(bytes),
+                libwebsock::Message::Ping(data) => ws::Message::Ping(data.into()),
+                libwebsock::Message::Pong(data) => ws::Message::Pong(data.into()),
+                libwebsock::Message::Close(frame) => {
                     ws::Message::Close(frame.map(|f| ws::CloseFrame {
-                        code: f.code,
-                        reason: f.reason.into(),
+                        code: f.code.into(),
+                        reason: f.reason.as_str().into(),
                     }))
+                }
+                _ => {
+                    // ignore Frame messages
+                    return Ok(());
                 }
             };
 
@@ -419,7 +423,7 @@ impl WebSocketStream for WsWrapper {
         })
     }
 
-    fn send_binary(&mut self, msg: Vec<u8>) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
+    fn send_binary(&mut self, msg: Bytes) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
         Box::pin(async move {
             self.0
                 .send(axum::extract::ws::Message::binary(msg))
@@ -439,22 +443,22 @@ impl WebSocketStream for WsWrapper {
         })
     }
 
-    fn receive(&mut self) -> BoxFuture<'_, Option<Result<libwebsock::Frame, libwebsock::Error>>> {
+    fn receive(&mut self) -> BoxFuture<'_, Option<Result<libwebsock::Message, libwebsock::Error>>> {
         Box::pin(async move {
             use axum::extract::ws;
             let res = match self.0.recv().await? {
                 Ok(msg) => {
                     let frame = match msg {
-                        ws::Message::Text(text) => {
-                            libwebsock::Frame::Text(text.as_str().to_owned())
-                        }
-                        ws::Message::Binary(bytes) => libwebsock::Frame::Binary(bytes.into()),
-                        ws::Message::Ping(bytes) => libwebsock::Frame::Ping(bytes.into()),
-                        ws::Message::Pong(bytes) => libwebsock::Frame::Pong(bytes.into()),
+                        ws::Message::Text(text) => libwebsock::Message::Text(text.as_str().into()),
+                        ws::Message::Binary(bytes) => libwebsock::Message::Binary(bytes.into()),
+                        ws::Message::Ping(bytes) => libwebsock::Message::Ping(bytes.into()),
+                        ws::Message::Pong(bytes) => libwebsock::Message::Pong(bytes.into()),
                         ws::Message::Close(frame) => {
-                            libwebsock::Frame::Close(frame.map(|f| libwebsock::CloseFrame {
-                                code: f.code,
-                                reason: f.reason.as_str().to_owned(),
+                            // axum's CloseFrame is tungstenite::protocol::CloseFrame
+                            // libwebsock::CloseFrame needs to be constructed from tungstenite's CloseFrame
+                            libwebsock::Message::Close(frame.map(|f| libwebsock::CloseFrame {
+                                code: f.code.into(),
+                                reason: f.reason.as_str().into(),
                             }))
                         }
                     };
