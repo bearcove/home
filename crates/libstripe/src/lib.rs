@@ -248,11 +248,7 @@ fn determine_tier_from_subscriptions(
         for item in &sub.items.data {
             let price_id = &item.price.id;
             let product_id = &item.price.product;
-            log::trace!(
-                "  Checking item: price_id={price_id}, product_id={product_id}",
-                price_id = price_id,
-                product_id = product_id
-            );
+            log::trace!("  Checking item: price_id={price_id}, product_id={product_id}",);
             if tier_mapping.gold_ids.contains(price_id)
                 || tier_mapping.gold_ids.contains(product_id)
             {

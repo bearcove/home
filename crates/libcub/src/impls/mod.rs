@@ -140,15 +140,14 @@ pub(crate) async fn serve(
     if let Ok(_var) = std::env::var("CUB_HTTPS") {
         // Create a self-signed certificate for HTTPS
         let config = rustls::ServerConfig::builder()
-            .with_safe_defaults()
             .with_no_client_auth();
 
         // Generate a self-signed certificate and private key
         let cert_keys = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
 
         // Set up certificate chain and private key
-        let cert_chain = vec![rustls::Certificate(cert_keys.cert.der().to_vec())];
-        let priv_key = rustls::PrivateKey(cert_keys.key_pair.serialize_der());
+        let cert_chain = vec![rustls::pki_types::CertificateDer::from(cert_keys.cert.der().to_vec())];
+        let priv_key = rustls::pki_types::PrivateKeyDer::Pkcs8(cert_keys.key_pair.serialize_der().into());
 
         let config = config.with_single_cert(cert_chain, priv_key)?;
 
