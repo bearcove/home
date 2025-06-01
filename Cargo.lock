@@ -1626,6 +1626,7 @@ dependencies = [
  "facet-reflect",
  "facet-serialize",
  "log",
+ "ryu",
 ]
 
 [[package]]
