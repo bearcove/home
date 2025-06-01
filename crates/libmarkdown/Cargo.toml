@@ -11,8 +11,8 @@ conflux = { path = "../conflux" }
 
 # impl dependencies
 html-escape = { version = "0.2.13" }
-pulldown-cmark = { version = "0.11.3", features = ["simd"] }
-saphyr = { version = "0.0.1", default-features = false }
+pulldown-cmark = { version = "0.13.0", features = ["simd"] }
+saphyr = { version = "0.0.4", default-features = false }
 slug = { version = "0.1.6" }
 template-types = { path = "../template-types" }
 libhighlight = { path = "../libhighlight" }

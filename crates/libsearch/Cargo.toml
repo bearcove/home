@@ -13,7 +13,7 @@ html-escape = { version = "0.2.13" }
 indicium = { version = "0.6.5", features = [
     "simple",
 ], default-features = false }
-tantivy = { version = "0.22.0" }
+tantivy = { version = "0.24.1" }
 percent-encoding = "2.3.1"
 config-types = { version = "0.1.0", path = "../config-types" }
 autotrait = "0.2.1"

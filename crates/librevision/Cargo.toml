@@ -24,7 +24,7 @@ libimage = { version = "0.1.0", path = "../libimage" }
 itertools = { version = "0.14.0" }
 libmarkdown = { version = "0.1.0", path = "../libmarkdown" }
 rayon = { version = "1.10.0" }
-redb = { version = "2.5.0" }
+redb = { version = "2.6.0" }
 seahash = { version = "4.1.0" }
 libsearch = { version = "0.1.0", path = "../libsearch" }
 libsvg = { version = "0.1.0", path = "../libsvg" }
@@ -41,5 +41,5 @@ markdown-types = { version = "0.1.0", path = "../markdown-types" }
 autotrait = "0.2.1"
 fs-err = { version = "3.1.0", features = ["tokio"] }
 facet.workspace = true
-facet-yaml = "0.25.6"
+facet-yaml = "0.25.7"
 log = "0.4.27"

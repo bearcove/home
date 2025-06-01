@@ -28,16 +28,16 @@ axum = { version = "0.8.4", default-features = false, features = [
 eyre = { version = "0.6.12", default-features = false }
 futures-util = { version = "0.3.31" }
 inflight = { path = "../../crates/inflight" }
-parking_lot = { version = "0.12.3" }
+parking_lot = { version = "0.12.4" }
 r2d2 = { version = "0.8.10" }
-r2d2_sqlite = { version = "0.28.0" }
+r2d2_sqlite = { version = "0.29.0" }
 rusqlite = { workspace = true, default-features = false, features = ["time"] }
 serde = { version = "1.0.219", features = ["derive"] }
 time = { version = "0.3.41", features = ["formatting"] }
-tokio = { version = "1.45.0", features = ["full"] }
+tokio = { version = "1.45.1", features = ["full"] }
 url = { version = "2.5.4" }
 tempfile = { version = "3.20.0" }
-ffmpeg-sidecar = { version = "2.0.5" }
+ffmpeg-sidecar = { version = "2.0.6" }
 nix = { version = "0.30.1", features = ["process", "signal"] }
 tokio-stream = { version = "0.1.17" }
 libimage = { version = "0.1.0", path = "../../crates/libimage" }

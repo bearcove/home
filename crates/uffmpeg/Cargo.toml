@@ -7,6 +7,6 @@ edition = "2024"
 camino = "1.1.9"
 conflux = { version = "0.1.0", path = "../conflux" }
 eyre.workspace = true
-ffmpeg-sidecar = "2.0.5"
+ffmpeg-sidecar = "2.0.6"
 image-types = { version = "0.1.0", path = "../image-types" }
 tokio.workspace = true
