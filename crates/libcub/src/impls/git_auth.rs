@@ -104,9 +104,9 @@ mod tests {
     #[test]
     fn test_extract_token_from_basic_auth() {
         let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.test";
-        let auth_value = format!("token:{}", token);
+        let auth_value = format!("token:{token}");
         let encoded = STANDARD.encode(&auth_value);
-        let auth_header = format!("Basic {}", encoded);
+        let auth_header = format!("Basic {encoded}");
 
         let extracted = extract_token_from_basic_auth(&auth_header);
         assert_eq!(extracted, Some(token.to_string()));
