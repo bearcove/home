@@ -3,6 +3,6 @@
   "org": "bearcove",
   "name": "home",
   "cargo": {
-    "bins": ["home"]
+    "bins": ["home", "home-mom", "home-serve", "home-term", "home-init"]
   }
 }
