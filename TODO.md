@@ -62,7 +62,7 @@ This document tracks all identified TODO and FIXME items in the codebase, organi
 
 ### Core Features
 
-- [ ] **WebSocket Upgrade** (`libcdn/src/impls/mod.rs:27`)
+- [x] **WebSocket Upgrade** (`libcdn/src/impls/mod.rs:27`)
   - **Issue**: `TODO: websocket upgrade`
   - **Impact**: Missing WebSocket functionality in dev mode
   - **Action**: Implement WebSocket upgrade for development server

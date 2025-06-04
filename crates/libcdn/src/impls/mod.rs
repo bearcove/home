@@ -24,7 +24,6 @@ pub(crate) async fn serve_asset(rcx: Box<dyn CubReq>, headers: HeaderMap) -> HRe
     let route = rcx.route();
     log::debug!("Serving asset \x1b[1;32m{route}\x1b[0m");
 
-    // TODO: websocket upgrade
     if env.is_dev() && route.as_str().starts_with("/dist") {
         return proxy_to_vite(rcx).await;
     }
