@@ -96,8 +96,7 @@ impl CubGlobalState {
 }
 
 pub struct CubTenantImpl {
-    // FIXME: should not be static — that means we leak it
-    pub cookie_key: &'static Key,
+    pub cookie_key: Key,
     pub sponsors: RwLock<Arc<Sponsors>>,
     pub ti: Arc<TenantInfo>,
     pub store: Arc<dyn ObjectStore>,
@@ -227,15 +226,5 @@ impl GlobalStateView for CubTenantImpl {
 
     fn gsv_sponsors(&self) -> Arc<Sponsors> {
         CubTenant::sponsors(self)
-    }
-}
-
-impl CubTenantImpl {
-    /// Get private cookies
-    pub fn private_cookies(
-        &self,
-        cookies: tower_cookies::Cookies,
-    ) -> tower_cookies::PrivateCookies<'static> {
-        cookies.private(self.cookie_key)
     }
 }

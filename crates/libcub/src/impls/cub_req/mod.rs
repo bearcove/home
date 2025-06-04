@@ -21,7 +21,7 @@ use http::{Uri, request};
 use libwebsock::WebSocketStream;
 use std::{sync::Arc, time::Instant};
 use template_types::{DataObject, DataValue, RenderTemplateArgs};
-use tower_cookies::{Cookies, PrivateCookies};
+use tower_cookies::Cookies;
 use url::form_urlencoded;
 
 use super::{
@@ -33,9 +33,11 @@ use super::{
 /// Actually turned into "what is extracted from requests",
 /// for example it has the tenant state
 pub struct CubReqImpl {
+    cookie_key: tower_cookies::Key,
+    public_cookies: Cookies,
+
     pub tenant: Arc<CubTenantImpl>,
     pub path: Route,
-    pub cookies: PrivateCookies<'static>,
     pub auth_bundle: Option<AuthBundle>,
     pub parts: request::Parts,
 }
@@ -133,16 +135,17 @@ where
             }
         };
 
-        let cookies = Cookies::from_request_parts(parts, state)
+        let public_cookies = Cookies::from_request_parts(parts, state)
             .await
             .map_err(|e| e.into_legacy_reply())?;
-        let cookies = tenant.private_cookies(cookies);
-        let auth_bundle = authbundle_load_from_cookies(&cookies).await;
+        let auth_bundle =
+            authbundle_load_from_cookies(&public_cookies.private(&tenant.cookie_key)).await;
 
         let tr = Self {
+            cookie_key: tenant.cookie_key.clone(),
+            public_cookies,
             tenant,
             path,
-            cookies,
             auth_bundle,
             parts: parts.clone(),
         };
@@ -306,13 +309,17 @@ impl CubReqImpl {
     /// Get the value of the `return_to` cookie and remove it from the cookie jar
     pub fn get_and_remove_return_to_cookie(&self) -> String {
         let mut value = "".to_owned();
-        if let Some(cookie) = self.cookies.get("return_to") {
+        if let Some(cookie) = self.cookies().get("return_to") {
             // security: prepending `/` protects against crafting URLs that would
             // redirect to different websites (an open redirect)
             value = format!("/{}", cookie.value());
-            self.cookies.remove(cookie);
+            self.cookies().remove(cookie);
         }
         value
+    }
+
+    pub fn cookies(&self) -> tower_cookies::PrivateCookies<'_> {
+        self.public_cookies.private(&self.cookie_key)
     }
 }
 

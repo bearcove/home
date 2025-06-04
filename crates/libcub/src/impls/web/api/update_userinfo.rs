@@ -33,7 +33,7 @@ pub(crate) async fn serve_update_userinfo(mut tr: CubReqImpl) -> LegacyReply {
     tr.auth_bundle = Some(new_auth_bundle.clone());
     let viewer = tr.viewer()?;
 
-    tr.cookies.add(auth_bundle_as_cookie(&new_auth_bundle));
+    tr.cookies().add(auth_bundle_as_cookie(&new_auth_bundle));
 
     FacetJson(UpdatedUserInfo {
         viewer,
