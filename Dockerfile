@@ -11,7 +11,7 @@ ENV RUSTC_WRAPPER=sccache SCCACHE_DIR=/sccache
 FROM base AS planner-mom
 WORKDIR /app
 COPY . .
-RUN cargo chef prepare --bin mom --recipe-path recipe.json
+RUN cargo chef prepare --bin home-mom --recipe-path recipe.json
 
 FROM base AS builder-mom
 WORKDIR /app
@@ -30,7 +30,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 FROM base AS planner-serve
 WORKDIR /app
 COPY . .
-RUN cargo chef prepare --bin serve --recipe-path recipe.json
+RUN cargo chef prepare --bin home-serve --recipe-path recipe.json
 
 FROM base AS builder-serve
 WORKDIR /app
