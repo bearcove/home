@@ -15,7 +15,7 @@ categories.workspace = true
 camino = "1.1.9"
 config-types = { version = "0.1.0", path = "../../crates/config-types" }
 facet.workspace = true
-facet-args = "0.19.12"
+facet-args = "0.19.13"
 facet-json.workspace = true
 facet-pretty.workspace = true
 fs-err = "3.1.0"
