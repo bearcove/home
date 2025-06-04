@@ -21,6 +21,8 @@ jobs:
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install libssl-dev
+        run: apt-get update && apt-get install -y libssl-dev
       - name: Run tests
         run: cargo nextest run --all --release --verbose
   mac-build:
