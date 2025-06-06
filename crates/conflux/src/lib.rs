@@ -482,14 +482,18 @@ pub struct VideoInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
-#[facet(default)]
 pub struct Champion {
     pub name: String,
     pub link: String,
     pub tagline: String,
     pub assets: ChampionAssets,
-    pub button: Option<ChampionButton>,
+    #[facet(default)]
+    pub colors: Option<ChampionColors>,
     pub days_early: Option<u32>,
+
+    // The CTA — the default is something like "Check them out"
+    #[facet(default)]
+    pub button_label: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
@@ -499,16 +503,19 @@ pub struct ChampionAssets {
     pub dark: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Facet)]
-#[facet(default)]
-pub struct ChampionButton {
-    pub light_bg: Option<String>,
-    pub light_border: Option<String>,
-    pub dark_bg: Option<String>,
-    pub dark_border: Option<String>,
-
-    // The CTA — the default is something like "Check them out"
-    pub label: Option<String>,
+#[derive(Default, Debug, Clone, Serialize, Deserialize, Facet)]
+pub struct ChampionColors {
+    // These can be CSS colors, including a function like `light-dark()`
+    #[facet(default)]
+    pub button_bg: Option<String>,
+    #[facet(default)]
+    pub button_text: Option<String>,
+    #[facet(default)]
+    pub button_border: Option<String>,
+    #[facet(default)]
+    pub card_border: Option<String>,
+    #[facet(default)]
+    pub card_bg: Option<String>,
 }
 
 impl fmt::Debug for LoadedPage {
