@@ -482,16 +482,26 @@ pub struct VideoInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
+#[facet(default)]
 pub struct Champion {
     pub name: String,
     pub link: String,
     pub tagline: String,
     pub assets: ChampionAssets,
+    pub colors: Option<ChampionColors>,
     pub days_early: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
+#[facet(default)]
 pub struct ChampionAssets {
+    pub light: String,
+    pub dark: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Facet)]
+#[facet(default)]
+pub struct ChampionColors {
     pub light: String,
     pub dark: String,
 }
