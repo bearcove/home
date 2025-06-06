@@ -487,6 +487,7 @@ pub struct Champion {
     pub link: String,
     pub tagline: String,
     pub assets: ChampionAssets,
+    pub days_early: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
