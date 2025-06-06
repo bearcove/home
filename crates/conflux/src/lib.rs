@@ -474,6 +474,7 @@ impl Hash for LoadedPage {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
 pub struct VideoInfo {
+    pub champion: Option<String>,
     pub dual_feature: bool,
     pub tube: Option<String>,
     pub youtube: Option<String>,

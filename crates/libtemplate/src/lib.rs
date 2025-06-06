@@ -390,7 +390,11 @@ impl Object for LoadedPageVal {
                 const EXCLUSIVITY_DURATION: Duration = Duration::from_secs(60 * 60 * 24 * 30 * 6);
                 if self.video_info.dual_feature {
                     let unlocks_at = self.date + EXCLUSIVITY_DURATION;
-                    if unlocks_at > OffsetDateTime::now_utc() {
+
+                    if self.video_info.champion.is_some() {
+                        // thanks champ!
+                        Value::from(false)
+                    } else if unlocks_at > OffsetDateTime::now_utc() {
                         unlocks_at.mj()
                     } else {
                         Value::from(false)

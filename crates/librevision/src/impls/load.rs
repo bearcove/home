@@ -730,6 +730,7 @@ fn load_single_page(
             tube: frontmatter.extra.tube,
             youtube: frontmatter.extra.youtube,
             duration: frontmatter.extra.duration,
+            champion: frontmatter.extra.champion,
         },
 
         thumb: thumb.map(|thumb| conflux::PageThumb {

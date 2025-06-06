@@ -67,6 +67,9 @@ pub struct FrontmatterExtras {
     // whether this is a dual feature (show the video while the article is still exclusive)
     pub dual_feature: bool,
 
+    // the champion of this page (offered an exclusive to the community)
+    pub champion: Option<String>,
+
     // video duration
     pub duration: Option<u64>,
 
@@ -76,35 +79,4 @@ pub struct FrontmatterExtras {
     // git repository name for cloning (e.g. "my-repo" for /extras/my-repo.git)
     #[facet(default)]
     pub git_repo: Option<String>,
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct FrontmatterExtrasIn {
-    pub patreon: Option<bool>,
-    pub hide_comments: Option<bool>,
-    pub hide_patreon: Option<bool>,
-    pub hide_metadata: Option<bool>,
-    pub tube: Option<String>,
-    pub dual_feature: Option<bool>,
-    pub youtube: Option<String>,
-    pub duration: Option<u64>,
-    pub ongoing: Option<bool>,
-    pub git_repo: Option<String>,
-}
-
-impl From<FrontmatterExtrasIn> for FrontmatterExtras {
-    fn from(frontmatter_extras_in: FrontmatterExtrasIn) -> Self {
-        Self {
-            patreon: frontmatter_extras_in.patreon.unwrap_or_default(),
-            hide_comments: frontmatter_extras_in.hide_comments.unwrap_or_default(),
-            hide_patreon: frontmatter_extras_in.hide_patreon.unwrap_or_default(),
-            hide_metadata: frontmatter_extras_in.hide_metadata.unwrap_or_default(),
-            tube: frontmatter_extras_in.tube,
-            dual_feature: frontmatter_extras_in.dual_feature.unwrap_or_default(),
-            youtube: frontmatter_extras_in.youtube,
-            duration: frontmatter_extras_in.duration,
-            ongoing: frontmatter_extras_in.ongoing.unwrap_or_default(),
-            git_repo: frontmatter_extras_in.git_repo,
-        }
-    }
 }
