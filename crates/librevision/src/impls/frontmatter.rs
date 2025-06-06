@@ -1,4 +1,4 @@
-use conflux::Route;
+use conflux::{Champion, Route};
 use facet::Facet;
 use time::OffsetDateTime;
 
@@ -68,7 +68,7 @@ pub struct FrontmatterExtras {
     pub dual_feature: bool,
 
     // the champion of this page (offered an exclusive to the community)
-    pub champion: Option<String>,
+    pub champion: Option<Champion>,
 
     // video duration
     pub duration: Option<u64>,

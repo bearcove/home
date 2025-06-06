@@ -474,11 +474,25 @@ impl Hash for LoadedPage {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
 pub struct VideoInfo {
-    pub champion: Option<String>,
+    pub champion: Option<Champion>,
     pub dual_feature: bool,
     pub tube: Option<String>,
     pub youtube: Option<String>,
     pub duration: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Facet)]
+pub struct Champion {
+    pub name: String,
+    pub link: String,
+    pub tagline: String,
+    pub assets: ChampionAssets,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Facet)]
+pub struct ChampionAssets {
+    pub light: String,
+    pub dark: String,
 }
 
 impl fmt::Debug for LoadedPage {
