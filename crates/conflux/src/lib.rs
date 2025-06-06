@@ -488,7 +488,7 @@ pub struct Champion {
     pub link: String,
     pub tagline: String,
     pub assets: ChampionAssets,
-    pub colors: Option<ChampionColors>,
+    pub button: Option<ChampionButton>,
     pub days_early: Option<u32>,
 }
 
@@ -501,9 +501,14 @@ pub struct ChampionAssets {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Facet)]
 #[facet(default)]
-pub struct ChampionColors {
-    pub light: String,
-    pub dark: String,
+pub struct ChampionButton {
+    pub light_bg: Option<String>,
+    pub light_border: Option<String>,
+    pub dark_bg: Option<String>,
+    pub dark_border: Option<String>,
+
+    // The CTA — the default is something like "Check them out"
+    pub label: Option<String>,
 }
 
 impl fmt::Debug for LoadedPage {
