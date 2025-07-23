@@ -1,21 +1,5 @@
-[unstable]
-mtime-on-use = true
-binary-dep-depinfo = true
-checksum-freshness = true
-feature-unification = true
-
-[resolver]
-feature-unification = "workspace"
-
 [build]
-rustflags = [
-    # "-Cprefer-dynamic",
-    "-Zshare-generics=y",
-    "-Wunused-crate-dependencies",
-    # "-Zunstable-options",
-    # "--extern",
-    # "force:std",
-]
+rustflags = ["-Wunused-crate-dependencies"]
 
 [patch.crates-io]
 # facet = { path = "../../facet-rs/facet/facet" }
