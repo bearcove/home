@@ -57,6 +57,7 @@ pub(crate) async fn serve_link_preview(
         "lib.rs",
         "fasterthanli.me",
         "fasterthanli.me.snug.blog",
+        "fasterthanli.me.localhost",
         "bearcove.net",
         "sdr-podcast.com",
         "jamesmunns.com",

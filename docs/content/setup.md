@@ -49,9 +49,9 @@ that it's all happening automatically:
 :figure:
     src: bearcove-tap-commits@2x.jxl
     title: |
-        Automation goes brrrr 
+        Automation goes brrrr
     alt: |
-        A screenshot of the GitHub bearcove/tap repository showing commits made a few minutes distant from each other. 
+        A screenshot of the GitHub bearcove/tap repository showing commits made a few minutes distant from each other.
 +++
 
 ## Serving an existing home site
@@ -177,7 +177,7 @@ If you then open <http://localhost:1111>, you'll see something like this:
 +++
 
 And if you click `home-from-scratch`, you'll be redirected to
-<http://home-from-scratch.snug.blog:1111>, showing this:
+<http://home-from-scratch.localhost:1111>, showing this:
 
 +++
 :media:

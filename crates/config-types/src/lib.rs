@@ -7,7 +7,7 @@ plait::plait! {
         serde
     }
 
-    /// A domain name/tenant name, like `fasterthanli.me` or `ftl.snug.blog`
+    /// A domain name/tenant name, like `fasterthanli.me` or `ftl.localhost`
     pub struct TenantDomain => &TenantDomainRef;
 
     /// An S3 endpoint, like `s3.us-east-1.amazonaws.com` or `nbg1.your-objectstorage.com`
@@ -165,7 +165,7 @@ impl TenantConfig {
     /// e.g. for fasterthanli.me in prod, returns "fasterthanli.me".
     pub fn web_domain(&self, env: Environment) -> TenantDomain {
         match env {
-            Environment::Development => TenantDomain::new(format!("{}.snug.blog", self.name)),
+            Environment::Development => TenantDomain::new(format!("{}.localhost", self.name)),
             Environment::Production => self.name.clone(),
         }
     }
@@ -173,13 +173,13 @@ impl TenantConfig {
     /// e.g. for fasterthanli.me in prod, returns "cdn.fasterthanli.me".
     pub fn cdn_domain(&self, env: Environment) -> TenantDomain {
         let base = match env {
-            Environment::Development => format!("cdn.{}.snug.blog", self.name),
+            Environment::Development => format!("cdn.{}.localhost", self.name),
             Environment::Production => format!("cdn.{}", self.name),
         };
         TenantDomain::new(base)
     }
     /// Returns something like `https://fasterthanli.me` in prod or
-    /// `http://fasterthanli.me.snug.blog:PORT` in dev
+    /// `http://fasterthanli.me.localhost:PORT` in dev
     pub fn web_base_url(&self, web_config: WebConfig) -> String {
         let name = &self.name;
         match web_config.env {
@@ -189,16 +189,16 @@ impl TenantConfig {
             Environment::Development => {
                 let port = web_config.port;
                 if let Ok(_var) = std::env::var("CUB_HTTPS") {
-                    format!("https://{name}.snug.blog:{port}")
+                    format!("https://{name}.localhost:{port}")
                 } else {
-                    format!("http://{name}.snug.blog:{port}")
+                    format!("http://{name}.localhost:{port}")
                 }
             }
         }
     }
 
     /// Returns something like `https://cdn.fasterthanli.me` in prod or
-    /// `http://cdn.fasterthanli.me.snug.blog:PORT` in dev
+    /// `http://cdn.fasterthanli.me.localhost:PORT` in dev
     pub fn cdn_base_url(&self, web_config: WebConfig) -> String {
         let name = &self.name;
         match web_config.env {
@@ -208,9 +208,9 @@ impl TenantConfig {
             Environment::Development => {
                 let port = web_config.port;
                 if let Ok(_var) = std::env::var("CUB_HTTPS") {
-                    format!("https://cdn.{name}.snug.blog:{port}")
+                    format!("https://cdn.{name}.localhost:{port}")
                 } else {
-                    format!("http://cdn.{name}.snug.blog:{port}")
+                    format!("http://cdn.{name}.localhost:{port}")
                 }
             }
         }
@@ -553,7 +553,7 @@ pub struct StripeSecrets {
 pub struct StripeTierMapping {
     /// Product or price IDs that map to Bronze tier
     pub bronze_ids: Vec<String>,
-    /// Product or price IDs that map to Silver tier  
+    /// Product or price IDs that map to Silver tier
     pub silver_ids: Vec<String>,
     /// Product or price IDs that map to Gold tier
     pub gold_ids: Vec<String>,
@@ -588,19 +588,19 @@ pub struct MomSecrets {
 pub struct EmailConfig {
     /// SMTP server hostname
     pub smtp_host: String,
-    
+
     /// SMTP server port
     pub smtp_port: u16,
-    
+
     /// SMTP username
     pub smtp_username: String,
-    
+
     /// SMTP password
     pub smtp_password: String,
-    
+
     /// From email address
     pub from_email: String,
-    
+
     /// From name
     pub from_name: String,
 }
