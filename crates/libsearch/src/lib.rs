@@ -5,7 +5,6 @@ use conflux::RevisionView;
 use conflux::{Completion, InputPath, LoadedPage, SearchResults, Viewer};
 use conflux::{CompletionKind, Html, SearchResult};
 
-use facet::Facet;
 use tantivy::{
     TantivyDocument,
     collector::{Count, TopDocs},
@@ -448,11 +447,6 @@ impl Index for IndexImpl {
             }
         }
     }
-}
-
-unsafe impl<'a> Facet<'a> for dyn Index {
-    const SHAPE: &'static facet::Shape<'static> = <()>::SHAPE;
-    const VTABLE: &'static facet::ValueVTable = <()>::VTABLE;
 }
 
 struct IndexableCompat(Vec<String>);

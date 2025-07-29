@@ -287,7 +287,7 @@ impl From<RevisionError> for LegacyHttpError {
     }
 }
 
-impl From<DeserError<'_, '_>> for LegacyHttpError {
+impl From<DeserError<'_>> for LegacyHttpError {
     fn from(err: DeserError) -> Self {
         let report = eyre::eyre!("{err:?}");
         Self::from_report(report)

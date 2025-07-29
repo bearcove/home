@@ -130,8 +130,8 @@ impl_from!(rusqlite::Error);
 impl_from!(libobjectstore::Error);
 impl_from!(std::str::Utf8Error);
 
-impl<'input> From<DeserError<'input, 'static>> for HttpError {
-    fn from(err: DeserError<'input, 'static>) -> Self {
+impl<'input> From<DeserError<'input>> for HttpError {
+    fn from(err: DeserError<'input>) -> Self {
         Self::from_report(eyre::eyre!("{err}"))
     }
 }

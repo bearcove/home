@@ -31,7 +31,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 rusqlite = { version = "0.36.0", default-features = false, features = ["time"] }
 eyre = "0.6.12"
 minijinja = { version = "2.10.2" }
-facet = { version = "0.27.15", features = ["camino", "ordered-float", "time"] }
-facet-json = { version = "0.24.17" }
-facet-pretty = { version = "0.23.23" }
+facet = { version = "0.28.0", features = ["camino", "ordered-float", "time"] }
+facet-json = { version = "0.28.1" }
+facet-pretty = { version = "0.28.0" }
 jsonwebtoken = "9.3"

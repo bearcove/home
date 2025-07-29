@@ -17,5 +17,4 @@ tantivy = { version = "0.24.1" }
 percent-encoding = "2.3.1"
 config-types = { version = "0.1.0", path = "../config-types" }
 autotrait = "0.2.1"
-facet.workspace = true
 log = "0.4.27"
