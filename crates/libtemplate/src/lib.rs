@@ -548,6 +548,11 @@ impl Object for GlobalsVal {
             "sponsors" => Value::from_serialize(self.gv.gsv_sponsors().as_ref()),
             "globals" => Value::from_dyn_object(self.clone()),
             "web_port" => self.web.port.into(),
+            "tags" => {
+                let rev = self.rv.rev().mj().ok()?;
+                let tags: Vec<String> = rev.tags.keys().cloned().collect();
+                Value::from(tags)
+            }
             "__revision_view" => Value::from_object(RevisionViewHolder(self.rv.clone())),
             other => match self.additional_globals.get(other)? {
                 DataValue::String(s) => s.clone().into(),
