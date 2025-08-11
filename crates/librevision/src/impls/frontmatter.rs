@@ -64,6 +64,9 @@ pub struct FrontmatterExtras {
     // youtube video ID
     pub youtube: Option<String>,
 
+    // bunnystream video ID (used by video template)
+    pub bunnystream: Option<String>,
+
     // whether this is a dual feature (show the video while the article is still exclusive)
     pub dual_feature: bool,
 
