@@ -47,7 +47,7 @@ impl Mod for ModImpl {
         web: WebConfig,
         args: &'fut PatreonCallbackArgs,
         client: &'fut dyn HttpClient,
-    ) -> BoxFuture<'fut, Result<Option<(PatreonCredentials)>>> {
+    ) -> BoxFuture<'fut, Result<Option<PatreonCredentials>>> {
         Box::pin(async move {
             let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
                 .find(|(key, _)| key == "code")

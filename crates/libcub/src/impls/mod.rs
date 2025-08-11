@@ -20,7 +20,7 @@ use libmomclient::{MomClient, MomClientConfig, MomEventListener};
 use librevision::{RevisionKind, RevisionSpec};
 use log::{info, warn};
 use mom_event_handler::spawn_mom_event_handler;
-use mom_types::{AllUsers, MomEvent, Sponsors};
+use mom_types::{AllUsers, MomEvent};
 use node_metadata::{NodeMetadata, load_node_metadata};
 use parking_lot::RwLock;
 use reply::{LegacyHttpError, LegacyReply};
@@ -73,7 +73,7 @@ pub(crate) async fn serve(
     };
     let (mom_client, mut mev_rx) = setup_mom_client(mom_client_config.clone()).await?;
 
-    let (tenant_infos, mut revs_per_ts, mut sponsors_per_ts) =
+    let (tenant_infos, mut revs_per_ts, mut users_per_ts) =
         process_mom_good_morning(&cc, &mut mev_rx, web).await?;
 
     let deploy_mom_client = if web.env.is_prod() {
@@ -110,7 +110,7 @@ pub(crate) async fn serve(
         deploy_mom_client,
         &tenant_infos,
         &mut revs_per_ts,
-        &mut sponsors_per_ts,
+        &mut users_per_ts,
     )
     .await?;
     global_state::set_global_state(Box::leak(Box::new(gs)))
@@ -257,11 +257,11 @@ async fn process_mom_good_morning(
 ) -> eyre::Result<(
     HashMap<TenantDomain, Arc<TenantInfo>>,
     HashMap<TenantDomain, CubRevisionState>,
-    HashMap<TenantDomain, Sponsors>,
+    HashMap<TenantDomain, AllUsers>,
 )> {
     let mod_revision = librevision::load();
     let mut revs_per_ts: HashMap<TenantDomain, CubRevisionState> = Default::default();
-    let mut sponsors_per_ts: HashMap<TenantDomain, Sponsors> = Default::default();
+    let mut users_per_ts: HashMap<TenantDomain, AllUsers> = Default::default();
 
     info!(
         "Waiting for mom's good morning message to initialize tenants and start serving content..."
@@ -295,8 +295,8 @@ async fn process_mom_good_morning(
             tc: tis.tc,
         });
 
-        if let Some(sponsors) = tis.sponsors {
-            sponsors_per_ts.insert(tn.clone(), sponsors);
+        if let Some(users) = tis.users {
+            users_per_ts.insert(tn.clone(), users);
         }
         let mappings = PathMappings::from_ti(&ti);
 
@@ -356,7 +356,7 @@ async fn process_mom_good_morning(
         tenant_infos.insert(tn, ti);
     }
 
-    Ok((tenant_infos, revs_per_ts, sponsors_per_ts))
+    Ok((tenant_infos, revs_per_ts, users_per_ts))
 }
 
 /// This function builds the global state for the application, which includes initializing

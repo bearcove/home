@@ -6,16 +6,15 @@ use std::{
 };
 
 use axum::extract::ws;
-use config_types::{
-    MomConfig, RevisionConfig, TenantDomain, TenantInfo, WebConfig, is_development,
-};
+use config_types::{MomConfig, RevisionConfig, TenantDomain, TenantInfo, WebConfig};
 use conflux::Pak;
+use credentials::PatreonUserId;
 use inflight::InflightSlots;
 use itertools::Itertools;
 use libhttpclient::HttpClient;
 use libobjectstore::ObjectStore;
-use libpatreon::{PatreonCredentials, test_patreon_renewal};
-use log::{debug, error, info};
+use libpatreon::PatreonCredentials;
+use log::{debug, error};
 use mom_types::AllUsers;
 use objectstore_types::ObjectStoreKey;
 use owo_colors::OwoColorize;
@@ -30,7 +29,6 @@ use mom_types::{
 
 mod db;
 mod deriver;
-mod email;
 mod endpoints;
 mod ffmpeg;
 mod ffmpeg_stream;
@@ -52,15 +50,12 @@ pub(crate) struct MomGlobalState {
 
     /// web config (mostly just port)
     pub(crate) web: WebConfig,
-
-    /// email service (if configured)
-    pub(crate) email_service: Option<Arc<email::EmailService>>,
 }
 
 pub(crate) struct MomTenantState {
     pub(crate) pool: Pool,
 
-    pub(crate) patreon_creds_inflight: InflightSlots<String, AuthBundle>,
+    pub(crate) patreon_creds_inflight: InflightSlots<PatreonUserId, PatreonCredentials>,
     pub(crate) users_inflight: InflightSlots<(), AllUsers>,
     pub(crate) users: Arc<Mutex<Option<AllUsers>>>,
 
@@ -134,43 +129,6 @@ impl Deref for Pool {
     }
 }
 
-pub(crate) fn save_sponsors_to_db(ts: &MomTenantState, sponsors: Sponsors) -> eyre::Result<()> {
-    let conn = ts.pool.get()?;
-
-    // delete old entries
-    conn.execute(
-        "DELETE FROM sponsors WHERE created_at < datetime('now', '-2 hours')",
-        [],
-    )?;
-
-    // insert new entry
-    conn.execute(
-        "INSERT INTO sponsors (sponsors_json) VALUES (?1)",
-        [facet_json::to_string(&sponsors)],
-    )?;
-
-    Ok(())
-}
-
-pub(crate) fn load_sponsors_from_db(ts: &MomTenantState) -> eyre::Result<Option<Sponsors>> {
-    let conn = ts.pool.get()?;
-    let mut stmt = conn.prepare(
-        "
-            SELECT sponsors_json
-            FROM sponsors
-            ORDER BY created_at DESC
-            LIMIT 1
-            ",
-    )?;
-    let res: Result<String, rusqlite::Error> = stmt.query_row([], |row| row.get(0));
-    match res {
-        Ok(sponsors_json) => Ok(Some(
-            facet_json::from_str::<Sponsors>(&sponsors_json).map_err(|e| e.into_owned())?,
-        )),
-        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-        Err(e) => Err(e.into()),
-    }
-}
 pub(crate) async fn load_revision_from_db(ts: &MomTenantState) -> eyre::Result<Option<Pak>> {
     debug!("Loading latest revision from database");
     let (id, object_key) = {
@@ -234,45 +192,12 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         let (tx_event, rx_event) = broadcast::channel(16);
         drop(rx_event);
 
-        let email_service = if let Some(email_config) = &config.secrets.email {
-            log::info!("Email configuration found, initializing email service...");
-            log::debug!(
-                "Email config - SMTP host: {}:{}, from: {} <{}>",
-                email_config.smtp_host,
-                email_config.smtp_port,
-                email_config.from_name,
-                email_config.from_email
-            );
-
-            match email::EmailService::new(email_config) {
-                Ok(service) => {
-                    log::info!("✅ Email service configured successfully");
-                    log::info!("Email login functionality is now available");
-                    Some(Arc::new(service))
-                }
-                Err(e) => {
-                    log::error!("❌ Failed to configure email service: {e}");
-                    log::debug!("Email service initialization error details: {e:?}");
-                    log::warn!("Email login will not be available due to configuration error");
-                    None
-                }
-            }
-        } else {
-            log::info!("No email configuration provided in config.secrets.email");
-            log::warn!("Email login functionality will not be available");
-            if is_development() {
-                log::info!("Development mode: login codes will be logged to console instead");
-            }
-            None
-        };
-
         let mut gs = MomGlobalState {
             client: Arc::from(libhttpclient::load().client()),
             bx_event: tx_event,
             tenants: Default::default(),
             config: Arc::new(config),
             web,
-            email_service,
         };
 
         for (tn, ti) in tenants {
@@ -284,7 +209,28 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
 
             let ts = MomTenantState {
                 pool: mom_db_pool(&ti).unwrap(),
-                patreon_creds_inflight: InflightSlots::new(move |k: &String| todo!("decide fate")),
+                patreon_creds_inflight: InflightSlots::new(
+                    move |patreon_user_id: &PatreonUserId| {
+                        let gs = global_state();
+                        let ts = gs
+                            .tenants
+                            .get(&tn_for_creds)
+                            .cloned()
+                            .ok_or_else(|| {
+                                eyre::eyre!(
+                                    "Tenant not found in global state: global state has tenants {}",
+                                    gs.tenants.keys().join(", ")
+                                )
+                            })
+                            .unwrap();
+                        let patreon_user_id = patreon_user_id.clone();
+                        Box::pin(async move {
+                            users::fetch_uptodate_patreon_credentials(&ts, &patreon_user_id)
+                                .await?
+                                .ok_or_else(|| eyre::eyre!("No Patreon credentials found"))
+                        })
+                    },
+                ),
                 users_inflight: InflightSlots::new(move |_| {
                     let gs = global_state();
                     log::info!(
@@ -304,10 +250,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         })
                         .unwrap();
                     Box::pin(async move {
-                        let res = sponsors::get_all_users(&ts).await?;
-                        if let Err(e) = save_sponsors_to_db(ts.as_ref(), res.clone()) {
-                            log::error!("Failed to save sponsors to DB: {e}")
-                        }
+                        let res = users::get_all_users(&ts).await?;
                         ts.broadcast_event(TenantEventPayload::UsersUpdated(res.clone()))?;
 
                         Ok(res)
@@ -336,22 +279,19 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
 
     eprintln!("Trying to load all sponsors from db...");
     for ts in global_state().tenants.values() {
-        // try to load sponsors from the database
-        match load_sponsors_from_db(ts.as_ref()) {
-            Ok(Some(sponsors)) => {
+        // try to load users from the database
+        match users::fetch_all_users(&ts.pool) {
+            Ok(users) => {
                 eprintln!(
-                    "{} Loaded {} sponsors",
+                    "{} Loaded {} users",
                     ts.ti.tc.name.magenta(),
-                    sponsors.sponsors.len()
+                    users.users.len()
                 );
-                *ts.users.lock() = Some(sponsors);
-            }
-            Ok(None) => {
-                eprintln!("{} No sponsors found in DB", ts.ti.tc.name.magenta());
+                *ts.users.lock() = Some(users);
             }
             Err(e) => {
                 error!(
-                    "{} Failed to restore sponsors from DB: {e}",
+                    "{} Failed to restore users from DB: {e}",
                     ts.ti.tc.name.magenta()
                 );
             }

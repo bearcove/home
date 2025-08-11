@@ -66,8 +66,8 @@ async fn patreon_callback(
     let res: Option<PatreonCallbackResponse> = match creds {
         Some(creds) => {
             let profile = mod_patreon.fetch_profile(&ts.rc()?, &creds, client).await?;
-            save_patreon_profile(&pool, &profile);
-            save_patreon_credentials(&pool, &profile.id, &creds)?;
+            save_patreon_profile(pool, &profile)?;
+            save_patreon_credentials(pool, &profile.id, &creds)?;
 
             // now, do we already have a user with this patreon profile? if not, create it
             // TODO: eventually, we should accept a "user_id" to assign this profile too, in
@@ -85,7 +85,7 @@ async fn patreon_callback(
                 user_id
             } else {
                 create_user(
-                    &pool,
+                    pool,
                     CreateUserArgs {
                         patreon_user_id: Some(profile.id.clone()),
                         github_user_id: None,
@@ -95,7 +95,7 @@ async fn patreon_callback(
 
             let user_info = {
                 let user_id_str = user_id.to_string();
-                fetch_user_info(&pool, &user_id_str)?.unwrap()
+                fetch_user_info(pool, &user_id_str)?.unwrap()
             };
 
             Some(PatreonCallbackResponse { user_info })
@@ -126,8 +126,8 @@ async fn github_callback(
             let profile = mod_github.fetch_profile(&creds, client).await?;
 
             // Save Github profile and credentials to the database
-            save_github_profile(&pool, &profile);
-            save_github_credentials(&pool, &profile.id, &creds)?;
+            save_github_profile(pool, &profile)?;
+            save_github_credentials(pool, &profile.id, &creds)?;
 
             // now, do we already have a user with this github profile? if not, create it
             // TODO: eventually, we should accept a "user_id" to assign this profile too, in
@@ -145,7 +145,7 @@ async fn github_callback(
                 user_id
             } else {
                 create_user(
-                    &pool,
+                    pool,
                     CreateUserArgs {
                         patreon_user_id: None,
                         github_user_id: Some(profile.id.clone()),
@@ -155,7 +155,7 @@ async fn github_callback(
 
             let user_info = {
                 let user_id_str = user_id.to_string();
-                fetch_user_info(&pool, &user_id_str)?.unwrap()
+                fetch_user_info(pool, &user_id_str)?.unwrap()
             };
 
             Some(GithubCallbackResponse { user_info })
@@ -163,56 +163,6 @@ async fn github_callback(
         None => None,
     };
     FacetJson(res).into_reply()
-}
-
-fn get_patreon_credentials(
-    conn: &rusqlite::Connection,
-    patreon_id: &str,
-) -> Result<PatreonCredentials, HttpError> {
-    let pat_creds_payload: String = conn
-        .query_row(
-            "SELECT data FROM patreon_credentials WHERE patreon_id = ?1",
-            [patreon_id],
-            |row| row.get::<_, String>(0),
-        )
-        .map_err(|_| {
-            HttpError::with_status(
-                StatusCode::UNAUTHORIZED,
-                format!("No Patreon credentials found for user {patreon_id}"),
-            )
-        })?;
-
-    facet_json::from_str::<PatreonCredentials>(&pat_creds_payload).map_err(|_| {
-        HttpError::with_status(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to parse Patreon credentials",
-        )
-    })
-}
-
-fn get_github_credentials(
-    conn: &rusqlite::Connection,
-    github_id: &str,
-) -> Result<GithubCredentials, HttpError> {
-    let github_creds: String = conn
-        .query_row(
-            "SELECT data FROM github_credentials WHERE github_id = ?1",
-            [github_id],
-            |row| row.get(0),
-        )
-        .map_err(|_| {
-            HttpError::with_status(
-                StatusCode::UNAUTHORIZED,
-                format!("No Github credentials found for user {github_id}"),
-            )
-        })?;
-
-    facet_json::from_str::<GithubCredentials>(&github_creds).map_err(|_| {
-        HttpError::with_status(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to parse Github credentials",
-        )
-    })
 }
 
 #[derive(Facet)]

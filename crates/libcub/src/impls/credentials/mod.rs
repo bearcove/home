@@ -1,14 +1,7 @@
 use config_types::Environment;
-use http::Uri;
-use libpatreon::{PatreonRefreshCredentials, PatreonRefreshCredentialsArgs};
-use log::{debug, warn};
-use time::OffsetDateTime;
+use credentials::AuthBundle;
+use log::warn;
 use tower_cookies::{Cookie, PrivateCookies, cookie::SameSite};
-
-// Export these types for use in the crate
-pub use credentials::AuthBundle;
-
-use super::global_state;
 
 static COOKIE_NAME: &str = "home-credentials";
 
@@ -48,50 +41,5 @@ pub async fn authbundle_load_from_cookies(cookies: &PrivateCookies<'_>) -> Optio
         }
     };
 
-    let now = OffsetDateTime::now_utc();
-    if now < creds.expires_at {
-        // credentials aren't expired yet
-        return Some(creds);
-    }
-
-    debug!("Refreshing cookies");
-    let creds = match refresh_credentials(&creds).await {
-        Err(e) => {
-            warn!("Refreshing credentials failed, will log out: {e:?}");
-            cookies.remove(cookie.clone().into_owned());
-            return None;
-        }
-        Ok(creds) => creds,
-    };
-
-    cookies.add(auth_bundle_as_cookie(&creds));
     Some(creds)
-}
-
-async fn refresh_credentials(creds: &AuthBundle) -> eyre::Result<AuthBundle> {
-    let patreon_id = creds
-        .user_info
-        .profile
-        .patreon_id
-        .as_deref()
-        .ok_or_else(|| eyre::eyre!("Can only refresh patreon credentials"))?;
-    refresh_patreon_credentials(patreon_id.to_string()).await
-}
-
-async fn refresh_patreon_credentials(patreon_id: String) -> eyre::Result<AuthBundle> {
-    let client = libhttpclient::load().client();
-
-    let mom_base_url = &global_state().config.mom_base_url;
-    let res = client
-        .post(Uri::try_from(&format!("{mom_base_url}/patreon/refresh-credentials")).unwrap())
-        .json(&PatreonRefreshCredentialsArgs { patreon_id })?
-        .send()
-        .await?;
-
-    let res = res
-        .json::<PatreonRefreshCredentials>()
-        .await
-        .inspect_err(|e| warn!("Failed to refresh credentials: {e}"))?;
-
-    Ok(res.auth_bundle)
 }

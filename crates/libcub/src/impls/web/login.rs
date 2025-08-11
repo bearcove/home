@@ -1,16 +1,15 @@
 use crate::impls::{
-    credentials::{AuthBundle, auth_bundle_as_cookie, auth_bundle_remove_cookie},
+    credentials::{auth_bundle_as_cookie, auth_bundle_remove_cookie},
     cub_req::{CubReqImpl, RenderArgs},
     reply::{IntoLegacyReply, LegacyReply},
 };
 use axum::{Form, Router, response::Redirect, routing::get};
 use config_types::is_development;
-use credentials::UserInfo;
+use credentials::{AuthBundle, GithubProfile, GithubUserId, PatreonProfile, UserId, UserInfo};
 use cub_types::{CubReq, CubTenant};
 use libgithub::GithubLoginPurpose;
 use libpatreon::PatreonCallbackArgs;
 use log::info;
-use mom_types::{GenerateLoginCodeRequest, ValidateLoginCodeRequest};
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_cookies::{Cookie, PrivateCookies};
@@ -89,9 +88,10 @@ async fn serve_patreon_callback(tr: CubReqImpl) -> LegacyReply {
     finish_login_callback(&tr, serve_patreon_callback_inner(&tr).await?).await
 }
 
-async fn finish_login_callback(tr: &CubReqImpl, auth_bundle: Option<AuthBundle>) -> LegacyReply {
+async fn finish_login_callback(tr: &CubReqImpl, user_info: Option<UserInfo>) -> LegacyReply {
     // if None, the oauth flow was cancelled
-    if let Some(auth_bundle) = auth_bundle {
+    if let Some(user_info) = user_info {
+        let auth_bundle = AuthBundle { user_info };
         let session_cookie = auth_bundle_as_cookie(&auth_bundle);
         tr.cookies().add(session_cookie);
         {
@@ -109,19 +109,19 @@ async fn finish_login_callback(tr: &CubReqImpl, auth_bundle: Option<AuthBundle>)
     Redirect::to(&location).into_legacy_reply()
 }
 
-async fn serve_patreon_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<AuthBundle>> {
+async fn serve_patreon_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<UserInfo>> {
     let tcli = tr.tenant.tcli();
     let callback_args = PatreonCallbackArgs {
         raw_query: tr.raw_query().to_owned(),
     };
     let res = tcli.patreon_callback(&callback_args).await?;
-    Ok(res.map(|res| res.auth_bundle))
+    Ok(res.map(|res| res.user_info))
 }
 
 async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     let ts = tr.tenant.clone();
     let tcli = tr.tenant.tcli();
-    let callback_args = libgithub::GitHubCallbackArgs {
+    let callback_args = libgithub::GithubCallbackArgs {
         raw_query: tr.raw_query().to_owned(),
     };
     let callback_res = tcli.github_callback(&callback_args).await?;
@@ -129,13 +129,12 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     if let Some(callback_res) = callback_res.as_ref() {
         // if credentials are for creator and they don't have `read:org`, have them log in again
         let github_id = callback_res
-            .auth_bundle
             .user_info
-            .profile
-            .github_id
-            .as_deref()
-            .unwrap_or_default();
-        if ts.rc()?.admin_github_ids.iter().any(|id| id == github_id) {
+            .github
+            .as_ref()
+            .map(|gp| gp.id.clone())
+            .unwrap_or_else(|| GithubUserId::new("weird".to_string()));
+        if ts.rc()?.admin_github_ids.iter().any(|id| id == &github_id) {
             let mod_github = libgithub::load();
             if callback_res
                 .github_credentials
@@ -211,26 +210,25 @@ async fn serve_login_for_dev(tr: CubReqImpl) -> LegacyReply {
     let patreon_id = rev.rev.pak.rc.admin_patreon_ids.first().cloned();
     let github_id = rev.rev.pak.rc.admin_github_ids.first().cloned();
 
-    let profile = credentials::Profile {
-        patreon_id,
-        github_id,
-        email: None,
-        full_name: "Admin (Dev)".to_string(),
-        thumb_url: "https://placehold.co/32".to_string(), // Placeholder URL
-    };
-
     let user_info = UserInfo {
-        profile,
-        tier: None,
+        id: UserId::new("1".to_string()),
+        patreon: patreon_id.map(|id| PatreonProfile {
+            id,
+            tier: Some("dev".to_string()),
+            full_name: "Dev User".to_string(),
+            avatar_url: Some("https://placehold.co/32".to_string()),
+        }),
+        github: github_id.map(|id| GithubProfile {
+            id,
+            monthly_usd: Some(0),
+            sponsorship_privacy_level: Some("PRIVATE".to_string()),
+            name: Some("Dev User".to_string()),
+            login: "devuser".to_string(),
+            avatar_url: Some("https://placehold.co/32".to_string()),
+        }),
     };
 
-    // Dev logins shouldn't expire for a while
-    let expires_at = OffsetDateTime::now_utc() + time::Duration::weeks(52);
-
-    let auth_bundle = AuthBundle {
-        user_info,
-        expires_at,
-    };
+    let auth_bundle = AuthBundle { user_info };
 
     let session_cookie = auth_bundle_as_cookie(&auth_bundle);
     tr.cookies().add(session_cookie);

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use config_types::{WebConfig, is_development};
 use conflux::{Pak, PathMappings};
 use cub_types::CubTenant;
-use mom_types::{MomEvent, Sponsors, TenantEventPayload};
+use mom_types::{AllUsers, MomEvent, TenantEventPayload};
 use tokio::sync::mpsc;
 
 use super::{global_state, types::CubTenantImpl};
@@ -47,8 +47,8 @@ async fn handle_tenant_event(
     web: WebConfig,
 ) {
     match payload {
-        TenantEventPayload::SponsorsUpdated(sponsors) => {
-            handle_sponsors_updated(ts, sponsors);
+        TenantEventPayload::UsersUpdated(users) => {
+            handle_users_updated(ts, users);
         }
         TenantEventPayload::RevisionChanged(pak) => {
             handle_revision_changed(ts, pak, web).await;
@@ -56,8 +56,8 @@ async fn handle_tenant_event(
     }
 }
 
-fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: Sponsors) {
-    *ts.users.write() = Arc::new(sponsors);
+fn handle_users_updated(ts: Arc<CubTenantImpl>, users: AllUsers) {
+    *ts.users.write() = Arc::new(users);
 }
 
 async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak>, web: WebConfig) {

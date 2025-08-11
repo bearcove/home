@@ -21,6 +21,12 @@ plait! {
     pub struct PatreonUserId => &PatreonUserIdRef;
 }
 
+/// An auth bundle, stored in a confidential cookie
+#[derive(Debug, Clone, Serialize, Facet)]
+pub struct AuthBundle {
+    pub user_info: UserInfo,
+}
+
 #[derive(Debug, Clone, Serialize, Facet)]
 pub struct UserInfo {
     /// tenants-specific user ID

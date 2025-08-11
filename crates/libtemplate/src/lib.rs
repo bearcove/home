@@ -545,9 +545,29 @@ impl Object for GlobalsVal {
                 ti: self.gv.gsv_ti().clone(),
                 web: self.web,
             }),
-            "users" => Value::from_serialize(self.gv.gsv_users().as_ref()),
+            // returns a list of credited sponsors
             "sponsors" => {
-                todo!("remake sponsors from users map!");
+                let users = self.gv.gsv_users();
+                let mut sponsors: Vec<String> = Default::default();
+                for u in users.users.values() {
+                    // hardcoded for fasterthanli.me for now
+                    if let Some(gh) = &u.github {
+                        if gh.monthly_usd.unwrap_or(0) >= 10 {
+                            if let Some(name) = gh.name.clone() {
+                                sponsors.push(name);
+                            } else {
+                                sponsors.push(gh.login.clone());
+                            }
+                        }
+                    }
+
+                    if let Some(pt) = &u.patreon {
+                        if let Some("Silver" | "Gold") = pt.tier.as_deref() {
+                            sponsors.push(pt.full_name.clone());
+                        }
+                    }
+                }
+                sponsors.into()
             }
             "globals" => Value::from_dyn_object(self.clone()),
             "web_port" => self.web.port.into(),

@@ -167,9 +167,6 @@ fn get_page_from_route(state: &minijinja::State, path: String) -> Result<Value, 
     Ok(page)
 }
 
-// This generates a key to be used for RSS feeds
-fn generate_rss_key(state: &minijinja::State) {}
-
 // This is used to generate RSS feeds
 fn get_recent_pages(state: &minijinja::State, args: Kwargs) -> Result<Value, Error> {
     // this is for private RSS feeds, it's a JWT

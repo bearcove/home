@@ -59,10 +59,8 @@ async fn get_patreon_users(
 
     if !profiles.is_empty() {
         let placeholders = profiles.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-        let query = format!(
-            "SELECT patreon_user_id FROM users WHERE patreon_user_id IN ({})",
-            placeholders
-        );
+        let query =
+            format!("SELECT patreon_user_id FROM users WHERE patreon_user_id IN ({placeholders})");
 
         let mut stmt = conn.prepare(&query)?;
         let patreon_ids: Vec<PatreonUserId> = profiles.iter().map(|p| p.id.clone()).collect();
@@ -138,10 +136,8 @@ async fn get_github_users(
 
     if !profiles.is_empty() {
         let placeholders = profiles.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-        let query = format!(
-            "SELECT github_user_id FROM users WHERE github_user_id IN ({})",
-            placeholders
-        );
+        let query =
+            format!("SELECT github_user_id FROM users WHERE github_user_id IN ({placeholders})");
 
         let mut stmt = conn.prepare(&query)?;
         let github_ids: Vec<GithubUserId> = profiles.iter().map(|p| p.id.clone()).collect();
@@ -190,17 +186,16 @@ async fn get_github_users(
 
 pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
     let conn = pool.get()?;
-
     // First, fetch the user record
-    let user_row: Option<(String, Option<String>, Option<String>)> = conn
+    let user_row: Option<(UserId, Option<PatreonUserId>, Option<GithubUserId>)> = conn
         .query_row(
             "SELECT id, patreon_user_id, github_user_id FROM users WHERE id = ?1",
             [user_id],
             |row| {
                 Ok((
-                    row.get::<_, i64>(0)?.to_string(),
-                    row.get::<_, Option<String>>(1)?,
-                    row.get::<_, Option<String>>(2)?,
+                    row.get::<_, UserId>(0)?,
+                    row.get::<_, Option<PatreonUserId>>(1)?,
+                    row.get::<_, Option<GithubUserId>>(2)?,
                 ))
             },
         )
@@ -522,5 +517,88 @@ pub(crate) async fn refresh_user_profile(
         id,
         patreon,
         github,
+    })
+}
+
+pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
+    let conn = pool.get()?;
+
+    let mut stmt = conn.prepare(
+        "
+        SELECT
+            u.id,
+            u.patreon_user_id,
+            u.github_user_id,
+            p.id as p_id,
+            p.tier as p_tier,
+            p.full_name as p_full_name,
+            p.thumb_url as p_thumb_url,
+            g.id as g_id,
+            g.monthly_usd as g_monthly_usd,
+            g.sponsorship_privacy_level as g_sponsorship_privacy_level,
+            g.name as g_name,
+            g.login as g_login,
+            g.thumb_url as g_thumb_url
+        FROM users u
+        LEFT JOIN patreon_profiles p ON u.patreon_user_id = p.id
+        LEFT JOIN github_profiles g ON u.github_user_id = g.id
+        ",
+    )?;
+
+    let rows = stmt.query_map([], |row| {
+        let id: UserId = row.get("id")?;
+        let patreon_user_id: Option<PatreonUserId> = row.get("patreon_user_id")?;
+        let github_user_id: Option<GithubUserId> = row.get("github_user_id")?;
+
+        // Build Patreon profile if data exists
+        let patreon = if patreon_user_id.is_some() {
+            let p_id: Option<PatreonUserId> = row.get("p_id")?;
+            if p_id.is_some() {
+                Some(PatreonProfile {
+                    id: row.get("p_id")?,
+                    tier: row.get("p_tier")?,
+                    full_name: row.get("p_full_name")?,
+                    avatar_url: row.get("p_thumb_url")?,
+                })
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // Build Github profile if data exists
+        let github = if github_user_id.is_some() {
+            let g_id: Option<GithubUserId> = row.get("g_id")?;
+            if g_id.is_some() {
+                Some(GithubProfile {
+                    id: row.get("g_id")?,
+                    monthly_usd: row.get("g_monthly_usd")?,
+                    sponsorship_privacy_level: row.get("g_sponsorship_privacy_level")?,
+                    name: row.get("g_name")?,
+                    login: row.get("g_login")?,
+                    avatar_url: row.get("g_thumb_url")?,
+                })
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        Ok(UserInfo {
+            id,
+            patreon,
+            github,
+        })
+    })?;
+
+    let mut users = Vec::new();
+    for row in rows {
+        users.push(row?);
+    }
+
+    Ok(AllUsers {
+        users: users.into_iter().map(|u| (u.id.clone(), u)).collect(),
     })
 }

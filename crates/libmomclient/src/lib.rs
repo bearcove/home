@@ -1,6 +1,5 @@
 use autotrait::autotrait;
 use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
-use credentials::UserInfo;
 use eyre::bail;
 use futures_core::future::BoxFuture;
 use mom_types::{

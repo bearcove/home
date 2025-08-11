@@ -1,6 +1,5 @@
 use crate::impls::{
     access_control::{CanAccess, can_access},
-    credentials::AuthBundle,
     reply::{IntoLegacyReply, LegacyReply},
     types::DomainResolution,
 };
@@ -13,6 +12,7 @@ use axum::{
 use config_types::{Environment, WebConfig};
 use conflux::{AccessOverride, CacheBuster, InputPathRef, LoadedPage, Route, Viewer};
 use content_type::ContentType;
+use credentials::AuthBundle;
 use cub_types::{CubReq, CubTenant};
 use eyre::Result;
 use futures_core::future::BoxFuture;
