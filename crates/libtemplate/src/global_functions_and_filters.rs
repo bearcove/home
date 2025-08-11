@@ -167,9 +167,16 @@ fn get_page_from_route(state: &minijinja::State, path: String) -> Result<Value, 
     Ok(page)
 }
 
-// This is used to generate the RSS feed
-fn get_recent_pages(state: &minijinja::State) -> Result<Value, Error> {
-    let viewer = Viewer {
+// This generates a key to be used for RSS feeds
+fn generate_rss_key(state: &minijinja::State) {}
+
+// This is used to generate RSS feeds
+fn get_recent_pages(state: &minijinja::State, args: Kwargs) -> Result<Value, Error> {
+    // this is for private RSS feeds, it's a JWT
+    let key = args.get::<String>("key").ok();
+    args.assert_all_used()?;
+
+    let mut viewer = Viewer {
         is_admin: false,
         has_bronze: false,
         has_silver: false,
@@ -183,9 +190,17 @@ fn get_recent_pages(state: &minijinja::State) -> Result<Value, Error> {
         .mj()?
         .pages
         .values()
-        .filter(|p| p.is_article() || p.is_series_part())
+        .filter(|p| p.is_article() || p.is_series_part() || (viewer.has_silver && p.is_video()))
         .filter(|p| p.is_listed(&viewer))
-        .sorted_by_key(|p| p.date)
+        .sorted_by_key(|p| {
+            if viewer.has_silver {
+                // that's right, private RSS feeds have articles
+                // in a different order / with different datetimes
+                p.early_access_date.unwrap_or(p.date)
+            } else {
+                p.date
+            }
+        })
         .rev()
         .take(25)
         .cloned()

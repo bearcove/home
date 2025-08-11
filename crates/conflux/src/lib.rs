@@ -136,6 +136,8 @@ pub enum PageKind {
     SeriesIndex,
     // e.g. `/series/making-our-own-ping/part-1`
     SeriesPart,
+    // e.g. `/videos/blah`
+    Video,
     // e.g. `/tests/blah`
     Test,
     // e.g. `/about`
@@ -153,6 +155,7 @@ impl From<&RouteRef> for PageKind {
             ["series"] => PageKind::SeriesListing,
             ["series", _slug] => PageKind::SeriesIndex,
             ["series", _slug, _part] => PageKind::SeriesPart,
+            ["videos", _slug] => PageKind::Video,
             ["tests", _slug] => PageKind::Test,
             _ => PageKind::Other,
         }
@@ -197,6 +200,10 @@ fn pagekind_from_path() {
     assert_eq!(
         PageKind::from(RouteRef::from_str("/tests/example")),
         PageKind::Test
+    );
+    assert_eq!(
+        PageKind::from(RouteRef::from_str("/videos/example")),
+        PageKind::Video
     );
 }
 
@@ -243,6 +250,8 @@ pub struct LoadedPage {
     pub title: String,
     pub template: String,
     pub date: OffsetDateTime,
+    /// date at which an article goes live for sponsors whog et early access
+    pub early_access_date: Option<OffsetDateTime>,
     pub draft: bool,
     pub archive: bool,
     pub aliases: Vec<Route>,
@@ -410,6 +419,11 @@ impl LoadedPage {
     }
 
     #[inline]
+    pub fn is_video(&self) -> bool {
+        matches!(self.kind, PageKind::Video)
+    }
+
+    #[inline]
     pub fn is_indexed(&self) -> bool {
         if self.archive {
             return false;
@@ -426,8 +440,20 @@ impl LoadedPage {
         if self.draft && !viewer.is_admin {
             return false;
         }
-        if self.date > OffsetDateTime::now_utc() && !viewer.is_admin {
-            return false;
+
+        if viewer.has_silver {
+            match self.early_access_date {
+                Some(date) => {
+                    if date > OffsetDateTime::now_utc() {
+                        return false;
+                    }
+                }
+                None => return false,
+            }
+        } else {
+            if self.date > OffsetDateTime::now_utc() && !viewer.is_admin {
+                return false;
+            }
         }
         match self.kind {
             PageKind::Article
@@ -436,6 +462,7 @@ impl LoadedPage {
             | PageKind::SeriesPart => {
                 // okay
             }
+            PageKind::Video => return viewer.has_silver || viewer.is_admin,
             _ => {
                 return false;
             }

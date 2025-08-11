@@ -14,6 +14,10 @@ pub struct Frontmatter {
     /// Publication date in RFC3339 format, e.g. `2023-10-01T12:00:00Z` (UTC)
     pub date: OffsetDateTime,
 
+    /// Date at which patrons/sponsors get early access to the page
+    #[facet(default)]
+    pub early_access_date: Option<OffsetDateTime>,
+
     /// Last update date, if any
     #[facet(default)]
     pub updated_at: Option<OffsetDateTime>,

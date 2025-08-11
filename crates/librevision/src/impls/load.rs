@@ -705,6 +705,7 @@ fn load_single_page(
         title: frontmatter.title,
         template: frontmatter.template,
         date: frontmatter.date,
+        early_access_date: frontmatter.early_access_date,
         draft: frontmatter.draft,
         archive: frontmatter.archive,
         draft_code: frontmatter.draft_code,
