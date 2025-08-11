@@ -17,7 +17,7 @@ struct UpdatedUserInfo {
     user_info: UserInfo,
 }
 
-/// Does another GitHub/Patreon API call to re-check someone's tier.
+/// Does another Github/Patreon API call to re-check someone's tier.
 pub(crate) async fn serve_update_userinfo(mut tr: CubReqImpl) -> LegacyReply {
     let auth_bundle = match tr.auth_bundle.as_ref() {
         Some(creds) => creds,

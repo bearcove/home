@@ -1,4 +1,4 @@
-use mom_types::Sponsors;
+use mom_types::AllUsers;
 use std::{collections::HashMap, sync::Arc};
 use time::OffsetDateTime;
 
@@ -100,8 +100,8 @@ pub trait CubTenant: Send + Sync + 'static {
             .ok_or_else(|| eyre::eyre!("No revision loaded, cannot get RevisionConfig"))
     }
 
-    /// Return the current list of sponsors
-    fn sponsors(&self) -> Arc<Sponsors>;
+    /// Return all users
+    fn users(&self) -> Arc<AllUsers>;
 
     /// Returns the tenant's object store
     fn store(&self) -> Arc<dyn ObjectStore>;

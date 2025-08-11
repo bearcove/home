@@ -46,6 +46,7 @@ impl Mod for ModImpl {
         tc: &'fut TenantConfig,
         web: WebConfig,
         args: &'fut PatreonCallbackArgs,
+        client: &'fut dyn HttpClient,
     ) -> BoxFuture<'fut, Result<Option<(PatreonCredentials)>>> {
         Box::pin(async move {
             let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
@@ -68,8 +69,7 @@ impl Mod for ModImpl {
                 serializer.finish()
             };
 
-            let res = libhttpclient::load()
-                .client()
+            let res = client
                 .post(Uri::from_static("https://patreon.com/api/oauth2/token"))
                 .form(tok_params)
                 .send()
@@ -105,7 +105,8 @@ impl Mod for ModImpl {
     fn refresh_credentials<'fut>(
         &'fut self,
         tc: &'fut TenantConfig,
-        creds: PatreonCredentials,
+        creds: &'fut PatreonCredentials,
+        client: &'fut dyn HttpClient,
     ) -> BoxFuture<'fut, Result<PatreonCredentials>> {
         Box::pin(async move {
             let tok_params = {
@@ -118,7 +119,6 @@ impl Mod for ModImpl {
                     .append_pair("client_secret", &patreon_secrets.oauth_client_secret)
                     .finish()
             };
-            let client = libhttpclient::load().client();
             let uri = Uri::from_static("https://www.patreon.com/api/oauth2/token");
             log::info!("Refresh params: {tok_params}, uri: {uri}");
             let res = client
@@ -147,6 +147,7 @@ impl Mod for ModImpl {
         &'fut self,
         rc: &'fut RevisionConfig,
         creds: &'fut PatreonCredentials,
+        client: &'fut dyn HttpClient,
     ) -> BoxFuture<'fut, Result<PatreonProfile>> {
         Box::pin(async move {
             let mut identity_url = Url::parse("https://www.patreon.com/api/oauth2/v2/identity")?;
@@ -167,8 +168,7 @@ impl Mod for ModImpl {
             let identity_url = identity_url.to_string();
 
             let identity_uri = identity_url.parse::<Uri>().unwrap();
-            let res = libhttpclient::load()
-                .client()
+            let res = client
                 .get(identity_uri.clone())
                 .bearer_auth(&creds.access_token)
                 .send()

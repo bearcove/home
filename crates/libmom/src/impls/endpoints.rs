@@ -194,7 +194,7 @@ async fn handle_socket(mut socket: ws::WebSocket) {
             tn.clone(),
             TenantInitialState {
                 pak: revision,
-                sponsors,
+                users,
                 tc,
                 base_dir: if is_development() {
                     // in dev, let mom and cub share a base directory

@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use axum::routing::get;
 use config_types::is_development;
-use credentials::{GithubProfile, PatreonProfile, PatreonUserIdRef, UserInfo};
+use credentials::UserId;
+use facet::Facet;
 use libhttpclient::Uri;
 use rusqlite::OptionalExtension;
 
@@ -10,7 +11,7 @@ use crate::impls::users::{
     CreateUserArgs, create_user, fetch_user_info, save_github_credentials, save_github_profile,
     save_patreon_credentials, save_patreon_profile,
 };
-use crate::impls::{MomTenantState, SqlitePool, global_state};
+use crate::impls::{MomTenantState, global_state};
 use axum::{Extension, Router};
 use axum::{
     body::Bytes,
@@ -18,10 +19,10 @@ use axum::{
     http::StatusCode,
     routing::{post, put},
 };
-use libgithub::{GitHubCallbackArgs, GithubCredentials};
+use libgithub::{GithubCallbackArgs, GithubCredentials};
 use libpatreon::{PatreonCallbackArgs, PatreonCredentials};
 use mom_types::{
-    GitHubCallbackResponse, ListMissingArgs, ListMissingResponse, PatreonCallbackResponse,
+    GithubCallbackResponse, ListMissingArgs, ListMissingResponse, PatreonCallbackResponse,
     TenantEventPayload,
 };
 use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
@@ -56,13 +57,15 @@ async fn patreon_callback(
     let mod_patreon = libpatreon::load();
     let pool = &ts.pool;
 
+    let client = global_state().client.as_ref();
+
     let creds = mod_patreon
-        .handle_oauth_callback(&ts.ti.tc, global_state().web, &args)
+        .handle_oauth_callback(&ts.ti.tc, global_state().web, &args, client)
         .await?;
 
     let res: Option<PatreonCallbackResponse> = match creds {
         Some(creds) => {
-            let profile = mod_patreon.fetch_profile(&ts.rc()?, &creds).await?;
+            let profile = mod_patreon.fetch_profile(&ts.rc()?, &creds, client).await?;
             save_patreon_profile(&pool, &profile);
             save_patreon_credentials(&pool, &profile.id, &creds)?;
 
@@ -107,7 +110,7 @@ async fn github_callback(
     body: Bytes,
 ) -> Reply {
     let body = std::str::from_utf8(&body[..])?;
-    let args: GitHubCallbackArgs = facet_json::from_str(body)?;
+    let args: GithubCallbackArgs = facet_json::from_str(body)?;
 
     let pool = &ts.pool;
     let mod_github = libgithub::load();
@@ -116,12 +119,13 @@ async fn github_callback(
     let creds = mod_github
         .handle_oauth_callback(&ts.ti.tc, web, &args)
         .await?;
+    let client = global_state().client.as_ref();
 
-    let res: Option<GitHubCallbackResponse> = match creds {
+    let res: Option<GithubCallbackResponse> = match creds {
         Some(creds) => {
-            let profile = mod_github.fetch_profile(web, &creds).await?;
+            let profile = mod_github.fetch_profile(&creds, client).await?;
 
-            // Save GitHub profile and credentials to the database
+            // Save Github profile and credentials to the database
             save_github_profile(&pool, &profile);
             save_github_credentials(&pool, &profile.id, &creds)?;
 
@@ -154,7 +158,7 @@ async fn github_callback(
                 fetch_user_info(&pool, &user_id_str)?.unwrap()
             };
 
-            Some(GitHubCallbackResponse { user_info })
+            Some(GithubCallbackResponse { user_info })
         }
         None => None,
     };
@@ -199,16 +203,22 @@ fn get_github_credentials(
         .map_err(|_| {
             HttpError::with_status(
                 StatusCode::UNAUTHORIZED,
-                format!("No GitHub credentials found for user {github_id}"),
+                format!("No Github credentials found for user {github_id}"),
             )
         })?;
 
     facet_json::from_str::<GithubCredentials>(&github_creds).map_err(|_| {
         HttpError::with_status(
             StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to parse GitHub credentials",
+            "Failed to parse Github credentials",
         )
     })
+}
+
+#[derive(Facet)]
+struct RefreshProfileArgs {
+    /// tenant-specific user ID
+    user_id: UserId,
 }
 
 // #[axum::debug_handler]
@@ -216,9 +226,14 @@ async fn refresh_profile(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
     body: Bytes,
 ) -> Reply {
-    todo!(
-        "take global user ID, refresh patreon/github/whatever is connected, return updated Profile object (saving it). design response so that we can let the caller know if/when credentials are expired"
-    );
+    let body = std::str::from_utf8(&body[..])?;
+    let args: RefreshProfileArgs = facet_json::from_str(body)?;
+
+    use crate::impls::users::refresh_user_profile;
+
+    let user_info = refresh_user_profile(&ts, &args.user_id).await?;
+
+    FacetJson(user_info).into_reply()
 }
 
 async fn objectstore_list_missing(

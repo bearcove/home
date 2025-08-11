@@ -1,11 +1,11 @@
 use autotrait::autotrait;
 use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
+use credentials::UserInfo;
 use eyre::bail;
 use futures_core::future::BoxFuture;
 use mom_types::{
-    DeriveParams, DeriveResponse, GenerateLoginCodeRequest, GenerateLoginCodeResponse,
-    ListMissingArgs, ListMissingResponse, MomEvent, TranscodeParams, TranscodeResponse,
-    ValidateLoginCodeRequest, ValidateLoginCodeResponse,
+    DeriveParams, DeriveResponse, GithubCallbackResponse, ListMissingArgs, ListMissingResponse,
+    MomEvent, PatreonCallbackResponse, TranscodeParams, TranscodeResponse,
     media_types::{HeadersMessage, TranscodeEvent, UploadDoneMessage, WebSocketMessage},
 };
 use std::str::FromStr;
@@ -19,13 +19,9 @@ use std::{sync::Arc, time::Instant};
 
 use bytes::Bytes;
 use conflux::RevisionIdRef;
-use credentials::AuthBundle;
-use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse};
+use libgithub::GithubCallbackArgs;
 use libhttpclient::{HttpClient, RequestBuilder};
-use libpatreon::{
-    PatreonCallbackArgs, PatreonCallbackResponse, PatreonRefreshCredentials,
-    PatreonRefreshCredentialsArgs,
-};
+use libpatreon::PatreonCallbackArgs;
 use objectstore_types::ObjectStoreKeyRef;
 
 pub trait MomEventListener: Send + 'static {
@@ -279,20 +275,16 @@ impl MomTenantClientImpl {
 
 #[autotrait]
 impl MomTenantClient for MomTenantClientImpl {
-    fn update_auth_bundle<'fut>(&'fut self, body: &'fut AuthBundle) -> BoxFuture<'fut, Result<()>> {
-        panic!("this should be refresh profile and it needs to be remade")
-    }
-
     fn github_callback<'fut>(
         &'fut self,
-        body: &'fut GitHubCallbackArgs,
-    ) -> BoxFuture<'fut, Result<Option<GitHubCallbackResponse>>> {
+        body: &'fut GithubCallbackArgs,
+    ) -> BoxFuture<'fut, Result<Option<GithubCallbackResponse>>> {
         Box::pin({
             async move {
                 let uri = self.config_mom_uri("github/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<Option<GitHubCallbackResponse>>().await?)
+                Ok(res.json::<Option<GithubCallbackResponse>>().await?)
             }
         })
     }
@@ -307,34 +299,6 @@ impl MomTenantClient for MomTenantClientImpl {
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
                 Ok(res.json::<Option<PatreonCallbackResponse>>().await?)
-            }
-        })
-    }
-
-    fn email_generate_code<'fut>(
-        &'fut self,
-        body: &'fut GenerateLoginCodeRequest,
-    ) -> BoxFuture<'fut, Result<GenerateLoginCodeResponse>> {
-        Box::pin({
-            async move {
-                let uri = self.config_mom_uri("email/generate-code");
-                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
-                let res = req.send_and_expect_200().await?;
-                Ok(res.json::<GenerateLoginCodeResponse>().await?)
-            }
-        })
-    }
-
-    fn email_validate_code<'fut>(
-        &'fut self,
-        body: &'fut ValidateLoginCodeRequest,
-    ) -> BoxFuture<'fut, Result<ValidateLoginCodeResponse>> {
-        Box::pin({
-            async move {
-                let uri = self.config_mom_uri("email/validate-code");
-                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
-                let res = req.send_and_expect_200().await?;
-                Ok(res.json::<ValidateLoginCodeResponse>().await?)
             }
         })
     }

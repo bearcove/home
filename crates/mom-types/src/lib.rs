@@ -389,6 +389,6 @@ pub struct PatreonCallbackResponse {
 }
 
 #[derive(Debug, Clone, Facet)]
-pub struct GitHubCallbackResponse {
+pub struct GithubCallbackResponse {
     pub user_info: UserInfo,
 }

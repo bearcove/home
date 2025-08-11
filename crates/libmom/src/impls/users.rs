@@ -1,7 +1,8 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use credentials::{
-    GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId, PatreonUserIdRef, UserInfo,
+    GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId, PatreonUserIdRef,
+    UserId, UserIdRef, UserInfo,
 };
 use futures_util::TryFutureExt;
 use libgithub::GithubCredentials;
@@ -17,19 +18,18 @@ pub(crate) async fn get_all_users(ts: &MomTenantState) -> eyre::Result<AllUsers>
     let client = global_state().client.clone();
 
     let (gh_sponsors, patreon_sponsors) = futures_util::future::try_join(
-        get_github_users(ts, client.as_ref()).map_err(|e| e.wrap_err("github_list_sponsors")),
-        get_patreon_users(ts, client.as_ref()).map_err(|e| e.wrap_err("patreon_list_sponsors")),
+        get_github_users(ts, client.as_ref()).map_err(|e| e.wrap_err("get_github_users")),
+        get_patreon_users(ts, client.as_ref()).map_err(|e| e.wrap_err("get_patreon_users")),
     )
     .await?;
 
-    let mut users = AllUsers::default();
-
-    let sponsors = gh_sponsors
-        .into_iter()
-        .chain(patreon_sponsors.into_iter())
-        .collect();
-
-    Ok(users)
+    Ok(AllUsers {
+        users: gh_sponsors
+            .into_iter()
+            .chain(patreon_sponsors.into_iter())
+            .map(|u| (u.id.clone(), u))
+            .collect::<HashMap<_, _>>(),
+    })
 }
 
 async fn get_patreon_users(
@@ -38,7 +38,80 @@ async fn get_patreon_users(
 ) -> eyre::Result<Vec<UserInfo>> {
     let patreon = libpatreon::load();
     let rc = ts.rc()?;
-    patreon.list_sponsors(&rc, client, &ts.pool).await
+
+    // Get the creator's Patreon ID from the pak
+    let creator_patreon_id = {
+        let pak = ts.pak.lock();
+        pak.as_ref()
+            .and_then(|pak| pak.rc.admin_patreon_ids.first().cloned())
+            .ok_or_else(|| eyre::eyre!("admin_patreon_ids should have at least one element"))?
+    };
+
+    let creds = fetch_uptodate_patreon_credentials(ts, &creator_patreon_id)
+        .await?
+        .ok_or_else(|| eyre::eyre!("creator needs to log in with Patreon first"))?;
+
+    let profiles = patreon.list_sponsors(&rc, client, &creds).await?;
+
+    // Check which Patreon profiles already exist in the database
+    let conn = ts.pool.get()?;
+    let mut existing_patreon_ids = HashSet::new();
+
+    if !profiles.is_empty() {
+        let placeholders = profiles.iter().map(|_| "?").collect::<Vec<_>>().join(",");
+        let query = format!(
+            "SELECT patreon_user_id FROM users WHERE patreon_user_id IN ({})",
+            placeholders
+        );
+
+        let mut stmt = conn.prepare(&query)?;
+        let patreon_ids: Vec<PatreonUserId> = profiles.iter().map(|p| p.id.clone()).collect();
+        let rows = stmt.query_map(rusqlite::params_from_iter(&patreon_ids), |row| {
+            row.get::<_, PatreonUserId>(0)
+        })?;
+
+        for row in rows {
+            existing_patreon_ids.insert(row?);
+        }
+    }
+
+    // Create users for Patreon profiles that don't exist, and save all profiles
+    for profile in &profiles {
+        if !existing_patreon_ids.contains(&profile.id) {
+            let user_id = create_user(
+                &ts.pool,
+                CreateUserArgs {
+                    patreon_user_id: Some(profile.id.clone()),
+                    github_user_id: None,
+                },
+            )?;
+            log::debug!(
+                "Created user {} for Patreon profile {}",
+                user_id,
+                profile.id
+            );
+        }
+
+        // Save the Patreon profile to the database (for all profiles)
+        save_patreon_profile(&ts.pool, profile)?;
+    }
+
+    // Fetch UserInfo for all Patreon users
+    let mut users = Vec::new();
+    for profile in profiles {
+        // Find the user ID for this Patreon profile
+        let user_id: i64 = conn.query_row(
+            "SELECT id FROM users WHERE patreon_user_id = ?1",
+            [&profile.id],
+            |row| row.get(0),
+        )?;
+
+        if let Some(user_info) = fetch_user_info(&ts.pool, &user_id.to_string())? {
+            users.push(user_info);
+        }
+    }
+
+    Ok(users)
 }
 
 async fn get_github_users(
@@ -54,17 +127,9 @@ async fn get_github_users(
             .ok_or_else(|| eyre::eyre!("admin_github_ids should have at least one element"))?
     };
 
-    let creds = fetch_github_credentials(&ts.pool, &creator_github_id)?
-        .ok_or_else(|| eyre::eyre!("creator needs to log in with GitHub first"))?;
-
-    let creds = if creds.expire_soon() {
-        let creds = github.refresh_credentials(&ts.ti.tc, &creds).await?;
-        save_github_credentials(&ts.pool, &creator_github_id, &creds)?;
-        creds
-    } else {
-        creds
-    };
-
+    let creds = fetch_uptodate_github_credentials(ts, &creator_github_id)
+        .await?
+        .ok_or_else(|| eyre::eyre!("creator needs to log in with Github first"))?;
     let profiles = github.list_sponsors(client, &creds).await?;
 
     // Check which GitHub profiles already exist in the database
@@ -99,27 +164,16 @@ async fn get_github_users(
                     github_user_id: Some(profile.id.clone()),
                 },
             )?;
-            log::debug!("Created user {} for GitHub profile {}", user_id, profile.id);
+            log::debug!("Created user {} for Github profile {}", user_id, profile.id);
         }
-
-        // Save the GitHub profile to the database (for all profiles)
-        conn.execute(
-            "INSERT OR REPLACE INTO github_profiles (id, monthly_usd, sponsorship_privacy_level, name, login, thumb_url, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP)",
-            rusqlite::params![
-                profile.id,
-                profile.monthly_usd,
-                profile.sponsorship_privacy_level,
-                profile.name,
-                profile.login,
-                profile.avatar_url
-            ],
-        )?;
+        // Save the Github profile to the database (for all profiles)
+        save_github_profile(&ts.pool, profile)?;
     }
 
-    // Fetch UserInfo for all GitHub users
+    // Fetch UserInfo for all Github users
     let mut users = Vec::new();
     for profile in profiles {
-        // Find the user ID for this GitHub profile
+        // Find the user ID for this Github profile
         let user_id: i64 = conn.query_row(
             "SELECT id FROM users WHERE github_user_id = ?1",
             [&profile.id],
@@ -175,14 +229,14 @@ pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<
         None
     };
 
-    // Fetch GitHub profile if linked
+    // Fetch Github profile if linked
     let github = if let Some(github_id) = github_user_id {
         conn.query_row(
             "SELECT id, monthly_usd, sponsorship_privacy_level, name, login, avatar_url FROM github_profiles WHERE id = ?1",
             [&github_id],
             |row| Ok(GithubProfile {
                 id: row.get(0)?,
-                monthly_usd: row.get::<_, Option<i32>>(1)?.map(|v| v.to_string()),
+                monthly_usd: row.get::<_, Option<u64>>(1)?,
                 sponsorship_privacy_level: row.get(2)?,
                 name: row.get(3)?,
                 login: row.get(4)?,
@@ -260,6 +314,30 @@ pub(crate) fn fetch_github_credentials(
     Ok(creds)
 }
 
+pub(crate) async fn fetch_uptodate_github_credentials(
+    ts: &MomTenantState,
+    github_user_id: &GithubUserIdRef,
+) -> eyre::Result<Option<GithubCredentials>> {
+    let creds = fetch_github_credentials(&ts.pool, github_user_id)?;
+
+    let Some(creds) = creds else {
+        return Ok(None);
+    };
+
+    let client = global_state().client.as_ref();
+
+    if creds.expire_soon() {
+        let github = libgithub::load();
+        let refreshed_creds = github
+            .refresh_credentials(&ts.ti.tc, &creds, client)
+            .await?;
+        save_github_credentials(&ts.pool, github_user_id, &refreshed_creds)?;
+        Ok(Some(refreshed_creds))
+    } else {
+        Ok(Some(creds))
+    }
+}
+
 pub(crate) fn save_github_credentials(
     pool: &SqlitePool,
     github_id: &GithubUserIdRef,
@@ -324,6 +402,29 @@ pub(crate) fn fetch_patreon_credentials(
     Ok(creds)
 }
 
+pub(crate) async fn fetch_uptodate_patreon_credentials(
+    ts: &MomTenantState,
+    patreon_user_id: &PatreonUserIdRef,
+) -> eyre::Result<Option<PatreonCredentials>> {
+    let creds = fetch_patreon_credentials(&ts.pool, patreon_user_id)?;
+    let Some(creds) = creds else {
+        return Ok(None);
+    };
+
+    let client = global_state().client.as_ref();
+
+    if creds.expire_soon() {
+        let patreon = libpatreon::load();
+        let refreshed_creds = patreon
+            .refresh_credentials(&ts.ti.tc, &creds, client)
+            .await?;
+        save_patreon_credentials(&ts.pool, patreon_user_id, &refreshed_creds)?;
+        Ok(Some(refreshed_creds))
+    } else {
+        Ok(Some(creds))
+    }
+}
+
 pub(crate) fn save_patreon_credentials(
     pool: &SqlitePool,
     patreon_id: &PatreonUserIdRef,
@@ -357,4 +458,69 @@ pub(crate) fn save_patreon_profile(
         ],
     )?;
     Ok(())
+}
+
+pub(crate) async fn refresh_user_profile(
+    ts: &MomTenantState,
+    user_id: &UserIdRef,
+) -> eyre::Result<UserInfo> {
+    let conn = ts.pool.get()?;
+
+    // First, fetch the user record
+    let user_row: Option<(UserId, Option<PatreonUserId>, Option<GithubUserId>)> = conn
+        .query_row(
+            "SELECT id, patreon_user_id, github_user_id FROM users WHERE id = ?1",
+            [user_id],
+            |row| {
+                Ok((
+                    row.get::<_, UserId>(0)?,
+                    row.get::<_, Option<PatreonUserId>>(1)?,
+                    row.get::<_, Option<GithubUserId>>(2)?,
+                ))
+            },
+        )
+        .optional()?;
+
+    let Some((id, patreon_user_id, github_user_id)) = user_row else {
+        return Err(eyre::eyre!("User with id {} not found", user_id));
+    };
+
+    let client = global_state().client.as_ref();
+    let rc = ts.rc()?;
+
+    // Refresh Patreon profile if linked
+    let patreon = if let Some(patreon_id) = patreon_user_id {
+        let creds = fetch_uptodate_patreon_credentials(ts, &patreon_id)
+            .await?
+            .ok_or_else(|| eyre::eyre!("No Patreon credentials found for user {}", patreon_id))?;
+
+        let patreon = libpatreon::load();
+        let profile = patreon.fetch_profile(&rc, &creds, client).await?;
+        save_patreon_profile(&ts.pool, &profile)?;
+
+        Some(profile)
+    } else {
+        None
+    };
+
+    // Refresh Github profile if linked
+    let github = if let Some(github_id) = github_user_id {
+        let creds = fetch_uptodate_github_credentials(ts, &github_id)
+            .await?
+            .ok_or_else(|| eyre::eyre!("No Github credentials found for user {}", github_id))?;
+
+        let github = libgithub::load();
+        let profile = github.fetch_profile(&creds, client).await?;
+        save_github_profile(&ts.pool, &profile)?;
+
+        Some(profile)
+    } else {
+        None
+    };
+
+    Ok(UserInfo {
+        id,
+        patreon,
+        github,
+    })
 }

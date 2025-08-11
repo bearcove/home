@@ -25,7 +25,7 @@ impl Mod for ModImpl {
         &self,
         tc: &TenantConfig,
         web: WebConfig,
-        kind: GitHubLoginPurpose,
+        kind: GithubLoginPurpose,
     ) -> eyre::Result<String> {
         use url::Url;
         let github_secrets = &tc.github_secrets()?;
@@ -45,7 +45,7 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         web: WebConfig,
-        args: &'fut GitHubCallbackArgs,
+        args: &'fut GithubCallbackArgs,
     ) -> BoxFuture<'fut, Result<Option<GithubCredentials>>> {
         Box::pin(async move {
             let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
@@ -94,8 +94,8 @@ impl Mod for ModImpl {
 
     fn fetch_profile<'fut>(
         &'fut self,
-        web: WebConfig,
         creds: &'fut GithubCredentials,
+        client: &'fut dyn HttpClient,
     ) -> BoxFuture<'fut, Result<GithubProfile>> {
         Box::pin(async move {
             #[derive(Facet)]
@@ -148,16 +148,11 @@ impl Mod for ModImpl {
             }
 
             let query = include_str!("github_sponsorship_for_viewer.graphql");
-            let login = if web.env.is_dev() {
-                // just testing!
-                "gennyble"
-            } else {
-                "fasterthanlime"
-            };
+            // well this should be using databaseId I think, for the first GithubUserId in the tenant config
+            let login = "fasterthanlime";
             let variables = Variables { login };
 
-            let res = libhttpclient::load()
-                .client()
+            let res = client
                 .post(Uri::from_static("https://api.github.com/graphql"))
                 .polite_user_agent()
                 .json(&GraphqlQuery {
@@ -217,12 +212,12 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         credentials: &'fut GithubCredentials,
+        client: &'fut dyn HttpClient,
     ) -> BoxFuture<'fut, Result<GithubCredentials>> {
         Box::pin(async move {
             let gh_sec = tc.github_secrets()?;
 
-            let res = libhttpclient::load()
-                .client()
+            let res = client
                 .post(Uri::from_static(
                     "https://github.com/login/oauth/access_token",
                 ))
@@ -441,7 +436,7 @@ impl Mod for ModImpl {
 }
 
 #[derive(Debug, Clone, Facet)]
-pub struct GitHubCallbackArgs {
+pub struct GithubCallbackArgs {
     pub raw_query: String,
 }
 
@@ -476,7 +471,7 @@ impl GithubCredentials {
 }
 
 /// The purpose of the login (to determine the OAuth scopes needed for the login)
-pub enum GitHubLoginPurpose {
+pub enum GithubLoginPurpose {
     // admin login
     Admin,
     // normal user login
@@ -484,10 +479,10 @@ pub enum GitHubLoginPurpose {
 }
 
 /// Returns GitHub OAuth scopes needed for the login
-pub fn github_login_purpose_to_scopes(purpose: &GitHubLoginPurpose) -> &'static str {
+pub fn github_login_purpose_to_scopes(purpose: &GithubLoginPurpose) -> &'static str {
     match purpose {
-        GitHubLoginPurpose::Admin => "read:user,read:org",
-        GitHubLoginPurpose::Regular => "read:user",
+        GithubLoginPurpose::Admin => "read:user,read:org",
+        GithubLoginPurpose::Regular => "read:user",
     }
 }
 

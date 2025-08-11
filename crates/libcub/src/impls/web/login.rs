@@ -7,7 +7,7 @@ use axum::{Form, Router, response::Redirect, routing::get};
 use config_types::is_development;
 use credentials::UserInfo;
 use cub_types::{CubReq, CubTenant};
-use libgithub::GitHubLoginPurpose;
+use libgithub::GithubLoginPurpose;
 use libpatreon::PatreonCallbackArgs;
 use log::info;
 use mom_types::{GenerateLoginCodeRequest, ValidateLoginCodeRequest};
@@ -73,13 +73,13 @@ async fn serve_login_with_patreon(tr: CubReqImpl, params: Form<LoginParams>) -> 
 }
 
 async fn serve_login_with_github(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
-    log::info!("Initiating login with GitHub");
+    log::info!("Initiating login with Github");
     set_return_to_cookie(&tr.cookies(), &params);
 
     let purpose = if params.admin_login {
-        GitHubLoginPurpose::Admin
+        GithubLoginPurpose::Admin
     } else {
-        GitHubLoginPurpose::Regular
+        GithubLoginPurpose::Regular
     };
     let location = libgithub::load().make_login_url(tr.tenant.tc(), tr.web(), purpose)?;
     Redirect::to(&location).into_legacy_reply()
@@ -147,7 +147,7 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
                 // we need that scope for the patron list
                 info!("admin logged in, but missing read:org scope, redirecting to login page");
                 let admin_login_url =
-                    mod_github.make_login_url(&ts.ti.tc, tr.web(), GitHubLoginPurpose::Admin)?;
+                    mod_github.make_login_url(&ts.ti.tc, tr.web(), GithubLoginPurpose::Admin)?;
                 return Redirect::to(&admin_login_url).into_legacy_reply();
             }
         }
