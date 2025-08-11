@@ -13,6 +13,9 @@ impl super::SqlMigration for Migration {
             "
             CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patreon_user_id TEXT,
+                github_user_id TEXT,
+                api_key TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_seen TIMESTAMP
             )
@@ -20,26 +23,66 @@ impl super::SqlMigration for Migration {
             [],
         )?;
 
-        // Add user_id column to github_credentials
-        conn.execute(
-            "ALTER TABLE github_credentials ADD COLUMN user_id INTEGER REFERENCES users(id)",
-            [],
-        )?;
-
-        // Add user_id column to patreon_credentials
-        conn.execute(
-            "ALTER TABLE patreon_credentials ADD COLUMN user_id INTEGER REFERENCES users(id)",
-            [],
-        )?;
-
-        // Create the kofi_emails table
+        // Create the github_profiles table
         conn.execute(
             "
-            CREATE TABLE kofi_emails (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT NOT NULL,
-                user_id INTEGER REFERENCES users(id),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            CREATE TABLE github_profiles (
+                id TEXT NOT NULL,
+                monthly_usd INTEGER,
+                sponsorship_privacy_level STRING,
+                name TEXT,
+                login TEXT NOT NULL,
+                thumb_url TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP,
+                PRIMARY KEY (id)
+            )
+            ",
+            [],
+        )?;
+
+        // Create the patreon_profiles table
+        conn.execute(
+            "
+            CREATE TABLE patreon_profiles (
+                id TEXT NOT NULL,
+                tier STRING,
+                full_name TEXT NOT NULL,
+                thumb_url TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP,
+                PRIMARY KEY (id)
+            )
+            ",
+            [],
+        )?;
+
+        // Drop and recreate github_credentials table
+        conn.execute("DROP TABLE IF EXISTS github_credentials", [])?;
+        conn.execute(
+            "
+            CREATE TABLE github_credentials (
+                id TEXT NOT NULL,
+                access_token TEXT NOT NULL,
+                scope TEXT NOT NULL,
+                token_type TEXT,
+                expires_at TIMESTAMP,
+                PRIMARY KEY (id)
+            )
+            ",
+            [],
+        )?;
+
+        // Drop and recreate patreon_credentials table
+        conn.execute("DROP TABLE IF EXISTS patreon_credentials", [])?;
+        conn.execute(
+            "
+            CREATE TABLE patreon_credentials (
+                id TEXT NOT NULL,
+                access_token TEXT NOT NULL,
+                refresh_token TEXT NOT NULL,
+                expires_at TIMESTAMP,
+                PRIMARY KEY (id)
             )
             ",
             [],
@@ -47,22 +90,12 @@ impl super::SqlMigration for Migration {
 
         // Create indexes
         conn.execute(
-            "CREATE INDEX idx_github_credentials_user_id ON github_credentials(user_id)",
+            "CREATE INDEX idx_users_github_user_id ON users(github_user_id)",
             [],
         )?;
 
         conn.execute(
-            "CREATE INDEX idx_patreon_credentials_user_id ON patreon_credentials(user_id)",
-            [],
-        )?;
-
-        conn.execute(
-            "CREATE INDEX idx_kofi_emails_user_id ON kofi_emails(user_id)",
-            [],
-        )?;
-
-        conn.execute(
-            "CREATE INDEX idx_kofi_emails_email ON kofi_emails(email)",
+            "CREATE INDEX idx_users_patreon_user_id ON users(patreon_user_id)",
             [],
         )?;
 

@@ -1,16 +1,14 @@
 #![allow(non_snake_case)]
 
 use autotrait::autotrait;
+use credentials::GithubProfile;
 use facet::Facet;
 use futures_core::future::BoxFuture;
-use libhttpclient::HttpClient;
+use libhttpclient::{HttpClient, Uri};
 use std::collections::HashSet;
 
 use config_types::{RevisionConfig, TenantConfig, WebConfig};
-use credentials::AuthBundle;
 use eyre::Result;
-
-mod impls;
 
 #[derive(Default)]
 struct ModImpl;
@@ -36,7 +34,7 @@ impl Mod for ModImpl {
             let mut q = u.query_pairs_mut();
             q.append_pair("response_type", "code");
             q.append_pair("client_id", &github_secrets.oauth_client_id);
-            q.append_pair("redirect_uri", &impls::make_github_callback_url(tc, web));
+            q.append_pair("redirect_uri", &make_github_callback_url(tc, web));
             q.append_pair("scope", github_login_purpose_to_scopes(&kind));
         }
         Ok(u.to_string())
@@ -47,19 +45,168 @@ impl Mod for ModImpl {
         tc: &'fut TenantConfig,
         web: WebConfig,
         args: &'fut GitHubCallbackArgs,
-    ) -> BoxFuture<'fut, Result<Option<GitHubCredentials>>> {
-        Box::pin(async move { self.handle_oauth_callback_unboxed(tc, web, args).await })
+    ) -> BoxFuture<'fut, Result<Option<GithubCredentials>>> {
+        Box::pin(async move {
+            let code = match url::form_urlencoded::parse(args.raw_query.as_bytes())
+                .find(|(key, _)| key == "code")
+                .map(|(_, value)| value.into_owned())
+            {
+                // that means the user cancelled the oauth flow
+                None => return Ok(None),
+                Some(code) => code,
+            };
+
+            let gh_sec = tc.github_secrets()?;
+
+            let res = libhttpclient::load()
+                .client()
+                .post(Uri::from_static(
+                    "https://github.com/login/oauth/access_token",
+                ))
+                .query(&[
+                    ("client_id", &gh_sec.oauth_client_id),
+                    ("client_secret", &gh_sec.oauth_client_secret),
+                    ("redirect_uri", &make_github_callback_url(tc, web)),
+                    ("code", code.as_ref()),
+                ])
+                .header(header::ACCEPT, HeaderValue::from_static("application/json"))
+                .send_and_expect_200()
+                .await
+                .map_err(|e| eyre::eyre!("While getting GitHub access token: {e}"))?;
+
+            let creds = res.json::<GithubCredentials>().await?;
+            log::info!(
+                "Successfully obtained GitHub token with scope {}",
+                &creds.scope
+            );
+
+            Ok(Some(creds))
+        })
     }
 
-    fn to_auth_bundle<'fut>(
+    fn fetch_profile<'fut>(
         &'fut self,
         rc: &'fut RevisionConfig,
         web: WebConfig,
-        github_creds: GitHubCredentials,
-    ) -> BoxFuture<'fut, Result<(GitHubCredentials, AuthBundle)>> {
+        creds: GithubCredentials,
+    ) -> BoxFuture<'fut, Result<GithubProfile>> {
         Box::pin(async move {
-            self.to_site_credentials_unboxed(rc, web, &github_creds)
+            #[derive(Facet)]
+            struct GraphqlQuery {
+                query: String,
+                variables: Variables,
+            }
+
+            #[derive(Facet)]
+            struct Variables {
+                login: &'static str,
+            }
+
+            #[derive(Facet)]
+            struct GraphqlResponse {
+                data: GraphqlResponseData,
+            }
+
+            #[derive(Facet)]
+            struct GraphqlResponseData {
+                viewer: Viewer,
+                user: User,
+            }
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct Viewer {
+                databaseId: i64,
+                login: String,
+                name: Option<String>,
+                avatarUrl: String,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct User {
+                sponsorshipForViewerAsSponsor: Option<Sponsorship>,
+            }
+
+            #[derive(Facet)]
+            struct Sponsorship {
+                tier: SponsorshipTier,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct SponsorshipTier {
+                isOneTime: bool,
+                monthlyPriceInDollars: u32,
+            }
+
+            let query = include_str!("github_sponsorship_for_viewer.graphql");
+            let login = if web.env.is_dev() {
+                // just testing!
+                "gennyble"
+            } else {
+                "fasterthanlime"
+            };
+            let variables = Variables { login };
+
+            let res = libhttpclient::load()
+                .client()
+                .post(Uri::from_static("https://api.github.com/graphql"))
+                .polite_user_agent()
+                .json(&GraphqlQuery {
+                    query: query.into(),
+                    variables,
+                })?
+                .bearer_auth(&creds.access_token)
+                .send()
+                .await?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let error = res
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Could not get error text".into());
+                return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
+            }
+
+            let response = res
+                .json::<GraphqlResponse>()
                 .await
+                .map_err(|e| eyre::eyre!("{}", e.to_string()))?;
+
+            let viewer = &response.data.viewer;
+            let full_name = viewer.name.as_ref().unwrap_or(&viewer.login);
+            let viewer_github_user_id = viewer.databaseId.to_string();
+
+            let profile = GithubProfile {
+                id: credentials::GitHubUserId::new(viewer.login.clone()),
+                monthly_usd: response
+                    .data
+                    .user
+                    .sponsorshipForViewerAsSponsor
+                    .as_ref()
+                    .and_then(|s| {
+                        if s.tier.isOneTime {
+                            None
+                        } else {
+                            Some(s.tier.monthlyPriceInDollars as u64)
+                        }
+                    }),
+                sponsorship_privacy_level: None,
+                name: viewer.name.clone(),
+                login: viewer.login.clone(),
+                avatar_url: Some(viewer.avatarUrl.clone()),
+            };
+
+            log::info!(
+                "GitHub user \x1b[33m{:?}\x1b[0m (ID: \x1b[36m{:?}\x1b[0m, name: \x1b[32m{:?}\x1b[0m, tier: \x1b[35m{:?}\x1b[0m) logged in",
+                viewer.login,
+                viewer.databaseId,
+                viewer.name,
+                tier
+            );
+
+            Ok(profile)
         })
     }
 
@@ -67,9 +214,196 @@ impl Mod for ModImpl {
         &'fut self,
         tc: &'fut TenantConfig,
         client: &'fut dyn HttpClient,
-        github_creds: &'fut GitHubCredentials,
-    ) -> BoxFuture<'fut, Result<HashSet<String>>> {
-        Box::pin(async move { self.list_sponsors_unboxed(tc, client, github_creds).await })
+        github_creds: &'fut GithubCredentials,
+    ) -> BoxFuture<'fut, Result<Vec<GithubProfile>>> {
+        Box::pin(async move {
+            let mut github_profiles: Vec<GithubProfile> = Vec::new();
+            let query = include_str!("github_sponsors.graphql");
+
+            #[derive(Facet)]
+            struct GraphqlQuery {
+                query: String,
+                variables: Variables,
+            }
+
+            #[derive(Facet)]
+            struct GraphqlResponse {
+                data: Option<GraphqlResponseData>,
+                errors: Option<Vec<GraphqlError>>,
+            }
+
+            #[derive(Facet, Debug)]
+            struct GraphqlError {
+                #[allow(dead_code)]
+                message: String,
+            }
+
+            #[derive(Facet)]
+            struct GraphqlResponseData {
+                viewer: Viewer,
+            }
+
+            #[derive(Facet)]
+            struct Viewer {
+                sponsors: Sponsors,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct Sponsors {
+                pageInfo: PageInfo,
+                nodes: Vec<Node>,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct PageInfo {
+                endCursor: Option<String>,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct Node {
+                login: String,
+                name: Option<String>,
+                avatarUrl: Option<String>,
+                sponsorshipForViewerAsSponsorable: Option<SponsorshipForViewerAsSponsorable>,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct SponsorshipForViewerAsSponsorable {
+                privacyLevel: String,
+                tier: GitHubTier,
+            }
+
+            #[derive(Facet)]
+            #[allow(non_snake_case)]
+            struct GitHubTier {
+                monthlyPriceInDollars: Option<u32>,
+                isOneTime: bool,
+            }
+
+            #[derive(Debug, Facet)]
+            struct Variables {
+                first: u32,
+                after: Option<String>,
+            }
+
+            let mut query = GraphqlQuery {
+                query: query.into(),
+                variables: Variables {
+                    first: 100,
+                    after: None,
+                },
+            };
+
+            let mut page_num = 0;
+            loop {
+                page_num += 1;
+                debug!("Fetching GitHub page {page_num}");
+
+                let res = client
+                    .post(Uri::from_static("https://api.github.com/graphql"))
+                    .polite_user_agent()
+                    .json(&query)?
+                    .bearer_auth(&github_creds.access_token)
+                    .send()
+                    .await?;
+
+                if !res.status().is_success() {
+                    let status = res.status();
+                    let error = res
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "Could not get error text".into());
+                    let err = eyre::eyre!(format!("got HTTP {status}, server said: {error}"));
+                    return Err(err);
+                }
+
+                let res = res
+                    .json::<GraphqlResponse>()
+                    .await
+                    .map_err(|e| eyre::eyre!("could not deserialize GitHub API response: {e}"))?;
+
+                if let Some(errors) = res.errors {
+                    fn is_error_ignored(error: &GraphqlError) -> bool {
+                        // Sample error message: Although you appear to have the correct
+                        // authorization credentials, the `xelforce` organization has
+                        // enabled OAuth App access restrictions, meaning that data
+                        // access to third-parties is limited. For more information on
+                        // these restrictions, including how to enable this app, visit
+                        // https://docs.github.com/articles/restricting-access-to-your-organization-s-data/
+                        //
+                        // In this case GitHub still gives us access to the rest of the
+                        // data so we don't actually need to do anything about this
+                        // error except for ignoring it
+                        error.message.contains("OAuth App access restrictions")
+                    }
+
+                    for error in errors {
+                        if !is_error_ignored(&error) {
+                            log::error!("GitHub API error: {error:?}");
+                        }
+                    }
+                    // still return the sponsors we got so far
+                    return Ok(github_profiles);
+                }
+
+                let data = match res.data {
+                    Some(data) => data,
+                    None => {
+                        let err = eyre::eyre!("got no data from GitHub API");
+                        log::error!("{err}");
+                        // still return the sponsors we got so far
+                        return Ok(github_profiles);
+                    }
+                };
+
+                let viewer = &data.viewer;
+
+                for sponsor in &viewer.sponsors.nodes {
+                    if let Some(sponsorship) = sponsor.sponsorshipForViewerAsSponsorable.as_ref() {
+                        let monthly_usd = if sponsorship.tier.isOneTime {
+                            None
+                        } else {
+                            sponsorship.tier.monthlyPriceInDollars.map(|p| p as u64)
+                        };
+
+                        github_profiles.push(GithubProfile {
+                            id: credentials::GitHubUserId::new(sponsor.login.clone()),
+                            monthly_usd,
+                            sponsorship_privacy_level: Some(sponsorship.privacyLevel.clone()),
+                            name: sponsor.name.clone(),
+                            login: sponsor.login.clone(),
+                            avatar_url: sponsor.avatarUrl.clone(),
+                        });
+                    } else {
+                        // Include sponsors without sponsorship info as well
+                        github_profiles.push(GithubProfile {
+                            id: credentials::GitHubUserId::new(sponsor.login.clone()),
+                            monthly_usd: None,
+                            sponsorship_privacy_level: None,
+                            name: sponsor.name.clone(),
+                            login: sponsor.login.clone(),
+                            avatar_url: None,
+                        });
+                    }
+                }
+
+                match viewer.sponsors.pageInfo.endCursor.as_ref() {
+                    Some(end_cursor) => {
+                        query.variables.after = Some(end_cursor.clone());
+                    }
+                    None => {
+                        // all done!
+                        break;
+                    }
+                }
+            }
+
+            Ok(github_profiles)
+        })
     }
 }
 
@@ -79,13 +413,7 @@ pub struct GitHubCallbackArgs {
 }
 
 #[derive(Debug, Clone, Facet)]
-pub struct GitHubCallbackResponse {
-    pub auth_bundle: AuthBundle,
-    pub github_credentials: GitHubCredentials,
-}
-
-#[derive(Debug, Clone, Facet)]
-pub struct GitHubCredentials {
+pub struct GithubCredentials {
     /// example: "ajba90sd098w0e98f0w9e8g90a8ed098wgfae_w"
     pub access_token: String,
     /// example: "read:user"
@@ -108,4 +436,26 @@ pub fn github_login_purpose_to_scopes(purpose: &GitHubLoginPurpose) -> &'static 
         GitHubLoginPurpose::Admin => "read:user,read:org",
         GitHubLoginPurpose::Regular => "read:user",
     }
+}
+
+fn creator_tier_name() -> Option<String> {
+    let path = std::path::Path::new("/tmp/home-creator-tier-override");
+    match fs_err::read_to_string(path) {
+        Ok(contents) => {
+            let name = contents.trim().to_string();
+            eprintln!("🎭 Pretending creator has tier name {name}");
+            Some(name)
+        }
+        Err(_) => {
+            eprintln!(
+                "🔒 Creator special casing \x1b[31mdisabled\x1b[0m - create /tmp/home-creator-tier-override with tier name like 'Bronze' or 'Silver' to enable 🔑"
+            );
+            None
+        }
+    }
+}
+
+pub(crate) fn make_github_callback_url(tc: &TenantConfig, web: WebConfig) -> String {
+    let base_url = tc.web_base_url(web);
+    format!("{base_url}/login/github/callback")
 }

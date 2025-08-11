@@ -1,64 +1,69 @@
 use facet::Facet;
+use plait::plait;
 use serde::Serialize;
-use time::OffsetDateTime;
 
 pub use eyre::{Result, eyre};
 
-#[derive(Debug, Clone, Facet)]
-pub struct AuthBundle {
-    pub user_info: UserInfo,
-    pub expires_at: OffsetDateTime,
+plait! {
+    with crates {
+        serde
+        rusqlite
+        minijinja
+    }
+
+    /// User identifiers (that can log into various sites)
+    pub struct UserId => &UserIdRef;
+
+    /// Github user identifiers
+    pub struct GithubUserId => &GithubUserIdRef;
+
+    /// Patreon user identifiers
+    pub struct PatreonUserId => &PatreonUserIdRef;
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
 pub struct UserInfo {
-    pub profile: Profile,
-    pub tier: Option<Tier>,
+    /// tenants-specific user ID
+    pub id: UserId,
+
+    pub patreon: Option<PatreonProfile>,
+    pub github: Option<GithubProfile>,
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
-pub struct Tier {
-    pub title: String,
+pub struct GithubProfile {
+    /// Github user ID
+    pub id: GithubUserId,
+
+    /// Monthly (recurring) dollars sponsorship, if any.
+    /// Do tier mapping yourself, later, per-tenant.
+    /// One-time donations don't count.
+    pub monthly_usd: Option<u64>,
+
+    /// "PRIVATE" or "PUBLIC"
+    pub sponsorship_privacy_level: Option<String>,
+
+    /// Full name (e.g. "Amos Wenger")
+    pub name: Option<String>,
+
+    /// Login (e.g. "fasterthanlime")
+    pub login: String,
+
+    /// Avatar URL
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
-pub struct Profile {
-    pub patreon_id: Option<String>,
-    pub github_id: Option<String>,
-    
-    // Email address for email-based authentication
-    pub email: Option<String>,
+pub struct PatreonProfile {
+    /// Patreon user ID
+    pub id: PatreonUserId,
 
-    // for GitHub that's `name ?? login`
+    /// Sponsor tier title if any (Bronze, Silver, Gold)
+    pub tier: Option<String>,
+
+    /// Full name (as given by Patreon)
     pub full_name: String,
 
-    // avatar thumbnail URL
-    pub thumb_url: String,
-}
-
-impl Profile {
-    pub fn patreon_id(&self) -> Result<&str> {
-        self.patreon_id
-            .as_deref()
-            .ok_or_else(|| eyre!("no patreon id"))
-    }
-
-    pub fn github_id(&self) -> Result<&str> {
-        self.github_id
-            .as_deref()
-            .ok_or_else(|| eyre!("no github id"))
-    }
-
-    pub fn global_id(&self) -> Result<String> {
-        if let Some(id) = &self.patreon_id {
-            return Ok(format!("patreon:{id}"));
-        }
-        if let Some(id) = &self.github_id {
-            return Ok(format!("github:{id}"));
-        }
-        if let Some(email) = &self.email {
-            return Ok(format!("email:{email}"));
-        }
-        Err(eyre!("no global id"))
-    }
+    /// Avatar URL
+    pub avatar_url: Option<String>,
 }

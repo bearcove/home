@@ -31,8 +31,8 @@ use mom_types::{
 
 mod db;
 mod deriver;
-mod endpoints;
 mod email;
+mod endpoints;
 mod ffmpeg;
 mod ffmpeg_stream;
 mod site;
@@ -53,7 +53,7 @@ pub(crate) struct MomGlobalState {
 
     /// web config (mostly just port)
     pub(crate) web: WebConfig,
-    
+
     /// email service (if configured)
     pub(crate) email_service: Option<Arc<email::EmailService>>,
 }
@@ -133,78 +133,6 @@ impl Deref for Pool {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
-}
-
-impl PatreonStore for Pool {
-    fn fetch_patreon_credentials(
-        &self,
-        patreon_id: &str,
-    ) -> eyre::Result<Option<PatreonCredentials>> {
-        let conn = self.get()?;
-        let mut stmt = conn.prepare(
-            "
-                SELECT data
-                FROM patreon_credentials
-                WHERE patreon_id = ?1
-            ",
-        )?;
-        let creds: Option<String> = stmt.query_row([patreon_id], |row| row.get(0))?;
-        if let Some(creds) = creds {
-            Ok(Some(
-                facet_json::from_str::<PatreonCredentials>(&creds).map_err(|e| e.into_owned())?,
-            ))
-        } else {
-            Ok(None)
-        }
-    }
-
-    fn save_patreon_credentials(
-        &self,
-        patreon_id: &str,
-        credentials: &PatreonCredentials,
-    ) -> eyre::Result<()> {
-        let conn = self.get()?;
-        conn.execute(
-            "
-                INSERT INTO patreon_credentials (patreon_id, data)
-                VALUES (?1, ?2)
-                ON CONFLICT (patreon_id) DO UPDATE SET data = ?2
-                ",
-            rusqlite::params![patreon_id, facet_json::to_string(credentials)],
-        )?;
-        Ok(())
-    }
-}
-
-pub(crate) async fn patreon_refresh_credentials_inner(
-    ts: Arc<MomTenantState>,
-    patreon_id: String,
-) -> Result<AuthBundle, eyre::Report> {
-    let pool = &ts.pool;
-    let mod_patreon = libpatreon::load();
-
-    let pat_creds = pool
-        .fetch_patreon_credentials(&patreon_id)?
-        .ok_or_else(|| eyre::eyre!("Could not find patreon credentials for {patreon_id}"))?;
-
-    info!("Refreshing patreon credentials");
-
-    let mut refresh_creds = pat_creds;
-    if is_development() && test_patreon_renewal() {
-        refresh_creds.access_token = "bad-token-for-testing".into()
-    }
-
-    let (_pat_creds, site_creds) = mod_patreon
-        .to_auth_bundle(
-            &ts.ti.tc,
-            &ts.rc()?,
-            refresh_creds,
-            pool,
-            ForcePatreonRefresh::ForceRefresh,
-        )
-        .await?;
-
-    Ok(site_creds)
 }
 
 pub(crate) fn save_sponsors_to_db(ts: &MomTenantState, sponsors: Sponsors) -> eyre::Result<()> {
@@ -309,10 +237,14 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
 
         let email_service = if let Some(email_config) = &config.secrets.email {
             log::info!("Email configuration found, initializing email service...");
-            log::debug!("Email config - SMTP host: {}:{}, from: {} <{}>", 
-                email_config.smtp_host, email_config.smtp_port, 
-                email_config.from_name, email_config.from_email);
-            
+            log::debug!(
+                "Email config - SMTP host: {}:{}, from: {} <{}>",
+                email_config.smtp_host,
+                email_config.smtp_port,
+                email_config.from_name,
+                email_config.from_email
+            );
+
             match email::EmailService::new(email_config) {
                 Ok(service) => {
                     log::info!("✅ Email service configured successfully");

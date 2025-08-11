@@ -279,18 +279,8 @@ impl MomTenantClientImpl {
 
 #[autotrait]
 impl MomTenantClient for MomTenantClientImpl {
-    fn update_auth_bundle<'fut>(
-        &'fut self,
-        body: &'fut AuthBundle,
-    ) -> BoxFuture<'fut, Result<AuthBundle>> {
-        Box::pin({
-            async move {
-                let uri = self.config_mom_uri("auth-bundle/update");
-                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
-                let res = req.send_and_expect_200().await?;
-                Ok(res.json::<AuthBundle>().await?)
-            }
-        })
+    fn update_auth_bundle<'fut>(&'fut self, body: &'fut AuthBundle) -> BoxFuture<'fut, Result<()>> {
+        panic!("this should be refresh profile and it needs to be remade")
     }
 
     fn github_callback<'fut>(
@@ -317,20 +307,6 @@ impl MomTenantClient for MomTenantClientImpl {
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
                 Ok(res.json::<Option<PatreonCallbackResponse>>().await?)
-            }
-        })
-    }
-
-    fn patreon_refresh_credentials<'fut>(
-        &'fut self,
-        body: &'fut PatreonRefreshCredentialsArgs,
-    ) -> BoxFuture<'fut, Result<PatreonRefreshCredentials>> {
-        Box::pin({
-            async move {
-                let uri = self.config_mom_uri("patreon/refresh-credentials");
-                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
-                let res = req.send_and_expect_200().await?;
-                Ok(res.json::<PatreonRefreshCredentials>().await?)
             }
         })
     }

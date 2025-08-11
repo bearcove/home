@@ -410,3 +410,13 @@ pub struct ValidateLoginCodeRequest {
 pub struct ValidateLoginCodeResponse {
     pub auth_bundle: AuthBundle,
 }
+
+#[derive(Debug, Clone, Facet)]
+pub struct PatreonCallbackResponse {
+    pub user_info: UserInfo,
+}
+
+#[derive(Debug, Clone, Facet)]
+pub struct GitHubCallbackResponse {
+    pub user_info: UserInfo,
+}

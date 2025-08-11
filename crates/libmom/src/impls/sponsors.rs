@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use futures_util::TryFutureExt;
-use libgithub::GitHubCredentials;
+use libgithub::GithubCredentials;
 use libhttpclient::HttpClient;
 
 use crate::impls::{MomTenantState, global_state};
@@ -57,7 +57,7 @@ async fn github_list_sponsors(
                 eyre::eyre!("rusqlite error: creator needs to log in with GitHub first: {e}")
             })?
     };
-    let github_credentials = facet_json::from_str::<GitHubCredentials>(&github_credentials)
+    let github_credentials = facet_json::from_str::<GithubCredentials>(&github_credentials)
         .map_err(|e| e.into_owned())?;
     let github = libgithub::load();
     github

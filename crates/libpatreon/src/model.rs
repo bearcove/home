@@ -44,6 +44,7 @@ impl Member {
 #[derive(Deserialize, Debug)]
 pub struct MemberAttributes {
     pub full_name: Option<String>,
+    pub thumb_url: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]

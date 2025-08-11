@@ -1,4 +1,5 @@
 use camino::Utf8PathBuf;
+use credentials::{GitHubUserId, PatreonUserId};
 use facet::Facet;
 use serde::{Deserialize, Serialize};
 
@@ -306,11 +307,11 @@ pub struct RevisionConfig {
 
     /// admin github user IDs
     #[serde(default)]
-    pub admin_github_ids: Vec<String>,
+    pub admin_github_ids: Vec<GitHubUserId>,
 
     /// admin patreon user IDs
     #[serde(default)]
-    pub admin_patreon_ids: Vec<String>,
+    pub admin_patreon_ids: Vec<PatreonUserId>,
 
     /// SVG font face collection
     #[serde(default)]

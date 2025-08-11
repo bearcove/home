@@ -351,19 +351,19 @@ impl Viewer {
     ) -> Self {
         let mut v = Self::anon();
         if let Some(user_info) = user_info {
-            if let Some(github_id) = user_info.profile.github_id.as_deref() {
+            if let Some(github_id) = user_info.github.as_ref().map(|gh| &gh.id) {
                 if rc.admin_github_ids.iter().any(|id| id == github_id) {
                     v.is_admin = true;
                 }
             }
-            if let Some(patreon_id) = user_info.profile.patreon_id.as_deref() {
+            if let Some(patreon_id) = user_info.patreon.as_ref().map(|p| &p.id) {
                 if rc.admin_patreon_ids.iter().any(|id| id == patreon_id) {
                     v.is_admin = true;
                 }
             }
 
-            if let Some(tier) = &user_info.tier {
-                match tier.title.as_ref() {
+            if let Some(tier) = user_info.patreon.as_ref().and_then(|p| p.tier.as_ref()) {
+                match tier.as_ref() {
                     "Bronze" => {
                         v.has_bronze = true;
                     }
@@ -372,6 +372,18 @@ impl Viewer {
                         v.has_silver = true;
                     }
                     _ => {}
+                }
+            }
+
+            // this hardcodes fasterthanli.me tiers for now:
+            if let Some(github) = user_info.github.as_ref() {
+                if let Some(monthly_usd) = github.monthly_usd {
+                    if monthly_usd >= 5 {
+                        v.has_bronze = true;
+                    }
+                    if monthly_usd >= 10 {
+                        v.has_silver = true;
+                    }
                 }
             }
         }
@@ -450,10 +462,8 @@ impl LoadedPage {
                 }
                 None => return false,
             }
-        } else {
-            if self.date > OffsetDateTime::now_utc() && !viewer.is_admin {
-                return false;
-            }
+        } else if self.date > OffsetDateTime::now_utc() && !viewer.is_admin {
+            return false;
         }
         match self.kind {
             PageKind::Article
