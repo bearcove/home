@@ -65,7 +65,6 @@ impl super::SqlMigration for Migration {
                 id TEXT NOT NULL,
                 access_token TEXT NOT NULL,
                 scope TEXT NOT NULL,
-                token_type TEXT,
                 expires_at TIMESTAMP,
                 PRIMARY KEY (id)
             )

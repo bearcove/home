@@ -14,7 +14,7 @@ plait! {
     /// User identifiers (that can log into various sites)
     pub struct UserId => &UserIdRef;
 
-    /// Github user identifiers
+    /// Github user identifiers (database ID, not login)
     pub struct GithubUserId => &GithubUserIdRef;
 
     /// Patreon user identifiers

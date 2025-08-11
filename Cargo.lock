@@ -898,6 +898,7 @@ name = "config-types"
 version = "0.1.0"
 dependencies = [
  "camino",
+ "credentials",
  "eyre",
  "facet",
  "plait",
@@ -1069,8 +1070,10 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "facet",
+ "minijinja",
+ "plait",
+ "rusqlite",
  "serde",
- "time",
 ]
 
 [[package]]

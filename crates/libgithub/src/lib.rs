@@ -1,14 +1,14 @@
 #![allow(non_snake_case)]
 
 use autotrait::autotrait;
-use credentials::GithubProfile;
+use credentials::{GithubProfile, GithubUserId};
 use facet::Facet;
 use futures_core::future::BoxFuture;
-use libhttpclient::{HttpClient, Uri};
-use std::collections::HashSet;
+use libhttpclient::{HeaderValue, HttpClient, Uri, header};
 
 use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use eyre::Result;
+use log::debug;
 
 #[derive(Default)]
 struct ModImpl;
@@ -129,6 +129,7 @@ impl Mod for ModImpl {
 
             #[derive(Facet)]
             struct Sponsorship {
+                privacyLevel: String,
                 tier: SponsorshipTier,
             }
 
@@ -175,11 +176,8 @@ impl Mod for ModImpl {
                 .map_err(|e| eyre::eyre!("{}", e.to_string()))?;
 
             let viewer = &response.data.viewer;
-            let full_name = viewer.name.as_ref().unwrap_or(&viewer.login);
-            let viewer_github_user_id = viewer.databaseId.to_string();
-
             let profile = GithubProfile {
-                id: credentials::GitHubUserId::new(viewer.login.clone()),
+                id: GithubUserId::new(viewer.databaseId.to_string()),
                 monthly_usd: response
                     .data
                     .user
@@ -192,19 +190,18 @@ impl Mod for ModImpl {
                             Some(s.tier.monthlyPriceInDollars as u64)
                         }
                     }),
-                sponsorship_privacy_level: None,
+                sponsorship_privacy_level: response
+                    .data
+                    .user
+                    .sponsorshipForViewerAsSponsor
+                    .as_ref()
+                    .map(|s| s.privacyLevel.clone()),
                 name: viewer.name.clone(),
                 login: viewer.login.clone(),
                 avatar_url: Some(viewer.avatarUrl.clone()),
             };
 
-            log::info!(
-                "GitHub user \x1b[33m{:?}\x1b[0m (ID: \x1b[36m{:?}\x1b[0m, name: \x1b[32m{:?}\x1b[0m, tier: \x1b[35m{:?}\x1b[0m) logged in",
-                viewer.login,
-                viewer.databaseId,
-                viewer.name,
-                tier
-            );
+            log::info!("GitHub profile: {:#?}", profile);
 
             Ok(profile)
         })
@@ -371,22 +368,12 @@ impl Mod for ModImpl {
                         };
 
                         github_profiles.push(GithubProfile {
-                            id: credentials::GitHubUserId::new(sponsor.login.clone()),
+                            id: GithubUserId::new(sponsor.login.clone()),
                             monthly_usd,
                             sponsorship_privacy_level: Some(sponsorship.privacyLevel.clone()),
                             name: sponsor.name.clone(),
                             login: sponsor.login.clone(),
                             avatar_url: sponsor.avatarUrl.clone(),
-                        });
-                    } else {
-                        // Include sponsors without sponsorship info as well
-                        github_profiles.push(GithubProfile {
-                            id: credentials::GitHubUserId::new(sponsor.login.clone()),
-                            monthly_usd: None,
-                            sponsorship_privacy_level: None,
-                            name: sponsor.name.clone(),
-                            login: sponsor.login.clone(),
-                            avatar_url: None,
                         });
                     }
                 }
@@ -420,6 +407,8 @@ pub struct GithubCredentials {
     pub scope: String,
     /// example: "bearer"
     pub token_type: Option<String>,
+    /// usually 8 hours for github, see https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/refreshing-user-access-tokens
+    pub expires_in: u64,
 }
 
 /// The purpose of the login (to determine the OAuth scopes needed for the login)
