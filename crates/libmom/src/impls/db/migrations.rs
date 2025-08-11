@@ -25,6 +25,7 @@ include_migrations! {
     m0007_objectstore_entries,
     m0008_objectstore_entries_rename,
     m0009_email_login_codes,
+    m0010_users,
 }
 
 pub fn migrate_all_sqlite(
