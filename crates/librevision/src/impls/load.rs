@@ -729,6 +729,7 @@ fn load_single_page(
             dual_feature: frontmatter.extra.dual_feature,
             tube: frontmatter.extra.tube,
             youtube: frontmatter.extra.youtube,
+            bunnystream: frontmatter.extra.bunnystream,
             duration: frontmatter.extra.duration,
             champion: frontmatter.extra.champion,
         },

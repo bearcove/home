@@ -473,6 +473,7 @@ pub struct VideoInfo {
     pub dual_feature: bool,
     pub tube: Option<String>,
     pub youtube: Option<String>,
+    pub bunnystream: Option<String>,
     pub duration: Option<u64>,
 }
 
