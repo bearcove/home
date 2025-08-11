@@ -2,9 +2,15 @@ use std::collections::HashMap;
 
 use axum::routing::get;
 use config_types::is_development;
+use credentials::{GithubProfile, PatreonProfile, PatreonUserIdRef, UserInfo};
 use libhttpclient::Uri;
+use rusqlite::OptionalExtension;
 
-use crate::impls::{MomTenantState, global_state};
+use crate::impls::users::{
+    CreateUserArgs, create_user, fetch_user_info, save_github_credentials, save_github_profile,
+    save_patreon_credentials, save_patreon_profile,
+};
+use crate::impls::{MomTenantState, SqlitePool, global_state};
 use axum::{Extension, Router};
 use axum::{
     body::Bytes,
@@ -12,22 +18,19 @@ use axum::{
     http::StatusCode,
     routing::{post, put},
 };
-use credentials::AuthBundle;
-use libgithub::{GitHubCallbackArgs, GitHubCallbackResponse, GithubCredentials};
-use libpatreon::{
-    ForcePatreonRefresh, PatreonCallbackArgs, PatreonCallbackResponse, PatreonCredentials,
-    PatreonRefreshCredentials, PatreonRefreshCredentialsArgs, PatreonStore,
+use libgithub::{GitHubCallbackArgs, GithubCredentials};
+use libpatreon::{PatreonCallbackArgs, PatreonCredentials};
+use mom_types::{
+    GitHubCallbackResponse, ListMissingArgs, ListMissingResponse, PatreonCallbackResponse,
+    TenantEventPayload,
 };
-use mom_types::{ListMissingArgs, ListMissingResponse, TenantEventPayload};
 use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
-use time::{Duration, OffsetDateTime};
 
 use crate::impls::site::{FacetJson, HttpError, IntoReply, Reply};
 
 use super::tenant_extractor::TenantExtractor;
 
 mod derive;
-mod email_login;
 mod media;
 
 pub fn tenant_routes() -> Router {
@@ -41,143 +44,6 @@ pub fn tenant_routes() -> Router {
         .route("/media/transcode", post(media::transcode))
         .route("/derive", post(derive::derive))
         .route("/revision/upload/{revision_id}", put(revision_upload_revid))
-        .route(
-            "/email/generate-code",
-            post(email_login::generate_login_code),
-        )
-        .route(
-            "/email/validate-code",
-            post(email_login::validate_login_code),
-        )
-}
-
-fn save_patreon_credentials(
-    pool: &Pool,
-    patreon_id: &str,
-    credentials: &PatreonCredentials,
-) -> eyre::Result<()> {
-    let conn = pool.get()?;
-    conn.execute(
-        "INSERT OR REPLACE INTO patreon_credentials (id, access_token, refresh_token, expires_at) VALUES (?1, ?2, ?3, ?4)",
-        rusqlite::params![
-            patreon_id,
-            credentials.access_token,
-            credentials.refresh_token,
-            credentials.expires_at
-        ],
-    )?;
-    Ok(())
-}
-
-use rusqlite::Pool;
-
-fn save_patreon_profile(pool: &Pool, profile: &PatreonProfile) -> eyre::Result<()> {
-    let conn = pool.get()?;
-    conn.execute(
-        "INSERT OR REPLACE INTO patreon_profiles (id, tier, full_name, thumb_url, updated_at) VALUES (?1, ?2, ?3, ?4, CURRENT_TIMESTAMP)",
-        rusqlite::params![
-            profile.id,
-            profile.tier,
-            profile.full_name,
-            profile.thumb_url
-        ],
-    )?;
-    Ok(())
-}
-
-fn fetch_user_info(pool: &Pool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
-    let conn = pool.get()?;
-
-    // First, fetch the user record
-    let user_row: Option<(String, Option<String>, Option<String>)> = conn
-        .query_row(
-            "SELECT id, patreon_user_id, github_user_id FROM users WHERE id = ?1",
-            [user_id],
-            |row| {
-                Ok((
-                    row.get::<_, i64>(0)?.to_string(),
-                    row.get::<_, Option<String>>(1)?,
-                    row.get::<_, Option<String>>(2)?,
-                ))
-            },
-        )
-        .optional()?;
-
-    let Some((id, patreon_user_id, github_user_id)) = user_row else {
-        return Ok(None);
-    };
-
-    // Fetch Patreon profile if linked
-    let patreon = if let Some(patreon_id) = patreon_user_id {
-        conn.query_row(
-            "SELECT id, tier, full_name, thumb_url FROM patreon_profiles WHERE id = ?1",
-            [&patreon_id],
-            |row| {
-                Ok(PatreonProfile {
-                    id: row.get(0)?,
-                    tier: row.get(1)?,
-                    full_name: row.get(2)?,
-                    thumb_url: row.get(3)?,
-                })
-            },
-        )
-        .optional()?
-    } else {
-        None
-    };
-
-    // Fetch GitHub profile if linked
-    let github = if let Some(github_id) = github_user_id {
-        conn.query_row(
-            "SELECT id, monthly_usd, sponsorship_privacy_level, name, login, thumb_url FROM github_profiles WHERE id = ?1",
-            [&github_id],
-            |row| Ok(GitHubProfile {
-                id: row.get(0)?,
-                monthly_usd: row.get::<_, Option<i32>>(1)?.map(|v| v.to_string()),
-                sponsorship_privacy_level: row.get(2)?,
-                name: row.get(3)?,
-                login: row.get(4)?,
-                thumb_url: row.get(5)?,
-            }),
-        ).optional()?
-    } else {
-        None
-    };
-
-    Ok(Some(UserInfo {
-        id,
-        patreon,
-        github,
-    }))
-}
-
-#[derive(Debug)]
-struct CreateUserArgs {
-    patreon_user_id: Option<String>,
-    github_user_id: Option<String>,
-}
-
-fn create_user(pool: &Pool, args: CreateUserArgs) -> eyre::Result<i64> {
-    use rand::Rng;
-
-    // Generate a 32-character API key
-    let api_key: String = rand::thread_rng()
-        .sample_iter(&rand::distributions::Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect();
-
-    let conn = pool.get()?;
-    conn.execute(
-        "INSERT INTO users (patreon_user_id, github_user_id, api_key, last_seen) VALUES (?1, ?2, ?3, CURRENT_TIMESTAMP)",
-        rusqlite::params![
-            args.patreon_user_id,
-            args.github_user_id,
-            api_key
-        ],
-    )?;
-
-    Ok(conn.last_insert_rowid())
 }
 
 async fn patreon_callback(
@@ -196,7 +62,7 @@ async fn patreon_callback(
 
     let res: Option<PatreonCallbackResponse> = match creds {
         Some(creds) => {
-            let profile = mod_patreon.fetch_profile(&ts.rc()?, creds).await?;
+            let profile = mod_patreon.fetch_profile(&ts.rc()?, &creds).await?;
             save_patreon_profile(&pool, &profile);
             save_patreon_credentials(&pool, &profile.id, &creds)?;
 
@@ -243,6 +109,7 @@ async fn github_callback(
     let body = std::str::from_utf8(&body[..])?;
     let args: GitHubCallbackArgs = facet_json::from_str(body)?;
 
+    let pool = &ts.pool;
     let mod_github = libgithub::load();
 
     let web = global_state().web;
@@ -252,22 +119,42 @@ async fn github_callback(
 
     let res: Option<GitHubCallbackResponse> = match creds {
         Some(creds) => {
-            let rc = ts.rc()?;
-            let (github_creds, site_creds) = mod_github.fetch_profile(&rc, web, creds).await?;
+            let profile = mod_github.fetch_profile(web, &creds).await?;
 
-            // Save GitHub credentials to the database
-            let conn = ts.pool.get()?;
-            conn.execute(
-                "INSERT OR REPLACE INTO github_credentials (github_id, data) VALUES (?1, ?2)",
-                rusqlite::params![
-                    site_creds.user_info.profile.github_id,
-                    facet_json::to_string(&github_creds)
-                ],
-            )?;
-            Some(GitHubCallbackResponse {
-                auth_bundle: site_creds,
-                github_credentials: github_creds,
-            })
+            // Save GitHub profile and credentials to the database
+            save_github_profile(&pool, &profile);
+            save_github_credentials(&pool, &profile.id, &creds)?;
+
+            // now, do we already have a user with this github profile? if not, create it
+            // TODO: eventually, we should accept a "user_id" to assign this profile too, in
+            // case it gets created ahead of time and we're just "linking" a profile to an existing user.
+            let conn = pool.get()?;
+            let existing_user: Option<i64> = conn
+                .query_row(
+                    "SELECT id FROM users WHERE github_user_id = ?1",
+                    [&profile.id],
+                    |row| row.get(0),
+                )
+                .optional()?;
+
+            let user_id = if let Some(user_id) = existing_user {
+                user_id
+            } else {
+                create_user(
+                    &pool,
+                    CreateUserArgs {
+                        patreon_user_id: None,
+                        github_user_id: Some(profile.id.clone()),
+                    },
+                )?
+            };
+
+            let user_info = {
+                let user_id_str = user_id.to_string();
+                fetch_user_info(&pool, &user_id_str)?.unwrap()
+            };
+
+            Some(GitHubCallbackResponse { user_info })
         }
         None => None,
     };

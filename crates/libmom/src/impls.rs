@@ -10,14 +10,13 @@ use config_types::{
     MomConfig, RevisionConfig, TenantDomain, TenantInfo, WebConfig, is_development,
 };
 use conflux::Pak;
-use credentials::AuthBundle;
 use inflight::InflightSlots;
 use itertools::Itertools;
 use libhttpclient::HttpClient;
 use libobjectstore::ObjectStore;
-use libpatreon::{ForcePatreonRefresh, PatreonCredentials, PatreonStore, test_patreon_renewal};
+use libpatreon::{PatreonCredentials, test_patreon_renewal};
 use log::{debug, error, info};
-use mom_types::Sponsors;
+use mom_types::AllUsers;
 use objectstore_types::ObjectStoreKey;
 use owo_colors::OwoColorize;
 use parking_lot::Mutex;
@@ -36,7 +35,7 @@ mod endpoints;
 mod ffmpeg;
 mod ffmpeg_stream;
 mod site;
-mod sponsors;
+mod users;
 
 pub(crate) struct MomGlobalState {
     /// shared HTTP client
@@ -62,8 +61,8 @@ pub(crate) struct MomTenantState {
     pub(crate) pool: Pool,
 
     pub(crate) patreon_creds_inflight: InflightSlots<String, AuthBundle>,
-    pub(crate) sponsors_inflight: InflightSlots<(), Sponsors>,
-    pub(crate) sponsors: Arc<Mutex<Option<Sponsors>>>,
+    pub(crate) users_inflight: InflightSlots<(), AllUsers>,
+    pub(crate) users: Arc<Mutex<Option<AllUsers>>>,
 
     pub(crate) pak: Arc<Mutex<Option<Pak>>>,
 
@@ -285,11 +284,8 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
 
             let ts = MomTenantState {
                 pool: mom_db_pool(&ti).unwrap(),
-                patreon_creds_inflight: InflightSlots::new(move |k: &String| {
-                    let ts = global_state().tenants.get(&tn_for_creds).cloned().unwrap();
-                    Box::pin(patreon_refresh_credentials_inner(ts, k.clone()))
-                }),
-                sponsors_inflight: InflightSlots::new(move |_| {
+                patreon_creds_inflight: InflightSlots::new(move |k: &String| todo!("decide fate")),
+                users_inflight: InflightSlots::new(move |_| {
                     let gs = global_state();
                     log::info!(
                         "Grabbing sponsors inflight for tenant {}; gs has {} tenants",
@@ -308,16 +304,16 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         })
                         .unwrap();
                     Box::pin(async move {
-                        let res = sponsors::get_sponsors(&ts).await?;
+                        let res = sponsors::get_all_users(&ts).await?;
                         if let Err(e) = save_sponsors_to_db(ts.as_ref(), res.clone()) {
                             log::error!("Failed to save sponsors to DB: {e}")
                         }
-                        ts.broadcast_event(TenantEventPayload::SponsorsUpdated(res.clone()))?;
+                        ts.broadcast_event(TenantEventPayload::UsersUpdated(res.clone()))?;
 
                         Ok(res)
                     })
                 }),
-                sponsors: Default::default(),
+                users: Default::default(),
                 pak: Default::default(),
                 object_store,
                 ti: Arc::new(ti),
@@ -348,7 +344,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                     ts.ti.tc.name.magenta(),
                     sponsors.sponsors.len()
                 );
-                *ts.sponsors.lock() = Some(sponsors);
+                *ts.users.lock() = Some(sponsors);
             }
             Ok(None) => {
                 eprintln!("{} No sponsors found in DB", ts.ti.tc.name.magenta());
@@ -367,19 +363,15 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         tokio::spawn(async move {
             let interval = Duration::from_secs(120);
             let tenant_name = ts.ti.tc.name.as_str();
-            if ts.sponsors.lock().is_some() {
+            if ts.users.lock().is_some() {
                 tokio::time::sleep(interval).await;
             }
 
             loop {
-                match ts.sponsors_inflight.query(()).await {
-                    Ok(sponsors) => {
-                        log::debug!(
-                            "[{}] Fetched {} sponsors",
-                            tenant_name,
-                            sponsors.sponsors.len()
-                        );
-                        *ts.sponsors.lock() = Some(sponsors);
+                match ts.users_inflight.query(()).await {
+                    Ok(users) => {
+                        log::debug!("[{}] Fetched {} sponsors", tenant_name, users.users.len());
+                        *ts.users.lock() = Some(users);
                     }
                     Err(e) => {
                         log::debug!("[{tenant_name}] Failed to fetch sponsors: {e} / {e:?}")

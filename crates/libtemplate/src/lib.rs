@@ -545,7 +545,10 @@ impl Object for GlobalsVal {
                 ti: self.gv.gsv_ti().clone(),
                 web: self.web,
             }),
-            "sponsors" => Value::from_serialize(self.gv.gsv_sponsors().as_ref()),
+            "users" => Value::from_serialize(self.gv.gsv_users().as_ref()),
+            "sponsors" => {
+                todo!("remake sponsors from users map!");
+            }
             "globals" => Value::from_dyn_object(self.clone()),
             "web_port" => self.web.port.into(),
             "tags" => {

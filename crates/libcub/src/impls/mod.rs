@@ -20,7 +20,7 @@ use libmomclient::{MomClient, MomClientConfig, MomEventListener};
 use librevision::{RevisionKind, RevisionSpec};
 use log::{info, warn};
 use mom_event_handler::spawn_mom_event_handler;
-use mom_types::{MomEvent, Sponsors};
+use mom_types::{AllUsers, MomEvent, Sponsors};
 use node_metadata::{NodeMetadata, load_node_metadata};
 use parking_lot::RwLock;
 use reply::{LegacyHttpError, LegacyReply};
@@ -374,7 +374,7 @@ async fn build_global_state(
     mom_deploy_client: Arc<dyn MomClient>,
     tenant_infos: &HashMap<TenantDomain, Arc<TenantInfo>>,
     revs_per_ts: &mut HashMap<TenantDomain, CubRevisionState>,
-    sponsors_per_ts: &mut HashMap<TenantDomain, Sponsors>,
+    users_per_ts: &mut HashMap<TenantDomain, AllUsers>,
 ) -> eyre::Result<CubGlobalState> {
     let mut gs = CubGlobalState {
         config,
@@ -402,8 +402,8 @@ async fn build_global_state(
         let cookie_key = tower_cookies::Key::derive_from(&cookie_master_key);
 
         let rs = revs_per_ts.remove(tn).unwrap().clone();
-        let sponsors = sponsors_per_ts.remove(tn).unwrap_or_else(|| Sponsors {
-            sponsors: Default::default(),
+        let users = users_per_ts.remove(tn).unwrap_or_else(|| AllUsers {
+            users: Default::default(),
         });
         let ts = CubTenantImpl {
             ti: ti.clone(),
@@ -411,7 +411,7 @@ async fn build_global_state(
             bx_rev,
             store: object_store,
             cookie_key,
-            sponsors: RwLock::new(Arc::new(sponsors)),
+            users: RwLock::new(Arc::new(users)),
             vite_port: Default::default(),
         };
         let ts = Arc::new(ts);

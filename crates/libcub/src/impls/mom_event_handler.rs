@@ -57,7 +57,7 @@ async fn handle_tenant_event(
 }
 
 fn handle_sponsors_updated(ts: Arc<CubTenantImpl>, sponsors: Sponsors) {
-    *ts.sponsors.write() = Arc::new(sponsors);
+    *ts.users.write() = Arc::new(sponsors);
 }
 
 async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak>, web: WebConfig) {

@@ -6,9 +6,10 @@ use facet::Facet;
 use futures_core::future::BoxFuture;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
 
-use config_types::{RevisionConfig, TenantConfig, WebConfig};
+use config_types::{TenantConfig, WebConfig};
 use eyre::Result;
 use log::debug;
+use time::OffsetDateTime;
 
 #[derive(Default)]
 struct ModImpl;
@@ -74,11 +75,18 @@ impl Mod for ModImpl {
                 .await
                 .map_err(|e| eyre::eyre!("While getting GitHub access token: {e}"))?;
 
-            let creds = res.json::<GithubCredentials>().await?;
+            let creds = res.json::<GithubCredentialsAPI>().await?;
             log::info!(
                 "Successfully obtained GitHub token with scope {}",
                 &creds.scope
             );
+
+            let creds = GithubCredentials {
+                access_token: creds.access_token,
+                scope: creds.scope,
+                expires_at: OffsetDateTime::now_utc()
+                    + time::Duration::seconds(creds.expires_in as i64),
+            };
 
             Ok(Some(creds))
         })
@@ -86,9 +94,8 @@ impl Mod for ModImpl {
 
     fn fetch_profile<'fut>(
         &'fut self,
-        rc: &'fut RevisionConfig,
         web: WebConfig,
-        creds: GithubCredentials,
+        creds: &'fut GithubCredentials,
     ) -> BoxFuture<'fut, Result<GithubProfile>> {
         Box::pin(async move {
             #[derive(Facet)]
@@ -201,15 +208,54 @@ impl Mod for ModImpl {
                 avatar_url: Some(viewer.avatarUrl.clone()),
             };
 
-            log::info!("GitHub profile: {:#?}", profile);
-
+            log::info!("GitHub profile: {profile:#?}");
             Ok(profile)
+        })
+    }
+
+    fn refresh_credentials<'fut>(
+        &'fut self,
+        tc: &'fut TenantConfig,
+        credentials: &'fut GithubCredentials,
+    ) -> BoxFuture<'fut, Result<GithubCredentials>> {
+        Box::pin(async move {
+            let gh_sec = tc.github_secrets()?;
+
+            let res = libhttpclient::load()
+                .client()
+                .post(Uri::from_static(
+                    "https://github.com/login/oauth/access_token",
+                ))
+                .query(&[
+                    ("client_id", &gh_sec.oauth_client_id),
+                    ("client_secret", &gh_sec.oauth_client_secret),
+                    ("grant_type", "refresh_token"),
+                    ("refresh_token", &credentials.access_token),
+                ])
+                .header(header::ACCEPT, HeaderValue::from_static("application/json"))
+                .send_and_expect_200()
+                .await
+                .map_err(|e| eyre::eyre!("While refreshing GitHub access token: {e}"))?;
+
+            let creds = res.json::<GithubCredentialsAPI>().await?;
+            log::info!(
+                "Successfully refreshed GitHub token with scope {}",
+                &creds.scope
+            );
+
+            let creds = GithubCredentials {
+                access_token: creds.access_token,
+                scope: creds.scope,
+                expires_at: OffsetDateTime::now_utc()
+                    + time::Duration::seconds(creds.expires_in as i64),
+            };
+
+            Ok(creds)
         })
     }
 
     fn list_sponsors<'fut>(
         &'fut self,
-        tc: &'fut TenantConfig,
         client: &'fut dyn HttpClient,
         github_creds: &'fut GithubCredentials,
     ) -> BoxFuture<'fut, Result<Vec<GithubProfile>>> {
@@ -400,15 +446,33 @@ pub struct GitHubCallbackArgs {
 }
 
 #[derive(Debug, Clone, Facet)]
+struct GithubCredentialsAPI {
+    /// example: "ajba90sd098w0e98f0w9e8g90a8ed098wgfae_w"
+    access_token: String,
+    /// example: "read:user"
+    scope: String,
+    /// example: "bearer"
+    token_type: Option<String>,
+    /// usually 8 hours for github, see https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/refreshing-user-access-tokens
+    expires_in: u64,
+}
+
+#[derive(Debug, Clone, Facet)]
 pub struct GithubCredentials {
     /// example: "ajba90sd098w0e98f0w9e8g90a8ed098wgfae_w"
     pub access_token: String,
     /// example: "read:user"
     pub scope: String,
-    /// example: "bearer"
-    pub token_type: Option<String>,
     /// usually 8 hours for github, see https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/refreshing-user-access-tokens
-    pub expires_in: u64,
+    pub expires_at: OffsetDateTime,
+}
+
+impl GithubCredentials {
+    pub fn expire_soon(&self) -> bool {
+        let now = OffsetDateTime::now_utc();
+        let twenty_four_hours = time::Duration::hours(1);
+        self.expires_at - now < twenty_four_hours
+    }
 }
 
 /// The purpose of the login (to determine the OAuth scopes needed for the login)
@@ -424,23 +488,6 @@ pub fn github_login_purpose_to_scopes(purpose: &GitHubLoginPurpose) -> &'static 
     match purpose {
         GitHubLoginPurpose::Admin => "read:user,read:org",
         GitHubLoginPurpose::Regular => "read:user",
-    }
-}
-
-fn creator_tier_name() -> Option<String> {
-    let path = std::path::Path::new("/tmp/home-creator-tier-override");
-    match fs_err::read_to_string(path) {
-        Ok(contents) => {
-            let name = contents.trim().to_string();
-            eprintln!("🎭 Pretending creator has tier name {name}");
-            Some(name)
-        }
-        Err(_) => {
-            eprintln!(
-                "🔒 Creator special casing \x1b[31mdisabled\x1b[0m - create /tmp/home-creator-tier-override with tier name like 'Bronze' or 'Silver' to enable 🔑"
-            );
-            None
-        }
     }
 }
 

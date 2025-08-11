@@ -1,7 +1,7 @@
 use autotrait::autotrait;
 use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::PatreonProfile;
-use credentials::UserInfo;
+use credentials::PatreonUserId;
 use eyre::Context as _;
 use eyre::Result;
 use facet::Facet;
@@ -17,13 +17,6 @@ use jsonapi_ext::*;
 
 mod model;
 use model::*;
-
-fn patreon_refresh_interval() -> time::Duration {
-    if test_patreon_renewal() {
-        return time::Duration::seconds(10);
-    }
-    time::Duration::days(1)
-}
 
 pub struct ModImpl;
 
@@ -309,22 +302,8 @@ impl Mod for ModImpl {
             let has_tier = tier_title.is_some();
             log::info!("User has tier from memberships: {has_tier}");
 
-            let is_admin = rc.admin_patreon_ids.contains(&user.id);
-            log::info!("User is in admin_patreon_ids list: {is_admin}");
-            let tier = if has_tier {
-                log::info!("Using tier from membership: {tier_title:?}");
-                tier_title
-            } else if is_admin {
-                let creator_tier = creator_tier_name();
-                log::info!("User is admin, using creator tier: {creator_tier:?}");
-                creator_tier
-            } else {
-                log::info!("User has no tier and is not admin");
-                None
-            };
-
             let profile = PatreonProfile {
-                id: user.id,
+                id: PatreonUserId::new(user.id.clone()),
                 tier: tier_title,
                 full_name: user_attrs.full_name,
                 avatar_url: Some(user_attrs.thumb_url),
@@ -423,7 +402,7 @@ impl Mod for ModImpl {
                                 };
 
                             let patron = PatreonProfile {
-                                id: member.common.id.clone(),
+                                id: PatreonUserId::new(member.common.id.clone()),
                                 tier: tier_title,
                                 full_name: full_name.trim().to_string(),
                                 avatar_url: member.attributes.thumb_url.clone(),
@@ -454,23 +433,6 @@ impl ModImpl {
     fn make_patreon_callback_url(&self, tc: &TenantConfig, web: WebConfig) -> String {
         let base_url = tc.web_base_url(web);
         format!("{base_url}/login/patreon/callback")
-    }
-}
-
-fn creator_tier_name() -> Option<String> {
-    let path = std::path::Path::new("/tmp/home-creator-tier-override");
-    match fs_err::read_to_string(path) {
-        Ok(contents) => {
-            let name = contents.trim().to_string();
-            eprintln!("🎭 Pretending creator has tier name {name}");
-            Some(name)
-        }
-        Err(_) => {
-            eprintln!(
-                "🔒 Creator special casing \x1b[31mdisabled\x1b[0m - create /tmp/home-creator-tier-override with tier name like 'Bronze' or 'Silver' to enable 🔑"
-            );
-            None
-        }
     }
 }
 

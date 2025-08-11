@@ -7,7 +7,7 @@ use facet::Facet;
 use hattip::prelude::BoxFuture;
 use libmomclient::{MomClient, MomTenantClient};
 use libobjectstore::ObjectStore;
-use mom_types::{GlobalStateView, Sponsors};
+use mom_types::{AllUsers, GlobalStateView, Sponsors};
 use parking_lot::RwLock;
 use std::{collections::HashMap, sync::Arc};
 use template_types::TemplateCollection;
@@ -97,7 +97,7 @@ impl CubGlobalState {
 
 pub struct CubTenantImpl {
     pub cookie_key: Key,
-    pub sponsors: RwLock<Arc<Sponsors>>,
+    pub users: RwLock<Arc<AllUsers>>,
     pub ti: Arc<TenantInfo>,
     pub store: Arc<dyn ObjectStore>,
     pub bx_rev: broadcast::Sender<RevisionBroadcastEvent>,
@@ -177,7 +177,7 @@ impl CubTenant for CubTenantImpl {
     }
 
     fn sponsors(&self) -> Arc<Sponsors> {
-        self.sponsors.read().clone()
+        self.users.read().clone()
     }
 
     fn store(&self) -> Arc<dyn ObjectStore> {
@@ -224,7 +224,7 @@ impl GlobalStateView for CubTenantImpl {
         CubTenant::ti(self).clone()
     }
 
-    fn gsv_sponsors(&self) -> Arc<Sponsors> {
+    fn gsv_users(&self) -> Arc<Sponsors> {
         CubTenant::sponsors(self)
     }
 }

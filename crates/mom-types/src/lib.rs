@@ -1,27 +1,22 @@
 use camino::Utf8PathBuf;
 use conflux::{Derivation, DerivationHash, Input, InputPath, Pak};
+use credentials::{UserId, UserInfo};
 use derivations::DerivationInfo;
 use facet::Facet;
 use media_types::{TargetFormat, TranscodingProgress};
 use objectstore_types::ObjectStoreKey;
-use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use config_types::{MomConfig, TenantConfig, TenantDomain, TenantInfo, WebConfig};
 
 pub trait GlobalStateView: Send + Sync + 'static {
-    fn gsv_sponsors(&self) -> Arc<Sponsors> {
+    fn gsv_users(&self) -> Arc<AllUsers> {
         unimplemented!()
     }
 
     fn gsv_ti(&self) -> Arc<TenantInfo> {
         unimplemented!()
     }
-}
-
-#[derive(Clone, Serialize, Facet)]
-pub struct Sponsors {
-    pub sponsors: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -307,11 +302,18 @@ pub struct TenantEvent {
     pub payload: TenantEventPayload,
 }
 
+#[derive(Facet, Clone, Default)]
+pub struct AllUsers {
+    pub users: HashMap<UserId, UserInfo>,
+}
+
 #[derive(Facet)]
 #[repr(u8)]
 pub enum TenantEventPayload {
     RevisionChanged(Box<Pak>),
-    SponsorsUpdated(Sponsors),
+    /// cubs derive sponsors to show from user info themselves. there's no delta
+    /// going on here — we just send them all user info every few seconds.
+    UsersUpdated(AllUsers),
 }
 
 impl std::fmt::Debug for TenantEventPayload {
@@ -326,11 +328,9 @@ impl std::fmt::Debug for TenantEventPayload {
                 revision.templates.len(),
                 revision.media_props.len(),
             ),
-            TenantEventPayload::SponsorsUpdated(sponsors) => write!(
-                f,
-                "TenantEvent::SponsorsUpdated({} sponsors)",
-                sponsors.sponsors.len()
-            ),
+            TenantEventPayload::UsersUpdated(users) => {
+                write!(f, "TenantEvent::UsersUpdated({} users)", users.users.len())
+            }
         }
     }
 }
@@ -345,8 +345,8 @@ pub struct TenantInitialState {
     /// The revision to serve (if any)
     pub pak: Option<Pak>,
 
-    /// The sponsors for this tenant
-    pub sponsors: Option<Sponsors>,
+    /// The users for this tenant
+    pub users: Option<AllUsers>,
 
     /// The configuration for this tenant
     pub tc: TenantConfig,
@@ -381,34 +381,6 @@ pub fn derive_cookie_sauce(global_sauce: &str, tenant_name: &TenantDomain) -> St
     mac.update(tenant_name.as_str().as_bytes());
     let result = mac.finalize();
     hex::encode(result.into_bytes())
-}
-
-// Email login types
-use credentials::AuthBundle;
-use time::OffsetDateTime;
-
-#[derive(Debug, Deserialize, Facet)]
-pub struct GenerateLoginCodeRequest {
-    pub email: String,
-}
-
-#[derive(Debug, Serialize, Facet)]
-pub struct GenerateLoginCodeResponse {
-    pub code: String,
-    pub expires_at: OffsetDateTime,
-}
-
-#[derive(Debug, Deserialize, Facet)]
-pub struct ValidateLoginCodeRequest {
-    pub email: String,
-    pub code: String,
-    pub ip_address: Option<String>,
-    pub user_agent: Option<String>,
-}
-
-#[derive(Debug, Facet)]
-pub struct ValidateLoginCodeResponse {
-    pub auth_bundle: AuthBundle,
 }
 
 #[derive(Debug, Clone, Facet)]
