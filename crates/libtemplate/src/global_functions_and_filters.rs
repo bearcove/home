@@ -168,16 +168,9 @@ fn get_page_from_route(state: &minijinja::State, path: String) -> Result<Value, 
 }
 
 // This is used to generate RSS feeds
-fn get_recent_pages(state: &minijinja::State, args: Kwargs) -> Result<Value, Error> {
-    // this is for private RSS feeds, it's a JWT
-    let key = args.get::<String>("key").ok();
-    args.assert_all_used()?;
-
-    let mut viewer = Viewer {
-        is_admin: false,
-        has_bronze: false,
-        has_silver: false,
-    };
+fn get_recent_pages(state: &minijinja::State) -> Result<Value, Error> {
+    let globals = get_globals(state)?;
+    let viewer = globals.viewer();
 
     // pages that are article or series_part, and listed, sorted by date descending,
     // limit to 25 items
