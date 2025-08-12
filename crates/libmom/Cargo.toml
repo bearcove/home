@@ -62,3 +62,5 @@ facet-json.workspace = true
 facet.workspace = true
 log = "0.4.27"
 rand = "0.9.2"
+sentry-eyre = "0.2.0"
+ulid = "1.2.1"

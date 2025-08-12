@@ -12,6 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+sentry = "0.42.0"
 camino = "1.1.9"
 config-types = { version = "0.1.0", path = "../../crates/config-types" }
 facet.workspace = true

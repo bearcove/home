@@ -76,9 +76,13 @@ pub enum LegacyHttpError {
 
 impl LegacyHttpError {
     fn from_report(err: Report) -> Self {
-        let error_unique_id = format!("snafu_{}", Ulid::new().to_string().to_lowercase());
+        let error_unique_id = format!("cuberr_{}", Ulid::new().to_string().to_lowercase());
+        let err = err.wrap_err(format!("Unique ID {error_unique_id}"));
+
+        sentry_eyre::capture_report(&err);
+
         error!(
-            "HTTP handler error (chain len {}) {error_unique_id}: {}",
+            "HTTP handler errored: (chain len {}): {}",
             err.chain().len(),
             err
         );

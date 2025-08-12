@@ -34,6 +34,7 @@ async fn main() -> eyre::Result<()> {
 
 async fn real_main() -> eyre::Result<()> {
     skelly::setup();
+    let _sentry_guard = sentrywrap::install();
 
     let args = std::env::args().skip(1).collect::<Vec<String>>();
     let args_str: Vec<&'static str> = args

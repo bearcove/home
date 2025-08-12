@@ -10,9 +10,9 @@ use content_type::ContentType;
 use eyre::Report;
 use facet::Facet;
 use facet_json::DeserError;
-use libterm::FormatAnsiStyle;
 use log::error;
-use std::{backtrace::Backtrace, borrow::Cow, sync::Arc};
+use std::borrow::Cow;
+use ulid::Ulid;
 
 pub(crate) type Reply = Result<Response, HttpError>;
 
@@ -57,13 +57,14 @@ pub enum HttpError {
 
 impl HttpError {
     fn from_report(err: Report) -> Self {
-        Self::from_report_ref(&err)
-    }
+        let error_unique_id = format!("momerr_{}", Ulid::new().to_string().to_lowercase());
+        let err = err.wrap_err(format!("Unique ID {error_unique_id}"));
 
-    fn from_report_ref(err: &Report) -> Self {
+        sentry_eyre::capture_report(&err);
+
         let error_unique_id = "err_mom";
         error!(
-            "HTTP handler error (chain len {}) {error_unique_id}: {}",
+            "HTTP handler errored: (chain len {}) {error_unique_id}: {}",
             err.chain().len(),
             err
         );
@@ -73,7 +74,7 @@ impl HttpError {
             }
         }
 
-        let maybe_bt = liberrhandling::load().format_backtrace_to_terminal_colors(err);
+        let maybe_bt = liberrhandling::load().format_backtrace_to_terminal_colors(&err);
         match maybe_bt.as_ref() {
             Some(bt) => {
                 log::error!("Backtrace:\n{bt}");
@@ -83,7 +84,7 @@ impl HttpError {
             }
         }
 
-        let body = "Internal server error".to_string();
+        let body = format!("mom errored, reference: {error_unique_id}");
         HttpError::Internal { err: body }
     }
 }
@@ -112,12 +113,6 @@ impl_from!(std::str::Utf8Error);
 impl<'input> From<DeserError<'input>> for HttpError {
     fn from(err: DeserError<'input>) -> Self {
         Self::from_report(eyre::eyre!("{err}"))
-    }
-}
-
-impl From<Arc<eyre::Report>> for HttpError {
-    fn from(err: Arc<eyre::Report>) -> Self {
-        Self::from_report_ref(&err)
     }
 }
 

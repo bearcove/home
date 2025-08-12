@@ -21,6 +21,7 @@ pub enum Error {
 
     /// HTTP error
     Non200Status {
+        hostname: String,
         status: StatusCode,
         response: String,
     },
@@ -31,8 +32,12 @@ impl std::fmt::Display for Error {
         match self {
             Error::Any(s) => write!(f, "{s}"),
             Error::Json(s) => write!(f, "{s}"),
-            Error::Non200Status { status, response } => {
-                write!(f, "HTTP Status {status}: {response}")
+            Error::Non200Status {
+                hostname,
+                status,
+                response,
+            } => {
+                write!(f, "host {hostname} replied with HTTP {status}: {response}")
             }
         }
     }
@@ -234,6 +239,8 @@ impl RequestBuilder for RequestBuilderImpl {
         self: Box<Self>,
     ) -> BoxFuture<'static, Result<Box<dyn Response>, Error>> {
         Box::pin(async move {
+            let uri = self.uri.clone();
+            let hostname = uri.host().unwrap_or("no host").to_owned();
             let response = self.send().await.map_err(|e| Error::Any(e.to_string()))?;
 
             let status = response.status();
@@ -254,6 +261,7 @@ impl RequestBuilder for RequestBuilderImpl {
                     }
                 };
                 Err(Error::Non200Status {
+                    hostname,
                     status,
                     response: response_body,
                 })
