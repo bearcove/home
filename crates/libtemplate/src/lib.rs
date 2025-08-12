@@ -552,6 +552,12 @@ impl Object for GlobalsVal {
                 for u in users.users.values() {
                     // hardcoded for fasterthanli.me for now
                     if let Some(gh) = &u.github {
+                        let privacy_level =
+                            gh.sponsorship_privacy_level.as_deref().unwrap_or("PRIVATE");
+                        if privacy_level != "PUBLIC" {
+                            continue;
+                        }
+
                         if gh.monthly_usd.unwrap_or(0) >= 10 {
                             if let Some(name) = gh.name.clone() {
                                 sponsors.push(name);

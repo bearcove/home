@@ -52,7 +52,7 @@ pub(crate) async fn refresh_sponsors(ts: &MomTenantState) -> eyre::Result<AllUse
 async fn refresh_patreon_sponsors(
     ts: &MomTenantState,
     client: &dyn HttpClient,
-) -> eyre::Result<Vec<UserId>> {
+) -> eyre::Result<()> {
     let patreon = libpatreon::load();
     let rc = ts.rc()?;
 
@@ -100,7 +100,7 @@ async fn refresh_patreon_sponsors(
                     github_user_id: None,
                 },
             )?;
-            log::debug!(
+            log::info!(
                 "Created user {} for Patreon profile {}",
                 user_id,
                 profile.id
@@ -111,27 +111,10 @@ async fn refresh_patreon_sponsors(
         save_patreon_profile(&ts.pool, profile)?;
     }
 
-    // Fetch UserIds for all Patreon users
-    let mut user_ids: Vec<UserId> = Vec::new();
-    for profile in profiles {
-        // Find the user ID for this Patreon profile
-        let user_id: i64 = conn.query_row(
-            "SELECT id FROM users WHERE patreon_user_id = ?1",
-            [&profile.id],
-            |row| row.get(0),
-        )?;
-        let user_id = UserId::new(user_id.to_string());
-
-        user_ids.push(user_id);
-    }
-
-    Ok(user_ids)
+    Ok(())
 }
 
-async fn refresh_github_sponsors(
-    ts: &MomTenantState,
-    client: &dyn HttpClient,
-) -> eyre::Result<Vec<UserId>> {
+async fn refresh_github_sponsors(ts: &MomTenantState, client: &dyn HttpClient) -> eyre::Result<()> {
     let github = libgithub::load();
 
     let creator_github_id = {
@@ -179,27 +162,13 @@ async fn refresh_github_sponsors(
                     github_user_id: Some(profile.id.clone()),
                 },
             )?;
-            log::debug!("Created user {} for Github profile {}", user_id, profile.id);
+            log::info!("Created user {} for Github profile {}", user_id, profile.id);
         }
         // Save the Github profile to the database (for all profiles)
         save_github_profile(&ts.pool, profile)?;
     }
 
-    // Fetch UserIds for all Github users
-    // FIXME: N+1 big time
-    let mut user_ids: Vec<UserId> = Vec::new();
-    for profile in profiles {
-        // Find the user ID for this Github profile
-        let user_id: UserId = conn.query_row(
-            "SELECT id FROM users WHERE github_user_id = ?1",
-            [&profile.id],
-            |row| row.get(0),
-        )?;
-
-        user_ids.push(user_id);
-    }
-
-    Ok(user_ids)
+    Ok(())
 }
 
 pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
