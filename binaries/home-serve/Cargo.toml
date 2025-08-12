@@ -12,7 +12,6 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-sentry = "0.42.0"
 camino = "1.1.9"
 config-types = { version = "0.1.0", path = "../../crates/config-types" }
 facet.workspace = true
@@ -26,3 +25,4 @@ libcub = { version = "0.1.0", path = "../../crates/libcub" }
 sendfd = "0.4.4"
 skelly = { version = "0.1.0", path = "../../crates/skelly" }
 tokio.workspace = true
+sentrywrap = { version = "0.1.0", path = "../../crates/sentrywrap" }

@@ -64,11 +64,11 @@ pub fn should_include_frame_name(name: impl AsRef<str>) -> bool {
         .iter()
         .any(|prefix| name.starts_with(prefix))
     {
-        eprintln!("[skelly] IGNORED frame: {name}");
+        // eprintln!("[skelly] IGNORED frame: {name}");
         return false;
     }
 
-    eprintln!("[skelly] NON-IGNORED frame: {name}");
+    // eprintln!("[skelly] NON-IGNORED frame: {name}");
     true
 }
 

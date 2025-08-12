@@ -4,52 +4,13 @@ use facet::Facet;
 use facet_json::DeserError;
 use facet_reflect::Peek;
 use futures_core::{future::BoxFuture, stream::BoxStream};
+use mom_types::StructuredErrorPayload;
 use std::collections::HashMap;
 
 pub use form_urlencoded;
 pub use http::{
     HeaderMap, HeaderName, HeaderValue, Method, StatusCode, Uri, header, request, response,
 };
-
-#[derive(Debug)]
-pub enum Error {
-    /// Any other error
-    Any(String),
-
-    /// JSON parsing error
-    Json(String),
-
-    /// HTTP error
-    Non200Status {
-        hostname: String,
-        status: StatusCode,
-        response: String,
-    },
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::Any(s) => write!(f, "{s}"),
-            Error::Json(s) => write!(f, "{s}"),
-            Error::Non200Status {
-                hostname,
-                status,
-                response,
-            } => {
-                write!(f, "host {hostname} replied with HTTP {status}: {response}")
-            }
-        }
-    }
-}
-
-impl From<eyre::Error> for Error {
-    fn from(err: eyre::Error) -> Self {
-        Error::Any(err.to_string())
-    }
-}
-
-impl std::error::Error for Error {}
 
 #[derive(Clone)]
 pub struct ClientOpts {
@@ -195,7 +156,7 @@ impl RequestBuilder for RequestBuilderImpl {
         self
     }
 
-    fn send(self: Box<Self>) -> BoxFuture<'static, Result<Box<dyn Response>, Error>> {
+    fn send(self: Box<Self>) -> BoxFuture<'static, eyre::Result<Box<dyn Response>>> {
         let method = self.method.clone();
         let uri = self.uri.clone();
         let headers = self.headers.clone();
@@ -227,27 +188,51 @@ impl RequestBuilder for RequestBuilderImpl {
                 }
             }
 
-            let response = request
-                .send()
-                .await
-                .map_err(|e| Error::Any(e.to_string()))?;
+            let response = request.send().await?;
             Ok(Box::new(ResponseImpl::new(response)) as Box<dyn Response>)
         })
     }
 
-    fn send_and_expect_200(
-        self: Box<Self>,
-    ) -> BoxFuture<'static, Result<Box<dyn Response>, Error>> {
+    fn send_and_expect_200(self: Box<Self>) -> BoxFuture<'static, eyre::Result<Box<dyn Response>>> {
         Box::pin(async move {
             let uri = self.uri.clone();
             let hostname = uri.host().unwrap_or("no host").to_owned();
-            let response = self.send().await.map_err(|e| Error::Any(e.to_string()))?;
+            let response = self.send().await?;
 
             let status = response.status();
             if !status.is_success() {
+                let headers = response.headers_only_string_safe();
                 let bytes = response.bytes().await?;
                 let response_body = match String::from_utf8(bytes.clone()) {
-                    Ok(s) => s,
+                    Ok(s) => {
+                        if let Some(mse) = headers.get("x-mom-structured-error") {
+                            if mse == "1" {
+                                let structured_error: Result<StructuredErrorPayload, _> =
+                                    facet_json::from_str(&s);
+                                if let Ok(mut payload) = structured_error {
+                                    let mut err = eyre::eyre!("mom structured error");
+                                    if !payload.frames.is_empty() {
+                                        let formatted_backtrace = payload
+                                            .frames
+                                            .iter()
+                                            .map(|frame| format!("    {frame}"))
+                                            .collect::<Vec<_>>()
+                                            .join("\n");
+                                        err = err.wrap_err(format!(
+                                            "mom backtrace:\n{formatted_backtrace}"
+                                        ));
+                                    }
+                                    payload.errors.reverse();
+                                    while let Some(cause) = payload.errors.pop() {
+                                        err = err.wrap_err(cause);
+                                    }
+                                    return Err(err);
+                                }
+                            }
+                        }
+
+                        s
+                    }
                     Err(_) => {
                         let prefix = bytes
                             .iter()
@@ -260,11 +245,9 @@ impl RequestBuilder for RequestBuilderImpl {
                         )
                     }
                 };
-                Err(Error::Non200Status {
-                    hostname,
-                    status,
-                    response: response_body,
-                })
+                Err(eyre::eyre!(
+                    "{hostname} replied with HTTP status {status}: {response_body}"
+                ))
             } else {
                 Ok(response)
             }
@@ -319,46 +302,37 @@ impl Response for ResponseImpl {
         headers
     }
 
-    fn bytes(self: Box<Self>) -> BoxFuture<'static, Result<Vec<u8>, Error>> {
+    fn bytes(self: Box<Self>) -> BoxFuture<'static, eyre::Result<Vec<u8>>> {
         let response = self.response;
-        Box::pin(async move {
-            response
-                .bytes()
-                .await
-                .map(|b| b.to_vec())
-                .map_err(|e| Error::Any(e.to_string()))
-        })
+        Box::pin(async move { Ok(response.bytes().await?.to_vec()) })
     }
 
-    fn bytes_stream(self: Box<Self>) -> BoxStream<'static, Result<Bytes, Error>> {
+    fn bytes_stream(self: Box<Self>) -> BoxStream<'static, eyre::Result<Bytes>> {
         use futures_util::StreamExt;
         Box::pin(
             self.response
                 .bytes_stream()
-                .map(|r| r.map_err(|e| Error::Any(e.to_string()))),
+                .map(|r| r.map_err(|e| eyre::eyre!(e))),
         )
     }
 
-    fn text(self: Box<Self>) -> BoxFuture<'static, Result<String, Error>> {
+    fn text(self: Box<Self>) -> BoxFuture<'static, eyre::Result<String>> {
         Box::pin(async move {
             let bytes = self.bytes().await?;
-            String::from_utf8(bytes)
-                .map_err(|e| Error::Any(format!("Response body is not valid UTF-8: {e}")))
+            Ok(String::from_utf8(bytes)?)
         })
     }
 }
 
 impl dyn Response {
-    pub fn json<T>(self: Box<Self>) -> BoxFuture<'static, Result<T, Error>>
+    pub fn json<T>(self: Box<Self>) -> BoxFuture<'static, eyre::Result<T>>
     where
         T: for<'a> Facet<'a>,
     {
         Box::pin(async move {
             let bytes = self.bytes().await?;
-            facet_json::from_str(
-                std::str::from_utf8(&bytes[..]).map_err(|e| Error::Any(e.to_string()))?,
-            )
-            .map_err(|e| Error::Json(e.to_string()))
+            facet_json::from_str(std::str::from_utf8(&bytes[..]).map_err(|e| eyre::eyre!("{e}"))?)
+                .map_err(|e| eyre::eyre!("{e}"))
         })
     }
 }

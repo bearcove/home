@@ -2471,7 +2471,7 @@ dependencies = [
  "libconfig",
  "libcub",
  "sendfd",
- "sentry",
+ "sentrywrap",
  "skelly",
  "tokio",
 ]
@@ -3676,6 +3676,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "http 1.3.1",
+ "mom-types",
  "reqwest",
 ]
 
@@ -4075,6 +4076,7 @@ name = "libwebsock"
 version = "0.1.0"
 dependencies = [
  "autotrait",
+ "eyre",
  "futures-core",
  "futures-util",
  "http 1.3.1",
@@ -6119,6 +6121,7 @@ dependencies = [
  "sentry-contexts",
  "sentry-core 0.42.0",
  "sentry-debug-images",
+ "sentry-log",
  "sentry-panic",
  "sentry-tracing",
  "tokio",
@@ -6209,6 +6212,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sentry-log"
+version = "0.42.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "670f08baf70058926b0fa60c8f10218524ef0cb1a1634b0388a4123bdec6288c"
+dependencies = [
+ "log",
+ "sentry-core 0.42.0",
+]
+
+[[package]]
 name = "sentry-panic"
 version = "0.42.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6270,6 +6283,7 @@ name = "sentrywrap"
 version = "0.1.0"
 dependencies = [
  "config-types",
+ "hostname",
  "sentry",
 ]
 

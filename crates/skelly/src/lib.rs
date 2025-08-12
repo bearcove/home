@@ -54,7 +54,7 @@ pub fn setup() {
     // color-eyre filter
     let eyre_filter = {
         move |frames: &mut Vec<&color_eyre::config::Frame>| {
-            eprintln!("[skelly] color-eyre filter called!");
+            // eprintln!("[skelly] color-eyre filter called!");
             frames.retain(|frame| {
                 frame
                     .name
@@ -76,7 +76,7 @@ pub fn setup() {
 
         // The frame filter must be Fn(&mut Vec<&Frame>)
         let filter = move |frames: &mut Vec<&Frame>| {
-            eprintln!("[skelly] color-backtrace filter called");
+            // eprintln!("[skelly] color-backtrace filter called");
             frames.retain(|frame| {
                 frame
                     .name

@@ -139,7 +139,7 @@ impl LegacyHttpError {
             let backtrace = term.format_ansi(&backtrace, FormatAnsiStyle::Html);
 
             format!(
-                r#"<pre class="trace home-ansi">{err_string}<div class="backtrace">{backtrace}</div></pre>"#
+                r#"<pre class="trace home-ansi">{err_string}<details><summary>Backtrace</summary><div class="backtrace">{backtrace}</div></details></pre>"#
             )
         };
         if is_production() {

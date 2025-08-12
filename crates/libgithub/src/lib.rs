@@ -7,7 +7,7 @@ use futures_core::future::BoxFuture;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
 
 use config_types::{TenantConfig, WebConfig};
-use eyre::Result;
+use eyre::{Context, Result};
 use log::debug;
 use time::OffsetDateTime;
 
@@ -73,14 +73,29 @@ impl Mod for ModImpl {
                 .header(header::ACCEPT, HeaderValue::from_static("application/json"))
                 .send_and_expect_200()
                 .await
-                .map_err(|e| eyre::eyre!("While getting GitHub access token: {e}"))?;
+                .wrap_err("While getting GitHub access token")?;
 
             let text = res.text().await?;
             let creds = match facet_json::from_str::<GithubCredentialsAPI>(&text) {
                 Ok(c) => c,
-                Err(e) => {
+                Err(_) => {
                     log::warn!("Got GitHub auth error: {text}");
-                    return Err(eyre::eyre!("Got Github auth error: {e}"));
+
+                    // Try to deserialize as GitHub error response for better error messages
+                    if let Ok(error_response) = facet_json::from_str::<GithubErrorResponse>(&text) {
+                        return Err(eyre::eyre!(
+                            "GitHub auth error: {} - {}{}",
+                            error_response.error,
+                            error_response.error_description,
+                            error_response
+                                .error_uri
+                                .as_ref()
+                                .map(|uri| format!(" (see: {uri})"))
+                                .unwrap_or_default()
+                        ));
+                    } else {
+                        return Err(eyre::eyre!("Got Github auth error: {text}"));
+                    }
                 }
             };
             log::info!(
@@ -455,9 +470,15 @@ struct GithubCredentialsAPI {
     token_type: Option<String>,
 }
 
-/*
-note: github errors look like: {"error":"bad_verification_code","error_description":"The code passed is incorrect or expired.","error_uri":"https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#bad-verification-code"}
-*/
+#[derive(Debug, Clone, Facet)]
+struct GithubErrorResponse {
+    /// example: "bad_verification_code"
+    error: String,
+    /// example: "The code passed is incorrect or expired."
+    error_description: String,
+    /// example: "https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#bad-verification-code"
+    error_uri: Option<String>,
+}
 
 #[derive(Debug, Clone, Facet)]
 pub struct GithubCredentials {

@@ -10,7 +10,9 @@ use content_type::ContentType;
 use eyre::Report;
 use facet::Facet;
 use facet_json::DeserError;
+use libhttpclient::header::HeaderName;
 use log::error;
+use mom_types::StructuredErrorPayload;
 use std::borrow::Cow;
 use ulid::Ulid;
 
@@ -53,6 +55,9 @@ pub enum HttpError {
     Internal {
         err: String,
     },
+    Structured {
+        payload: StructuredErrorPayload,
+    },
 }
 
 impl HttpError {
@@ -62,7 +67,6 @@ impl HttpError {
 
         sentry_eyre::capture_report(&err);
 
-        let error_unique_id = "err_mom";
         error!(
             "HTTP handler errored: (chain len {}) {error_unique_id}: {}",
             err.chain().len(),
@@ -84,8 +88,20 @@ impl HttpError {
             }
         }
 
-        let body = format!("mom errored, reference: {error_unique_id}");
-        HttpError::Internal { err: body }
+        let mut errors = Vec::new();
+        for (i, e) in err.chain().enumerate() {
+            errors.push(e.to_string());
+        }
+
+        let frames = if let Some(bt) = maybe_bt {
+            bt.lines().map(|line| line.to_string()).collect()
+        } else {
+            vec!["No backtrace available".to_string()]
+        };
+
+        let payload = StructuredErrorPayload { errors, frames };
+
+        HttpError::Structured { payload }
     }
 }
 
@@ -124,6 +140,15 @@ impl IntoResponse for HttpError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 [(header::CONTENT_TYPE, ContentType::HTML.as_str())],
                 err,
+            )
+                .into_response(),
+            HttpError::Structured { payload } => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                [
+                    (header::CONTENT_TYPE, ContentType::JSON.as_str()),
+                    (HeaderName::from_static("x-mom-structured-error"), "1"),
+                ],
+                Body::from(facet_json::to_string(&payload)),
             )
                 .into_response(),
         }

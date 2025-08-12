@@ -391,8 +391,8 @@ async fn do_ws_proxy(
     mut downstream: Box<dyn WebSocketStream>,
 ) -> eyre::Result<()> {
     enum Event {
-        FromUpstream(Option<Result<Message, libhttpclient::Error>>),
-        FromDownstream(Option<Result<Message, libhttpclient::Error>>),
+        FromUpstream(Option<eyre::Result<Message>>),
+        FromDownstream(Option<eyre::Result<Message>>),
     }
 
     loop {

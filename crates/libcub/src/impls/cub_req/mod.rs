@@ -432,7 +432,7 @@ impl CubReq for CubReqImpl {
 struct WsWrapper(axum::extract::ws::WebSocket);
 
 impl WebSocketStream for WsWrapper {
-    fn send(&mut self, frame: libwebsock::Message) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
+    fn send(&mut self, frame: libwebsock::Message) -> BoxFuture<'_, eyre::Result<()>> {
         Box::pin(async move {
             use axum::extract::ws;
             let msg = match frame {
@@ -455,33 +455,33 @@ impl WebSocketStream for WsWrapper {
             self.0
                 .send(msg)
                 .await
-                .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
+                .map_err(|e| eyre::eyre!("WebSocket send error: {}", e))?;
 
             Ok(())
         })
     }
 
-    fn send_binary(&mut self, msg: Bytes) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
+    fn send_binary(&mut self, msg: Bytes) -> BoxFuture<'_, eyre::Result<()>> {
         Box::pin(async move {
             self.0
                 .send(axum::extract::ws::Message::binary(msg))
                 .await
-                .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
+                .map_err(|e| eyre::eyre!("WebSocket send binary error: {}", e))?;
             Ok(())
         })
     }
 
-    fn send_text(&mut self, msg: String) -> BoxFuture<'_, Result<(), libwebsock::Error>> {
+    fn send_text(&mut self, msg: String) -> BoxFuture<'_, eyre::Result<()>> {
         Box::pin(async move {
             self.0
                 .send(axum::extract::ws::Message::text(msg))
                 .await
-                .map_err(|e| libwebsock::Error::Any(e.to_string()))?;
+                .map_err(|e| eyre::eyre!("WebSocket send text error: {}", e))?;
             Ok(())
         })
     }
 
-    fn receive(&mut self) -> BoxFuture<'_, Option<Result<libwebsock::Message, libwebsock::Error>>> {
+    fn receive(&mut self) -> BoxFuture<'_, Option<eyre::Result<libwebsock::Message>>> {
         Box::pin(async move {
             use axum::extract::ws;
             let res = match self.0.recv().await? {
@@ -502,7 +502,7 @@ impl WebSocketStream for WsWrapper {
                     };
                     Ok(frame)
                 }
-                Err(e) => Err(libwebsock::Error::Any(e.to_string())),
+                Err(e) => Err(eyre::eyre!("WebSocket receive error: {}", e)),
             };
             Some(res)
         })
