@@ -95,8 +95,8 @@ pub fn setup() {
         printer.install(Box::new(stderr));
     }
 
-    let logger = Box::new(SimpleLogger);
-    log::set_boxed_logger(logger).unwrap();
+    let logger = sentry_log::SentryLogger::with_dest(SimpleLogger);
+    log::set_boxed_logger(Box::new(logger)).unwrap();
 
     // Respect RUST_LOG, fallback to Trace if not set or invalid
     let level = std::env::var("RUST_LOG")
