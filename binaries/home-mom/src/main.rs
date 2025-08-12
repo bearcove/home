@@ -95,44 +95,50 @@ async fn real_main() -> eyre::Result<()> {
                     }
                 };
 
-                // Check for stripe credentials in environment variables
-                let stripe_credentials = std::env::var("HOME_STRIPE_SECRET_KEY").ok().map(|secret_key| {
-                    log::info!("Found stripe secret key in environment variables for tenant {}", tc.name);
-                    
-                    // Parse tier mapping from environment variables
-                    let bronze_ids = std::env::var("HOME_STRIPE_BRONZE_IDS")
-                        .ok()
-                        .map(|s| s.split(',').map(|id| id.trim().to_string()).collect())
-                        .unwrap_or_default();
-                    
-                    let silver_ids = std::env::var("HOME_STRIPE_SILVER_IDS")
-                        .ok()
-                        .map(|s| s.split(',').map(|id| id.trim().to_string()).collect())
-                        .unwrap_or_default();
-                    
-                    let gold_ids = std::env::var("HOME_STRIPE_GOLD_IDS")
-                        .ok()
-                        .map(|s| s.split(',').map(|id| id.trim().to_string()).collect())
-                        .unwrap_or_default();
-                    
-                    config_types::StripeSecrets {
-                        secret_key,
-                        tier_mapping: config_types::StripeTierMapping {
-                            bronze_ids,
-                            silver_ids,
-                            gold_ids,
-                        }
+                // Check for Patreon secrets in environment variables
+                let patreon_secrets = match (
+                    std::env::var("HOME_PATREON_OAUTH_CLIENT_ID"),
+                    std::env::var("HOME_PATREON_OAUTH_CLIENT_SECRET")
+                ) {
+                    (Ok(client_id), Ok(client_secret)) => {
+                        log::info!("Found Patreon secrets in environment variables for tenant {}", tc.name);
+                        Some(config_types::PatreonSecrets {
+                            oauth_client_id: client_id,
+                            oauth_client_secret: client_secret
+                        })
                     }
-                });
+                    _ => {
+                        log::info!("No Patreon secrets found in environment variables (HOME_PATREON_OAUTH_CLIENT_ID, HOME_PATREON_OAUTH_CLIENT_SECRET) for tenant {}", tc.name);
+                        None
+                    }
+                };
+
+                // Check for GitHub secrets in environment variables
+                let github_secrets = match (
+                    std::env::var("HOME_GITHUB_OAUTH_CLIENT_ID"),
+                    std::env::var("HOME_GITHUB_OAUTH_CLIENT_SECRET")
+                ) {
+                    (Ok(client_id), Ok(client_secret)) => {
+                        log::info!("Found GitHub secrets in environment variables for tenant {}", tc.name);
+                        Some(config_types::GithubSecrets {
+                            oauth_client_id: client_id,
+                            oauth_client_secret: client_secret
+                        })
+                    }
+                    _ => {
+                        log::info!("No GitHub secrets found in environment variables (HOME_GITHUB_OAUTH_CLIENT_ID, HOME_GITHUB_OAUTH_CLIENT_SECRET) for tenant {}", tc.name);
+                        None
+                    }
+                };
 
                 tc.secrets = Some(config_types::TenantSecrets {
                     aws: config_types::AwsSecrets {
                         access_key_id: "dev-access-key".to_string(),
                         secret_access_key: "dev-secret-key".to_string(),
                     },
-                    patreon: None,
-                    github: None,
-                    stripe: stripe_credentials,
+                    patreon: patreon_secrets,
+                    github: github_secrets,
+                    stripe: None,
                     git: git_credentials,
                     cookie_sauce: Some(derived_sauce),
                 });

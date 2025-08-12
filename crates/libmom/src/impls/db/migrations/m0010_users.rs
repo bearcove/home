@@ -15,7 +15,7 @@ impl super::SqlMigration for Migration {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 patreon_user_id TEXT,
                 github_user_id TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             ",
             [],
