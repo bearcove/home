@@ -612,6 +612,7 @@ impl Object for GlobalsVal {
                     .filter(|p| p.is_article() && p.is_listed(&viewer))
                     .filter(|p| p.tags.iter().any(|t| t == "rust"))
                     .collect::<Vec<_>>();
+
                 let page = (*pages.choose(&mut rand::rng()).ok_or_else(|| {
                     minijinja::Error::new(
                         minijinja::ErrorKind::InvalidOperation,

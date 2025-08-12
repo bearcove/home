@@ -19,7 +19,7 @@ use axum::{
 use camino::Utf8PathBuf;
 use closest::{GetOrHelp, ResourceKind};
 use config_types::is_development;
-use conflux::{CacheBuster, InputPathRef};
+use conflux::{AccessOverride, CacheBuster, InputPathRef, Viewer};
 use content_type::ContentType;
 use credentials::UserApiKey;
 use cub_types::{CubReq, CubTenant};
@@ -278,8 +278,19 @@ async fn extras_git(
                 let tier = response.user_info.get_fasterthanlime_tier();
                 log::info!("Valid API key for user with tier: {tier:?}");
 
+                let rc = match tr.tenant.rc() {
+                    Ok(rc) => rc,
+                    Err(e) => {
+                        log::error!("Failed to get tenant rc: {e}");
+                        return (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error")
+                            .into_response();
+                    }
+                };
+                let access_override = AccessOverride::from_raw_query(tr.raw_query());
+                let viewer = Viewer::new(rc, Some(&response.user_info), access_override);
+
                 // Check if user has at least bronze tier
-                if !tier.has_bronze() {
+                if !viewer.has_bronze {
                     log::warn!("User does not have bronze tier access");
                     return (
                         StatusCode::FORBIDDEN,

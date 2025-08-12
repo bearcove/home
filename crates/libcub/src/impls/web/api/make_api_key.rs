@@ -1,4 +1,4 @@
-use conflux::Viewer;
+use conflux::{AccessOverride, Viewer};
 use credentials::UserInfo;
 use cub_types::CubTenant;
 use facet::Facet;
@@ -32,6 +32,15 @@ pub(crate) async fn serve_make_api_key(tr: CubReqImpl) -> LegacyReply {
                 .into_legacy_reply();
         }
     };
+
+    let rc = tr.tenant.rc()?;
+    let access_override = AccessOverride::from_raw_query(tr.raw_query());
+    let viewer = Viewer::new(rc, Some(&auth_bundle.user_info), access_override);
+
+    if !viewer.has_bronze {
+        return LegacyHttpError::with_status(StatusCode::FORBIDDEN, "Insufficient tier access")
+            .into_legacy_reply();
+    }
 
     let tcli = tr.tenant.tcli();
     let response = tcli

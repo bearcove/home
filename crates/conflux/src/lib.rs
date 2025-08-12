@@ -439,11 +439,14 @@ impl LoadedPage {
                         return false;
                     }
                 }
-                None => return false,
+                None => {
+                    // keep going
+                }
             }
         } else if self.date > OffsetDateTime::now_utc() && !viewer.is_admin {
             return false;
         }
+
         match self.kind {
             PageKind::Article
             | PageKind::Episode

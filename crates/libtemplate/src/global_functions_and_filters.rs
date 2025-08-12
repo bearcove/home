@@ -371,11 +371,12 @@ fn random_article(state: &minijinja::State) -> Result<Value, Error> {
         .filter(|p| p.is_article() && p.is_listed(&viewer))
         .filter(|p| p.tags.iter().any(|t| t == "rust"))
         .collect::<Vec<_>>();
+    let num_pages = pages.len();
 
     let page = (*pages.choose(&mut rand::rng()).ok_or_else(|| {
         Error::new(
             minijinja::ErrorKind::InvalidOperation,
-            "No articles available",
+            format!("No articles available (had {num_pages} after filtering)"),
         )
     })?)
     .clone();
