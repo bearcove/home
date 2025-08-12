@@ -250,7 +250,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         })
                         .unwrap();
                     Box::pin(async move {
-                        let res = users::get_all_users(&ts).await?;
+                        let res = users::refresh_sponsors(&ts).await?;
                         ts.broadcast_event(TenantEventPayload::UsersUpdated(res.clone()))?;
 
                         Ok(res)

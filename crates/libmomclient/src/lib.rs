@@ -1,10 +1,11 @@
 use autotrait::autotrait;
 use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
+use credentials::UserInfo;
 use eyre::bail;
 use futures_core::future::BoxFuture;
 use mom_types::{
     DeriveParams, DeriveResponse, GithubCallbackResponse, ListMissingArgs, ListMissingResponse,
-    MomEvent, PatreonCallbackResponse, TranscodeParams, TranscodeResponse,
+    MomEvent, PatreonCallbackResponse, RefreshProfileArgs, TranscodeParams, TranscodeResponse,
     media_types::{HeadersMessage, TranscodeEvent, UploadDoneMessage, WebSocketMessage},
 };
 use std::str::FromStr;
@@ -298,6 +299,48 @@ impl MomTenantClient for MomTenantClientImpl {
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
                 Ok(res.json::<Option<PatreonCallbackResponse>>().await?)
+            }
+        })
+    }
+
+    fn refresh_userinfo<'fut>(
+        &'fut self,
+        body: &'fut RefreshProfileArgs,
+    ) -> BoxFuture<'fut, Result<UserInfo>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("refresh-userinfo");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                Ok(res.json::<UserInfo>().await?)
+            }
+        })
+    }
+
+    fn make_api_key<'fut>(
+        &'fut self,
+        body: &'fut mom_types::MakeApiKeyArgs,
+    ) -> BoxFuture<'fut, Result<mom_types::MakeApiKeyResponse>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("make-api-key");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                Ok(res.json::<mom_types::MakeApiKeyResponse>().await?)
+            }
+        })
+    }
+
+    fn verify_api_key<'fut>(
+        &'fut self,
+        body: &'fut mom_types::VerifyApiKeyArgs,
+    ) -> BoxFuture<'fut, Result<mom_types::VerifyApiKeyResponse>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("verify-api-key");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                Ok(res.json::<mom_types::VerifyApiKeyResponse>().await?)
             }
         })
     }

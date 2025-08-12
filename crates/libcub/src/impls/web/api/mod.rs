@@ -7,10 +7,9 @@ use http::StatusCode;
 
 mod autocomplete;
 mod comments;
-mod git_token;
-mod git_token_get;
 mod link_preview;
-mod update_userinfo;
+mod make_api_key;
+mod refresh_userinfo;
 
 /// Returns routes that are available in both development and production
 pub(crate) fn public_api_routes() -> Router {
@@ -18,12 +17,15 @@ pub(crate) fn public_api_routes() -> Router {
         .route("/comments", get(comments::serve_comments))
         .route("/autocomplete", get(autocomplete::serve_autocomplete))
         .route(
-            "/update-userinfo",
-            post(update_userinfo::serve_update_userinfo),
+            "/refresh-userinfo",
+            post(refresh_userinfo::serve_refresh_userinfo),
         )
         .route("/link-preview", get(link_preview::serve_link_preview))
-        .route("/git-token", get(git_token_get::serve_git_token_info).post(git_token::serve_git_token))
-        .route("/{*splat}", get(serve_api_not_found).post(serve_api_not_found))
+        .route("/make-api-key", post(make_api_key::serve_make_api_key))
+        .route(
+            "/{*splat}",
+            get(serve_api_not_found).post(serve_api_not_found),
+        )
 }
 
 async fn serve_api_not_found() -> LegacyReply {

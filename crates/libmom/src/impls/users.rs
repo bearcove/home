@@ -1,10 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use credentials::{
-    GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId, PatreonUserIdRef,
-    UserId, UserIdRef, UserInfo,
+    FasterthanlimeTier, GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile,
+    PatreonUserId, PatreonUserIdRef, UserApiKey, UserId, UserIdRef, UserInfo,
 };
-use futures_util::TryFutureExt;
 use libgithub::GithubCredentials;
 use libhttpclient::HttpClient;
 use libpatreon::PatreonCredentials;
@@ -14,28 +13,46 @@ use time::OffsetDateTime;
 
 use crate::impls::{MomTenantState, SqlitePool, global_state};
 
-pub(crate) async fn get_all_users(ts: &MomTenantState) -> eyre::Result<AllUsers> {
+pub(crate) async fn refresh_sponsors(ts: &MomTenantState) -> eyre::Result<AllUsers> {
     let client = global_state().client.clone();
+    let start_time = std::time::Instant::now();
 
-    let (gh_sponsors, patreon_sponsors) = futures_util::future::try_join(
-        get_github_users(ts, client.as_ref()).map_err(|e| e.wrap_err("get_github_users")),
-        get_patreon_users(ts, client.as_ref()).map_err(|e| e.wrap_err("get_patreon_users")),
+    let (github_result, patreon_result) = futures_util::future::join(
+        async {
+            let github_start = std::time::Instant::now();
+            let result = refresh_github_sponsors(ts, client.as_ref()).await;
+            let github_duration = github_start.elapsed();
+            log::info!("GitHub sponsors refresh took {github_duration:?}");
+            result
+        },
+        async {
+            let patreon_start = std::time::Instant::now();
+            let result = refresh_patreon_sponsors(ts, client.as_ref()).await;
+            let patreon_duration = patreon_start.elapsed();
+            log::info!("Patreon sponsors refresh took {patreon_duration:?}");
+            result
+        },
     )
-    .await?;
+    .await;
 
-    Ok(AllUsers {
-        users: gh_sponsors
-            .into_iter()
-            .chain(patreon_sponsors.into_iter())
-            .map(|u| (u.id.clone(), u))
-            .collect::<HashMap<_, _>>(),
-    })
+    if let Err(e) = github_result {
+        log::warn!("Failed to refresh GitHub sponsors: {e:#}");
+    }
+
+    if let Err(e) = patreon_result {
+        log::warn!("Failed to refresh Patreon sponsors: {e:#}");
+    }
+
+    let total_duration = start_time.elapsed();
+    log::info!("Total sponsors refresh took {total_duration:?}");
+
+    fetch_all_users(&ts.pool)
 }
 
-async fn get_patreon_users(
+async fn refresh_patreon_sponsors(
     ts: &MomTenantState,
     client: &dyn HttpClient,
-) -> eyre::Result<Vec<UserInfo>> {
+) -> eyre::Result<Vec<UserId>> {
     let patreon = libpatreon::load();
     let rc = ts.rc()?;
 
@@ -94,28 +111,26 @@ async fn get_patreon_users(
         save_patreon_profile(&ts.pool, profile)?;
     }
 
-    // Fetch UserInfo for all Patreon users
-    let mut users = Vec::new();
+    // Fetch UserIds for all Patreon users
+    let mut user_ids: Vec<UserId> = Vec::new();
     for profile in profiles {
         // Find the user ID for this Patreon profile
-        let user_id: i64 = conn.query_row(
+        let user_id: UserId = conn.query_row(
             "SELECT id FROM users WHERE patreon_user_id = ?1",
             [&profile.id],
             |row| row.get(0),
         )?;
 
-        if let Some(user_info) = fetch_user_info(&ts.pool, &user_id.to_string())? {
-            users.push(user_info);
-        }
+        user_ids.push(user_id);
     }
 
-    Ok(users)
+    Ok(user_ids)
 }
 
-async fn get_github_users(
+async fn refresh_github_sponsors(
     ts: &MomTenantState,
     client: &dyn HttpClient,
-) -> eyre::Result<Vec<UserInfo>> {
+) -> eyre::Result<Vec<UserId>> {
     let github = libgithub::load();
 
     let creator_github_id = {
@@ -166,22 +181,20 @@ async fn get_github_users(
         save_github_profile(&ts.pool, profile)?;
     }
 
-    // Fetch UserInfo for all Github users
-    let mut users = Vec::new();
+    // Fetch UserIds for all Github users
+    let mut user_ids: Vec<UserId> = Vec::new();
     for profile in profiles {
         // Find the user ID for this Github profile
-        let user_id: i64 = conn.query_row(
+        let user_id: UserId = conn.query_row(
             "SELECT id FROM users WHERE github_user_id = ?1",
             [&profile.id],
             |row| row.get(0),
         )?;
 
-        if let Some(user_info) = fetch_user_info(&ts.pool, &user_id.to_string())? {
-            users.push(user_info);
-        }
+        user_ids.push(user_id);
     }
 
-    Ok(users)
+    Ok(user_ids)
 }
 
 pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
@@ -244,6 +257,7 @@ pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<
 
     Ok(Some(UserInfo {
         id,
+        fetched_at: OffsetDateTime::now_utc(),
         patreon,
         github,
     }))
@@ -255,28 +269,11 @@ pub(crate) struct CreateUserArgs {
     pub(crate) github_user_id: Option<GithubUserId>,
 }
 
-fn generate_api_key() -> String {
-    use rand::Rng;
-
-    rand::rng()
-        .sample_iter(&rand::distr::Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect()
-}
-
 pub(crate) fn create_user(pool: &SqlitePool, args: CreateUserArgs) -> eyre::Result<i64> {
-    // Generate a 32-character API key
-    let api_key = generate_api_key();
-
     let conn = pool.get()?;
     conn.execute(
-        "INSERT INTO users (patreon_user_id, github_user_id, api_key, last_seen) VALUES (?1, ?2, ?3, CURRENT_TIMESTAMP)",
-        rusqlite::params![
-            args.patreon_user_id,
-            args.github_user_id,
-            api_key
-        ],
+        "INSERT INTO users (patreon_user_id, github_user_id) VALUES (?1, ?2)",
+        rusqlite::params![args.patreon_user_id, args.github_user_id],
     )?;
 
     Ok(conn.last_insert_rowid())
@@ -357,7 +354,7 @@ pub(crate) fn save_github_profile(
 ) -> eyre::Result<()> {
     let conn = pool.get()?;
     conn.execute(
-        "INSERT OR REPLACE INTO github_profiles (id, monthly_usd, sponsorship_privacy_level, name, login, thumb_url, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP)",
+        "INSERT INTO github_profiles (id, monthly_usd, sponsorship_privacy_level, name, login, thumb_url, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET monthly_usd = excluded.monthly_usd, sponsorship_privacy_level = excluded.sponsorship_privacy_level, name = excluded.name, login = excluded.login, thumb_url = excluded.thumb_url, updated_at = excluded.updated_at",
         rusqlite::params![
             profile.id,
             profile.monthly_usd,
@@ -455,7 +452,7 @@ pub(crate) fn save_patreon_profile(
     Ok(())
 }
 
-pub(crate) async fn refresh_user_profile(
+pub(crate) async fn refresh_userinfo(
     ts: &MomTenantState,
     user_id: &UserIdRef,
 ) -> eyre::Result<UserInfo> {
@@ -515,12 +512,15 @@ pub(crate) async fn refresh_user_profile(
 
     Ok(UserInfo {
         id,
+        fetched_at: OffsetDateTime::now_utc(),
         patreon,
         github,
     })
 }
 
 pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
+    let start_time = std::time::Instant::now();
+
     let conn = pool.get()?;
 
     let mut stmt = conn.prepare(
@@ -588,6 +588,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
 
         Ok(UserInfo {
             id,
+            fetched_at: OffsetDateTime::now_utc(),
             patreon,
             github,
         })
@@ -598,7 +599,80 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
         users.push(row?);
     }
 
+    let duration = start_time.elapsed();
+    log::info!("fetch_all_users took {duration:?}");
+
     Ok(AllUsers {
         users: users.into_iter().map(|u| (u.id.clone(), u)).collect(),
     })
+}
+
+fn generate_api_key() -> UserApiKey {
+    use rand::Rng;
+
+    rand::rng()
+        .sample_iter(&rand::distr::Alphanumeric)
+        .take(32)
+        .map(char::from)
+        .collect::<String>()
+        .into()
+}
+
+pub(crate) fn make_api_key(pool: &SqlitePool, user_id: &UserIdRef) -> eyre::Result<UserApiKey> {
+    let conn = pool.get()?;
+
+    // First, check if there's already a non-revoked API key for this user
+    let existing_key: Option<UserApiKey> = conn
+        .query_row(
+            "SELECT id FROM api_keys WHERE user_id = ?1 AND revoked_at IS NULL",
+            [&user_id],
+            |row| row.get(0),
+        )
+        .optional()?;
+
+    if let Some(key) = existing_key {
+        return Ok(key);
+    }
+
+    // No existing key found, generate a new one
+    let api_key = generate_api_key();
+
+    conn.execute(
+        "INSERT INTO api_keys (id, user_id) VALUES (?1, ?2)",
+        rusqlite::params![api_key, user_id],
+    )?;
+
+    Ok(api_key)
+}
+
+pub(crate) fn verify_api_key(pool: &SqlitePool, api_key: &UserApiKey) -> eyre::Result<UserInfo> {
+    let conn = pool.get()?;
+
+    // First, check if the API key exists and is not revoked
+    let user_id: Option<UserId> = conn
+        .query_row(
+            "SELECT user_id FROM api_keys WHERE id = ?1 AND revoked_at IS NULL",
+            [api_key],
+            |row| row.get(0),
+        )
+        .optional()?;
+
+    let Some(user_id) = user_id else {
+        // API key doesn't exist or is revoked
+        log::warn!("API key verification failed: key doesn't exist or is revoked");
+        return Err(eyre::eyre!("API key doesn't exist or is revoked"));
+    };
+
+    // Fetch the user info
+    let user_info = fetch_user_info(pool, user_id.as_ref())?;
+
+    let Some(user_info) = user_info else {
+        // User doesn't exist (shouldn't happen if DB is consistent)
+        log::warn!("API key verification failed: user {user_id} doesn't exist (DB inconsistency)");
+        return Err(eyre::eyre!(
+            "User {user_id} doesn't exist (DB inconsistency)"
+        ));
+    };
+
+    Ok(user_info)
 }

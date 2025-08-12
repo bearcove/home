@@ -1,6 +1,6 @@
 use camino::Utf8PathBuf;
 use conflux::{Derivation, DerivationHash, Input, InputPath, Pak};
-use credentials::{UserId, UserInfo};
+use credentials::{UserApiKey, UserId, UserInfo};
 use derivations::DerivationInfo;
 use facet::Facet;
 use media_types::{TargetFormat, TranscodingProgress};
@@ -311,8 +311,9 @@ pub struct AllUsers {
 #[repr(u8)]
 pub enum TenantEventPayload {
     RevisionChanged(Box<Pak>),
+
     /// cubs derive sponsors to show from user info themselves. there's no delta
-    /// going on here — we just send them all user info every few seconds.
+    /// going on here — we just send them all user info every so often
     UsersUpdated(AllUsers),
 }
 
@@ -390,5 +391,38 @@ pub struct PatreonCallbackResponse {
 
 #[derive(Debug, Clone, Facet)]
 pub struct GithubCallbackResponse {
+    pub user_info: UserInfo,
+    /// credentials scope — needed to get admin to re-log in so we
+    /// can list patrons with them etc.
+    pub scope: String,
+}
+
+#[derive(Facet)]
+pub struct RefreshProfileArgs {
+    /// tenant-specific user ID
+    pub user_id: UserId,
+}
+
+#[derive(Facet)]
+pub struct MakeApiKeyArgs {
+    /// the user for which to make an API key
+    pub user_id: UserId,
+}
+
+#[derive(Facet)]
+pub struct MakeApiKeyResponse {
+    /// the generated (or re-used) API key
+    pub api_key: UserApiKey,
+}
+
+#[derive(Facet)]
+pub struct VerifyApiKeyArgs {
+    /// the API key to verify
+    pub api_key: UserApiKey,
+}
+
+#[derive(Facet)]
+pub struct VerifyApiKeyResponse {
+    /// the user info associated with the API key
     pub user_info: UserInfo,
 }

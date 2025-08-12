@@ -3,9 +3,9 @@ use credentials::UserInfo;
 use cub_types::CubTenant;
 use facet::Facet;
 use http::StatusCode;
+use mom_types::MakeApiKeyArgs;
 
 use crate::impls::{
-    credentials::auth_bundle_as_cookie,
     cub_req::CubReqImpl,
     reply::{FacetJson, IntoLegacyReply, LegacyHttpError, LegacyReply},
 };
@@ -17,8 +17,14 @@ struct UpdatedUserInfo {
     user_info: UserInfo,
 }
 
-/// Does another Github/Patreon API call to re-check someone's tier.
-pub(crate) async fn serve_update_userinfo(mut tr: CubReqImpl) -> LegacyReply {
+/// Response for API key creation
+#[derive(Facet)]
+struct ApiKeyResponse {
+    api_key: credentials::UserApiKey,
+}
+
+/// Creates an API key for the authenticated user
+pub(crate) async fn serve_make_api_key(tr: CubReqImpl) -> LegacyReply {
     let auth_bundle = match tr.auth_bundle.as_ref() {
         Some(creds) => creds,
         None => {
@@ -28,16 +34,14 @@ pub(crate) async fn serve_update_userinfo(mut tr: CubReqImpl) -> LegacyReply {
     };
 
     let tcli = tr.tenant.tcli();
-    let new_auth_bundle = tcli.update_auth_bundle(auth_bundle).await?;
-    log::info!("New auth bundle: {new_auth_bundle:#?}");
-    tr.auth_bundle = Some(new_auth_bundle.clone());
-    let viewer = tr.viewer()?;
+    let response = tcli
+        .make_api_key(&MakeApiKeyArgs {
+            user_id: auth_bundle.user_info.id.clone(),
+        })
+        .await?;
 
-    tr.cookies().add(auth_bundle_as_cookie(&new_auth_bundle));
-
-    FacetJson(UpdatedUserInfo {
-        viewer,
-        user_info: new_auth_bundle.user_info,
+    FacetJson(ApiKeyResponse {
+        api_key: response.api_key,
     })
     .into_legacy_reply()
 }

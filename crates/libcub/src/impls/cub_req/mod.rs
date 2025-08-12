@@ -12,13 +12,14 @@ use axum::{
 use config_types::{Environment, WebConfig};
 use conflux::{AccessOverride, CacheBuster, InputPathRef, LoadedPage, Route, Viewer};
 use content_type::ContentType;
-use credentials::AuthBundle;
+use credentials::{AuthBundle, UserApiKey};
 use cub_types::{CubReq, CubTenant};
 use eyre::Result;
 use futures_core::future::BoxFuture;
 use hattip::{HBody, HError, HReply};
 use http::{Uri, request};
 use libwebsock::WebSocketStream;
+use mom_types::VerifyApiKeyArgs;
 use std::{sync::Arc, time::Instant};
 use template_types::{DataObject, DataValue, RenderTemplateArgs};
 use tower_cookies::Cookies;
@@ -138,8 +139,38 @@ where
         let public_cookies = Cookies::from_request_parts(parts, state)
             .await
             .map_err(|e| e.into_legacy_reply())?;
-        let auth_bundle =
+        let mut auth_bundle =
             authbundle_load_from_cookies(&public_cookies.private(&tenant.cookie_key)).await;
+
+        if let Some(query) = parts.uri.query() {
+            let params: std::collections::HashMap<String, String> =
+                form_urlencoded::parse(query.as_bytes())
+                    .into_owned()
+                    .collect();
+
+            if let Some(api_key) = params.get("api_key") {
+                if auth_bundle.is_none() {
+                    // Try to validate the API key with mom
+                    let tcli = tenant.tcli();
+                    match tcli
+                        .verify_api_key(&VerifyApiKeyArgs {
+                            api_key: UserApiKey::new(api_key.clone()),
+                        })
+                        .await
+                    {
+                        Ok(response) => {
+                            log::info!("Validated API key for {}", response.user_info.name());
+                            auth_bundle = Some(AuthBundle {
+                                user_info: response.user_info,
+                            });
+                        }
+                        Err(e) => {
+                            log::warn!("Failed to verify API key: {e}");
+                        }
+                    }
+                }
+            }
+        }
 
         let tr = Self {
             cookie_key: tenant.cookie_key.clone(),

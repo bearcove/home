@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use axum::routing::get;
 use config_types::is_development;
-use credentials::UserId;
-use facet::Facet;
 use libhttpclient::Uri;
 use rusqlite::OptionalExtension;
 
@@ -19,15 +17,15 @@ use axum::{
     http::StatusCode,
     routing::{post, put},
 };
-use libgithub::{GithubCallbackArgs, GithubCredentials};
-use libpatreon::{PatreonCallbackArgs, PatreonCredentials};
+use libgithub::GithubCallbackArgs;
+use libpatreon::PatreonCallbackArgs;
 use mom_types::{
     GithubCallbackResponse, ListMissingArgs, ListMissingResponse, PatreonCallbackResponse,
-    TenantEventPayload,
+    RefreshProfileArgs, TenantEventPayload,
 };
 use objectstore_types::{ObjectStoreKey, ObjectStoreKeyRef};
 
-use crate::impls::site::{FacetJson, HttpError, IntoReply, Reply};
+use crate::impls::site::{FacetJson, IntoReply, Reply};
 
 use super::tenant_extractor::TenantExtractor;
 
@@ -38,7 +36,9 @@ pub fn tenant_routes() -> Router {
     Router::new()
         .route("/patreon/callback", post(patreon_callback))
         .route("/github/callback", post(github_callback))
-        .route("/refresh-profile", post(refresh_profile))
+        .route("/refresh-userinfo", post(refresh_userinfo))
+        .route("/make-api-key", post(make_api_key))
+        .route("/verify-api-key", post(verify_api_key))
         .route("/objectstore/list-missing", post(objectstore_list_missing))
         .route("/objectstore/put/{*key}", put(objectstore_put_key))
         .route("/media/upload", get(media::upload))
@@ -158,30 +158,26 @@ async fn github_callback(
                 fetch_user_info(pool, &user_id_str)?.unwrap()
             };
 
-            Some(GithubCallbackResponse { user_info })
+            Some(GithubCallbackResponse {
+                user_info,
+                scope: creds.scope.clone(),
+            })
         }
         None => None,
     };
     FacetJson(res).into_reply()
 }
 
-#[derive(Facet)]
-struct RefreshProfileArgs {
-    /// tenant-specific user ID
-    user_id: UserId,
-}
-
 // #[axum::debug_handler]
-async fn refresh_profile(
+async fn refresh_userinfo(
     Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
     body: Bytes,
 ) -> Reply {
     let body = std::str::from_utf8(&body[..])?;
     let args: RefreshProfileArgs = facet_json::from_str(body)?;
 
-    use crate::impls::users::refresh_user_profile;
-
-    let user_info = refresh_user_profile(&ts, &args.user_id).await?;
+    use crate::impls::users::refresh_userinfo;
+    let user_info = refresh_userinfo(&ts, &args.user_id).await?;
 
     FacetJson(user_info).into_reply()
 }
@@ -348,4 +344,30 @@ async fn revision_upload_revid(
 
     // Return 200 immediately after spawning the background task
     StatusCode::OK.into_reply()
+}
+
+async fn make_api_key(
+    Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
+    body: Bytes,
+) -> Reply {
+    let body = std::str::from_utf8(&body[..])?;
+    let args: mom_types::MakeApiKeyArgs = facet_json::from_str(body)?;
+
+    use crate::impls::users::make_api_key;
+    let api_key = make_api_key(&ts.pool, &args.user_id)?;
+
+    FacetJson(mom_types::MakeApiKeyResponse { api_key }).into_reply()
+}
+
+async fn verify_api_key(
+    Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
+    body: Bytes,
+) -> Reply {
+    let body = std::str::from_utf8(&body[..])?;
+    let args: mom_types::VerifyApiKeyArgs = facet_json::from_str(body)?;
+
+    use crate::impls::users::verify_api_key;
+    let user_info = verify_api_key(&ts.pool, &args.api_key)?;
+
+    FacetJson(mom_types::VerifyApiKeyResponse { user_info }).into_reply()
 }

@@ -39,7 +39,6 @@ pub mod access_control;
 pub mod cdn;
 pub mod credentials;
 pub mod cub_req;
-pub mod git_auth;
 pub mod global_state;
 mod graceful_shutdown;
 pub mod host_extract;

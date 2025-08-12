@@ -21,11 +21,13 @@ use closest::{GetOrHelp, ResourceKind};
 use config_types::is_development;
 use conflux::{CacheBuster, InputPathRef};
 use content_type::ContentType;
+use credentials::UserApiKey;
 use cub_types::{CubReq, CubTenant};
 use http::{
     StatusCode,
     header::{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, X_CONTENT_TYPE_OPTIONS},
 };
+use mom_types::VerifyApiKeyArgs;
 use objectstore_types::ObjectStoreKey;
 use owo_colors::OwoColorize;
 
@@ -251,10 +253,8 @@ async fn extras_git(
     use axum::body::to_bytes;
     use axum::http::{HeaderMap, StatusCode};
     use axum::response::IntoResponse;
-    use http::Method;
-    use crate::impls::git_auth::{extract_token_from_basic_auth, validate_git_clone_token};
     use cub_types::CubTenant;
-
+    use http::Method;
 
     // Check for authorization header and validate JWT token
     let token = if let Some(auth_header) = req.headers().get(http::header::AUTHORIZATION) {
@@ -267,19 +267,36 @@ async fn extras_git(
         None
     };
 
-    if let Some(token) = token {
-        let cookie_sauce = tr.tenant.tc().cookie_sauce();
-        match validate_git_clone_token(&token, &cookie_sauce) {
-            Ok(claims) => {
-                log::info!("Valid JWT token for user: {}", claims.sub.green());
+    if let Some(api_key) = token {
+        let api_key = UserApiKey::new(api_key);
+
+        // Use mom tenant client to verify the API key and get tier
+        let tcli = tr.tenant.tcli();
+
+        match tcli.verify_api_key(&VerifyApiKeyArgs { api_key }).await {
+            Ok(response) => {
+                let tier = response.user_info.get_fasterthanlime_tier();
+                log::info!("Valid API key for user with tier: {tier:?}");
+
+                // Check if user has at least bronze tier
+                if !tier.has_bronze() {
+                    log::warn!("User does not have bronze tier access");
+                    return (
+                        StatusCode::FORBIDDEN,
+                        [("WWW-Authenticate", "Basic realm=\"Git Access\"")],
+                        "Bronze tier or higher required for git access",
+                    )
+                        .into_response();
+                }
             }
             Err(e) => {
-                log::warn!("Invalid JWT token: {e}");
+                log::warn!("Invalid API key: {e}");
                 return (
                     StatusCode::UNAUTHORIZED,
                     [("WWW-Authenticate", "Basic realm=\"Git Access\"")],
-                    "Invalid authentication token"
-                ).into_response();
+                    "Invalid authentication token",
+                )
+                    .into_response();
             }
         }
     } else {
@@ -287,8 +304,9 @@ async fn extras_git(
         return (
             StatusCode::UNAUTHORIZED,
             [("WWW-Authenticate", "Basic realm=\"Git Access\"")],
-            "Authentication required"
-        ).into_response();
+            "Authentication required",
+        )
+            .into_response();
     }
 
     // Get the query string, if any, and append to the target URL
@@ -340,22 +358,21 @@ async fn extras_git(
     };
 
     // Forward headers from the original request, but replace authorization with git credentials
-    let git_credentials = tr.tenant.tc().secrets.as_ref()
-        .and_then(|s| s.git.as_ref());
-    
+    let git_credentials = tr.tenant.tc().secrets.as_ref().and_then(|s| s.git.as_ref());
+
     for (header_name, header_value) in headers.iter() {
         if header_name == http::header::HOST {
             log::info!("  Overriding Host header to: code.bearcove.cloud");
             proxy_req = proxy_req.header(header_name, "code.bearcove.cloud");
             continue;
         }
-        
+
         // Skip the original authorization header since we'll replace it with git credentials
         if header_name == http::header::AUTHORIZATION {
             log::info!("  Skipping original Authorization header");
             continue;
         }
-        
+
         log::info!(
             "  Forwarding request header: {}: {:?}",
             header_name.to_string().blue(),
@@ -363,10 +380,10 @@ async fn extras_git(
         );
         proxy_req = proxy_req.header(header_name, header_value);
     }
-    
+
     // Add git credentials if available
     if let Some(git_creds) = git_credentials {
-        use base64::{engine::general_purpose::STANDARD, Engine};
+        use base64::{Engine, engine::general_purpose::STANDARD};
         let auth_string = format!("{}:{}", git_creds.username, git_creds.password);
         let encoded = STANDARD.encode(&auth_string);
         let auth_header = format!("Basic {encoded}");
@@ -412,20 +429,20 @@ async fn extras_git(
 
             // For git operations, we need to stream the response instead of buffering
             let body_stream = resp.bytes_stream();
-            
+
             log::info!("Returning response with status: {status}");
-            
+
             // Convert the stream to axum body
             use axum::body::Body;
             use futures_util::StreamExt;
-            
+
             let body = Body::from_stream(body_stream.map(|result| {
                 result.map_err(|e| {
                     log::error!("Error streaming proxy body: {e}");
                     std::io::Error::other(e)
                 })
             }));
-            
+
             (status, headers, body).into_response()
         }
         Err(e) => {
@@ -433,4 +450,20 @@ async fn extras_git(
             (StatusCode::BAD_GATEWAY, format!("Proxy error: {e}")).into_response()
         }
     }
+}
+
+fn extract_token_from_basic_auth(auth_header: &str) -> Option<String> {
+    if let Some(basic_part) = auth_header.strip_prefix("Basic ") {
+        use base64::{Engine, engine::general_purpose::STANDARD};
+        if let Ok(decoded_bytes) = STANDARD.decode(basic_part) {
+            if let Ok(decoded_str) = std::str::from_utf8(&decoded_bytes) {
+                // Basic auth format is "username:password"
+                // For our case, we expect the token to be in the password field
+                if let Some((_, token)) = decoded_str.split_once(':') {
+                    return Some(token.to_string());
+                }
+            }
+        }
+    }
+    None
 }

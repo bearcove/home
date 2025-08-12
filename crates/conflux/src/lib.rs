@@ -362,30 +362,9 @@ impl Viewer {
                 }
             }
 
-            if let Some(tier) = user_info.patreon.as_ref().and_then(|p| p.tier.as_ref()) {
-                match tier.as_ref() {
-                    "Bronze" => {
-                        v.has_bronze = true;
-                    }
-                    "Silver" | "Gold" | "Creator" => {
-                        v.has_bronze = true;
-                        v.has_silver = true;
-                    }
-                    _ => {}
-                }
-            }
-
-            // this hardcodes fasterthanli.me tiers for now:
-            if let Some(github) = user_info.github.as_ref() {
-                if let Some(monthly_usd) = github.monthly_usd {
-                    if monthly_usd >= 5 {
-                        v.has_bronze = true;
-                    }
-                    if monthly_usd >= 10 {
-                        v.has_silver = true;
-                    }
-                }
-            }
+            let tier = user_info.get_fasterthanlime_tier();
+            v.has_bronze = tier.has_bronze();
+            v.has_silver = tier.has_silver();
         }
 
         if let Some(access_override) = access_override {

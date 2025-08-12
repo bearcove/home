@@ -15,9 +15,7 @@ impl super::SqlMigration for Migration {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 patreon_user_id TEXT,
                 github_user_id TEXT,
-                api_key TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_seen TIMESTAMP
             )
             ",
             [],
@@ -97,6 +95,24 @@ impl super::SqlMigration for Migration {
             "CREATE INDEX idx_users_patreon_user_id ON users(patreon_user_id)",
             [],
         )?;
+
+        // Create the api_keys table
+        conn.execute(
+            "
+                    CREATE TABLE api_keys (
+                        id TEXT NOT NULL,
+                        user_id INTEGER NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        revoked_at TIMESTAMP,
+                        PRIMARY KEY (id),
+                        FOREIGN KEY (user_id) REFERENCES users(id)
+                    )
+                    ",
+            [],
+        )?;
+
+        // Create index for api_keys user_id
+        conn.execute("CREATE INDEX idx_api_keys_user_id ON api_keys(user_id)", [])?;
 
         Ok(())
     }
