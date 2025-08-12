@@ -65,7 +65,7 @@ impl HttpError {
         let error_unique_id = format!("momerr_{}", Ulid::new().to_string().to_lowercase());
         let err = err.wrap_err(format!("Unique ID {error_unique_id}"));
 
-        sentry_eyre::capture_report(&err);
+        sentrywrap::capture_report(&err);
 
         error!(
             "HTTP handler errored: (chain len {}) {error_unique_id}: {}",

@@ -30,7 +30,7 @@ impl super::SqlMigration for Migration {
                 sponsorship_privacy_level STRING,
                 name TEXT,
                 login TEXT NOT NULL,
-                thumb_url TEXT,
+                avatar_url TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP,
                 PRIMARY KEY (id)
@@ -46,7 +46,7 @@ impl super::SqlMigration for Migration {
                 id TEXT NOT NULL,
                 tier STRING,
                 full_name TEXT NOT NULL,
-                thumb_url TEXT,
+                avatar_url TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP,
                 PRIMARY KEY (id)

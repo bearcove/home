@@ -13,5 +13,6 @@ categories.workspace = true
 
 [dependencies]
 config-types = { version = "0.1.0", path = "../config-types" }
+eyre.workspace = true
 hostname = "0.4.1"
 sentry = { version = "0.42.0", features = ["logs"] }
