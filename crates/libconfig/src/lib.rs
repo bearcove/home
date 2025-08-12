@@ -85,18 +85,19 @@ impl Mod for ModImpl {
             }
 
             let config_contents = fs_err::read_to_string(&public_config_path)?;
-            let config: RevisionConfig =
+            let rc: RevisionConfig =
                 facet_json::from_str(&config_contents).map_err(|e| eyre::eyre!("{e}"))?;
-            eprintln!("Got config {}", config.pretty());
+            eprintln!("Got config {}", rc.pretty());
 
             let base_dir = root.canonicalize_utf8()?;
-            let tenant = TenantDomain::new(config.id);
+            let tenant = TenantDomain::new(rc.id.clone());
             let tc = TenantConfig {
                 name: tenant.clone(),
                 object_storage: None,
                 domain_aliases: Default::default(),
                 secrets: None,
                 base_dir_for_dev: None,
+                rc_for_dev: Some(rc),
             };
             let ti = TenantInfo { base_dir, tc };
             bundle.tenants.insert(tenant, ti);

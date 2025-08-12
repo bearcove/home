@@ -300,6 +300,32 @@ async fn process_mom_good_morning(
         let mappings = PathMappings::from_ti(&ti);
 
         let rs = 'load: {
+            if web.env.is_dev() {
+                eprintln!("In dev we ignore the good morning rev, let's make our own");
+                break 'load match mod_revision
+                    .make_revision(
+                        ti.clone(),
+                        RevisionSpec {
+                            kind: RevisionKind::FromScratch,
+                            mappings,
+                        },
+                        web,
+                    )
+                    .await
+                {
+                    Ok(indexed_rv) => CubRevisionState {
+                        rev: Some(indexed_rv),
+                        err: None,
+                    },
+                    Err(e) => CubRevisionState {
+                        rev: None,
+                        err: Some(conflux::RevisionError(format!(
+                            "failed to make revision from scratch: {e}"
+                        ))),
+                    },
+                };
+            }
+
             if let Some(pak) = tis.pak {
                 match mod_revision
                     .load_pak(pak, ti.clone(), None, mappings, web)
@@ -317,32 +343,6 @@ async fn process_mom_good_morning(
                     },
                 }
             } else {
-                if web.env.is_dev() {
-                    eprintln!("No revision in good morning, let's make one");
-                    break 'load match mod_revision
-                        .make_revision(
-                            ti.clone(),
-                            RevisionSpec {
-                                kind: RevisionKind::FromScratch,
-                                mappings,
-                            },
-                            web,
-                        )
-                        .await
-                    {
-                        Ok(indexed_rv) => CubRevisionState {
-                            rev: Some(indexed_rv),
-                            err: None,
-                        },
-                        Err(e) => CubRevisionState {
-                            rev: None,
-                            err: Some(conflux::RevisionError(format!(
-                                "failed to make revision from scratch: {e}"
-                            ))),
-                        },
-                    };
-                }
-
                 CubRevisionState {
                     rev: None,
                     err: Some(conflux::RevisionError(format!(

@@ -153,15 +153,20 @@ async fn real_main() -> eyre::Result<()> {
                 return Err(eyre::eyre!("No secrets configured for tenant {}", tc.name));
             }
 
-            let base_dir = tc.base_dir_for_dev.clone().unwrap_or_else(|| {
-                let dir = config.tenant_data_dir.join(tc.name.as_str());
-                log::info!(
-                    "No base_dir_for_dev set for tenant {}, using default: {}",
-                    tc.name,
+            let base_dir = match tc.base_dir_for_dev.clone() {
+                Some(base_dir_for_dev) => {
+                    base_dir_for_dev
+                },
+                None => {
+                    let dir = config.tenant_data_dir.join(tc.name.as_str());
+                    log::info!(
+                        "No base_dir_for_dev set for tenant {}, using default: {}",
+                        tc.name,
+                        dir
+                    );
                     dir
-                );
-                dir
-            });
+                }
+            };
 
             log::info!(
                 "Setting up TenantInfo for tenant {} with base_dir: {}",

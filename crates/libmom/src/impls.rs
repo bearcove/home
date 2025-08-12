@@ -7,7 +7,7 @@ use std::{
 
 use axum::extract::ws;
 use config_types::{MomConfig, RevisionConfig, TenantDomain, TenantInfo, WebConfig};
-use conflux::Pak;
+use conflux::{Pak, RevisionId};
 use inflight::InflightSlots;
 use itertools::Itertools;
 use libhttpclient::HttpClient;
@@ -197,11 +197,26 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
             web,
         };
 
-        for (tn, ti) in tenants {
+        for (tn, mut ti) in tenants {
             log::info!("Setting up tenant {}", tn.blue());
 
             let object_store = derivations::objectstore_for_tenant(&ti, gs.web.env).await?;
             let tn_for_sponsors = tn.clone();
+
+            let mut pak: Option<Pak> = None;
+            if let Some(rc) = ti.tc.rc_for_dev.take() {
+                // make a dummy pak with the initial / dev revision config,
+                // which contains useful things like the admin patreon/github IDs
+                pak = Some(Pak {
+                    id: RevisionId::new("dummy".to_string()),
+                    inputs: Default::default(),
+                    pages: Default::default(),
+                    templates: Default::default(),
+                    media_props: Default::default(),
+                    svg_font_face_collection: Default::default(),
+                    rc,
+                })
+            }
 
             let ts = MomTenantState {
                 pool: mom_db_pool(&ti).unwrap(),
@@ -231,12 +246,13 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                     })
                 }),
                 users: Default::default(),
-                pak: Default::default(),
+                pak: Arc::new(Mutex::new(pak)),
                 object_store,
                 ti: Arc::new(ti),
                 transcode_jobs: Default::default(),
                 derive_jobs: Default::default(),
             };
+
             eprintln!(
                 "Inserting tenant {}, base dir is {}",
                 ts.ti.tc.name.blue(),

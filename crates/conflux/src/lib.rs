@@ -1345,6 +1345,7 @@ mod tests {
                 object_storage: None,
                 secrets: None,
                 base_dir_for_dev: None,
+                rc_for_dev: None,
             },
         };
 

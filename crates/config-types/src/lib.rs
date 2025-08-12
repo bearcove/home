@@ -134,8 +134,11 @@ pub struct TenantConfig {
     /// tenant-specific secrets (patreon/github oauth etc.)
     pub secrets: Option<TenantSecrets>,
 
-    /// a base directory used only in development, specified by cub fot the dev mom
+    /// a base directory used only in development, specified by cub for the dev mom
     pub base_dir_for_dev: Option<Utf8PathBuf>,
+
+    /// the first RevisionConfig we read, specified by cub for the dev mom
+    pub rc_for_dev: Option<RevisionConfig>,
 }
 
 impl TenantConfig {
@@ -147,6 +150,7 @@ impl TenantConfig {
             object_storage: None,
             secrets: None,
             base_dir_for_dev: None,
+            rc_for_dev: None,
         }
     }
 
