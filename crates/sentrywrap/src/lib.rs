@@ -1,4 +1,5 @@
 use config_types::Environment;
+pub use sentry;
 use sentry::ClientInitGuard;
 
 pub fn install() -> ClientInitGuard {
@@ -68,6 +69,9 @@ pub fn capture_report(report: &Report) -> Uuid {
 /// Utility function to represent a Sentry [`Event`] from a [`Report`]. This shouldn't
 /// be consumed directly unless you want access to the created [`Event`] from a [`Report`].
 pub fn event_from_report(report: &Report) -> Event<'static> {
+    // TODO: take whole chain into account, format backtrace if given, strip ANSI codes.
+    // right now it's not very useful.
+
     let err: &dyn Error = report.as_ref();
     event_from_error(err)
 }

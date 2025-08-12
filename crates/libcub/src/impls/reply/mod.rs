@@ -14,8 +14,8 @@ use libterm::FormatAnsiStyle;
 use log::error;
 use rand::prelude::IndexedRandom;
 use rand::rng;
+use sentrywrap::sentry::protocol::Exception;
 use std::borrow::Cow;
-use ulid::Ulid;
 
 /// The type returned by HTTP handlers in our application
 ///
@@ -76,10 +76,29 @@ pub enum LegacyHttpError {
 
 impl LegacyHttpError {
     fn from_report(err: Report) -> Self {
-        let error_unique_id = format!("cuberr_{}", Ulid::new().to_string().to_lowercase());
-        let err = err.wrap_err(format!("Unique ID {error_unique_id}"));
+        use sentry::protocol::{Event, Level};
+        use sentry::types::random_uuid;
+        use sentrywrap::sentry;
 
-        sentrywrap::capture_report(&err);
+        let uuid = random_uuid();
+        let mut event = Event {
+            event_id: uuid,
+            message: Some("{err}".into()),
+            level: Level::Info,
+            ..Default::default()
+        };
+        for source_err in err.chain() {
+            event.exception.values.push(Exception {
+                ty: format!("{source_err}"),
+                value: Some(source_err.to_string()),
+                module: None,
+                stacktrace: None,
+                raw_stacktrace: None,
+                thread_id: None,
+                mechanism: None,
+            });
+        }
+        sentry::capture_event(event);
 
         error!(
             "HTTP handler errored: (chain len {}): {}",
@@ -252,7 +271,7 @@ impl LegacyHttpError {
 
                     <section class="info">
                         <p>📆 <strong>{date}</strong></p>
-                        <p>🆔 <strong><code>{error_unique_id}</code></strong></p>
+                        <p>🆔 <strong><code>{uuid}</code></strong></p>
                     </section>
 
                     {trace_content}

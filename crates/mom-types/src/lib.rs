@@ -5,11 +5,7 @@ use derivations::DerivationInfo;
 use facet::Facet;
 use media_types::{TargetFormat, TranscodingProgress};
 use objectstore_types::ObjectStoreKey;
-use std::{
-    collections::{HashMap, VecDeque},
-    sync::Arc,
-    time::Instant,
-};
+use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use config_types::{MomConfig, TenantConfig, TenantDomain, TenantInfo, WebConfig};
 
@@ -434,7 +430,8 @@ pub struct VerifyApiKeyResponse {
 /// An eyre error sent as JSON so it can be deserialized by
 /// cub and used to make our own error
 #[derive(Facet, Debug)]
-pub struct StructuredErrorPayload {
+pub struct MomStructuredError {
+    pub unique_id: String,
     /// the whole chain of eyre errors (formatted with ANSI escape codes)
     pub errors: Vec<String>,
     /// backtrace frame lines (formatted with ANSI escape codes)

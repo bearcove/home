@@ -340,7 +340,18 @@ pub(crate) fn save_github_credentials(
 ) -> eyre::Result<()> {
     let conn = pool.get()?;
     conn.execute(
-        "INSERT OR REPLACE INTO github_credentials (id, access_token, scope, expires_at) VALUES (?1, ?2, ?3, ?4)",
+        "
+        INSERT INTO github_credentials (
+            id,
+            access_token,
+            scope,
+            expires_at
+        ) VALUES (?1, ?2, ?3, ?4)
+        ON CONFLICT(id) DO UPDATE SET
+            access_token = excluded.access_token,
+            scope = excluded.scope,
+            expires_at = excluded.expires_at
+        ",
         rusqlite::params![
             github_id,
             credentials.access_token,
@@ -357,7 +368,24 @@ pub(crate) fn save_github_profile(
 ) -> eyre::Result<()> {
     let conn = pool.get()?;
     conn.execute(
-        "INSERT INTO github_profiles (id, monthly_usd, sponsorship_privacy_level, name, login, thumb_url, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET monthly_usd = excluded.monthly_usd, sponsorship_privacy_level = excluded.sponsorship_privacy_level, name = excluded.name, login = excluded.login, thumb_url = excluded.thumb_url, updated_at = excluded.updated_at",
+        "
+        INSERT INTO github_profiles (
+            id,
+            monthly_usd,
+            sponsorship_privacy_level,
+            name,
+            login,
+            avatar_url,
+            updated_at
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+            monthly_usd = excluded.monthly_usd,
+            sponsorship_privacy_level = excluded.sponsorship_privacy_level,
+            name = excluded.name,
+            login = excluded.login,
+            avatar_url = excluded.avatar_url,
+            updated_at = excluded.updated_at
+        ",
         rusqlite::params![
             profile.id,
             profile.monthly_usd,
@@ -536,13 +564,13 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
             p.id as p_id,
             p.tier as p_tier,
             p.full_name as p_full_name,
-            p.thumb_url as p_thumb_url,
+            p.avatar_url as p_avatar_url,
             g.id as g_id,
             g.monthly_usd as g_monthly_usd,
             g.sponsorship_privacy_level as g_sponsorship_privacy_level,
             g.name as g_name,
             g.login as g_login,
-            g.thumb_url as g_thumb_url
+            g.avatar_url as g_avatar_url
         FROM users u
         LEFT JOIN patreon_profiles p ON u.patreon_user_id = p.id
         LEFT JOIN github_profiles g ON u.github_user_id = g.id
@@ -562,7 +590,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
                     id: row.get("p_id")?,
                     tier: row.get("p_tier")?,
                     full_name: row.get("p_full_name")?,
-                    avatar_url: row.get("p_thumb_url")?,
+                    avatar_url: row.get("p_avatar_url")?,
                 })
             } else {
                 None
@@ -581,7 +609,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
                     sponsorship_privacy_level: row.get("g_sponsorship_privacy_level")?,
                     name: row.get("g_name")?,
                     login: row.get("g_login")?,
-                    avatar_url: row.get("g_thumb_url")?,
+                    avatar_url: row.get("g_avatar_url")?,
                 })
             } else {
                 None

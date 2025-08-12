@@ -284,7 +284,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("github/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<Option<GithubCallbackResponse>>().await?)
+                res.json::<Option<GithubCallbackResponse>>().await
             }
         })
     }
@@ -298,7 +298,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("patreon/callback");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<Option<PatreonCallbackResponse>>().await?)
+                res.json::<Option<PatreonCallbackResponse>>().await
             }
         })
     }
@@ -312,7 +312,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("refresh-userinfo");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<UserInfo>().await?)
+                res.json::<UserInfo>().await
             }
         })
     }
@@ -326,7 +326,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("make-api-key");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<mom_types::MakeApiKeyResponse>().await?)
+                res.json::<mom_types::MakeApiKeyResponse>().await
             }
         })
     }
@@ -340,7 +340,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let uri = self.config_mom_uri("verify-api-key");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<mom_types::VerifyApiKeyResponse>().await?)
+                res.json::<mom_types::VerifyApiKeyResponse>().await
             }
         })
     }
@@ -354,7 +354,7 @@ impl MomTenantClient for MomTenantClientImpl {
                 let (_, uri) = self.prod_mom_url("objectstore/list-missing");
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
-                Ok(res.json::<ListMissingResponse>().await?)
+                res.json::<ListMissingResponse>().await
             }
         })
     }

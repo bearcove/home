@@ -4,7 +4,7 @@ use facet::Facet;
 use facet_json::DeserError;
 use facet_reflect::Peek;
 use futures_core::{future::BoxFuture, stream::BoxStream};
-use mom_types::StructuredErrorPayload;
+use mom_types::MomStructuredError;
 use std::collections::HashMap;
 
 pub use form_urlencoded;
@@ -207,7 +207,7 @@ impl RequestBuilder for RequestBuilderImpl {
                     Ok(s) => {
                         if let Some(mse) = headers.get("x-mom-structured-error") {
                             if mse == "1" {
-                                let structured_error: Result<StructuredErrorPayload, _> =
+                                let structured_error: Result<MomStructuredError, _> =
                                     facet_json::from_str(&s);
                                 if let Ok(mut payload) = structured_error {
                                     let mut err = eyre::eyre!("mom structured error");
