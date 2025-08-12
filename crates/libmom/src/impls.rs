@@ -8,12 +8,10 @@ use std::{
 use axum::extract::ws;
 use config_types::{MomConfig, RevisionConfig, TenantDomain, TenantInfo, WebConfig};
 use conflux::Pak;
-use credentials::PatreonUserId;
 use inflight::InflightSlots;
 use itertools::Itertools;
 use libhttpclient::HttpClient;
 use libobjectstore::ObjectStore;
-use libpatreon::PatreonCredentials;
 use log::{debug, error, info};
 use mom_types::AllUsers;
 use objectstore_types::ObjectStoreKey;
@@ -55,7 +53,6 @@ pub(crate) struct MomGlobalState {
 pub(crate) struct MomTenantState {
     pub(crate) pool: Pool,
 
-    pub(crate) patreon_creds_inflight: InflightSlots<PatreonUserId, PatreonCredentials>,
     pub(crate) users_inflight: InflightSlots<(), AllUsers>,
     pub(crate) users: Arc<Mutex<Option<AllUsers>>>,
 
@@ -204,33 +201,10 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
             log::info!("Setting up tenant {}", tn.blue());
 
             let object_store = derivations::objectstore_for_tenant(&ti, gs.web.env).await?;
-            let tn_for_creds = tn.clone();
             let tn_for_sponsors = tn.clone();
 
             let ts = MomTenantState {
                 pool: mom_db_pool(&ti).unwrap(),
-                patreon_creds_inflight: InflightSlots::new(
-                    move |patreon_user_id: &PatreonUserId| {
-                        let gs = global_state();
-                        let ts = gs
-                            .tenants
-                            .get(&tn_for_creds)
-                            .cloned()
-                            .ok_or_else(|| {
-                                eyre::eyre!(
-                                    "Tenant not found in global state: global state has tenants {}",
-                                    gs.tenants.keys().join(", ")
-                                )
-                            })
-                            .unwrap();
-                        let patreon_user_id = patreon_user_id.clone();
-                        Box::pin(async move {
-                            users::fetch_uptodate_patreon_credentials(&ts, &patreon_user_id)
-                                .await?
-                                .ok_or_else(|| eyre::eyre!("No Patreon credentials found"))
-                        })
-                    },
-                ),
                 users_inflight: InflightSlots::new(move |_| {
                     let gs = global_state();
                     log::info!(

@@ -13,7 +13,6 @@ use facet_json::DeserError;
 use libhttpclient::header::HeaderName;
 use log::error;
 use mom_types::MomStructuredError;
-use std::borrow::Cow;
 
 pub(crate) type Reply = Result<Response, HttpError>;
 
@@ -47,16 +46,7 @@ where
 
 #[derive(Debug)]
 pub enum HttpError {
-    WithStatus {
-        status_code: StatusCode,
-        msg: Cow<'static, str>,
-    },
-    Internal {
-        err: String,
-    },
-    Structured {
-        payload: MomStructuredError,
-    },
+    Structured { payload: MomStructuredError },
 }
 
 impl HttpError {
@@ -85,7 +75,7 @@ impl HttpError {
         }
 
         let mut errors = Vec::new();
-        for (i, e) in err.chain().enumerate() {
+        for e in err.chain() {
             errors.push(e.to_string());
         }
 
@@ -134,13 +124,6 @@ impl<'input> From<DeserError<'input>> for HttpError {
 impl IntoResponse for HttpError {
     fn into_response(self) -> Response {
         match self {
-            HttpError::WithStatus { status_code, msg } => (status_code, msg).into_response(),
-            HttpError::Internal { err } => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                [(header::CONTENT_TYPE, ContentType::HTML.as_str())],
-                err,
-            )
-                .into_response(),
             HttpError::Structured { payload } => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 [
@@ -150,18 +133,6 @@ impl IntoResponse for HttpError {
                 Body::from(facet_json::to_string(&payload)),
             )
                 .into_response(),
-        }
-    }
-}
-
-impl HttpError {
-    pub fn with_status<S>(status_code: StatusCode, msg: S) -> Self
-    where
-        S: Into<Cow<'static, str>>,
-    {
-        HttpError::WithStatus {
-            status_code,
-            msg: msg.into(),
         }
     }
 }

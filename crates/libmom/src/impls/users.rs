@@ -655,13 +655,15 @@ pub(crate) fn verify_api_key(pool: &SqlitePool, api_key: &UserApiKey) -> eyre::R
     let conn = pool.get()?;
 
     // First, check if the API key exists and is not revoked
-    let user_id: Option<UserId> = conn
+    let user_id: Option<i64> = conn
         .query_row(
             "SELECT user_id FROM api_keys WHERE id = ?1 AND revoked_at IS NULL",
             [api_key],
             |row| row.get(0),
         )
         .optional()?;
+
+    let user_id = user_id.map(|id| UserId::new(id.to_string()));
 
     let Some(user_id) = user_id else {
         // API key doesn't exist or is revoked

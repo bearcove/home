@@ -384,11 +384,11 @@ impl Mod for ModImpl {
                 }
 
                 let patreon_payload = res.text().await?;
-                std::fs::write("/tmp/patreon-payload.json", &patreon_payload)
-                    .wrap_err("Failed to write patreon payload to /tmp/patreon-payload.json")?;
-                eprintln!(
-                    "Wrote Patreon API response payload to /tmp/patreon-payload.json for debugging"
-                );
+                // std::fs::write("/tmp/patreon-payload.json", &patreon_payload)
+                //     .wrap_err("Failed to write patreon payload to /tmp/patreon-payload.json")?;
+                // eprintln!(
+                //     "Wrote Patreon API response payload to /tmp/patreon-payload.json for debugging"
+                // );
 
                 let patreon_response: PatreonResponse = serde_json::from_str(&patreon_payload)?;
                 let mut tiers_per_id: HashMap<String, Tier> = Default::default();

@@ -48,7 +48,6 @@ serde = { workspace = true, features = ["derive"] }
 content-type = { path = "../../crates/content-type" }
 itertools = { version = "0.14.0" }
 closest = { version = "0.1.0", path = "../../crates/closest" }
-ulid = { version = "1.2.1" }
 liberrhandling = { path = "../liberrhandling" }
 credentials = { path = "../../crates/credentials" }
 libc = { version = "0.2.172" }

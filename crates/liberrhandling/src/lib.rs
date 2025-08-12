@@ -32,7 +32,7 @@ const IGNORE_FRAME_PREFIXES: &[&str] = &[
     "alloc::boxed::Box",
     "axum::handler",
     "axum::util",
-    "color_eyre::config::EyreHook::into_eyre_hook:",
+    "color_eyre::",
     "core::future",
     "core::ops::function",
     "core::panic",

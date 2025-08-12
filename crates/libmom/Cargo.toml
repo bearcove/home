@@ -11,7 +11,6 @@ camino = { version = "1.1.9" }
 conflux = { path = "../../crates/conflux" }
 liberrhandling = { path = "../../crates/liberrhandling" }
 libobjectstore = { path = "../../crates/libobjectstore" }
-libterm = { path = "../../crates/libterm" }
 credentials = { path = "../../crates/credentials" }
 libpatreon = { path = "../../crates/libpatreon" }
 content-type = { path = "../../crates/content-type" }
@@ -62,5 +61,4 @@ facet-json.workspace = true
 facet.workspace = true
 log = "0.4.27"
 rand = "0.9.2"
-ulid = "1.2.1"
 sentrywrap = { version = "0.1.0", path = "../sentrywrap" }
