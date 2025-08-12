@@ -36,11 +36,11 @@ pub(crate) async fn refresh_sponsors(ts: &MomTenantState) -> eyre::Result<AllUse
     .await;
 
     if let Err(e) = github_result {
-        log::warn!("Failed to refresh GitHub sponsors: {e:#}");
+        log::warn!("Failed to refresh GitHub sponsors: {e}");
     }
 
     if let Err(e) = patreon_result {
-        log::warn!("Failed to refresh Patreon sponsors: {e:#}");
+        log::warn!("Failed to refresh Patreon sponsors: {e}");
     }
 
     let total_duration = start_time.elapsed();
@@ -115,11 +115,12 @@ async fn refresh_patreon_sponsors(
     let mut user_ids: Vec<UserId> = Vec::new();
     for profile in profiles {
         // Find the user ID for this Patreon profile
-        let user_id: UserId = conn.query_row(
+        let user_id: i64 = conn.query_row(
             "SELECT id FROM users WHERE patreon_user_id = ?1",
             [&profile.id],
             |row| row.get(0),
         )?;
+        let user_id = UserId::new(user_id.to_string());
 
         user_ids.push(user_id);
     }
@@ -494,13 +495,13 @@ pub(crate) async fn refresh_userinfo(
     let conn = ts.pool.get()?;
 
     // First, fetch the user record
-    let user_row: Option<(UserId, Option<PatreonUserId>, Option<GithubUserId>)> = conn
+    let user_row: Option<(i64, Option<PatreonUserId>, Option<GithubUserId>)> = conn
         .query_row(
             "SELECT id, patreon_user_id, github_user_id FROM users WHERE id = ?1",
             [user_id],
             |row| {
                 Ok((
-                    row.get::<_, UserId>(0)?,
+                    row.get::<_, i64>(0)?,
                     row.get::<_, Option<PatreonUserId>>(1)?,
                     row.get::<_, Option<GithubUserId>>(2)?,
                 ))
@@ -511,6 +512,7 @@ pub(crate) async fn refresh_userinfo(
     let Some((id, patreon_user_id, github_user_id)) = user_row else {
         return Err(eyre::eyre!("User with id {} not found", user_id));
     };
+    let id = UserId::new(id.to_string());
 
     let client = global_state().client.as_ref();
     let rc = ts.rc()?;
@@ -581,7 +583,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
     )?;
 
     let rows = stmt.query_map([], |row| {
-        let id: UserId = row.get("id")?;
+        let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
         let patreon_user_id: Option<PatreonUserId> = row.get("patreon_user_id")?;
         let github_user_id: Option<GithubUserId> = row.get("github_user_id")?;
 

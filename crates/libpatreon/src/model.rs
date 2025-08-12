@@ -1,19 +1,23 @@
-use std::collections::HashMap;
-
 use serde::Deserialize;
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct ItemCommon {
-    pub id: String,
-    #[serde(default)]
-    pub relationships: HashMap<String, Relationship>,
-}
 
 #[derive(Deserialize, Debug)]
 pub struct PatreonResponse {
     pub data: Vec<Item>,
     pub included: Vec<Item>,
     pub links: Option<Links>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct ItemCommon {
+    pub id: String,
+    #[serde(default)]
+    pub relationships: Relationships,
+}
+
+#[derive(Deserialize, Debug, Clone, Default)]
+pub struct Relationships {
+    pub currently_entitled_tiers: Option<TierRelationship>,
+    pub user: Option<UserRelationship>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -26,6 +30,7 @@ pub struct Links {
 pub enum Item {
     Member(Member),
     Tier(Tier),
+    User(User),
 }
 
 #[derive(Deserialize, Debug)]
@@ -35,16 +40,9 @@ pub struct Member {
     pub attributes: MemberAttributes,
 }
 
-impl Member {
-    pub fn rel(&self, name: &str) -> Option<&Relationship> {
-        self.common.relationships.get(name)
-    }
-}
-
 #[derive(Deserialize, Debug)]
 pub struct MemberAttributes {
     pub full_name: Option<String>,
-    pub thumb_url: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -60,7 +58,7 @@ pub struct TierAttributes {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Relationship {
+pub struct TierRelationship {
     pub data: Vec<ItemRef>,
 }
 
@@ -72,5 +70,27 @@ pub enum ItemRef {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct TierRef {
+    pub id: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct User {
+    #[serde(flatten)]
+    pub common: ItemCommon,
+    pub attributes: UserAttributes,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UserAttributes {
+    pub thumb_url: Option<String>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct UserRelationship {
+    pub data: UserRef,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct UserRef {
     pub id: String,
 }

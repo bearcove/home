@@ -286,7 +286,9 @@ impl Mod for ModImpl {
 
             #[derive(Facet)]
             struct GraphqlResponse {
+                #[facet(default)]
                 data: Option<GraphqlResponseData>,
+                #[facet(default)]
                 errors: Option<Vec<GraphqlError>>,
             }
 
@@ -322,6 +324,7 @@ impl Mod for ModImpl {
             #[derive(Facet)]
             #[allow(non_snake_case)]
             struct Node {
+                databaseId: u64,
                 login: String,
                 name: Option<String>,
                 avatarUrl: Option<String>,
@@ -429,7 +432,7 @@ impl Mod for ModImpl {
                         };
 
                         github_profiles.push(GithubProfile {
-                            id: GithubUserId::new(sponsor.login.clone()),
+                            id: GithubUserId::new(sponsor.databaseId.to_string()),
                             monthly_usd,
                             sponsorship_privacy_level: Some(sponsorship.privacyLevel.clone()),
                             name: sponsor.name.clone(),

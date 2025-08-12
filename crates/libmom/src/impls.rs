@@ -14,7 +14,7 @@ use itertools::Itertools;
 use libhttpclient::HttpClient;
 use libobjectstore::ObjectStore;
 use libpatreon::PatreonCredentials;
-use log::{debug, error};
+use log::{debug, error, info};
 use mom_types::AllUsers;
 use objectstore_types::ObjectStoreKey;
 use owo_colors::OwoColorize;
@@ -130,7 +130,7 @@ impl Deref for Pool {
 }
 
 pub(crate) async fn load_revision_from_db(ts: &MomTenantState) -> eyre::Result<Option<Pak>> {
-    debug!("Loading latest revision from database");
+    info!("Loading latest revision from database");
     let (id, object_key) = {
         let conn = ts.pool.get()?;
         let mut stmt = conn.prepare(
@@ -146,31 +146,31 @@ pub(crate) async fn load_revision_from_db(ts: &MomTenantState) -> eyre::Result<O
         match res {
             Ok(result) => result,
             Err(rusqlite::Error::QueryReturnedNoRows) => {
-                debug!("No revisions found in database");
+                info!("No revisions found in database");
                 return Ok(None);
             }
             Err(e) => return Err(e.into()),
         }
     };
 
-    debug!("Found revision with id: {id}");
+    info!("Found revision with id: {id}");
 
     let key = ObjectStoreKey::new(object_key);
-    debug!("Fetching revision data from object store with key: {key}");
+    info!("Fetching revision data from object store with key: {key}");
     let start_time = std::time::Instant::now();
     let res = ts.object_store.get(&key).await?;
-    debug!(
+    info!(
         "Got response (content_type {:?}), now fetching bytes",
         res.content_type()
     );
     let bytes = res.bytes().await?;
     let duration = start_time.elapsed();
-    debug!("Fetching revision data took {duration:?}");
+    info!("Fetching revision data took {duration:?}");
 
-    debug!("Deserializing revision data");
-    let revision: Pak =
+    info!("Deserializing revision data");
+    let pak: Pak =
         facet_json::from_str(std::str::from_utf8(&bytes[..])?).map_err(|e| e.into_owned())?;
-    Ok(Some(revision))
+    Ok(Some(pak))
 }
 
 pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
@@ -277,7 +277,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
         }
     };
 
-    eprintln!("Trying to load all sponsors from db...");
+    eprintln!("Restoring all users from db...");
     for ts in global_state().tenants.values() {
         // try to load users from the database
         match users::fetch_all_users(&ts.pool) {
@@ -296,30 +296,6 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                 );
             }
         }
-    }
-
-    // refresh sponsors regularly
-    for ts in global_state().tenants.values().cloned() {
-        tokio::spawn(async move {
-            let interval = Duration::from_secs(120);
-            let tenant_name = ts.ti.tc.name.as_str();
-            if ts.users.lock().is_some() {
-                tokio::time::sleep(interval).await;
-            }
-
-            loop {
-                match ts.users_inflight.query(()).await {
-                    Ok(users) => {
-                        log::debug!("[{}] Fetched {} sponsors", tenant_name, users.users.len());
-                        *ts.users.lock() = Some(users);
-                    }
-                    Err(e) => {
-                        log::debug!("[{tenant_name}] Failed to fetch sponsors: {e} / {e:?}")
-                    }
-                }
-                tokio::time::sleep(interval).await;
-            }
-        });
     }
 
     // load the latest revision from the database for each tenant
@@ -342,6 +318,27 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                 );
             }
         }
+    }
+
+    // refresh sponsors regularly
+    for ts in global_state().tenants.values().cloned() {
+        tokio::spawn(async move {
+            let tenant_name = ts.ti.tc.name.as_str();
+            let interval = Duration::from_secs(120);
+
+            loop {
+                match ts.users_inflight.query(()).await {
+                    Ok(users) => {
+                        log::debug!("[{}] Fetched {} sponsors", tenant_name, users.users.len());
+                        *ts.users.lock() = Some(users);
+                    }
+                    Err(e) => {
+                        log::debug!("[{tenant_name}] Failed to fetch sponsors: {e} / {e:?}")
+                    }
+                }
+                tokio::time::sleep(interval).await;
+            }
+        });
     }
 
     debug!("🐻 mom is now serving on {} 💅", listener.local_addr()?);

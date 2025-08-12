@@ -6,6 +6,7 @@ query ($first: Int, $after: String) {
             }
             nodes {
                 ... on User {
+                    databaseId
                     login
                     name
                     avatarUrl
@@ -18,6 +19,7 @@ query ($first: Int, $after: String) {
                     }
                 }
                 ... on Organization {
+                    databaseId
                     login
                     name
                     avatarUrl

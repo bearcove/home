@@ -349,10 +349,11 @@ impl Mod for ModImpl {
                     libhttpclient::form_urlencoded::Serializer::new(format!(
                         "/api/oauth2/v2/campaigns/{patreon_campaign_id}/members?"
                     ))
-                    .append_pair("include", "currently_entitled_tiers")
-                    .append_pair("fields[member]", "full_name,thumb_url")
+                    .append_pair("include", "currently_entitled_tiers,user")
+                    .append_pair("fields[member]", "full_name")
+                    .append_pair("fields[user]", "thumb_url")
                     .append_pair("fields[tier]", "title")
-                    .append_pair("page[size]", "100")
+                    .append_pair("page[size]", "50")
                     .finish(),
                 )
                 .build()
@@ -383,36 +384,66 @@ impl Mod for ModImpl {
                 }
 
                 let patreon_payload = res.text().await?;
-                let patreon_response: PatreonResponse = serde_json::from_str(&patreon_payload)?;
+                std::fs::write("/tmp/patreon-payload.json", &patreon_payload)
+                    .wrap_err("Failed to write patreon payload to /tmp/patreon-payload.json")?;
+                eprintln!(
+                    "Wrote Patreon API response payload to /tmp/patreon-payload.json for debugging"
+                );
 
+                let patreon_response: PatreonResponse = serde_json::from_str(&patreon_payload)?;
                 let mut tiers_per_id: HashMap<String, Tier> = Default::default();
-                for tier in patreon_response.included {
-                    if let Item::Tier(tier) = tier {
-                        tiers_per_id.insert(tier.common.id.clone(), tier);
+                let mut users_per_id: HashMap<String, User> = Default::default();
+
+                for item in patreon_response.included {
+                    match item {
+                        Item::Tier(tier) => {
+                            tiers_per_id.insert(tier.common.id.clone(), tier);
+                        }
+                        Item::User(user) => {
+                            users_per_id.insert(user.common.id.clone(), user);
+                        }
+                        _ => {}
                     }
                 }
 
                 for item in patreon_response.data {
                     if let Item::Member(member) = item {
                         if let Some(full_name) = member.attributes.full_name.as_deref() {
-                            let tier_title =
-                                if let Some(entitled) = member.rel("currently_entitled_tiers") {
-                                    entitled.data.iter().find_map(|item_ref| {
-                                        let ItemRef::Tier(tier_id) = item_ref;
-                                        tiers_per_id
-                                            .get(&tier_id.id)
-                                            .and_then(|tier| tier.attributes.title.as_deref())
-                                            .map(|title| title.to_string())
-                                    })
+                            let tier_title = if let Some(entitled) = member
+                                .common
+                                .relationships
+                                .currently_entitled_tiers
+                                .as_ref()
+                            {
+                                entitled.data.iter().find_map(|item_ref| {
+                                    let ItemRef::Tier(tier_id) = item_ref;
+                                    tiers_per_id
+                                        .get(&tier_id.id)
+                                        .and_then(|tier| tier.attributes.title.as_deref())
+                                        .map(|title| title.to_string())
+                                })
+                            } else {
+                                None
+                            };
+
+                            let mut thumb_url: Option<String> = None;
+                            let user_id =
+                                if let Some(user_rel) = member.common.relationships.user.as_ref() {
+                                    let user_id = user_rel.data.id.clone();
+                                    if let Some(user_item) = users_per_id.get(&user_id) {
+                                        thumb_url = user_item.attributes.thumb_url.clone();
+                                    }
+
+                                    user_id
                                 } else {
-                                    None
+                                    continue;
                                 };
 
                             let patron = PatreonProfile {
-                                id: PatreonUserId::new(member.common.id.clone()),
+                                id: PatreonUserId::new(user_id.clone()),
                                 tier: tier_title,
                                 full_name: full_name.trim().to_string(),
-                                avatar_url: member.attributes.thumb_url.clone(),
+                                avatar_url: thumb_url,
                             };
                             patrons.push(patron);
                         }

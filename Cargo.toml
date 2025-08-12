@@ -21,13 +21,11 @@ opt-level = 3
 [profile.dev]
 debug = 1
 opt-level = 1
-split-debuginfo = "unpacked"
 incremental = true
 
 [profile.release]
 debug = 1
 lto = "off"
-split-debuginfo = "unpacked"
 
 [workspace.dependencies]
 tokio = { version = "1.45.1", features = ["full"] }
