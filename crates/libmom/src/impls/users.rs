@@ -135,8 +135,11 @@ async fn refresh_github_sponsors(
 
     let creator_github_id = {
         let pak = ts.pak.lock();
-        pak.as_ref()
-            .and_then(|pak| pak.rc.admin_github_ids.first().cloned())
+        let pak = pak.as_ref().ok_or_else(|| eyre::eyre!("pak is not set"))?;
+        pak.rc
+            .admin_github_ids
+            .first()
+            .cloned()
             .ok_or_else(|| eyre::eyre!("admin_github_ids should have at least one element"))?
     };
 

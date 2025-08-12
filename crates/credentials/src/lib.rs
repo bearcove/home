@@ -32,11 +32,19 @@ pub struct AuthBundle {
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
+pub struct Profile {
+    pub id: UserId,
+    pub name: String,
+    pub avatar_url: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Facet)]
 pub struct UserInfo {
     /// tenant-specific user ID
     pub id: UserId,
 
     /// last timestamp this user info was updated by mom
+    #[serde(with = "time::serde::rfc3339")]
     pub fetched_at: OffsetDateTime,
 
     /// patreon profile (if any)
@@ -176,6 +184,25 @@ impl UserInfo {
 
         // Fall back to user ID
         format!("user #{}", self.id)
+    }
+
+    pub fn avatar_url(&self) -> Option<String> {
+        self.github
+            .as_ref()
+            .and_then(|g| g.avatar_url.clone())
+            .or_else(|| self.patreon.as_ref().and_then(|p| p.avatar_url.clone()))
+    }
+
+    pub fn get_profile(&self) -> Profile {
+        let name = self.name();
+
+        let avatar_url = self.avatar_url();
+
+        Profile {
+            id: self.id.clone(),
+            name,
+            avatar_url,
+        }
     }
 }
 

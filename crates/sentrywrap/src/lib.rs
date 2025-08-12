@@ -3,7 +3,7 @@ pub use sentry;
 use sentry::ClientInitGuard;
 
 pub fn install() -> ClientInitGuard {
-    let _guard = sentry::init((
+    sentry::init((
         "https://a02afe0f91aa0f0719974fc71834a401@o1172311.ingest.us.sentry.io/4509831845707776",
         sentry::ClientOptions {
             release: sentry::release_name!(),
@@ -30,9 +30,7 @@ pub fn install() -> ClientInitGuard {
             ),
             ..Default::default()
         },
-    ));
-    sentry::capture_message("Hello World!", sentry::Level::Info);
-    _guard
+    ))
 }
 
 // 🐻‍❄️👀 sentry-eyre: Sentry integration for `eyre`.
@@ -57,8 +55,7 @@ pub fn install() -> ClientInitGuard {
 // SOFTWARE.
 
 use eyre::Report;
-use sentry::{Hub, event_from_error, protocol::Event, types::Uuid};
-use std::error::Error;
+use sentry::{Hub, protocol::Event, types::Uuid};
 
 /// Captures a [`Report`] and sends it to Sentry. Refer to the top-level
 /// module documentation on how to use this method.
@@ -69,11 +66,30 @@ pub fn capture_report(report: &Report) -> Uuid {
 /// Utility function to represent a Sentry [`Event`] from a [`Report`]. This shouldn't
 /// be consumed directly unless you want access to the created [`Event`] from a [`Report`].
 pub fn event_from_report(report: &Report) -> Event<'static> {
-    // TODO: take whole chain into account, format backtrace if given, strip ANSI codes.
-    // right now it's not very useful.
+    use sentry::protocol::{Event, Exception, Level};
+    use sentry::types::random_uuid;
 
-    let err: &dyn Error = report.as_ref();
-    event_from_error(err)
+    let uuid = random_uuid();
+    let mut event = Event {
+        event_id: uuid,
+        message: Some(format!("{report}")),
+        level: Level::Error,
+        ..Default::default()
+    };
+
+    for e in report.chain() {
+        event.exception.values.push(Exception {
+            ty: format!("{e}"),
+            value: Some(e.to_string()),
+            module: None,
+            stacktrace: None,
+            raw_stacktrace: None,
+            thread_id: None,
+            mechanism: None,
+        });
+    }
+
+    event
 }
 
 /// Extension trait to implement a `capture_report` method on any implementations.

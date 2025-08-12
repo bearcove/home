@@ -14,7 +14,6 @@ use libhttpclient::header::HeaderName;
 use log::error;
 use mom_types::MomStructuredError;
 use std::borrow::Cow;
-use ulid::Ulid;
 
 pub(crate) type Reply = Result<Response, HttpError>;
 
@@ -62,13 +61,10 @@ pub enum HttpError {
 
 impl HttpError {
     fn from_report(err: Report) -> Self {
-        let error_unique_id = format!("momerr_{}", Ulid::new().to_string().to_lowercase());
-
-        // I mean we should just build a custom report here with the error_unique_id I guess
-        sentrywrap::capture_report(&err);
+        let uuid = sentrywrap::capture_report(&err);
 
         error!(
-            "HTTP handler errored: (chain len {}) {error_unique_id}: {}",
+            "HTTP handler errored: (chain len {}) {uuid}: {}",
             err.chain().len(),
             err
         );
@@ -100,7 +96,7 @@ impl HttpError {
         };
 
         let payload = MomStructuredError {
-            unique_id: error_unique_id,
+            unique_id: uuid.to_string(),
             errors,
             frames,
         };
