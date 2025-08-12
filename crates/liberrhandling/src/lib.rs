@@ -28,15 +28,19 @@ impl Mod for ModImpl {
 /// Prefixes used to filter out unwanted frames in error backtraces.
 /// It ignores panic frames, test runners, and a few threading details.
 const IGNORE_FRAME_PREFIXES: &[&str] = &[
+    "F as axum::handler",
     "F as futures_core",
     "__pthread_cond_wait",
     "alloc::boxed::Box",
+    "axum::handler",
+    "axum::util",
     "color_eyre::config::EyreHook::into_eyre_hook:",
     "core::future",
     "core::ops::function",
     "core::panic",
     "core::panic::",
     "core::pin::",
+    "core::result::Result",
     "eyre::",
     "futures_util::future",
     "hyper::",
