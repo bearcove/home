@@ -222,7 +222,6 @@ impl RequestBuilder for RequestBuilderImpl {
                                             "mom backtrace:\n{formatted_backtrace}"
                                         ));
                                     }
-                                    payload.errors.reverse();
                                     while let Some(cause) = payload.errors.pop() {
                                         err = err.wrap_err(cause);
                                     }
