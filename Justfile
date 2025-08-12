@@ -2,13 +2,11 @@
 
 serve *args:
     #!/bin/sh -eux
-    export RUST_BACKTRACE=0
     cargo build
     ./target/debug/home serve {{args}}
 
 serve-release *args:
     #!/bin/sh -eux
-    export RUST_BACKTRACE=0
     cargo build --release
     ./target/release/home serve {{args}}
 

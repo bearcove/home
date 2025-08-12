@@ -15,8 +15,12 @@ description = "A cozy authoring environment"
 keywords = []
 categories = []
 
+[profile.dev.package."*"]
+opt-level = 3
+
 [profile.dev]
 debug = 1
+opt-level = 1
 split-debuginfo = "unpacked"
 incremental = true
 

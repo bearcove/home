@@ -85,7 +85,14 @@ impl Mod for ModImpl {
                 return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
             }
 
-            let creds_api = res.json::<PatreonCredentialsAPI>().await?;
+            let text = res.text().await?;
+            let creds_api = match facet_json::from_str::<PatreonCredentialsAPI>(&text) {
+                Ok(c) => c,
+                Err(e) => {
+                    log::warn!("Got Patreon auth error: {text}");
+                    return Err(eyre::eyre!("Got Patreon auth error: {e}"));
+                }
+            };
             log::info!(
                 "Successfully obtained Patreon token with scope {}",
                 &creds_api.scope
@@ -432,7 +439,9 @@ impl Mod for ModImpl {
 impl ModImpl {
     fn make_patreon_callback_url(&self, tc: &TenantConfig, web: WebConfig) -> String {
         let base_url = tc.web_base_url(web);
-        format!("{base_url}/login/patreon/callback")
+        let url = format!("{base_url}/login/patreon/callback");
+        log::info!("Crafted patreon callback URL: {url}");
+        url
     }
 }
 

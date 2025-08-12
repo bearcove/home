@@ -12,7 +12,7 @@ use facet::Facet;
 use facet_json::DeserError;
 use libterm::FormatAnsiStyle;
 use log::error;
-use std::{borrow::Cow, sync::Arc};
+use std::{backtrace::Backtrace, borrow::Cow, sync::Arc};
 
 pub(crate) type Reply = Result<Response, HttpError>;
 
@@ -74,35 +74,14 @@ impl HttpError {
         }
 
         let maybe_bt = liberrhandling::load().format_backtrace_to_terminal_colors(err);
-
-        let trace_content = {
-            let mut err_string = String::new();
-            let num_errors_in_chain = err.chain().count();
-            if num_errors_in_chain == 1 {
-                err_string = err.to_string();
-            } else {
-                for (i, e) in err.chain().enumerate() {
-                    use std::fmt::Write;
-                    let error = &e.to_string();
-                    let err_lines = error.lines().collect::<Vec<_>>();
-                    let _ = writeln!(&mut err_string, "\x1b[32m{}.\x1b[0m {}", i + 1, e);
-                    for (j, line) in err_lines.iter().enumerate() {
-                        if j > 0 {
-                            let _ = writeln!(&mut err_string, "   {line}");
-                        }
-                    }
-                }
+        match maybe_bt.as_ref() {
+            Some(bt) => {
+                log::error!("Backtrace:\n{bt}");
             }
-
-            let err_string_colored =
-                libterm::load().format_ansi(&err_string, FormatAnsiStyle::Html);
-            let backtrace = maybe_bt.unwrap_or_default();
-
-            format!(
-                r#"<pre class="trace home-ansi">{err_string_colored}<div class="backtrace">{backtrace}</div></pre>"#
-            )
-        };
-        log::error!("Backtrace:\n{trace_content}");
+            None => {
+                log::error!("No backtrace :(");
+            }
+        }
 
         let body = "Internal server error".to_string();
         HttpError::Internal { err: body }

@@ -75,7 +75,14 @@ impl Mod for ModImpl {
                 .await
                 .map_err(|e| eyre::eyre!("While getting GitHub access token: {e}"))?;
 
-            let creds = res.json::<GithubCredentialsAPI>().await?;
+            let text = res.text().await?;
+            let creds = match facet_json::from_str::<GithubCredentialsAPI>(&text) {
+                Ok(c) => c,
+                Err(e) => {
+                    log::warn!("Got GitHub auth error: {text}");
+                    return Err(eyre::eyre!("Got Github auth error: {e}"));
+                }
+            };
             log::info!(
                 "Successfully obtained GitHub token with scope {}",
                 &creds.scope
@@ -84,8 +91,7 @@ impl Mod for ModImpl {
             let creds = GithubCredentials {
                 access_token: creds.access_token,
                 scope: creds.scope,
-                expires_at: OffsetDateTime::now_utc()
-                    + time::Duration::seconds(creds.expires_in as i64),
+                expires_at: OffsetDateTime::now_utc() + default_expires_in(),
             };
 
             Ok(Some(creds))
@@ -241,8 +247,7 @@ impl Mod for ModImpl {
             let creds = GithubCredentials {
                 access_token: creds.access_token,
                 scope: creds.scope,
-                expires_at: OffsetDateTime::now_utc()
-                    + time::Duration::seconds(creds.expires_in as i64),
+                expires_at: OffsetDateTime::now_utc() + default_expires_in(),
             };
 
             Ok(creds)
@@ -448,9 +453,11 @@ struct GithubCredentialsAPI {
     scope: String,
     /// example: "bearer"
     token_type: Option<String>,
-    /// usually 8 hours for github, see https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/refreshing-user-access-tokens
-    expires_in: u64,
 }
+
+/*
+note: github errors look like: {"error":"bad_verification_code","error_description":"The code passed is incorrect or expired.","error_uri":"https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#bad-verification-code"}
+*/
 
 #[derive(Debug, Clone, Facet)]
 pub struct GithubCredentials {
@@ -488,5 +495,13 @@ pub fn github_login_purpose_to_scopes(purpose: &GithubLoginPurpose) -> &'static 
 
 pub(crate) fn make_github_callback_url(tc: &TenantConfig, web: WebConfig) -> String {
     let base_url = tc.web_base_url(web);
-    format!("{base_url}/login/github/callback")
+    let url = format!("{base_url}/login/github/callback");
+    log::info!("Crafted github callback url: {url}");
+    url
+}
+
+// GitHub doesn't set expires_in for OAuth apps, they say it expires after it hasn't
+// been used in a year, but let's be more conservative:
+fn default_expires_in() -> time::Duration {
+    time::Duration::seconds(31 * 24 * 60 * 60) // 31 days
 }

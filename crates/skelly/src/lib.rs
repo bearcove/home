@@ -1,5 +1,6 @@
 pub use color_eyre;
 pub use color_eyre::eyre;
+use liberrhandling::should_include_frame_name;
 pub use log;
 pub use owo_colors;
 
@@ -50,36 +51,15 @@ impl Log for SimpleLogger {
 pub fn setup() {
     use color_eyre::config::HookBuilder;
 
-    /// Prefixes used to filter out unwanted frames in error backtraces.
-    /// It ignores panic frames, test runners, and a few threading details.
-    const IGNORE_FRAME_PREFIXES: &[&str] = &[
-        "std::panic",
-        "core::panic",
-        "test::run_test",
-        "__pthread_cond_wait",
-        "std::sys::pal",
-        "std::sys::backtrace",
-        "std::thread::Builder",
-        "core::ops::function",
-        "test::__rust_begin_short_backtrace",
-        "<core::panic::",
-        "<alloc::boxed::Box<F,A> as core::ops::function::FnOnce<Args>>::call_once",
-    ];
-
-    fn should_ignore_frame(name: &str) -> bool {
-        IGNORE_FRAME_PREFIXES
-            .iter()
-            .any(|prefix| name.starts_with(prefix))
-    }
-
     // color-eyre filter
     let eyre_filter = {
         move |frames: &mut Vec<&color_eyre::config::Frame>| {
+            eprintln!("[skelly] color-eyre filter called!");
             frames.retain(|frame| {
                 frame
                     .name
                     .as_ref()
-                    .map(|n| !should_ignore_frame(&n.to_string()))
+                    .map(should_include_frame_name)
                     .unwrap_or(true)
             });
         }
@@ -96,11 +76,12 @@ pub fn setup() {
 
         // The frame filter must be Fn(&mut Vec<&Frame>)
         let filter = move |frames: &mut Vec<&Frame>| {
+            eprintln!("[skelly] color-backtrace filter called");
             frames.retain(|frame| {
                 frame
                     .name
                     .as_ref()
-                    .map(|name| !should_ignore_frame(name))
+                    .map(should_include_frame_name)
                     .unwrap_or(true)
             });
         };
@@ -137,6 +118,8 @@ pub fn setup() {
             log::warn!("Invalid SKELLY_PARENT_PID value: {parent_pid_str}");
         }
     }
+
+    eprintln!("skelly setup is complete");
 }
 
 fn watch_parent_process(parent_pid: usize) {

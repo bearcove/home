@@ -164,6 +164,9 @@ impl Mod for ModImpl {
         )
         .unwrap();
 
+        writeln!(output, ".home-ansi i.b {{ font-weight: bold; }}").unwrap();
+        writeln!(output).unwrap();
+
         output
     }
 

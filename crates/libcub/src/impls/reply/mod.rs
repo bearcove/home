@@ -89,6 +89,14 @@ impl LegacyHttpError {
         }
 
         let maybe_bt = liberrhandling::load().format_backtrace_to_terminal_colors(&err);
+        match maybe_bt.as_ref() {
+            Some(bt) => {
+                log::error!("Backtrace:\n{bt}");
+            }
+            None => {
+                log::error!("No backtrace :(");
+            }
+        }
 
         let mut trace_content = {
             let mut err_string = String::new();
@@ -130,7 +138,6 @@ impl LegacyHttpError {
                 r#"<pre class="trace home-ansi">{err_string}<div class="backtrace">{backtrace}</div></pre>"#
             )
         };
-        log::error!("Backtrace:\n{trace_content}");
         if is_production() {
             trace_content = "".into();
         }

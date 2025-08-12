@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use credentials::{
-    FasterthanlimeTier, GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile,
-    PatreonUserId, PatreonUserIdRef, UserApiKey, UserId, UserIdRef, UserInfo,
+    GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId, PatreonUserIdRef,
+    UserApiKey, UserId, UserIdRef, UserInfo,
 };
 use libgithub::GithubCredentials;
 use libhttpclient::HttpClient;
@@ -182,6 +182,7 @@ async fn refresh_github_sponsors(
     }
 
     // Fetch UserIds for all Github users
+    // FIXME: N+1 big time
     let mut user_ids: Vec<UserId> = Vec::new();
     for profile in profiles {
         // Find the user ID for this Github profile
@@ -200,13 +201,13 @@ async fn refresh_github_sponsors(
 pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
     let conn = pool.get()?;
     // First, fetch the user record
-    let user_row: Option<(UserId, Option<PatreonUserId>, Option<GithubUserId>)> = conn
+    let user_row: Option<(i64, Option<PatreonUserId>, Option<GithubUserId>)> = conn
         .query_row(
             "SELECT id, patreon_user_id, github_user_id FROM users WHERE id = ?1",
             [user_id],
             |row| {
                 Ok((
-                    row.get::<_, UserId>(0)?,
+                    row.get::<_, i64>(0)?,
                     row.get::<_, Option<PatreonUserId>>(1)?,
                     row.get::<_, Option<GithubUserId>>(2)?,
                 ))
@@ -217,6 +218,8 @@ pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<
     let Some((id, patreon_user_id, github_user_id)) = user_row else {
         return Ok(None);
     };
+
+    let id = UserId::new(id.to_string());
 
     // Fetch Patreon profile if linked
     let patreon = if let Some(patreon_id) = patreon_user_id {
@@ -456,6 +459,7 @@ pub(crate) async fn refresh_userinfo(
     ts: &MomTenantState,
     user_id: &UserIdRef,
 ) -> eyre::Result<UserInfo> {
+    log::info!("Refreshing user info for {user_id}");
     let conn = ts.pool.get()?;
 
     // First, fetch the user record

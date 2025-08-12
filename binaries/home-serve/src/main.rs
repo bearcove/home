@@ -115,27 +115,34 @@ async fn real_main() -> eyre::Result<()> {
             std::env::var("SMTP_FROM_EMAIL").ok(),
             std::env::var("SMTP_FROM_NAME").ok(),
         ) {
-            (Some(host), Some(port), Some(username), Some(password), Some(from_email), Some(from_name)) => {
-                match port.parse::<u16>() {
-                    Ok(port_num) => {
-                        log::info!("Email configuration found in environment variables");
-                        Some(config_types::EmailConfig {
-                            smtp_host: host,
-                            smtp_port: port_num,
-                            smtp_username: username,
-                            smtp_password: password,
-                            from_email,
-                            from_name,
-                        })
-                    }
-                    Err(e) => {
-                        log::warn!("Invalid SMTP_PORT value: {e}");
-                        None
-                    }
+            (
+                Some(host),
+                Some(port),
+                Some(username),
+                Some(password),
+                Some(from_email),
+                Some(from_name),
+            ) => match port.parse::<u16>() {
+                Ok(port_num) => {
+                    log::info!("Email configuration found in environment variables");
+                    Some(config_types::EmailConfig {
+                        smtp_host: host,
+                        smtp_port: port_num,
+                        smtp_username: username,
+                        smtp_password: password,
+                        from_email,
+                        from_name,
+                    })
                 }
-            }
+                Err(e) => {
+                    log::warn!("Invalid SMTP_PORT value: {e}");
+                    None
+                }
+            },
             _ => {
-                log::info!("Email configuration not found in environment variables. Email login will work but won't send actual emails.");
+                log::info!(
+                    "Email configuration not found in environment variables. Email login will work but won't send actual emails."
+                );
                 log::info!("To enable email sending, set all of these environment variables:");
                 log::info!("  SMTP_HOST       - SMTP server hostname (e.g., smtp.gmail.com)");
                 log::info!("  SMTP_PORT       - SMTP server port (e.g., 587)");
@@ -216,7 +223,7 @@ async fn real_main() -> eyre::Result<()> {
             .arg("--tenant-config")
             .arg(&tenant_config_path)
             .env("HOME_ENV", "development")
-            .env("WEB_PORT", mom_addr.port().to_string());
+            .env("WEB_PORT", cub_addr.port().to_string());
 
         // Duplicate the child socket fd to pass it safely
         let child_fd = child_sock.as_raw_fd();

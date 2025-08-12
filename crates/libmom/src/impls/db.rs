@@ -17,6 +17,13 @@ fn mk_sqlite_pool(
     path: &Utf8Path,
     migrations: Vec<Box<dyn SqlMigration>>,
 ) -> Result<r2d2::Pool<SqliteConnectionManager>> {
+    unsafe {
+        rusqlite::trace::config_log(Some(|level, msg| {
+            log::debug!("rusqlite [{level}] {msg}");
+        }))
+        .unwrap();
+    }
+
     let manager = SqliteConnectionManager::file(path)
         .with_flags(
             rusqlite::OpenFlags::SQLITE_OPEN_CREATE | rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE,

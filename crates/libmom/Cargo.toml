@@ -31,7 +31,10 @@ inflight = { path = "../../crates/inflight" }
 parking_lot = { version = "0.12.4" }
 r2d2 = { version = "0.8.10" }
 r2d2_sqlite = { version = "0.29.0" }
-rusqlite = { workspace = true, default-features = false, features = ["time"] }
+rusqlite = { workspace = true, default-features = false, features = [
+    "time",
+    "trace",
+] }
 serde = { version = "1.0.219", features = ["derive"] }
 time = { version = "0.3.41", features = ["formatting"] }
 tokio = { version = "1.45.1", features = ["full"] }

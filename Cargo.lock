@@ -3335,6 +3335,7 @@ dependencies = [
  "credentials",
  "eyre",
  "facet",
+ "facet-json",
  "futures-core",
  "libhttpclient",
  "log",
@@ -3557,6 +3558,7 @@ dependencies = [
  "credentials",
  "eyre",
  "facet",
+ "facet-json",
  "futures-core",
  "jsonapi",
  "libhttpclient",
@@ -5850,6 +5852,7 @@ version = "0.1.0"
 dependencies = [
  "color-backtrace",
  "color-eyre",
+ "liberrhandling",
  "log",
  "owo-colors",
  "sysinfo",
