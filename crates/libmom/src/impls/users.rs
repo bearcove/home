@@ -184,6 +184,7 @@ pub(crate) fn fetch_user_info(
             "
             SELECT
                 u.id,
+                u.gifted_tier,
                 p.id as p_id,
                 p.tier as p_tier,
                 p.full_name as p_full_name,
@@ -207,6 +208,7 @@ pub(crate) fn fetch_user_info(
             [user_id],
             |row| {
                 let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
+                let gifted_tier: Option<String> = row.get("gifted_tier")?;
 
                 // Build Patreon profile if data exists
                 let patreon = {
@@ -258,6 +260,7 @@ pub(crate) fn fetch_user_info(
                 Ok(UserInfo {
                     id,
                     fetched_at: OffsetDateTime::now_utc(),
+                    gifted_tier,
                     patreon,
                     github,
                     discord,
@@ -613,6 +616,7 @@ pub(crate) async fn refresh_userinfo(
             "
             SELECT
                 u.id,
+                u.gifted_tier,
                 p.id as patreon_id,
                 g.id as github_id,
                 d.id as discord_id
@@ -625,15 +629,18 @@ pub(crate) async fn refresh_userinfo(
             [user_id],
             |row| {
                 let id: i64 = row.get("id")?;
+                let gifted_tier: Option<String> = row.get("gifted_tier")?;
                 let patreon_id: Option<PatreonUserId> = row.get("patreon_id")?;
                 let github_id: Option<GithubUserId> = row.get("github_id")?;
                 let discord_id: Option<DiscordUserId> = row.get("discord_id")?;
-                Ok((id, patreon_id, github_id, discord_id))
+                Ok((id, gifted_tier, patreon_id, github_id, discord_id))
             },
         )
         .optional()?;
 
-    let Some((id_i64, patreon_profile_id, github_profile_id, discord_profile_id)) = user_row else {
+    let Some((id_i64, gifted_tier, patreon_profile_id, github_profile_id, discord_profile_id)) =
+        user_row
+    else {
         return Err(eyre::eyre!("User with id {} not found", user_id));
     };
     let id = UserId::new(id_i64.to_string());
@@ -699,6 +706,7 @@ pub(crate) async fn refresh_userinfo(
     Ok(UserInfo {
         id,
         fetched_at: OffsetDateTime::now_utc(),
+        gifted_tier,
         patreon,
         github,
         discord,
@@ -714,6 +722,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
         "
         SELECT
             u.id,
+            u.gifted_tier,
             p.id as p_id,
             p.tier as p_tier,
             p.full_name as p_full_name,
@@ -737,6 +746,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
 
     let rows = stmt.query_map([], |row| {
         let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
+        let gifted_tier: Option<String> = row.get("gifted_tier")?;
 
         // Build Patreon profile if data exists
         let patreon = {
@@ -788,6 +798,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
         Ok(UserInfo {
             id,
             fetched_at: OffsetDateTime::now_utc(),
+            gifted_tier,
             patreon,
             github,
             discord,

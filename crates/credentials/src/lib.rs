@@ -63,6 +63,10 @@ pub struct UserInfo {
     /// discord profile (if any)
     #[facet(default)]
     pub discord: Option<DiscordProfile>,
+
+    /// gifted tier (if any)
+    #[facet(default)]
+    pub gifted_tier: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
@@ -179,16 +183,32 @@ impl UserInfo {
             })
             .unwrap_or(FasterthanlimeTier::None);
 
-        // Return the highest tier from either platform
-        if patreon_tier > github_tier {
-            match patreon_tier {
-                FasterthanlimeTier::None => None,
-                tier => Some((tier, TierCause::from("patreon"))),
-            }
-        } else {
-            match github_tier {
-                FasterthanlimeTier::None => None,
-                tier => Some((tier, TierCause::from("github"))),
+        // Check gifted tier
+        let gifted_tier = self
+            .gifted_tier
+            .as_deref()
+            .map(|tier| match tier {
+                "Bronze" => FasterthanlimeTier::Bronze,
+                "Silver" => FasterthanlimeTier::Silver,
+                "Gold" | "Creator" => FasterthanlimeTier::Gold,
+                _ => FasterthanlimeTier::None,
+            })
+            .unwrap_or(FasterthanlimeTier::None);
+
+        // Return the highest tier from any platform
+        let highest_tier = patreon_tier.max(github_tier).max(gifted_tier);
+
+        match highest_tier {
+            FasterthanlimeTier::None => None,
+            tier => {
+                let cause = if tier == gifted_tier && tier != FasterthanlimeTier::None {
+                    TierCause::from("gift")
+                } else if tier == patreon_tier && tier != FasterthanlimeTier::None {
+                    TierCause::from("patreon")
+                } else {
+                    TierCause::from("github")
+                };
+                Some((tier, cause))
             }
         }
     }

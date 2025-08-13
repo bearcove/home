@@ -28,6 +28,7 @@ include_migrations! {
     m0010_users,
     m0011_discord,
     m0012_users_vs_profiles,
+    m0013_user_gifted_tier,
 }
 
 pub fn migrate_all_sqlite(
