@@ -7,9 +7,8 @@ use libhttpclient::Uri;
 use rusqlite::OptionalExtension;
 
 use crate::impls::users::{
-    CreateUserArgs, create_user_or_attach_profile, fetch_user_info, save_discord_credentials,
-    save_discord_profile, save_github_credentials, save_github_profile, save_patreon_credentials,
-    save_patreon_profile,
+    fetch_user_info, save_discord_credentials, save_discord_profile, save_github_credentials,
+    save_github_profile, save_patreon_credentials, save_patreon_profile,
 };
 use crate::impls::{MomTenantState, global_state};
 use axum::{Extension, Router};
@@ -69,60 +68,34 @@ async fn patreon_callback(
     let res: Option<PatreonCallbackResponse> = match creds {
         Some(creds) => {
             let profile = mod_patreon.fetch_profile(&ts.rc()?, &creds, client).await?;
-            save_patreon_profile(pool, &profile)?;
             save_patreon_credentials(pool, &profile.id, &creds)?;
 
             let conn = pool.get()?;
-            let existing_user: Option<UserId> = conn
-                .query_row(
-                    "SELECT id FROM users WHERE patreon_user_id = ?1",
-                    [&profile.id],
-                    |row| row.get(0),
-                )
-                .optional()?
-                .map(|id: i64| UserId::new(id.to_string()));
 
-            let create_args = CreateUserArgs {
-                patreon_user_id: Some(profile.id.clone()),
-                github_user_id: None,
-                discord_user_id: None,
-            };
+            let user_id = if let Some(logged_in_user_id) = args.logged_in_user_id {
+                // If we're already logged in, use that user ID
+                logged_in_user_id
+            } else {
+                // Try to find an existing user by querying the patreon_profiles table
+                let existing_user: Option<i64> = conn
+                    .query_row(
+                        "SELECT user_id FROM patreon_profiles WHERE id = ?1",
+                        [&profile.id],
+                        |row| row.get(0),
+                    )
+                    .optional()?;
 
-            let user_id = match args.logged_in_user_id {
-                Some(logged_in_user_id) => {
-                    if let Some(existing_user_id) = existing_user {
-                        // Check if the existing user is the same as the logged-in user
-                        if existing_user_id.to_string() == logged_in_user_id.to_string() {
-                            // Same user, no need to do anything
-                            logged_in_user_id
-                        } else {
-                            // user is logged-in, but someone else has this Patreon profile linked to their
-                            // profile — yank it to ours.
-                            conn.execute(
-                                "UPDATE users SET patreon_user_id = NULL WHERE id = ?1",
-                                [existing_user_id],
-                            )?;
-                            create_user_or_attach_profile(
-                                pool,
-                                create_args,
-                                Some(logged_in_user_id),
-                            )?
-                        }
-                    } else {
-                        create_user_or_attach_profile(pool, create_args, Some(logged_in_user_id))?
-                    }
-                }
-                None => {
-                    if let Some(existing_user_id) = existing_user {
-                        // if we already have a user linked with this profile, don't do much.
-                        UserId::new(existing_user_id.to_string())
-                    } else {
-                        // if not, create a new user
-                        create_user_or_attach_profile(pool, create_args, None)?
-                    }
+                if let Some(existing_user_id) = existing_user {
+                    // Found an existing user with this patreon profile
+                    UserId::new(existing_user_id.to_string())
+                } else {
+                    // No existing user, create a new one
+                    use crate::impls::users::create_user;
+                    create_user(pool)?
                 }
             };
 
+            save_patreon_profile(pool, &profile, &user_id)?;
             let user_info = { fetch_user_info(pool, &user_id)?.unwrap() };
 
             Some(PatreonCallbackResponse { user_info })
@@ -151,35 +124,34 @@ async fn github_callback(
     let res: Option<GithubCallbackResponse> = match creds {
         Some(creds) => {
             let profile = mod_github.fetch_profile(&creds, client).await?;
-            save_github_profile(pool, &profile)?;
             save_github_credentials(pool, &profile.id, &creds)?;
 
             let conn = pool.get()?;
-            let existing_user: Option<i64> = conn
-                .query_row(
-                    "SELECT id FROM users WHERE github_user_id = ?1",
-                    [&profile.id],
-                    |row| row.get(0),
-                )
-                .optional()?;
 
-            let user_id = if let Some(user_id) = existing_user {
-                // if we already have a user linked with this profile, don't do much.
-                UserId::new(user_id.to_string())
+            let user_id = if let Some(logged_in_user_id) = args.logged_in_user_id {
+                // If we're already logged in, use that user ID
+                logged_in_user_id
             } else {
-                // if not, either create a user, or attach the profile to the existing (logged-in)
-                // user — they're linking accounts, not creating one.
-                create_user_or_attach_profile(
-                    pool,
-                    CreateUserArgs {
-                        patreon_user_id: None,
-                        github_user_id: Some(profile.id.clone()),
-                        discord_user_id: None,
-                    },
-                    args.logged_in_user_id,
-                )?
+                // Try to find an existing user by querying the github_profiles table
+                let existing_user: Option<i64> = conn
+                    .query_row(
+                        "SELECT user_id FROM github_profiles WHERE id = ?1",
+                        [&profile.id],
+                        |row| row.get(0),
+                    )
+                    .optional()?;
+
+                if let Some(existing_user_id) = existing_user {
+                    // Found an existing user with this github profile
+                    UserId::new(existing_user_id.to_string())
+                } else {
+                    // No existing user, create a new one
+                    use crate::impls::users::create_user;
+                    create_user(pool)?
+                }
             };
 
+            save_github_profile(pool, &profile, &user_id)?;
             let user_info = { fetch_user_info(pool, &user_id)?.unwrap() };
 
             Some(GithubCallbackResponse {
@@ -211,35 +183,34 @@ async fn discord_callback(
     let res: Option<mom_types::DiscordCallbackResponse> = match creds {
         Some(creds) => {
             let profile = mod_discord.fetch_profile(&creds, client).await?;
-            save_discord_profile(pool, &profile)?;
             save_discord_credentials(pool, &profile.id, &creds)?;
 
             let conn = pool.get()?;
-            let existing_user: Option<i64> = conn
-                .query_row(
-                    "SELECT id FROM users WHERE discord_user_id = ?1",
-                    [&profile.id],
-                    |row| row.get(0),
-                )
-                .optional()?;
 
-            let user_id = if let Some(user_id) = existing_user {
-                // if we already have a user linked with this profile, don't do much.
-                UserId::new(user_id.to_string())
+            let user_id = if let Some(logged_in_user_id) = args.logged_in_user_id {
+                // If we're already logged in, use that user ID
+                logged_in_user_id
             } else {
-                // if not, either create a user, or attach the profile to the existing (logged-in)
-                // user — they're linking accounts, not creating one.
-                create_user_or_attach_profile(
-                    pool,
-                    CreateUserArgs {
-                        patreon_user_id: None,
-                        github_user_id: None,
-                        discord_user_id: Some(profile.id.clone()),
-                    },
-                    args.logged_in_user_id,
-                )?
+                // Try to find an existing user by querying the discord_profiles table
+                let existing_user: Option<i64> = conn
+                    .query_row(
+                        "SELECT user_id FROM discord_profiles WHERE id = ?1",
+                        [&profile.id],
+                        |row| row.get(0),
+                    )
+                    .optional()?;
+
+                if let Some(existing_user_id) = existing_user {
+                    // Found an existing user with this discord profile
+                    UserId::new(existing_user_id.to_string())
+                } else {
+                    // No existing user, create a new one
+                    use crate::impls::users::create_user;
+                    create_user(pool)?
+                }
             };
 
+            save_discord_profile(pool, &profile, &user_id)?;
             let user_info = { fetch_user_info(pool, &user_id)?.unwrap() };
 
             Some(mom_types::DiscordCallbackResponse { user_info })

@@ -27,6 +27,7 @@ include_migrations! {
     m0009_email_login_codes,
     m0010_users,
     m0011_discord,
+    m0012_users_vs_profiles,
 }
 
 pub fn migrate_all_sqlite(
