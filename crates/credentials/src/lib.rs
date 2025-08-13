@@ -26,6 +26,9 @@ plait! {
 
     /// Discord user identifiers — those are snowflakes, we store them as string
     pub struct DiscordUserId => &DiscordUserIdRef;
+
+    /// Why did we get such a tier?
+    pub struct TierCause => &TierCauseRef;
 }
 
 /// An auth bundle, stored in a confidential cookie
@@ -149,7 +152,7 @@ impl PartialEq for FasterthanlimeTier {
 impl Eq for FasterthanlimeTier {}
 
 impl UserInfo {
-    pub fn get_fasterthanlime_tier(&self) -> FasterthanlimeTier {
+    pub fn get_fasterthanlime_tier(&self) -> Option<(FasterthanlimeTier, TierCause)> {
         // Check Patreon tier
         let patreon_tier = self
             .patreon
@@ -177,14 +180,16 @@ impl UserInfo {
             .unwrap_or(FasterthanlimeTier::None);
 
         // Return the highest tier from either platform
-        match (patreon_tier, github_tier) {
-            (FasterthanlimeTier::Silver, _) | (_, FasterthanlimeTier::Silver) => {
-                FasterthanlimeTier::Silver
+        if patreon_tier > github_tier {
+            match patreon_tier {
+                FasterthanlimeTier::None => None,
+                tier => Some((tier, TierCause::from("patreon"))),
             }
-            (FasterthanlimeTier::Bronze, _) | (_, FasterthanlimeTier::Bronze) => {
-                FasterthanlimeTier::Bronze
+        } else {
+            match github_tier {
+                FasterthanlimeTier::None => None,
+                tier => Some((tier, TierCause::from("github"))),
             }
-            _ => FasterthanlimeTier::None,
         }
     }
 
@@ -248,5 +253,9 @@ impl FasterthanlimeTier {
 
     pub fn has_silver(self) -> bool {
         self >= FasterthanlimeTier::Silver
+    }
+
+    pub fn has_gold(self) -> bool {
+        self >= FasterthanlimeTier::Gold
     }
 }

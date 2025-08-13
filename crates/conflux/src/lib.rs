@@ -15,7 +15,7 @@ use time::OffsetDateTime;
 
 use camino::{Utf8Path, Utf8PathBuf};
 use content_type::ContentType;
-use credentials::UserInfo;
+use credentials::{TierCause, UserInfo};
 use image_types::{ICodec, IntrinsicPixels};
 use libobjectstore::input_key;
 use objectstore_types::ObjectStoreKey;
@@ -310,6 +310,12 @@ pub struct Viewer {
 
     /// As of Nov 2022, 10EUR/month or above
     pub has_silver: bool,
+
+    /// As of Nov 2022, 50EUR/month or above
+    pub has_gold: bool,
+
+    /// Why do they have such access? Patreon, GitHub, Being an Admin, The Power of Friendship?
+    pub tier_cause: Option<TierCause>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Facet)]
@@ -317,16 +323,19 @@ pub struct Viewer {
 pub enum AccessOverride {
     AdminMeansBronze,
     AdminMeansSilver,
+    AdminMeansGold,
 }
 
 impl AccessOverride {
     /// Determines what kind of access override is applied based on the query string.
-    /// Recognizes "admin_means_bronze" and "admin_means_silver".
+    /// Recognizes "admin_means_bronze", "admin_means_silver", and "admin_means_gold".
     pub fn from_raw_query(raw_query: &str) -> Option<Self> {
         if raw_query.contains("admin_means_bronze") {
             Some(Self::AdminMeansBronze)
         } else if raw_query.contains("admin_means_silver") {
             Some(Self::AdminMeansSilver)
+        } else if raw_query.contains("admin_means_gold") {
+            Some(Self::AdminMeansGold)
         } else {
             None
         }
@@ -340,6 +349,8 @@ impl Viewer {
             is_admin: false,
             has_bronze: false,
             has_silver: false,
+            has_gold: false,
+            tier_cause: None,
         }
     }
 
@@ -362,9 +373,12 @@ impl Viewer {
                 }
             }
 
-            let tier = user_info.get_fasterthanlime_tier();
-            v.has_bronze = tier.has_bronze();
-            v.has_silver = tier.has_silver();
+            if let Some((tier, cause)) = user_info.get_fasterthanlime_tier() {
+                v.has_bronze = tier.has_bronze();
+                v.has_silver = tier.has_silver();
+                v.has_gold = tier.has_gold();
+                v.tier_cause = Some(cause);
+            }
         }
 
         if let Some(access_override) = access_override {
@@ -375,6 +389,11 @@ impl Viewer {
                 AccessOverride::AdminMeansSilver => {
                     v.has_silver = v.is_admin;
                     v.has_bronze = v.is_admin; // silver implies bronze
+                }
+                AccessOverride::AdminMeansGold => {
+                    v.has_gold = v.is_admin;
+                    v.has_silver = v.is_admin; // gold implies silver
+                    v.has_bronze = v.is_admin; // gold implies bronze
                 }
             }
         }

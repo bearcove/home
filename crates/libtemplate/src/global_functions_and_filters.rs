@@ -360,6 +360,8 @@ fn random_article(state: &minijinja::State) -> Result<Value, Error> {
         is_admin: false,
         has_bronze: false,
         has_silver: false,
+        has_gold: false,
+        tier_cause: None,
     };
 
     let rv = get_revision_view(state);
@@ -399,6 +401,8 @@ fn get_tag_listing(state: &minijinja::State, args: Kwargs) -> Result<Value, Erro
         is_admin: false,
         has_bronze: false,
         has_silver: false,
+        has_gold: false,
+        tier_cause: None,
     };
 
     let rv = get_revision_view(state);
@@ -450,6 +454,8 @@ fn search_page(state: &minijinja::State, args: Kwargs) -> Result<Value, Error> {
         is_admin: false,
         has_bronze: false,
         has_silver: false,
+        has_gold: false,
+        tier_cause: None,
     };
 
     let rv = get_revision_view(state);
