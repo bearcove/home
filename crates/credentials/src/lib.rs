@@ -23,6 +23,9 @@ plait! {
 
     /// Patreon user identifiers
     pub struct PatreonUserId => &PatreonUserIdRef;
+
+    /// Discord user identifiers — those are snowflakes, we store them as string
+    pub struct DiscordUserId => &DiscordUserIdRef;
 }
 
 /// An auth bundle, stored in a confidential cookie
@@ -36,6 +39,9 @@ pub struct Profile {
     pub id: UserId,
     pub name: String,
     pub avatar_url: Option<String>,
+    pub has_github: bool,
+    pub has_patreon: bool,
+    pub has_discord: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
@@ -90,6 +96,21 @@ pub struct PatreonProfile {
 
     /// Avatar URL
     pub avatar_url: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Facet)]
+pub struct DiscordProfile {
+    /// Discord user ID
+    pub id: DiscordUserId,
+
+    /// Discord username
+    pub username: String,
+
+    /// Discord global name (display name)
+    pub global_name: Option<String>,
+
+    /// Discord avatar hash
+    pub avatar_hash: Option<String>,
 }
 
 /// hardcoded stuff for fasterthanlime
