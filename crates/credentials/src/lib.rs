@@ -58,6 +58,9 @@ pub struct UserInfo {
 
     /// github profile (if any)
     pub github: Option<GithubProfile>,
+
+    /// discord profile (if any)
+    pub discord: Option<DiscordProfile>,
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
@@ -110,6 +113,8 @@ pub struct DiscordProfile {
     pub global_name: Option<String>,
 
     /// Discord avatar hash
+    /// Base URL is https://cdn.discordapp.com/
+    /// For avatars you want 'avatars/user_id/user_avatar.png'
     pub avatar_hash: Option<String>,
 }
 
@@ -223,6 +228,9 @@ impl UserInfo {
             id: self.id.clone(),
             name,
             avatar_url,
+            has_github: self.github.is_some(),
+            has_patreon: self.patreon.is_some(),
+            has_discord: self.discord.is_some(),
         }
     }
 }

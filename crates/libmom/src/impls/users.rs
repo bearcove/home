@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use credentials::{
-    GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId, PatreonUserIdRef,
-    UserApiKey, UserId, UserIdRef, UserInfo,
+    DiscordUserId, GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId,
+    PatreonUserIdRef, UserApiKey, UserId, UserIdRef, UserInfo,
 };
 use libgithub::GithubCredentials;
 use libhttpclient::HttpClient;
@@ -171,85 +171,128 @@ async fn refresh_github_sponsors(ts: &MomTenantState, client: &dyn HttpClient) -
     Ok(())
 }
 
+/// Returns a full [UserInfo] with associated patreon/github/discord profiles
 pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
     let conn = pool.get()?;
-    // First, fetch the user record
-    let user_row: Option<(i64, Option<PatreonUserId>, Option<GithubUserId>)> = conn
+
+    let user_row = conn
         .query_row(
-            "SELECT id, patreon_user_id, github_user_id FROM users WHERE id = ?1",
+            "
+            SELECT
+                u.id,
+                u.patreon_user_id,
+                u.github_user_id,
+                u.discord_user_id,
+                p.id as p_id,
+                p.tier as p_tier,
+                p.full_name as p_full_name,
+                p.avatar_url as p_avatar_url,
+                g.id as g_id,
+                g.monthly_usd as g_monthly_usd,
+                g.sponsorship_privacy_level as g_sponsorship_privacy_level,
+                g.name as g_name,
+                g.login as g_login,
+                g.avatar_url as g_avatar_url,
+                d.id as d_id,
+                d.username as d_username,
+                d.global_name as d_global_name,
+                d.avatar_hash as d_avatar_hash
+            FROM users u
+            LEFT JOIN patreon_profiles p ON u.patreon_user_id = p.id
+            LEFT JOIN github_profiles g ON u.github_user_id = g.id
+            LEFT JOIN discord_profiles d ON u.discord_user_id = d.id
+            WHERE u.id = ?1
+            ",
             [user_id],
             |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, Option<PatreonUserId>>(1)?,
-                    row.get::<_, Option<GithubUserId>>(2)?,
-                ))
+                let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
+                let patreon_user_id: Option<PatreonUserId> = row.get("patreon_user_id")?;
+                let github_user_id: Option<GithubUserId> = row.get("github_user_id")?;
+                let discord_user_id: Option<DiscordUserId> = row.get("discord_user_id")?;
+
+                // Build Patreon profile if data exists
+                let patreon = if patreon_user_id.is_some() {
+                    let p_id: Option<PatreonUserId> = row.get("p_id")?;
+                    if p_id.is_some() {
+                        Some(PatreonProfile {
+                            id: row.get("p_id")?,
+                            tier: row.get("p_tier")?,
+                            full_name: row.get("p_full_name")?,
+                            avatar_url: row.get("p_avatar_url")?,
+                        })
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
+                // Build Github profile if data exists
+                let github = if github_user_id.is_some() {
+                    let g_id: Option<GithubUserId> = row.get("g_id")?;
+                    if g_id.is_some() {
+                        Some(GithubProfile {
+                            id: row.get("g_id")?,
+                            monthly_usd: row.get("g_monthly_usd")?,
+                            sponsorship_privacy_level: row.get("g_sponsorship_privacy_level")?,
+                            name: row.get("g_name")?,
+                            login: row.get("g_login")?,
+                            avatar_url: row.get("g_avatar_url")?,
+                        })
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
+                // Build Discord profile if data exists
+                let discord = if discord_user_id.is_some() {
+                    let d_id: Option<DiscordUserId> = row.get("d_id")?;
+                    if d_id.is_some() {
+                        Some(credentials::DiscordProfile {
+                            id: row.get("d_id")?,
+                            username: row.get("d_username")?,
+                            global_name: row.get("d_global_name")?,
+                            avatar_hash: row.get("d_avatar_hash")?,
+                        })
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
+                Ok(UserInfo {
+                    id,
+                    fetched_at: OffsetDateTime::now_utc(),
+                    patreon,
+                    github,
+                    discord,
+                })
             },
         )
         .optional()?;
 
-    let Some((id, patreon_user_id, github_user_id)) = user_row else {
-        return Ok(None);
-    };
-
-    let id = UserId::new(id.to_string());
-
-    // Fetch Patreon profile if linked
-    let patreon = if let Some(patreon_id) = patreon_user_id {
-        conn.query_row(
-            "SELECT id, tier, full_name, avatar_url FROM patreon_profiles WHERE id = ?1",
-            [&patreon_id],
-            |row| {
-                Ok(PatreonProfile {
-                    id: row.get(0)?,
-                    tier: row.get(1)?,
-                    full_name: row.get(2)?,
-                    avatar_url: row.get(3)?,
-                })
-            },
-        )
-        .optional()?
-    } else {
-        None
-    };
-
-    // Fetch Github profile if linked
-    let github = if let Some(github_id) = github_user_id {
-        conn.query_row(
-            "SELECT id, monthly_usd, sponsorship_privacy_level, name, login, avatar_url FROM github_profiles WHERE id = ?1",
-            [&github_id],
-            |row| Ok(GithubProfile {
-                id: row.get(0)?,
-                monthly_usd: row.get::<_, Option<u64>>(1)?,
-                sponsorship_privacy_level: row.get(2)?,
-                name: row.get(3)?,
-                login: row.get(4)?,
-                avatar_url: row.get(5)?,
-            }),
-        ).optional()?
-    } else {
-        None
-    };
-
-    Ok(Some(UserInfo {
-        id,
-        fetched_at: OffsetDateTime::now_utc(),
-        patreon,
-        github,
-    }))
+    Ok(user_row)
 }
 
 #[derive(Debug)]
 pub(crate) struct CreateUserArgs {
     pub(crate) patreon_user_id: Option<PatreonUserId>,
     pub(crate) github_user_id: Option<GithubUserId>,
+    pub(crate) discord_user_id: Option<DiscordUserId>,
 }
 
 pub(crate) fn create_user(pool: &SqlitePool, args: CreateUserArgs) -> eyre::Result<i64> {
     let conn = pool.get()?;
     conn.execute(
-        "INSERT INTO users (patreon_user_id, github_user_id) VALUES (?1, ?2)",
-        rusqlite::params![args.patreon_user_id, args.github_user_id],
+        "INSERT INTO users (patreon_user_id, github_user_id, discord_user_id) VALUES (?1, ?2, ?3)",
+        rusqlite::params![
+            args.patreon_user_id,
+            args.github_user_id,
+            args.discord_user_id
+        ],
     )?;
 
     Ok(conn.last_insert_rowid())
@@ -451,6 +494,74 @@ pub(crate) fn save_patreon_profile(
             profile.tier,
             profile.full_name,
             profile.avatar_url
+        ],
+    )?;
+    Ok(())
+}
+
+pub(crate) fn fetch_discord_credentials(
+    pool: &SqlitePool,
+    discord_user_id: &credentials::DiscordUserIdRef,
+) -> eyre::Result<Option<libdiscord::DiscordCredentials>> {
+    let conn = pool.get()?;
+
+    let creds: Option<libdiscord::DiscordCredentials> = conn
+        .query_row(
+            "SELECT access_token, refresh_token, expires_at FROM discord_credentials WHERE id = ?1",
+            [discord_user_id],
+            |row| {
+                let access_token: String = row.get(0)?;
+                let refresh_token: String = row.get(1)?;
+                let expires_at: OffsetDateTime = row.get(2)?;
+
+                Ok(libdiscord::DiscordCredentials {
+                    access_token,
+                    refresh_token,
+                    expires_at,
+                })
+            },
+        )
+        .optional()?;
+
+    Ok(creds)
+}
+
+pub(crate) async fn fetch_uptodate_discord_credentials(
+    ts: &MomTenantState,
+    discord_user_id: &credentials::DiscordUserIdRef,
+) -> eyre::Result<Option<libdiscord::DiscordCredentials>> {
+    let creds = fetch_discord_credentials(&ts.pool, discord_user_id)?;
+    let Some(creds) = creds else {
+        return Ok(None);
+    };
+
+    let client = global_state().client.as_ref();
+
+    if creds.expire_soon() {
+        let discord = libdiscord::load();
+        let refreshed_creds = discord
+            .refresh_credentials(&ts.ti.tc, &creds, client)
+            .await?;
+        save_discord_credentials(&ts.pool, discord_user_id, &refreshed_creds)?;
+        Ok(Some(refreshed_creds))
+    } else {
+        Ok(Some(creds))
+    }
+}
+
+pub(crate) fn save_discord_credentials(
+    pool: &SqlitePool,
+    discord_id: &credentials::DiscordUserIdRef,
+    credentials: &libdiscord::DiscordCredentials,
+) -> eyre::Result<()> {
+    let conn = pool.get()?;
+    conn.execute(
+        "INSERT OR REPLACE INTO discord_credentials (id, access_token, refresh_token, expires_at) VALUES (?1, ?2, ?3, ?4)",
+        rusqlite::params![
+            discord_id,
+            credentials.access_token,
+            credentials.refresh_token,
+            credentials.expires_at
         ],
     )?;
     Ok(())

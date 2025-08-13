@@ -125,7 +125,7 @@ impl RequestBuilder for RequestBuilderImpl {
     /// Sets a "polite" user agent, letting the server know where to reach us.
     fn polite_user_agent(mut self: Box<Self>) -> Box<dyn RequestBuilder> {
         const POLITE_USER_AGENT: HeaderValue =
-            HeaderValue::from_static("home/1.0 (home/1.0 +https://home.bearcove.eu)");
+            HeaderValue::from_static("home/1.0 (home/1.0 +https://github.com/bearcove/home)");
 
         self.headers.insert(header::USER_AGENT, POLITE_USER_AGENT);
         self

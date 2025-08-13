@@ -496,8 +496,8 @@ pub struct GithubCredentials {
 impl GithubCredentials {
     pub fn expire_soon(&self) -> bool {
         let now = OffsetDateTime::now_utc();
-        let twenty_four_hours = time::Duration::hours(1);
-        self.expires_at - now < twenty_four_hours
+        let arbitrary_duration = time::Duration::hours(1);
+        self.expires_at - now < arbitrary_duration
     }
 }
 

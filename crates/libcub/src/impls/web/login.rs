@@ -189,6 +189,7 @@ async fn serve_login_for_dev(tr: CubReqImpl) -> LegacyReply {
             login: "devuser".to_string(),
             avatar_url: Some("https://placehold.co/32".to_string()),
         }),
+        discord: None,
         fetched_at: OffsetDateTime::now_utc(),
     };
 

@@ -39,6 +39,15 @@ impl super::SqlMigration for Migration {
             [],
         )?;
 
+        // Add discord_user_id column to users table
+        conn.execute("ALTER TABLE users ADD COLUMN discord_user_id TEXT", [])?;
+
+        // Create index for discord_user_id
+        conn.execute(
+            "CREATE INDEX idx_users_discord_user_id ON users(discord_user_id)",
+            [],
+        )?;
+
         Ok(())
     }
 }

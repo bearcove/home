@@ -3583,6 +3583,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "libdiscord"
+version = "0.1.0"
+dependencies = [
+ "autotrait",
+ "config-types",
+ "credentials",
+ "eyre",
+ "facet",
+ "facet-json",
+ "futures-core",
+ "libhttpclient",
+ "log",
+ "time",
+ "url 2.5.4",
+]
+
+[[package]]
 name = "libdoctor"
 version = "0.1.0"
 dependencies = [

@@ -249,6 +249,16 @@ impl TenantConfig {
         })
     }
 
+    pub fn discord_secrets(&self) -> eyre::Result<&DiscordSecrets> {
+        self.secrets().and_then(|secrets| {
+            if let Some(ref discord) = secrets.discord {
+                Ok(discord)
+            } else {
+                eyre::bail!("Discord secrets not specified for tenant {}", self.name)
+            }
+        })
+    }
+
     pub fn object_storage(&self) -> eyre::Result<&ObjectStorageConfig> {
         if let Some(object_storage) = &self.object_storage {
             Ok(object_storage)
@@ -456,6 +466,7 @@ pub struct TenantSecrets {
     pub aws: AwsSecrets,
     pub patreon: Option<PatreonSecrets>,
     pub github: Option<GithubSecrets>,
+    pub discord: Option<DiscordSecrets>,
     pub stripe: Option<StripeSecrets>,
     /// Git credentials for read-only access to repositories
     pub git: Option<GitCredentials>,
@@ -542,6 +553,13 @@ pub struct PatreonSecrets {
 #[derive(Facet, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GithubSecrets {
+    pub oauth_client_id: String,
+    pub oauth_client_secret: String,
+}
+
+#[derive(Facet, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DiscordSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
 }
