@@ -175,7 +175,10 @@ async fn refresh_github_sponsors(ts: &MomTenantState, client: &dyn HttpClient) -
 }
 
 /// Returns a full [UserInfo] with associated patreon/github/discord profiles
-pub(crate) fn fetch_user_info(pool: &SqlitePool, user_id: &str) -> eyre::Result<Option<UserInfo>> {
+pub(crate) fn fetch_user_info(
+    pool: &SqlitePool,
+    user_id: &UserIdRef,
+) -> eyre::Result<Option<UserInfo>> {
     let conn = pool.get()?;
 
     let user_row = conn
@@ -287,7 +290,7 @@ pub(crate) struct CreateUserArgs {
     pub(crate) discord_user_id: Option<DiscordUserId>,
 }
 
-pub(crate) fn create_user(pool: &SqlitePool, args: CreateUserArgs) -> eyre::Result<i64> {
+pub(crate) fn create_user(pool: &SqlitePool, args: CreateUserArgs) -> eyre::Result<UserId> {
     let conn = pool.get()?;
     conn.execute(
         "INSERT INTO users (patreon_user_id, github_user_id, discord_user_id) VALUES (?1, ?2, ?3)",
@@ -298,7 +301,54 @@ pub(crate) fn create_user(pool: &SqlitePool, args: CreateUserArgs) -> eyre::Resu
         ],
     )?;
 
-    Ok(conn.last_insert_rowid())
+    Ok(UserId::new(conn.last_insert_rowid().to_string()))
+}
+
+pub(crate) fn create_user_or_attach_profile(
+    pool: &SqlitePool,
+    args: CreateUserArgs,
+    existing_user_id: Option<UserId>,
+) -> eyre::Result<UserId> {
+    match existing_user_id {
+        Some(user_id) => {
+            // Attach profile(s) to existing user
+            let conn = pool.get()?;
+
+            let mut updates = Vec::new();
+            let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+
+            if let Some(patreon_id) = args.patreon_user_id {
+                updates.push("patreon_user_id = ?");
+                params.push(Box::new(patreon_id));
+            }
+
+            if let Some(github_id) = args.github_user_id {
+                updates.push("github_user_id = ?");
+                params.push(Box::new(github_id));
+            }
+
+            if let Some(discord_id) = args.discord_user_id {
+                updates.push("discord_user_id = ?");
+                params.push(Box::new(discord_id));
+            }
+
+            if !updates.is_empty() {
+                let query = format!("UPDATE users SET {} WHERE id = ?", updates.join(", "));
+                params.push(Box::new(user_id.to_string()));
+
+                conn.execute(
+                    &query,
+                    rusqlite::params_from_iter(params.iter().map(|p| p.as_ref())),
+                )?;
+            }
+
+            Ok(user_id)
+        }
+        None => {
+            // Create new user
+            create_user(pool, args)
+        }
+    }
 }
 
 pub(crate) fn fetch_github_credentials(

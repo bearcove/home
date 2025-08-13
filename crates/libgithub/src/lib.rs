@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use autotrait::autotrait;
-use credentials::{GithubProfile, GithubUserId};
+use credentials::{GithubProfile, GithubUserId, UserId};
 use facet::Facet;
 use futures_core::future::BoxFuture;
 use libhttpclient::{HeaderValue, HttpClient, Uri, header};
@@ -461,6 +461,10 @@ impl Mod for ModImpl {
 #[derive(Debug, Clone, Facet)]
 pub struct GithubCallbackArgs {
     pub raw_query: String,
+
+    /// if we're linking this github account to an existing UserID, this is set
+    #[facet(default)]
+    pub logged_in_user_id: Option<UserId>,
 }
 
 #[derive(Debug, Clone, Facet)]

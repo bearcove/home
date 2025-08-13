@@ -22,6 +22,8 @@ pub(crate) fn login_routes() -> Router {
         .route("/patreon/callback", get(serve_patreon_callback))
         .route("/github", get(serve_login_with_github))
         .route("/github/callback", get(serve_github_callback))
+        .route("/discord", get(serve_login_with_discord))
+        .route("/discord/callback", get(serve_discord_callback))
         .route("/logout", get(serve_logout))
 }
 
@@ -75,6 +77,15 @@ async fn serve_login_with_github(tr: CubReqImpl, params: Form<LoginParams>) -> L
     Redirect::to(&location).into_legacy_reply()
 }
 
+async fn serve_login_with_discord(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
+    log::info!("Initiating login with Discord");
+    set_return_to_cookie(&tr.cookies(), &params);
+
+    let discord = libdiscord::load();
+    let location = discord.make_login_url(tr.tenant.tc(), tr.web())?;
+    Redirect::to(&location).into_legacy_reply()
+}
+
 async fn serve_patreon_callback(tr: CubReqImpl) -> LegacyReply {
     finish_login_callback(&tr, serve_patreon_callback_inner(&tr).await?).await
 }
@@ -104,6 +115,7 @@ async fn serve_patreon_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<Us
     let tcli = tr.tenant.tcli();
     let callback_args = PatreonCallbackArgs {
         raw_query: tr.raw_query().to_owned(),
+        logged_in_user_id: tr.auth_bundle.as_ref().map(|ab| ab.user_info.id.clone()),
     };
     let res = tcli.patreon_callback(&callback_args).await?;
     Ok(res.map(|res| res.user_info))
@@ -114,6 +126,7 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     let tcli = tr.tenant.tcli();
     let callback_args = libgithub::GithubCallbackArgs {
         raw_query: tr.raw_query().to_owned(),
+        logged_in_user_id: tr.auth_bundle.as_ref().map(|ab| ab.user_info.id.clone()),
     };
     let callback_res = tcli.github_callback(&callback_args).await?;
 
@@ -140,6 +153,20 @@ async fn serve_github_callback(tr: CubReqImpl) -> LegacyReply {
     }
 
     finish_login_callback(&tr, callback_res.map(|res| res.user_info)).await
+}
+
+async fn serve_discord_callback(tr: CubReqImpl) -> LegacyReply {
+    finish_login_callback(&tr, serve_discord_callback_inner(&tr).await?).await
+}
+
+async fn serve_discord_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<UserInfo>> {
+    let tcli = tr.tenant.tcli();
+    let callback_args = libdiscord::DiscordCallbackArgs {
+        raw_query: tr.raw_query().to_owned(),
+        logged_in_user_id: tr.auth_bundle.as_ref().map(|ab| ab.user_info.id.clone()),
+    };
+    let res = tcli.discord_callback(&callback_args).await?;
+    Ok(res.map(|res| res.user_info))
 }
 
 async fn serve_logout(tr: CubReqImpl, return_to: Form<LoginParams>) -> LegacyReply {

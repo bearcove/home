@@ -86,3 +86,4 @@ reqwest = { version = "0.12.18", default-features = false, features = [
 owo-colors = "4.2.1"
 base64 = "0.22.1"
 sentrywrap = { version = "0.1.0", path = "../sentrywrap" }
+libdiscord = { version = "0.1.0", path = "../libdiscord" }

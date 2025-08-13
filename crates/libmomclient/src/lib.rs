@@ -3,6 +3,7 @@ use config_types::{MOM_DEV_API_KEY, MomApiKey, production_mom_url};
 use credentials::UserInfo;
 use eyre::bail;
 use futures_core::future::BoxFuture;
+use libdiscord::DiscordCallbackArgs;
 use mom_types::{
     DeriveParams, DeriveResponse, GithubCallbackResponse, ListMissingArgs, ListMissingResponse,
     MomEvent, PatreonCallbackResponse, RefreshProfileArgs, TranscodeParams, TranscodeResponse,
@@ -299,6 +300,21 @@ impl MomTenantClient for MomTenantClientImpl {
                 let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
                 let res = req.send_and_expect_200().await?;
                 res.json::<Option<PatreonCallbackResponse>>().await
+            }
+        })
+    }
+
+    fn discord_callback<'fut>(
+        &'fut self,
+        body: &'fut DiscordCallbackArgs,
+    ) -> BoxFuture<'fut, Result<Option<mom_types::DiscordCallbackResponse>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("discord/callback");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<Option<mom_types::DiscordCallbackResponse>>()
+                    .await
             }
         })
     }

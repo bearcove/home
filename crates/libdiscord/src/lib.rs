@@ -1,6 +1,6 @@
 use autotrait::autotrait;
 use config_types::{TenantConfig, WebConfig};
-use credentials::{DiscordProfile, DiscordUserId};
+use credentials::{DiscordProfile, DiscordUserId, UserId};
 use eyre::{Context, Result};
 use facet::Facet;
 use futures_core::future::BoxFuture;
@@ -196,6 +196,10 @@ impl Mod for ModImpl {
 #[derive(Debug, Clone, Facet)]
 pub struct DiscordCallbackArgs {
     pub raw_query: String,
+
+    /// if we're linking this discord account to an existing UserID, this is set
+    #[facet(default)]
+    pub logged_in_user_id: Option<UserId>,
 }
 
 #[derive(Debug, Clone, Facet)]

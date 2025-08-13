@@ -397,6 +397,11 @@ pub struct GithubCallbackResponse {
     pub scope: String,
 }
 
+#[derive(Debug, Clone, Facet)]
+pub struct DiscordCallbackResponse {
+    pub user_info: UserInfo,
+}
+
 #[derive(Facet)]
 pub struct RefreshProfileArgs {
     /// tenant-specific user ID

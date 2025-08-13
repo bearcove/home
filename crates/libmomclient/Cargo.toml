@@ -27,3 +27,4 @@ mom-types = { version = "0.1.0", path = "../mom-types" }
 facet-json.workspace = true
 fs-err = { version = "3.1.0", features = ["tokio"] }
 log = "0.4.27"
+libdiscord = { version = "0.1.0", path = "../libdiscord" }

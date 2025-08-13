@@ -2,6 +2,7 @@ use autotrait::autotrait;
 use config_types::{RevisionConfig, TenantConfig, WebConfig};
 use credentials::PatreonProfile;
 use credentials::PatreonUserId;
+use credentials::UserId;
 use eyre::Context as _;
 use eyre::Result;
 use facet::Facet;
@@ -512,6 +513,10 @@ pub fn test_patreon_renewal() -> bool {
 #[derive(Facet, Debug, Clone)]
 pub struct PatreonCallbackArgs {
     pub raw_query: String,
+
+    /// if we're linking this patreon account to an existing UserID, this is set
+    #[facet(default)]
+    pub logged_in_user_id: Option<UserId>,
 }
 
 #[derive(Debug, Clone, Facet)]
