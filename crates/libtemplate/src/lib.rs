@@ -246,7 +246,10 @@ impl LoadedPageVal {
             .cloned();
 
         let pages = match listing_kind {
-            ListingKind::Articles | ListingKind::Episodes | ListingKind::Series => {
+            ListingKind::Articles
+            | ListingKind::Episodes
+            | ListingKind::Series
+            | ListingKind::Feed => {
                 // most recent first
                 pages.sorted_by_key(|p| std::cmp::Reverse(p.date))
             }
@@ -341,7 +344,9 @@ impl Object for LoadedPageVal {
             "github_repos" => Value::from_serialize(&self.github_repos),
             "links" => Value::from_serialize(&self.links),
             "title" => self.title.clone().into(),
+            "kind" => format!("{:?}", self.kind).into(),
             "date" => self.date.mj(),
+            "early_access_date" => self.early_access_date?.mj(),
             "draft" => self.draft.into(),
             "archive" => self.archive.into(),
             "git_repo" => self.git_repo.clone().into(),
@@ -715,6 +720,7 @@ pub(crate) enum ListingKind {
     Episodes,
     Series,
     SeriesParts,
+    Feed,
 }
 
 impl ListingKind {
@@ -724,6 +730,7 @@ impl ListingKind {
             ListingKind::Episodes => "episodes",
             ListingKind::Series => "series",
             ListingKind::SeriesParts => "series-parts",
+            ListingKind::Feed => "feed",
         }
     }
 }

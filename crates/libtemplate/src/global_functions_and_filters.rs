@@ -167,8 +167,10 @@ fn get_page_from_route(state: &minijinja::State, path: String) -> Result<Value, 
     Ok(page)
 }
 
-// This is used to generate RSS feeds
-fn get_recent_pages(state: &minijinja::State) -> Result<Value, Error> {
+// Helper function to get recent pages as Vec<Arc<LoadedPage>>
+fn get_recent_pages_vec(
+    state: &minijinja::State,
+) -> Result<Vec<std::sync::Arc<conflux::LoadedPage>>, Error> {
     let globals = get_globals(state)?;
     let viewer = globals.viewer();
 
@@ -194,9 +196,29 @@ fn get_recent_pages(state: &minijinja::State) -> Result<Value, Error> {
         .rev()
         .take(25)
         .cloned()
-        .map(|p| p.to_val())
         .collect::<Vec<_>>();
-    Ok(Value::from(pages))
+    Ok(pages)
+}
+
+// This is used to generate RSS feeds
+fn get_recent_pages(state: &minijinja::State) -> Result<Value, Error> {
+    let pages = get_recent_pages_vec(state)?;
+    let page_values = pages.into_iter().map(|p| p.to_val()).collect::<Vec<_>>();
+    Ok(Value::from(page_values))
+}
+
+fn get_feed_listing(state: &minijinja::State) -> Result<Value, Error> {
+    let pages = get_recent_pages_vec(state)?;
+    let per_page = pages.len();
+    let page_vals = pages.into_iter().map(LoadedPageVal).collect::<Vec<_>>();
+
+    Ok(Value::from(Listing {
+        kind: ListingKind::Feed,
+        items: page_vals,
+        page_number: 1,
+        per_page,
+        has_more: false,
+    }))
 }
 
 fn url_encode(value: String) -> Result<String, Error> {
@@ -341,6 +363,11 @@ pub fn is_future(input: String) -> Result<bool, Error> {
     Ok(dt > OffsetDateTime::now_utc())
 }
 
+pub fn is_past(input: String) -> Result<bool, Error> {
+    let dt = parse_datetime(&input)?;
+    Ok(dt < OffsetDateTime::now_utc())
+}
+
 fn basic_markdown(input: String) -> Result<String, Error> {
     libmarkdown::load().basic_markdown(&input).map_err(|e| {
         Error::new(
@@ -478,6 +505,7 @@ pub(crate) fn register_all(environment: &mut Environment<'static>) {
     environment.add_function("asset_url", asset_url);
     environment.add_function("get_media", get_media);
     environment.add_function("get_recent_pages", get_recent_pages);
+    environment.add_function("get_feed_listing", get_feed_listing);
     environment.add_function("url_encode", url_encode);
     environment.add_function("html_escape", html_escape);
     environment.add_function("get_page_from_route", get_page_from_route);
@@ -512,6 +540,7 @@ pub(crate) fn register_all(environment: &mut Environment<'static>) {
     environment.add_filter("format_month_year", format_month_year);
     environment.add_filter("format_day_month_year", format_day_month_year);
     environment.add_filter("is_future", is_future);
+    environment.add_filter("is_past", is_past);
 
     environment.set_unknown_method_callback(unknown_method_callback);
 }
