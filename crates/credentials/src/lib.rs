@@ -231,6 +231,10 @@ impl UserInfo {
             avatar_url: self.avatar_url(),
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.patreon.is_none() && self.github.is_none() && self.discord.is_none()
+    }
 }
 
 fn build_discord_avatar_url(user_id: &DiscordUserIdRef, avatar_hash: &str) -> String {
