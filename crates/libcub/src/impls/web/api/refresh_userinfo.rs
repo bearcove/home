@@ -1,5 +1,5 @@
 use conflux::Viewer;
-use credentials::Profile;
+use credentials::{Profile, UserInfo};
 use cub_types::CubTenant;
 use facet::Facet;
 use http::StatusCode;
@@ -11,11 +11,11 @@ use crate::impls::{
     reply::{FacetJson, IntoLegacyReply, LegacyHttpError, LegacyReply},
 };
 
-/// The userinfo after updating it
 #[derive(Facet)]
-struct UpdatedUserInfo {
+struct RefreshUserInfoResponse {
     viewer: Viewer,
     profile: Profile,
+    user_info: UserInfo,
 }
 
 /// Does another Github/Patreon API call to re-check someone's tier.
@@ -43,9 +43,10 @@ pub(crate) async fn serve_refresh_userinfo(mut tr: CubReqImpl) -> LegacyReply {
     tr.auth_bundle = Some(ab.clone());
     let viewer = tr.viewer()?;
 
-    FacetJson(UpdatedUserInfo {
+    FacetJson(RefreshUserInfoResponse {
         viewer,
         profile: ab.user_info.get_profile(),
+        user_info: ab.user_info,
     })
     .into_legacy_reply()
 }

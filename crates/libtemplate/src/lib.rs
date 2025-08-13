@@ -539,6 +539,7 @@ impl Object for GlobalsVal {
             }
             .into(),
             "url_params" => self.url_params.clone().into(),
+            "user_info" => Value::from_serialize(self.user_info.as_ref()?),
             "profile" => Value::from_serialize(self.user_info.as_ref()?.get_profile()),
             "viewer" => Value::from_serialize(self.viewer()),
             "config" => Value::from_object(ConfigVal {

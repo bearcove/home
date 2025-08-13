@@ -1,9 +1,10 @@
 use std::collections::HashSet;
 
 use credentials::{
-    DiscordUserId, GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile, PatreonUserId,
-    PatreonUserIdRef, UserApiKey, UserId, UserIdRef, UserInfo,
+    DiscordUserId, DiscordUserIdRef, GithubProfile, GithubUserId, GithubUserIdRef, PatreonProfile,
+    PatreonUserId, PatreonUserIdRef, UserApiKey, UserId, UserIdRef, UserInfo,
 };
+use libdiscord::DiscordCredentials;
 use libgithub::GithubCredentials;
 use libhttpclient::HttpClient;
 use libpatreon::PatreonCredentials;
@@ -98,6 +99,7 @@ async fn refresh_patreon_sponsors(
                 CreateUserArgs {
                     patreon_user_id: Some(profile.id.clone()),
                     github_user_id: None,
+                    discord_user_id: None,
                 },
             )?;
             log::info!(
@@ -160,6 +162,7 @@ async fn refresh_github_sponsors(ts: &MomTenantState, client: &dyn HttpClient) -
                 CreateUserArgs {
                     patreon_user_id: None,
                     github_user_id: Some(profile.id.clone()),
+                    discord_user_id: None,
                 },
             )?;
             log::info!("Created user {} for Github profile {}", user_id, profile.id);
@@ -501,11 +504,11 @@ pub(crate) fn save_patreon_profile(
 
 pub(crate) fn fetch_discord_credentials(
     pool: &SqlitePool,
-    discord_user_id: &credentials::DiscordUserIdRef,
-) -> eyre::Result<Option<libdiscord::DiscordCredentials>> {
+    discord_user_id: &DiscordUserIdRef,
+) -> eyre::Result<Option<DiscordCredentials>> {
     let conn = pool.get()?;
 
-    let creds: Option<libdiscord::DiscordCredentials> = conn
+    let creds: Option<DiscordCredentials> = conn
         .query_row(
             "SELECT access_token, refresh_token, expires_at FROM discord_credentials WHERE id = ?1",
             [discord_user_id],
@@ -514,7 +517,7 @@ pub(crate) fn fetch_discord_credentials(
                 let refresh_token: String = row.get(1)?;
                 let expires_at: OffsetDateTime = row.get(2)?;
 
-                Ok(libdiscord::DiscordCredentials {
+                Ok(DiscordCredentials {
                     access_token,
                     refresh_token,
                     expires_at,
@@ -528,8 +531,8 @@ pub(crate) fn fetch_discord_credentials(
 
 pub(crate) async fn fetch_uptodate_discord_credentials(
     ts: &MomTenantState,
-    discord_user_id: &credentials::DiscordUserIdRef,
-) -> eyre::Result<Option<libdiscord::DiscordCredentials>> {
+    discord_user_id: &DiscordUserIdRef,
+) -> eyre::Result<Option<DiscordCredentials>> {
     let creds = fetch_discord_credentials(&ts.pool, discord_user_id)?;
     let Some(creds) = creds else {
         return Ok(None);
@@ -551,8 +554,8 @@ pub(crate) async fn fetch_uptodate_discord_credentials(
 
 pub(crate) fn save_discord_credentials(
     pool: &SqlitePool,
-    discord_id: &credentials::DiscordUserIdRef,
-    credentials: &libdiscord::DiscordCredentials,
+    discord_id: &DiscordUserIdRef,
+    credentials: &DiscordCredentials,
 ) -> eyre::Result<()> {
     let conn = pool.get()?;
     conn.execute(
@@ -562,6 +565,36 @@ pub(crate) fn save_discord_credentials(
             credentials.access_token,
             credentials.refresh_token,
             credentials.expires_at
+        ],
+    )?;
+    Ok(())
+}
+
+pub(crate) fn save_discord_profile(
+    pool: &SqlitePool,
+    profile: &credentials::DiscordProfile,
+) -> eyre::Result<()> {
+    let conn = pool.get()?;
+    conn.execute(
+        "
+        INSERT INTO discord_profiles (
+            id,
+            username,
+            global_name,
+            avatar_hash,
+            updated_at
+        ) VALUES (?1, ?2, ?3, ?4, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+            username = excluded.username,
+            global_name = excluded.global_name,
+            avatar_hash = excluded.avatar_hash,
+            updated_at = excluded.updated_at
+        ",
+        rusqlite::params![
+            profile.id,
+            profile.username,
+            profile.global_name,
+            profile.avatar_hash
         ],
     )?;
     Ok(())
@@ -627,11 +660,40 @@ pub(crate) async fn refresh_userinfo(
         None
     };
 
+    // Refresh Discord profile if linked
+    let discord = {
+        let discord_user_id = conn
+            .query_row(
+                "SELECT discord_user_id FROM users WHERE id = ?1",
+                [&id.to_string()],
+                |row| row.get::<_, Option<DiscordUserId>>(0),
+            )
+            .optional()?
+            .flatten();
+
+        if let Some(discord_id) = discord_user_id {
+            let creds = fetch_uptodate_discord_credentials(ts, &discord_id)
+                .await?
+                .ok_or_else(|| {
+                    eyre::eyre!("No Discord credentials found for user {}", discord_id)
+                })?;
+
+            let discord = libdiscord::load();
+            let profile = discord.fetch_profile(&creds, client).await?;
+            save_discord_profile(&ts.pool, &profile)?;
+
+            Some(profile)
+        } else {
+            None
+        }
+    };
+
     Ok(UserInfo {
         id,
         fetched_at: OffsetDateTime::now_utc(),
         patreon,
         github,
+        discord,
     })
 }
 
@@ -646,6 +708,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
             u.id,
             u.patreon_user_id,
             u.github_user_id,
+            u.discord_user_id,
             p.id as p_id,
             p.tier as p_tier,
             p.full_name as p_full_name,
@@ -655,10 +718,15 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
             g.sponsorship_privacy_level as g_sponsorship_privacy_level,
             g.name as g_name,
             g.login as g_login,
-            g.avatar_url as g_avatar_url
+            g.avatar_url as g_avatar_url,
+            d.id as d_id,
+            d.username as d_username,
+            d.global_name as d_global_name,
+            d.avatar_hash as d_avatar_hash
         FROM users u
         LEFT JOIN patreon_profiles p ON u.patreon_user_id = p.id
         LEFT JOIN github_profiles g ON u.github_user_id = g.id
+        LEFT JOIN discord_profiles d ON u.discord_user_id = d.id
         ",
     )?;
 
@@ -666,6 +734,7 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
         let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
         let patreon_user_id: Option<PatreonUserId> = row.get("patreon_user_id")?;
         let github_user_id: Option<GithubUserId> = row.get("github_user_id")?;
+        let discord_user_id: Option<DiscordUserId> = row.get("discord_user_id")?;
 
         // Build Patreon profile if data exists
         let patreon = if patreon_user_id.is_some() {
@@ -703,11 +772,29 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
             None
         };
 
+        // Build Discord profile if data exists
+        let discord = if discord_user_id.is_some() {
+            let d_id: Option<DiscordUserId> = row.get("d_id")?;
+            if d_id.is_some() {
+                Some(credentials::DiscordProfile {
+                    id: row.get("d_id")?,
+                    username: row.get("d_username")?,
+                    global_name: row.get("d_global_name")?,
+                    avatar_hash: row.get("d_avatar_hash")?,
+                })
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         Ok(UserInfo {
             id,
             fetched_at: OffsetDateTime::now_utc(),
             patreon,
             github,
+            discord,
         })
     })?;
 

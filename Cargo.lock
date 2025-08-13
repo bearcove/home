@@ -3798,6 +3798,7 @@ dependencies = [
  "image-types",
  "inflight",
  "itertools 0.14.0",
+ "libdiscord",
  "liberrhandling",
  "libgithub",
  "libhttpclient",

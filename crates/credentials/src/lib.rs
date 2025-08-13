@@ -36,12 +36,8 @@ pub struct AuthBundle {
 
 #[derive(Debug, Clone, Serialize, Facet)]
 pub struct Profile {
-    pub id: UserId,
     pub name: String,
     pub avatar_url: Option<String>,
-    pub has_github: bool,
-    pub has_patreon: bool,
-    pub has_discord: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Facet)]
@@ -54,12 +50,15 @@ pub struct UserInfo {
     pub fetched_at: OffsetDateTime,
 
     /// patreon profile (if any)
+    #[facet(default)]
     pub patreon: Option<PatreonProfile>,
 
     /// github profile (if any)
+    #[facet(default)]
     pub github: Option<GithubProfile>,
 
     /// discord profile (if any)
+    #[facet(default)]
     pub discord: Option<DiscordProfile>,
 }
 
@@ -217,22 +216,25 @@ impl UserInfo {
             .as_ref()
             .and_then(|g| g.avatar_url.clone())
             .or_else(|| self.patreon.as_ref().and_then(|p| p.avatar_url.clone()))
+            .or_else(|| {
+                self.discord.as_ref().and_then(|d| {
+                    d.avatar_hash
+                        .as_ref()
+                        .map(|hash| build_discord_avatar_url(&d.id, hash))
+                })
+            })
     }
 
     pub fn get_profile(&self) -> Profile {
-        let name = self.name();
-
-        let avatar_url = self.avatar_url();
-
         Profile {
-            id: self.id.clone(),
-            name,
-            avatar_url,
-            has_github: self.github.is_some(),
-            has_patreon: self.patreon.is_some(),
-            has_discord: self.discord.is_some(),
+            name: self.name(),
+            avatar_url: self.avatar_url(),
         }
     }
+}
+
+fn build_discord_avatar_url(user_id: &DiscordUserIdRef, avatar_hash: &str) -> String {
+    format!("https://cdn.discordapp.com/avatars/{user_id}/{avatar_hash}.png")
 }
 
 impl FasterthanlimeTier {

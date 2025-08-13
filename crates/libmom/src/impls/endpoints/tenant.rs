@@ -89,6 +89,7 @@ async fn patreon_callback(
                     CreateUserArgs {
                         patreon_user_id: Some(profile.id.clone()),
                         github_user_id: None,
+                        discord_user_id: None,
                     },
                 )?
             };
@@ -149,6 +150,7 @@ async fn github_callback(
                     CreateUserArgs {
                         patreon_user_id: None,
                         github_user_id: Some(profile.id.clone()),
+                        discord_user_id: None,
                     },
                 )?
             };

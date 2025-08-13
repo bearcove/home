@@ -132,6 +132,24 @@ async fn real_main() -> eyre::Result<()> {
                     }
                 };
 
+                // Check for Discord secrets in environment variables
+                let discord_secrets = match (
+                    std::env::var("HOME_DISCORD_OAUTH_CLIENT_ID"),
+                    std::env::var("HOME_DISCORD_OAUTH_CLIENT_SECRET")
+                ) {
+                    (Ok(client_id), Ok(client_secret)) => {
+                        log::info!("Found Discord secrets in environment variables for tenant {}", tc.name);
+                        Some(config_types::DiscordSecrets {
+                            oauth_client_id: client_id,
+                            oauth_client_secret: client_secret
+                        })
+                    }
+                    _ => {
+                        log::info!("No Discord secrets found in environment variables (HOME_DISCORD_OAUTH_CLIENT_ID, HOME_DISCORD_OAUTH_CLIENT_SECRET) for tenant {}", tc.name);
+                        None
+                    }
+                };
+
                 tc.secrets = Some(config_types::TenantSecrets {
                     aws: config_types::AwsSecrets {
                         access_key_id: "dev-access-key".to_string(),
@@ -139,6 +157,7 @@ async fn real_main() -> eyre::Result<()> {
                     },
                     patreon: patreon_secrets,
                     github: github_secrets,
+                    discord: discord_secrets,
                     stripe: None,
                     git: git_credentials,
                     cookie_sauce: Some(derived_sauce),

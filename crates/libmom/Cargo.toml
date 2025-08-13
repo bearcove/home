@@ -62,3 +62,4 @@ facet.workspace = true
 log = "0.4.27"
 rand = "0.9.2"
 sentrywrap = { version = "0.1.0", path = "../sentrywrap" }
+libdiscord = { version = "0.1.0", path = "../libdiscord" }
