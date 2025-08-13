@@ -319,6 +319,48 @@ impl MomTenantClient for MomTenantClientImpl {
         })
     }
 
+    fn patreon_unlink<'fut>(
+        &'fut self,
+        body: &'fut libpatreon::PatreonUnlinkArgs,
+    ) -> BoxFuture<'fut, Result<Option<UserInfo>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("patreon/unlink");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<Option<UserInfo>>().await
+            }
+        })
+    }
+
+    fn github_unlink<'fut>(
+        &'fut self,
+        body: &'fut libgithub::GithubUnlinkArgs,
+    ) -> BoxFuture<'fut, Result<Option<UserInfo>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("github/unlink");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<Option<UserInfo>>().await
+            }
+        })
+    }
+
+    fn discord_unlink<'fut>(
+        &'fut self,
+        body: &'fut libdiscord::DiscordUnlinkArgs,
+    ) -> BoxFuture<'fut, Result<Option<UserInfo>>> {
+        Box::pin({
+            async move {
+                let uri = self.config_mom_uri("discord/unlink");
+                let req = self.hclient.post(uri).with_auth(&self.mcc).json(body)?;
+                let res = req.send_and_expect_200().await?;
+                res.json::<Option<UserInfo>>().await
+            }
+        })
+    }
+
     fn refresh_userinfo<'fut>(
         &'fut self,
         body: &'fut RefreshProfileArgs,

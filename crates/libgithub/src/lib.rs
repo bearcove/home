@@ -533,3 +533,8 @@ pub(crate) fn make_github_callback_url(tc: &TenantConfig, web: WebConfig) -> Str
 fn default_expires_in() -> time::Duration {
     time::Duration::seconds(31 * 24 * 60 * 60) // 31 days
 }
+
+#[derive(Debug, Clone, Facet)]
+pub struct GithubUnlinkArgs {
+    pub logged_in_user_id: UserId,
+}

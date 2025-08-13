@@ -20,10 +20,13 @@ pub(crate) fn login_routes() -> Router {
         .route("/for-dev", get(serve_login_for_dev))
         .route("/patreon", get(serve_login_with_patreon))
         .route("/patreon/callback", get(serve_patreon_callback))
+        .route("/patreon/unlink", get(serve_patreon_unlink))
         .route("/github", get(serve_login_with_github))
         .route("/github/callback", get(serve_github_callback))
+        .route("/github/unlink", get(serve_github_unlink))
         .route("/discord", get(serve_login_with_discord))
         .route("/discord/callback", get(serve_discord_callback))
+        .route("/discord/unlink", get(serve_discord_unlink))
         .route("/logout", get(serve_logout))
 }
 
@@ -168,13 +171,76 @@ async fn serve_discord_callback_inner(tr: &CubReqImpl) -> eyre::Result<Option<Us
     let res = tcli.discord_callback(&callback_args).await?;
     Ok(res.map(|res| res.user_info))
 }
+fn sanitize_return_to(return_to: Option<&str>) -> String {
+    match return_to {
+        Some(url) => {
+            // Ensure the URL starts with "/" to prevent open redirects
+            if url.starts_with('/') {
+                url.to_string()
+            } else {
+                format!("/{url}")
+            }
+        }
+        None => "/".to_string(),
+    }
+}
+
+fn update_auth_cookie_with_user_info(tr: &CubReqImpl, user_info: UserInfo) {
+    let auth_bundle = AuthBundle { user_info };
+    let session_cookie = auth_bundle_as_cookie(&auth_bundle);
+    tr.cookies().add(session_cookie);
+}
+
+async fn serve_patreon_unlink(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
+    let return_to = sanitize_return_to(params.return_to.as_deref());
+
+    if let Some(auth_bundle) = tr.auth_bundle.as_ref() {
+        let tcli = tr.tenant.tcli();
+        let unlink_args = libpatreon::PatreonUnlinkArgs {
+            logged_in_user_id: auth_bundle.user_info.id.clone(),
+        };
+        if let Ok(Some(updated_user_info)) = tcli.patreon_unlink(&unlink_args).await {
+            update_auth_cookie_with_user_info(&tr, updated_user_info);
+        }
+    }
+
+    Redirect::to(&return_to).into_legacy_reply()
+}
+
+async fn serve_github_unlink(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
+    let return_to = sanitize_return_to(params.return_to.as_deref());
+
+    if let Some(auth_bundle) = tr.auth_bundle.as_ref() {
+        let tcli = tr.tenant.tcli();
+        let unlink_args = libgithub::GithubUnlinkArgs {
+            logged_in_user_id: auth_bundle.user_info.id.clone(),
+        };
+        if let Ok(Some(updated_user_info)) = tcli.github_unlink(&unlink_args).await {
+            update_auth_cookie_with_user_info(&tr, updated_user_info);
+        }
+    }
+
+    Redirect::to(&return_to).into_legacy_reply()
+}
+
+async fn serve_discord_unlink(tr: CubReqImpl, params: Form<LoginParams>) -> LegacyReply {
+    let return_to = sanitize_return_to(params.return_to.as_deref());
+
+    if let Some(auth_bundle) = tr.auth_bundle.as_ref() {
+        let tcli = tr.tenant.tcli();
+        let unlink_args = libdiscord::DiscordUnlinkArgs {
+            logged_in_user_id: auth_bundle.user_info.id.clone(),
+        };
+        if let Ok(Some(updated_user_info)) = tcli.discord_unlink(&unlink_args).await {
+            update_auth_cookie_with_user_info(&tr, updated_user_info);
+        }
+    }
+
+    Redirect::to(&return_to).into_legacy_reply()
+}
 
 async fn serve_logout(tr: CubReqImpl, return_to: Form<LoginParams>) -> LegacyReply {
-    let return_to = match &return_to.return_to {
-        // avoid open redirects by prepending `/` to the return_to URL
-        Some(r) => format!("/{r}"),
-        None => "/".into(),
-    };
+    let return_to = sanitize_return_to(return_to.return_to.as_deref());
 
     // just in case, clear any `return_to` cookies as well (set on login)
     let mut return_to_cookie = Cookie::new("return_to", "");

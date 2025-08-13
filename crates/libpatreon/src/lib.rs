@@ -317,7 +317,7 @@ impl Mod for ModImpl {
                 avatar_url: Some(user_attrs.thumb_url),
             };
 
-            log::info!("Refreshed user profile: {profile:3?}",);
+            log::info!("Refreshed Patreon profile: {profile:#?}",);
             Ok(profile)
         })
     }
@@ -522,4 +522,9 @@ pub struct PatreonCallbackArgs {
 #[derive(Debug, Clone, Facet)]
 pub struct PatreonRefreshCredentialsArgs {
     pub patreon_id: String,
+}
+
+#[derive(Debug, Clone, Facet)]
+pub struct PatreonUnlinkArgs {
+    pub logged_in_user_id: UserId,
 }

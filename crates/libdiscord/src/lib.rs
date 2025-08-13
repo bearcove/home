@@ -240,3 +240,8 @@ pub(crate) fn make_discord_callback_url(tc: &TenantConfig, web: WebConfig) -> St
     log::info!("Crafted discord callback url: {url}");
     url
 }
+
+#[derive(Debug, Clone, Facet)]
+pub struct DiscordUnlinkArgs {
+    pub logged_in_user_id: UserId,
+}

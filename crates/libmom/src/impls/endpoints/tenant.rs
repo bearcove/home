@@ -38,6 +38,9 @@ pub fn tenant_routes() -> Router {
         .route("/patreon/callback", post(patreon_callback))
         .route("/github/callback", post(github_callback))
         .route("/discord/callback", post(discord_callback))
+        .route("/patreon/unlink", post(patreon_unlink))
+        .route("/github/unlink", post(github_unlink))
+        .route("/discord/unlink", post(discord_unlink))
         .route("/refresh-userinfo", post(refresh_userinfo))
         .route("/make-api-key", post(make_api_key))
         .route("/verify-api-key", post(verify_api_key))
@@ -218,6 +221,75 @@ async fn discord_callback(
         None => None,
     };
     FacetJson(res).into_reply()
+}
+
+async fn patreon_unlink(
+    Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
+    body: Bytes,
+) -> Reply {
+    let body = std::str::from_utf8(&body[..])?;
+    let args: libpatreon::PatreonUnlinkArgs = facet_json::from_str(body)?;
+
+    let pool = &ts.pool;
+    let conn = pool.get()?;
+
+    // Delete the patreon profile for this user
+    conn.execute(
+        "DELETE FROM patreon_profiles WHERE user_id = ?1",
+        [&args.logged_in_user_id],
+    )?;
+
+    // Return fresh user info
+    use crate::impls::users::refresh_userinfo;
+    let user_info = refresh_userinfo(&ts, &args.logged_in_user_id).await?;
+
+    FacetJson(user_info).into_reply()
+}
+
+async fn github_unlink(
+    Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
+    body: Bytes,
+) -> Reply {
+    let body = std::str::from_utf8(&body[..])?;
+    let args: libgithub::GithubUnlinkArgs = facet_json::from_str(body)?;
+
+    let pool = &ts.pool;
+    let conn = pool.get()?;
+
+    // Delete the github profile for this user
+    conn.execute(
+        "DELETE FROM github_profiles WHERE user_id = ?1",
+        [&args.logged_in_user_id],
+    )?;
+
+    // Return fresh user info
+    use crate::impls::users::refresh_userinfo;
+    let user_info = refresh_userinfo(&ts, &args.logged_in_user_id).await?;
+
+    FacetJson(user_info).into_reply()
+}
+
+async fn discord_unlink(
+    Extension(TenantExtractor(ts)): Extension<TenantExtractor>,
+    body: Bytes,
+) -> Reply {
+    let body = std::str::from_utf8(&body[..])?;
+    let args: libdiscord::DiscordUnlinkArgs = facet_json::from_str(body)?;
+
+    let pool = &ts.pool;
+    let conn = pool.get()?;
+
+    // Delete the discord profile for this user
+    conn.execute(
+        "DELETE FROM discord_profiles WHERE user_id = ?1",
+        [&args.logged_in_user_id],
+    )?;
+
+    // Return fresh user info
+    use crate::impls::users::refresh_userinfo;
+    let user_info = refresh_userinfo(&ts, &args.logged_in_user_id).await?;
+
+    FacetJson(user_info).into_reply()
 }
 
 // #[axum::debug_handler]
