@@ -8,12 +8,30 @@ impl super::SqlMigration for Migration {
     }
 
     fn up(&self, conn: &Connection) -> eyre::Result<()> {
+        // Disable foreign key constraints temporarily
+        conn.execute("PRAGMA foreign_keys = OFF", [])?;
+
         // Create new users table without platform-specific columns
         conn.execute(
             "
             CREATE TABLE users_new (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ",
+            [],
+        )?;
+
+        // Create new api_keys table
+        conn.execute(
+            "
+            CREATE TABLE api_keys_new (
+                id TEXT NOT NULL,
+                user_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                revoked_at TIMESTAMP,
+                PRIMARY KEY (id),
+                FOREIGN KEY (user_id) REFERENCES users_new(id)
             )
             ",
             [],
@@ -33,7 +51,7 @@ impl super::SqlMigration for Migration {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP,
                 PRIMARY KEY (id),
-                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (user_id) REFERENCES users_new(id),
                 UNIQUE (user_id)
             )
             ",
@@ -51,7 +69,7 @@ impl super::SqlMigration for Migration {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP,
                 PRIMARY KEY (id),
-                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (user_id) REFERENCES users_new(id),
                 UNIQUE (user_id)
             )
             ",
@@ -69,7 +87,7 @@ impl super::SqlMigration for Migration {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP,
                 PRIMARY KEY (id),
-                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (user_id) REFERENCES users_new(id),
                 UNIQUE (user_id)
             )
             ",
@@ -82,6 +100,15 @@ impl super::SqlMigration for Migration {
             "
             INSERT INTO users_new (id, created_at)
             SELECT id, created_at FROM users
+            ",
+            [],
+        )?;
+
+        // Migrate api_keys data
+        conn.execute(
+            "
+            INSERT INTO api_keys_new (id, user_id, created_at, revoked_at)
+            SELECT id, user_id, created_at, revoked_at FROM api_keys
             ",
             [],
         )?;
@@ -122,14 +149,16 @@ impl super::SqlMigration for Migration {
             [],
         )?;
 
-        // Drop old tables
-        conn.execute("DROP TABLE users", [])?;
+        // Drop old tables - api_keys first since it references users
+        conn.execute("DROP TABLE api_keys", [])?;
         conn.execute("DROP TABLE github_profiles", [])?;
         conn.execute("DROP TABLE patreon_profiles", [])?;
         conn.execute("DROP TABLE discord_profiles", [])?;
+        conn.execute("DROP TABLE users", [])?;
 
         // Rename new tables
         conn.execute("ALTER TABLE users_new RENAME TO users", [])?;
+        conn.execute("ALTER TABLE api_keys_new RENAME TO api_keys", [])?;
         conn.execute(
             "ALTER TABLE github_profiles_new RENAME TO github_profiles",
             [],
@@ -144,6 +173,7 @@ impl super::SqlMigration for Migration {
         )?;
 
         // Create indexes for efficient lookups
+        conn.execute("CREATE INDEX idx_api_keys_user_id ON api_keys(user_id)", [])?;
         conn.execute(
             "CREATE INDEX idx_github_profiles_user_id ON github_profiles(user_id)",
             [],
@@ -156,6 +186,26 @@ impl super::SqlMigration for Migration {
             "CREATE INDEX idx_discord_profiles_user_id ON discord_profiles(user_id)",
             [],
         )?;
+
+        // Re-enable foreign key constraints
+        conn.execute("PRAGMA foreign_keys = ON", [])?;
+
+        // Perform integrity check
+        let mut stmt = conn.prepare("PRAGMA integrity_check")?;
+        let rows = stmt.query_map([], |row| {
+            let result: String = row.get(0)?;
+            Ok(result)
+        })?;
+
+        for row in rows {
+            let integrity_result = row?;
+            if integrity_result != "ok" {
+                return Err(eyre::eyre!(
+                    "Database integrity check failed: {}",
+                    integrity_result
+                ));
+            }
+        }
 
         Ok(())
     }
