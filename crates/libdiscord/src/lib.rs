@@ -206,6 +206,7 @@ impl Mod for ModImpl {
             {
                 let mut q = u.query_pairs_mut();
                 q.append_pair("limit", "200"); // Discord's max limit per request
+                q.append_pair("with_counts", "true");
             }
             let uri: Uri = u
                 .to_string()
@@ -238,24 +239,12 @@ impl Mod for ModImpl {
             }
 
             let guilds = res
-                .json::<Vec<DiscordGuildAPI>>()
+                .json::<Vec<DiscordGuild>>()
                 .await
                 .map_err(|e| eyre::eyre!("Failed to parse guilds response: {}", e))?;
 
-            let bot_guilds: Vec<DiscordGuild> = guilds
-                .into_iter()
-                .map(|g| DiscordGuild {
-                    id: g.id,
-                    name: g.name,
-                    icon: g.icon,
-                    owner: g.owner,
-                    permissions: g.permissions,
-                    features: g.features,
-                })
-                .collect();
-
-            log::info!("Successfully fetched {} bot guilds", bot_guilds.len());
-            Ok(bot_guilds)
+            log::info!("Successfully fetched {} bot guilds", guilds.len());
+            Ok(guilds)
         })
     }
 
@@ -267,8 +256,17 @@ impl Mod for ModImpl {
     ) -> BoxFuture<'fut, Result<Vec<DiscordGuildMember>>> {
         Box::pin(async move {
             let discord_secrets = tc.discord_secrets()?;
-            let url = format!("https://discord.com/api/v10/guilds/{guild_id}/members");
-            let uri: Uri = url.parse().map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
+            let mut u = Url::parse(&format!(
+                "https://discord.com/api/v10/guilds/{guild_id}/members"
+            ))?;
+            {
+                let mut q = u.query_pairs_mut();
+                q.append_pair("limit", "1000"); // Discord's max limit per request
+            }
+            let uri: Uri = u
+                .to_string()
+                .parse()
+                .map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
 
             let res = client
                 .get(uri)
@@ -278,7 +276,6 @@ impl Mod for ModImpl {
                     HeaderValue::from_str(&format!("Bot {}", discord_secrets.bot_token))
                         .map_err(|e| eyre::eyre!("Invalid bot token: {}", e))?,
                 )
-                .query(&[("limit", "1000")]) // Discord's max limit per request
                 .send()
                 .await
                 .wrap_err("While fetching guild members")?;
@@ -315,6 +312,132 @@ impl Mod for ModImpl {
 
             log::info!("Successfully fetched {} guild members", guild_members.len());
             Ok(guild_members)
+        })
+    }
+
+    fn list_guild_roles<'fut>(
+        &'fut self,
+        guild_id: &'fut str,
+        tc: &'fut TenantConfig,
+        client: &'fut dyn HttpClient,
+    ) -> BoxFuture<'fut, Result<Vec<DiscordRole>>> {
+        Box::pin(async move {
+            let discord_secrets = tc.discord_secrets()?;
+            let url = format!("https://discord.com/api/v10/guilds/{guild_id}/roles");
+            let uri: Uri = url.parse().map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
+
+            let res = client
+                .get(uri)
+                .polite_user_agent()
+                .header(
+                    HeaderName::from_static("authorization"),
+                    HeaderValue::from_str(&format!("Bot {}", discord_secrets.bot_token))
+                        .map_err(|e| eyre::eyre!("Invalid bot token: {}", e))?,
+                )
+                .send()
+                .await
+                .wrap_err("While fetching guild roles")?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let error = res
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Could not get error text".into());
+                return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
+            }
+
+            let roles = res
+                .json::<Vec<DiscordRole>>()
+                .await
+                .map_err(|e| eyre::eyre!("Failed to parse guild roles response: {}", e))?;
+
+            log::info!("Successfully fetched {} guild roles", roles.len());
+            Ok(roles)
+        })
+    }
+
+    fn add_guild_member_role<'fut>(
+        &'fut self,
+        guild_id: &'fut str,
+        user_id: &'fut str,
+        role_id: &'fut str,
+        tc: &'fut TenantConfig,
+        client: &'fut dyn HttpClient,
+    ) -> BoxFuture<'fut, Result<()>> {
+        Box::pin(async move {
+            let discord_secrets = tc.discord_secrets()?;
+            let url = format!(
+                "https://discord.com/api/v10/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
+            );
+            let uri: Uri = url.parse().map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
+
+            let res = client
+                .put(uri)
+                .polite_user_agent()
+                .header(
+                    HeaderName::from_static("authorization"),
+                    HeaderValue::from_str(&format!("Bot {}", discord_secrets.bot_token))
+                        .map_err(|e| eyre::eyre!("Invalid bot token: {}", e))?,
+                )
+                .send()
+                .await
+                .wrap_err("While adding role to guild member")?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let error = res
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Could not get error text".into());
+                return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
+            }
+
+            log::info!("Successfully added role {role_id} to user {user_id} in guild {guild_id}");
+            Ok(())
+        })
+    }
+
+    fn remove_guild_member_role<'fut>(
+        &'fut self,
+        guild_id: &'fut str,
+        user_id: &'fut str,
+        role_id: &'fut str,
+        tc: &'fut TenantConfig,
+        client: &'fut dyn HttpClient,
+    ) -> BoxFuture<'fut, Result<()>> {
+        Box::pin(async move {
+            let discord_secrets = tc.discord_secrets()?;
+            let url = format!(
+                "https://discord.com/api/v10/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
+            );
+            let uri: Uri = url.parse().map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
+
+            let res = client
+                .delete(uri)
+                .polite_user_agent()
+                .header(
+                    HeaderName::from_static("authorization"),
+                    HeaderValue::from_str(&format!("Bot {}", discord_secrets.bot_token))
+                        .map_err(|e| eyre::eyre!("Invalid bot token: {}", e))?,
+                )
+                .send()
+                .await
+                .wrap_err("While removing role from guild member")?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let error = res
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Could not get error text".into());
+                return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
+            }
+
+            log::info!(
+                "Successfully removed role {role_id} from user {user_id} in guild {guild_id}"
+            );
+            Ok(())
         })
     }
 }
@@ -405,6 +528,30 @@ struct DiscordGuildMemberAPI {
 }
 
 #[derive(Debug, Clone, Facet)]
+pub struct DiscordRole {
+    /// Role id
+    pub id: String,
+    /// Role name
+    pub name: String,
+    /// Integer representation of hexadecimal color code
+    pub color: u32,
+    /// If this role is pinned in the user listing
+    pub hoist: bool,
+    /// Role icon hash
+    pub icon: Option<String>,
+    /// Role unicode emoji
+    pub unicode_emoji: Option<String>,
+    /// Position of this role
+    pub position: i32,
+    /// Permission bit set
+    pub permissions: String,
+    /// Whether this role is managed by an integration
+    pub managed: bool,
+    /// Whether this role is mentionable
+    pub mentionable: bool,
+}
+
+#[derive(Debug, Clone, Facet)]
 pub struct DiscordGuild {
     /// Guild id
     pub id: String,
@@ -418,22 +565,12 @@ pub struct DiscordGuild {
     pub permissions: Option<String>,
     /// Enabled guild features
     pub features: Vec<String>,
-}
-
-#[derive(Debug, Clone, Facet)]
-struct DiscordGuildAPI {
-    /// Guild id
-    id: String,
-    /// Guild name (2-100 characters, excluding trailing and leading whitespace)
-    name: String,
-    /// Icon hash
-    icon: Option<String>,
-    /// True if the user is the owner of the guild
-    owner: Option<bool>,
-    /// Total permissions for the user in the guild (excludes overwrites)
-    permissions: Option<String>,
-    /// Enabled guild features
-    features: Vec<String>,
+    /// Approximate number of members in this guild
+    #[facet(default)]
+    pub approximate_member_count: Option<u64>,
+    /// Approximate number of non-offline members in this guild
+    #[facet(default)]
+    pub approximate_presence_count: Option<u64>,
 }
 
 pub(crate) fn make_discord_callback_url(tc: &TenantConfig, web: WebConfig) -> String {
