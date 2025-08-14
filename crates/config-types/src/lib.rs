@@ -562,6 +562,9 @@ pub struct GithubSecrets {
 pub struct DiscordSecrets {
     pub oauth_client_id: String,
     pub oauth_client_secret: String,
+    /// Token for the bot associated with the app installed on Discord
+    /// (specific to fasterthanli.me for now)
+    pub bot_token: String,
 }
 
 #[derive(Clone, Facet, Serialize, Deserialize)]

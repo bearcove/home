@@ -135,17 +135,19 @@ async fn real_main() -> eyre::Result<()> {
                 // Check for Discord secrets in environment variables
                 let discord_secrets = match (
                     std::env::var("HOME_DISCORD_OAUTH_CLIENT_ID"),
-                    std::env::var("HOME_DISCORD_OAUTH_CLIENT_SECRET")
+                    std::env::var("HOME_DISCORD_OAUTH_CLIENT_SECRET"),
+                    std::env::var("HOME_DISCORD_BOT_TOKEN")
                 ) {
-                    (Ok(client_id), Ok(client_secret)) => {
+                    (Ok(client_id), Ok(client_secret), Ok(bot_token)) => {
                         log::info!("Found Discord secrets in environment variables for tenant {}", tc.name);
                         Some(config_types::DiscordSecrets {
                             oauth_client_id: client_id,
-                            oauth_client_secret: client_secret
+                            oauth_client_secret: client_secret,
+                            bot_token
                         })
                     }
                     _ => {
-                        log::info!("No Discord secrets found in environment variables (HOME_DISCORD_OAUTH_CLIENT_ID, HOME_DISCORD_OAUTH_CLIENT_SECRET) for tenant {}", tc.name);
+                        log::info!("No Discord secrets found in environment variables (HOME_DISCORD_OAUTH_CLIENT_ID, HOME_DISCORD_OAUTH_CLIENT_SECRET, HOME_DISCORD_BOT_TOKEN) for tenant {}", tc.name);
                         None
                     }
                 };
