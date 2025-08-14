@@ -317,6 +317,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
             let interval = Duration::from_secs(120);
 
             loop {
+                tokio::time::sleep(interval).await;
                 match ts.users_inflight.query(()).await {
                     Ok(users) => {
                         log::debug!("[{}] Fetched {} sponsors", tenant_name, users.users.len());
@@ -326,7 +327,6 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         log::debug!("[{tenant_name}] Failed to fetch sponsors: {e} / {e:?}")
                     }
                 }
-                tokio::time::sleep(interval).await;
             }
         });
     }

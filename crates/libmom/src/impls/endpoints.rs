@@ -16,6 +16,7 @@ use mom_types::{GoodMorning, MomEvent, TenantInitialState};
 
 mod tenant;
 mod tenant_extractor;
+mod wip;
 
 /// Inserted in the request context to indicate that the used API key is
 #[derive(Clone, Debug)]
@@ -95,6 +96,7 @@ pub(super) async fn serve(listener: tokio::net::TcpListener) -> Result<()> {
                 }
             },
         ))
+        .route("/wip/{tenant_name}", get(wip::serve_wip))
         .route("/health", get(|| async { "OK" }))
         .layer(axum::extract::DefaultBodyLimit::max(32 * 1024 * 1024))
         .layer(
