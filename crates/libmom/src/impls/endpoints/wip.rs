@@ -1,5 +1,7 @@
 use axum::http::StatusCode;
 use config_types::is_development;
+use facet::Facet;
+use libdiscord::{DiscordGuildMember, DiscordRole};
 
 use crate::impls::{
     endpoints::tenant_extractor::TenantExtractor,
@@ -31,8 +33,24 @@ pub(crate) async fn serve_wip(TenantExtractor(ts): TenantExtractor) -> Reply {
         let members = discord
             .list_guild_members(&first_guild.id, tc, client)
             .await?;
-        return FacetJson(members).into_reply();
+
+        log::info!(
+            "Listing roles for guild: {} ({})",
+            first_guild.name,
+            first_guild.id
+        );
+        let roles = discord
+            .list_guild_roles(&first_guild.id, tc, client)
+            .await?;
+
+        #[derive(Facet)]
+        struct Response {
+            members: Vec<DiscordGuildMember>,
+            roles: Vec<DiscordRole>,
+        }
+
+        return FacetJson(Response { members, roles }).into_reply();
     }
 
-    FacetJson(guilds).into_reply()
+    (StatusCode::BAD_REQUEST, "Bot is not in any guilds").into_reply()
 }
