@@ -270,7 +270,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
     eprintln!("Restoring all users from db...");
     for ts in global_state().tenants.values() {
         // try to load users from the database
-        match users::fetch_all_users(&ts.pool) {
+        match users::fetch_all_users(ts.as_ref()).await {
             Ok(users) => {
                 eprintln!(
                     "{} Loaded {} users",

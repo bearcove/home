@@ -10,7 +10,7 @@ use mom_types::AllUsers;
 use rusqlite::OptionalExtension;
 use time::OffsetDateTime;
 
-use crate::impls::{MomTenantState, SqlitePool, global_state};
+use crate::impls::{MomTenantState, SqlitePool, discord_roles, global_state};
 
 pub(crate) async fn refresh_sponsors(ts: &MomTenantState) -> eyre::Result<AllUsers> {
     let client = global_state().client.clone();
@@ -45,7 +45,7 @@ pub(crate) async fn refresh_sponsors(ts: &MomTenantState) -> eyre::Result<AllUse
     let total_duration = start_time.elapsed();
     log::info!("Total sponsors refresh took {total_duration:?}");
 
-    fetch_all_users(&ts.pool)
+    fetch_all_users(ts).await
 }
 
 async fn refresh_patreon_sponsors(
@@ -699,23 +699,27 @@ pub(crate) async fn refresh_userinfo(
         }
     };
 
-    Ok(UserInfo {
+    let user_info = UserInfo {
         id,
         fetched_at: OffsetDateTime::now_utc(),
         gifted_tier,
         patreon,
         github,
         discord,
-    })
+    };
+
+    discord_roles::synchronize_one_discord_role(ts, &user_info).await?;
+
+    Ok(user_info)
 }
 
-pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
+pub(crate) async fn fetch_all_users(ts: &MomTenantState) -> eyre::Result<AllUsers> {
     let start_time = std::time::Instant::now();
 
-    let conn = pool.get()?;
-
-    let mut stmt = conn.prepare(
-        "
+    let all_users = {
+        let conn = ts.pool.get()?;
+        let mut stmt = conn.prepare(
+            "
         SELECT
             u.id,
             u.gifted_tier,
@@ -738,80 +742,85 @@ pub(crate) fn fetch_all_users(pool: &SqlitePool) -> eyre::Result<AllUsers> {
         LEFT JOIN github_profiles g ON u.id = g.user_id
         LEFT JOIN discord_profiles d ON u.id = d.user_id
         ",
-    )?;
+        )?;
 
-    let rows = stmt.query_map([], |row| {
-        let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
-        let gifted_tier: Option<String> = row.get("gifted_tier")?;
+        let rows = stmt.query_map([], |row| {
+            let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
+            let gifted_tier: Option<String> = row.get("gifted_tier")?;
 
-        // Build Patreon profile if data exists
-        let patreon = {
-            let p_id: Option<PatreonUserId> = row.get("p_id")?;
-            if p_id.is_some() {
-                Some(PatreonProfile {
-                    id: row.get("p_id")?,
-                    tier: row.get("p_tier")?,
-                    full_name: row.get("p_full_name")?,
-                    avatar_url: row.get("p_avatar_url")?,
-                })
-            } else {
-                None
-            }
-        };
+            // Build Patreon profile if data exists
+            let patreon = {
+                let p_id: Option<PatreonUserId> = row.get("p_id")?;
+                if p_id.is_some() {
+                    Some(PatreonProfile {
+                        id: row.get("p_id")?,
+                        tier: row.get("p_tier")?,
+                        full_name: row.get("p_full_name")?,
+                        avatar_url: row.get("p_avatar_url")?,
+                    })
+                } else {
+                    None
+                }
+            };
 
-        // Build Github profile if data exists
-        let github = {
-            let g_id: Option<GithubUserId> = row.get("g_id")?;
-            if g_id.is_some() {
-                Some(GithubProfile {
-                    id: row.get("g_id")?,
-                    monthly_usd: row.get("g_monthly_usd")?,
-                    sponsorship_privacy_level: row.get("g_sponsorship_privacy_level")?,
-                    name: row.get("g_name")?,
-                    login: row.get("g_login")?,
-                    avatar_url: row.get("g_avatar_url")?,
-                })
-            } else {
-                None
-            }
-        };
+            // Build Github profile if data exists
+            let github = {
+                let g_id: Option<GithubUserId> = row.get("g_id")?;
+                if g_id.is_some() {
+                    Some(GithubProfile {
+                        id: row.get("g_id")?,
+                        monthly_usd: row.get("g_monthly_usd")?,
+                        sponsorship_privacy_level: row.get("g_sponsorship_privacy_level")?,
+                        name: row.get("g_name")?,
+                        login: row.get("g_login")?,
+                        avatar_url: row.get("g_avatar_url")?,
+                    })
+                } else {
+                    None
+                }
+            };
 
-        // Build Discord profile if data exists
-        let discord = {
-            let d_id: Option<DiscordUserId> = row.get("d_id")?;
-            if d_id.is_some() {
-                Some(credentials::DiscordProfile {
-                    id: row.get("d_id")?,
-                    username: row.get("d_username")?,
-                    global_name: row.get("d_global_name")?,
-                    avatar_hash: row.get("d_avatar_hash")?,
-                })
-            } else {
-                None
-            }
-        };
+            // Build Discord profile if data exists
+            let discord = {
+                let d_id: Option<DiscordUserId> = row.get("d_id")?;
+                if d_id.is_some() {
+                    Some(credentials::DiscordProfile {
+                        id: row.get("d_id")?,
+                        username: row.get("d_username")?,
+                        global_name: row.get("d_global_name")?,
+                        avatar_hash: row.get("d_avatar_hash")?,
+                    })
+                } else {
+                    None
+                }
+            };
 
-        Ok(UserInfo {
-            id,
-            fetched_at: OffsetDateTime::now_utc(),
-            gifted_tier,
-            patreon,
-            github,
-            discord,
-        })
-    })?;
+            Ok(UserInfo {
+                id,
+                fetched_at: OffsetDateTime::now_utc(),
+                gifted_tier,
+                patreon,
+                github,
+                discord,
+            })
+        })?;
 
-    let mut users = Vec::new();
-    for row in rows {
-        users.push(row?);
-    }
+        let mut users = Vec::new();
+        for row in rows {
+            users.push(row?);
+        }
 
-    let duration = start_time.elapsed();
-    log::info!("fetch_all_users took {duration:?}");
+        let duration = start_time.elapsed();
+        log::info!("fetch_all_users took {duration:?}");
 
-    Ok(AllUsers {
-        users: users.into_iter().map(|u| (u.id.clone(), u)).collect(),
-    })
+        AllUsers {
+            users: users.into_iter().map(|u| (u.id.clone(), u)).collect(),
+        }
+    };
+
+    discord_roles::synchronize_all_discord_roles(ts, &all_users).await?;
+
+    Ok(all_users)
 }
 
 fn generate_api_key() -> UserApiKey {

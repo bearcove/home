@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::time::Instant;
 
 use credentials::{
@@ -14,7 +13,6 @@ use crate::impls::MomTenantState;
 struct DiscordRolesContext {
     guild_id: DiscordGuildId,
     tier_role_map: HashMap<FasterthanlimeTier, DiscordRoleId>,
-    role_tier_map: HashMap<DiscordRoleId, FasterthanlimeTier>,
     bots_channel_id: Option<DiscordChannelId>,
 }
 
@@ -39,7 +37,6 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
 
     // Create mapping between Discord role IDs and FasterthanlimeTier
     let mut tier_role_map: HashMap<FasterthanlimeTier, DiscordRoleId> = HashMap::new();
-    let mut role_tier_map: HashMap<DiscordRoleId, FasterthanlimeTier> = HashMap::new();
 
     for role in &roles {
         let tier = match role.name.as_str() {
@@ -51,7 +48,6 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
 
         if let Some(tier) = tier {
             tier_role_map.insert(tier, role.id.clone());
-            role_tier_map.insert(role.id.clone(), tier);
             log::info!("Mapped role {} ({}) to tier {:?}", role.name, role.id, tier);
         }
     }
@@ -74,7 +70,6 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
     Ok(DiscordRolesContext {
         guild_id: guild.id.clone(),
         tier_role_map,
-        role_tier_map,
         bots_channel_id,
     })
 }
@@ -243,7 +238,7 @@ pub(crate) async fn synchronize_one_discord_role(
 
 pub(crate) async fn synchronize_all_discord_roles(
     ts: &MomTenantState,
-    users: AllUsers,
+    users: &AllUsers,
 ) -> Result<()> {
     let start_time = Instant::now();
     let discord_mod = libdiscord::load();
