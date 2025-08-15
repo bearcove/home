@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 use std::time::Instant;
 
-use credentials::{
-    DiscordChannelId, DiscordGuildId, DiscordRoleId, DiscordUserId, FasterthanlimeTier, UserInfo,
-};
+use credentials::{DiscordChannelId, DiscordRoleId, DiscordUserId, FasterthanlimeTier, UserInfo};
 use eyre::Result;
+use libdiscord::DiscordGuild;
 use mom_types::AllUsers;
 
 use crate::impls::MomTenantState;
 
 /// Gathered when starting up a discord role synchronization
 struct DiscordRolesContext {
-    guild_id: DiscordGuildId,
+    guild: DiscordGuild,
     tier_role_map: HashMap<FasterthanlimeTier, DiscordRoleId>,
 
     /// maps channel names to their discord channel IDs
@@ -31,7 +30,7 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
     if guilds.is_empty() {
         return Err(eyre::eyre!("Bot is not in any guilds!"));
     }
-    let guild = &guilds[0];
+    let guild = guilds.into_iter().next().unwrap();
     log::info!("Using guild: {} ({})", guild.name, guild.id);
 
     // Fetch all roles for this server
@@ -77,7 +76,7 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
     }
 
     Ok(DiscordRolesContext {
-        guild_id: guild.id.clone(),
+        guild,
         tier_role_map,
         channel_ids,
     })
@@ -209,7 +208,7 @@ async fn process_single_member(
                 RoleChange::Add => {
                     discord_mod
                         .add_guild_member_role(
-                            &cx.guild_id,
+                            &cx.guild.id,
                             user.id.as_str().into(),
                             &role_id,
                             &ts.ti.tc,
@@ -219,7 +218,7 @@ async fn process_single_member(
                 RoleChange::Remove => {
                     discord_mod
                         .remove_guild_member_role(
-                            &cx.guild_id,
+                            &cx.guild.id,
                             user.id.as_str().into(),
                             &role_id,
                             &ts.ti.tc,
@@ -273,7 +272,7 @@ pub(crate) async fn synchronize_one_discord_role(
 
     // Fetch the specific guild member
     let member = discord_mod
-        .get_guild_member(&cx.guild_id, &discord_profile.id, &ts.ti.tc)
+        .get_guild_member(&cx.guild.id, &discord_profile.id, &ts.ti.tc)
         .await?;
 
     // Process this single member
@@ -314,9 +313,69 @@ pub(crate) async fn synchronize_all_discord_roles(
 
     // Fetch all members of the server
     let members = discord_mod
-        .list_guild_members(&cx.guild_id, &ts.ti.tc)
+        .list_guild_members(&cx.guild.id, &ts.ti.tc)
         .await?;
     log::info!("Fetched {} guild members", members.len());
+
+    // Store guild information in database
+    {
+        let conn = ts.pool.get()?;
+        let guild = &cx.guild;
+
+        conn.execute(
+                "INSERT OR REPLACE INTO discord_guilds (guild_id, approximate_member_count, approximate_presence_count) VALUES (?1, ?2, ?3)",
+                [
+                    guild.id.as_str(),
+                    guild.approximate_member_count.map(|c| c.to_string()).as_deref().unwrap_or(""),
+                    guild.approximate_presence_count.map(|c| c.to_string()).as_deref().unwrap_or(""),
+                ],
+            )?;
+
+        // Collect current member user IDs
+        let current_member_ids: std::collections::HashSet<String> = members
+            .iter()
+            .filter_map(|member| {
+                member
+                    .user
+                    .as_ref()
+                    .map(|user| user.id.as_str().to_string())
+            })
+            .collect();
+
+        // Upsert current members
+        let mut stmt = conn.prepare(
+            "INSERT OR REPLACE INTO discord_guild_members (guild_id, user_id) VALUES (?1, ?2)",
+        )?;
+
+        for member in &members {
+            if let Some(user) = &member.user {
+                stmt.execute([guild.id.as_str(), user.id.as_str()])?;
+            }
+        }
+
+        // Delete members that are no longer in the guild
+        if !current_member_ids.is_empty() {
+            let placeholders = current_member_ids
+                .iter()
+                .map(|_| "?")
+                .collect::<Vec<_>>()
+                .join(",");
+            let delete_query = format!(
+                "DELETE FROM discord_guild_members WHERE guild_id = ?1 AND user_id NOT IN ({placeholders})"
+            );
+
+            let mut params: Vec<String> = vec![guild.id.as_str().to_string()];
+            params.extend(current_member_ids.iter().cloned());
+
+            conn.execute(&delete_query, rusqlite::params_from_iter(params))?;
+        }
+
+        log::info!(
+            "Updated database with guild {} and {} members",
+            guild.id,
+            members.len()
+        );
+    }
 
     // Track changes made
     let mut total_changes = 0;
