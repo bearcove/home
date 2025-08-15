@@ -13,7 +13,9 @@ use crate::impls::MomTenantState;
 struct DiscordRolesContext {
     guild_id: DiscordGuildId,
     tier_role_map: HashMap<FasterthanlimeTier, DiscordRoleId>,
-    bots_channel_id: Option<DiscordChannelId>,
+
+    /// maps channel names to their discord channel IDs
+    channel_ids: HashMap<String, DiscordChannelId>,
 }
 
 enum RoleChange {
@@ -56,31 +58,40 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
         return Err(eyre::eyre!("No tier roles found in guild!"));
     }
 
-    // Fetch all channels and find #bots
+    // Fetch all channels and build a map from name to ID
     let channels = discord_mod
         .list_guild_channels(&guild.id, &ts.ti.tc)
         .await?;
-    let bots_channel = channels.iter().find(|c| c.name == "bots");
-    let bots_channel_id = bots_channel.map(|c| c.id.clone());
 
-    if bots_channel_id.is_none() {
+    let mut channel_ids = HashMap::new();
+    for channel in &channels {
+        channel_ids.insert(channel.name.clone(), channel.id.clone());
+    }
+
+    if !channel_ids.contains_key("bots") {
         log::warn!("No #bots channel found in guild!");
+    }
+
+    if !channel_ids.contains_key("lobby") {
+        log::warn!("No #lobby channel found in guild!");
     }
 
     Ok(DiscordRolesContext {
         guild_id: guild.id.clone(),
         tier_role_map,
-        bots_channel_id,
+        channel_ids,
     })
 }
 
 impl DiscordRolesContext {
-    async fn log(&self, message: &str, ts: &MomTenantState) -> Result<()> {
-        if let Some(channel_id) = &self.bots_channel_id {
+    async fn log(&self, ts: &MomTenantState, channel_name: &str, message: &str) -> Result<()> {
+        if let Some(channel_id) = self.channel_ids.get(channel_name) {
             let discord_mod = libdiscord::load();
             discord_mod
                 .post_message_to_channel(channel_id, message, &ts.ti.tc)
                 .await?;
+        } else {
+            log::warn!("Channel '{channel_name}' does not exist in guild");
         }
         Ok(())
     }
@@ -141,6 +152,47 @@ async fn process_single_member(
         }
     }
 
+    // Check if we're adding a role to send a thank you message to #lobby
+    let added_roles: Vec<&FasterthanlimeTier> = role_changes
+        .iter()
+        .filter_map(|(role_id, role_change)| {
+            if matches!(role_change, RoleChange::Add) {
+                cx.tier_role_map
+                    .iter()
+                    .find(|(_, id)| *id == role_id)
+                    .map(|(tier, _)| tier)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    if !added_roles.is_empty() {
+        let lobby_message = {
+            use rand::prelude::*;
+
+            let thank_you_messages = [
+                "Joining the ROLE tier today: USER!",
+                "USER has joined the ROLE club.",
+                "USER enjoy the ROLE perks!",
+                "USER is now ROLE — thanks for your support!",
+                "Welcome to the ROLE tier, USER",
+            ];
+
+            let mut rng = rand::rng();
+            let chosen_message = thank_you_messages.choose(&mut rng).unwrap();
+
+            let role_name = format!("{:?}", added_roles[0]);
+            let user_mention = format!("<@{}>", user.id);
+
+            chosen_message
+                .replace("USER", &user_mention)
+                .replace("ROLE", &role_name)
+        };
+
+        cx.log(ts, "lobby", &lobby_message).await?;
+    }
+
     // If there are changes to make, announce them and execute
     if !actions.is_empty() {
         let display_name = user.global_name.as_deref().unwrap_or(&user.username);
@@ -148,7 +200,7 @@ async fn process_single_member(
         let message = format!("For <@{}> ({}): {}", user.id, display_name, action_list);
 
         // Send message to #bots channel if it exists
-        cx.log(&message, ts).await?;
+        cx.log(ts, "bots", &message).await?;
         log::info!("{message}");
 
         // Execute the role changes
@@ -189,7 +241,7 @@ async fn process_single_member(
                 log::error!("{error_msg}");
 
                 // Post error to #bots channel
-                cx.log(&error_msg, ts).await?;
+                cx.log(ts, "bots", &error_msg).await?;
             }
         }
 
@@ -293,8 +345,7 @@ pub(crate) async fn synchronize_all_discord_roles(
         );
 
         log::info!("{summary}");
-
-        cx.log(&summary, ts).await?;
+        cx.log(ts, "bots", &summary).await?;
     } else {
         log::info!(
             "Discord role sync complete: No changes needed (checked {} members in {:.2?})",
