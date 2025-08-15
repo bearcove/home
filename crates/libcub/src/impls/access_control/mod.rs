@@ -26,18 +26,16 @@ pub enum AccessDeniedReason {
 
 /// Determines if the current user can access a page based on its draft status,
 /// draft code, and publication date.
-pub(crate) fn can_access(rx: &CubReqImpl, page: &LoadedPage) -> eyre::Result<CanAccess> {
-    if rx.viewer()?.is_admin {
-        return Ok(CanAccess::Yes(AccessGrantedReason::IsAdmin));
+pub(crate) fn can_access(rx: &CubReqImpl, page: &LoadedPage) -> CanAccess {
+    if rx.viewer.is_admin {
+        return CanAccess::Yes(AccessGrantedReason::IsAdmin);
     }
 
     if page.draft {
         let draft_code = match page.draft_code.as_deref() {
             Some(code) => code,
             None => {
-                return Ok(CanAccess::No(
-                    AccessDeniedReason::PageIsDraftAndDoesNotHaveDraftCode,
-                ));
+                return CanAccess::No(AccessDeniedReason::PageIsDraftAndDoesNotHaveDraftCode);
             }
         };
 
@@ -45,18 +43,14 @@ pub(crate) fn can_access(rx: &CubReqImpl, page: &LoadedPage) -> eyre::Result<Can
         let query_draft_code = match url_params.get("draft_code") {
             Some(code) => code,
             None => {
-                return Ok(CanAccess::No(
-                    AccessDeniedReason::PageIsDraftAndQueryDoesNotHaveDraftCode,
-                ));
+                return CanAccess::No(AccessDeniedReason::PageIsDraftAndQueryDoesNotHaveDraftCode);
             }
         };
 
         if query_draft_code != draft_code {
-            return Ok(CanAccess::No(
-                AccessDeniedReason::PageIsDraftAndQueryDoesNotMatchDraftCode,
-            ));
+            return CanAccess::No(AccessDeniedReason::PageIsDraftAndQueryDoesNotMatchDraftCode);
         }
     }
 
-    Ok(CanAccess::Yes(AccessGrantedReason::NotDenied))
+    CanAccess::Yes(AccessGrantedReason::NotDenied)
 }

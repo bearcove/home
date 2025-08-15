@@ -123,7 +123,7 @@ async fn serve_page_route(rx: CubReqImpl) -> LegacyReply {
     use crate::impls::access_control::CanAccess;
     use crate::impls::access_control::can_access;
 
-    match can_access(&rx, &page)? {
+    match can_access(&rx, &page) {
         CanAccess::Yes(_) => {
             if page.draft
                 && page.draft_code.is_some()
@@ -174,7 +174,7 @@ async fn extra_files(
     axum::extract::Path(path): axum::extract::Path<String>,
     tr: CubReqImpl,
 ) -> LegacyReply {
-    let viewer = tr.viewer()?;
+    let viewer = &tr.viewer;
     if !(viewer.has_bronze || viewer.is_admin) {
         log::warn!("Unauthorized access attempt to extra files");
         return Err(LegacyHttpError::with_status(

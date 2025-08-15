@@ -1,45 +1,42 @@
 use crate::impls::{
     access_control::{CanAccess, can_access},
+    global_state,
     reply::{IntoLegacyReply, LegacyReply},
-    types::DomainResolution,
 };
 use axum::{
     body::Bytes,
     extract::FromRequestParts,
-    http::{StatusCode, header, request::Parts},
-    response::IntoResponse as _,
+    http::{StatusCode, request::Parts},
 };
 use config_types::{Environment, WebConfig};
-use conflux::{AccessOverride, CacheBuster, InputPathRef, LoadedPage, Route, Viewer};
+use conflux::{CacheBuster, InputPathRef, LoadedPage, Route, Viewer};
 use content_type::ContentType;
-use credentials::{AuthBundle, UserApiKey};
+use credentials::AuthBundle;
 use cub_types::{CubReq, CubTenant};
 use eyre::Result;
 use futures_core::future::BoxFuture;
 use hattip::{HBody, HError, HReply};
-use http::{Uri, request};
+use http::{Uri, header, request};
 use libwebsock::WebSocketStream;
-use mom_types::VerifyApiKeyArgs;
 use std::{sync::Arc, time::Instant};
 use template_types::{DataObject, DataValue, RenderTemplateArgs};
 use tower_cookies::Cookies;
 use url::form_urlencoded;
 
-use super::{
-    CubTenantImpl, credentials::authbundle_load_from_cookies, global_state::global_state,
-    host_extract,
-};
+use super::CubTenantImpl;
 
 /// Allows rendering jinja templates (via minjinja)
 /// Actually turned into "what is extracted from requests",
 /// for example it has the tenant state
+#[derive(Clone)]
 pub struct CubReqImpl {
-    cookie_key: tower_cookies::Key,
-    public_cookies: Cookies,
+    pub(crate) cookie_key: tower_cookies::Key,
+    pub(crate) public_cookies: Cookies,
 
     pub tenant: Arc<CubTenantImpl>,
     pub path: Route,
     pub auth_bundle: Option<AuthBundle>,
+    pub(crate) viewer: Viewer,
     pub parts: request::Parts,
 }
 
@@ -55,133 +52,15 @@ where
 {
     type Rejection = LegacyReply;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let path = Route::new(parts.uri.path().to_string()).trim_trailing_slash();
-
-        let host = match host_extract::ExtractedHost::from_headers(&parts.uri, &parts.headers) {
-            Some(host) => host,
-            None => {
-                log::warn!(
-                    "No host found for request uri {} / host header {:?}",
-                    parts.uri,
-                    parts.headers.get(header::HOST)
-                );
-                return Err(
-                    (StatusCode::BAD_REQUEST, "No host found in request").into_legacy_reply()
-                );
-            }
-        };
-        let domain = host.domain();
-        let tenant = match host.resolve_domain() {
-            Some(DomainResolution::Tenant(ts)) => ts.clone(),
-            Some(DomainResolution::Redirect { tenant, .. }) => tenant.clone(),
-            None => {
-                log::warn!("No tenant found for domain {domain}");
-                let msg = if Environment::default().is_dev() {
-                    let global_state = super::global_state();
-                    let available_tenants = global_state
-                        .dynamic
-                        .read()
-                        .tenants_by_name
-                        .values()
-                        .map(|ts| {
-                            let tc = ts.tc();
-                            format!(
-                                "<li><a href=\"{}\">{}</a></li>",
-                                tc.web_base_url(global_state.web),
-                                tc.name
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                        .join("\n");
-
-                    format!(
-                        r#"
-                        <html>
-                        <head>
-                            <style>
-                            body {{
-                                font-family: system-ui, -apple-system, sans-serif;
-                                max-width: 800px;
-                                margin: 2rem auto;
-                                line-height: 1.5;
-                            }}
-                            code {{
-                                background: #eee;
-                                padding: 0.2em 0.4em;
-                                border-radius: 3px;
-                            }}
-                            </style>
-                        </head>
-                        <body>
-                            <h1>No tenant found for domain <code>{domain}</code></h1>
-                            <p>Available tenants:</p>
-                            <ul>
-                                {available_tenants}</ul>
-                        </body>
-                        </html>
-                        "#
-                    )
-                } else {
-                    "tenant_not_found".to_string()
-                };
-
-                let resp = (
-                    StatusCode::BAD_REQUEST,
-                    [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
-                    msg,
-                );
-                // lol
-                return Err(Ok(resp.into_response()));
-            }
-        };
-
-        let public_cookies = Cookies::from_request_parts(parts, state)
-            .await
-            .map_err(|e| e.into_legacy_reply())?;
-        let mut auth_bundle =
-            authbundle_load_from_cookies(&public_cookies.private(&tenant.cookie_key)).await;
-
-        if let Some(query) = parts.uri.query() {
-            let params: std::collections::HashMap<String, String> =
-                form_urlencoded::parse(query.as_bytes())
-                    .into_owned()
-                    .collect();
-
-            if let Some(api_key) = params.get("api_key") {
-                if auth_bundle.is_none() {
-                    // Try to validate the API key with mom
-                    let tcli = tenant.tcli();
-                    match tcli
-                        .verify_api_key(&VerifyApiKeyArgs {
-                            api_key: UserApiKey::new(api_key.clone()),
-                        })
-                        .await
-                    {
-                        Ok(response) => {
-                            log::info!("Validated API key for {}", response.user_info.name());
-                            auth_bundle = Some(AuthBundle {
-                                user_info: response.user_info,
-                            });
-                        }
-                        Err(e) => {
-                            log::warn!("Failed to verify API key: {e}");
-                        }
-                    }
-                }
-            }
-        }
-
-        let tr = Self {
-            cookie_key: tenant.cookie_key.clone(),
-            public_cookies,
-            tenant,
-            path,
-            auth_bundle,
-            parts: parts.clone(),
-        };
-
-        Ok(tr)
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        // Simply extract CubReqImpl from extensions - it should have been inserted by CubReqLayer
+        parts.extensions.remove::<CubReqImpl>().ok_or_else(|| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "CubReqImpl not found in extensions - ensure CubReqLayer is installed",
+            )
+                .into_legacy_reply()
+        })
     }
 }
 
@@ -227,17 +106,9 @@ impl CubReqImpl {
         self.parts.uri.query().unwrap_or_default()
     }
 
-    pub fn viewer(&self) -> eyre::Result<Viewer> {
-        Ok(Viewer::new(
-            self.tenant.rc()?,
-            self.auth_bundle.as_ref().map(|creds| &creds.user_info),
-            AccessOverride::from_raw_query(self.raw_query()),
-        ))
-    }
-
     pub fn render(&self, args: RenderArgs) -> LegacyReply {
         if let Some(page) = args.page.as_ref() {
-            let access = can_access(self, page)?;
+            let access = can_access(self, page);
             log::debug!("\x1b[1;32m{}\x1b[0m {access:?}", page.route);
 
             if matches!(access, CanAccess::No(_)) {

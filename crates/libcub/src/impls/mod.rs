@@ -13,7 +13,7 @@ use config_types::{
 use futures_core::future::BoxFuture;
 use itertools::Itertools;
 use layers::{
-    compression::CompressionLayer, domain_redirect::DomainRedirectLayer,
+    compression::CompressionLayer, cub_req::CubReqLayer, domain_redirect::DomainRedirectLayer,
     strip_slash_if_404::StripSlashIf404Layer,
 };
 use libmomclient::{MomClient, MomClientConfig, MomEventListener};
@@ -506,6 +506,7 @@ async fn setup_app_routes(
         .layer(source_layer.clone())
         .layer(CompressionLayer::default())
         .layer(StripSlashIf404Layer)
+        .layer(CubReqLayer)
         .layer(DomainRedirectLayer)
         .layer(DefaultBodyLimit::max(32 * 1024 * 1024))
         .layer(

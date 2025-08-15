@@ -5,6 +5,7 @@ use axum::{
 };
 use http::StatusCode;
 
+mod admin;
 mod autocomplete;
 mod comments;
 mod link_preview;
@@ -14,6 +15,7 @@ mod refresh_userinfo;
 /// Returns routes that are available in both development and production
 pub(crate) fn public_api_routes() -> Router {
     Router::new()
+        .nest("/admin", admin::admin_routes())
         .route("/comments", get(comments::serve_comments))
         .route("/autocomplete", get(autocomplete::serve_autocomplete))
         .route(
