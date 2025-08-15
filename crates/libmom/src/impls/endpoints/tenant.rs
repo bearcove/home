@@ -6,6 +6,7 @@ use credentials::UserId;
 use libhttpclient::Uri;
 use rusqlite::OptionalExtension;
 
+use crate::impls::discord_roles::synchronize_one_discord_role;
 use crate::impls::users::{
     fetch_user_info, save_discord_credentials, save_discord_profile, save_github_credentials,
     save_github_profile, save_patreon_credentials, save_patreon_profile,
@@ -214,6 +215,8 @@ async fn discord_callback(
 
             save_discord_profile(pool, &profile, &user_id)?;
             let user_info = { fetch_user_info(pool, &user_id)?.unwrap() };
+
+            synchronize_one_discord_role(ts.as_ref(), &user_info).await?;
 
             Some(mom_types::DiscordCallbackResponse { user_info })
         }
