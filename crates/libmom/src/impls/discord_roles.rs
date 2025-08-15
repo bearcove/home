@@ -3,7 +3,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use config_types::TenantDomain;
-use credentials::{DiscordChannelId, DiscordRoleId, DiscordUserId, FasterthanlimeTier, UserInfo};
+use credentials::{
+    DiscordChannelId, DiscordRoleId, DiscordUserId, FasterthanlimeTier, UserId, UserInfo,
+};
 use eyre::Result;
 use libdiscord::DiscordGuild;
 use mom_types::AllUsers;
@@ -366,9 +368,23 @@ pub(crate) async fn synchronize_all_discord_roles(
             }
         }
     }
+
     log::info!(
         "Built Discord tier map with {} entries",
         discord_tier_map.len()
+    );
+
+    // Build a map from UserId to DiscordUserId
+    let mut user_to_discord_map: HashMap<UserId, DiscordUserId> = HashMap::new();
+    for user_info in users.users.values() {
+        if let Some(discord_profile) = &user_info.discord {
+            user_to_discord_map.insert(user_info.id.clone(), discord_profile.id.clone());
+        }
+    }
+
+    log::info!(
+        "Built user to Discord map with {} entries",
+        user_to_discord_map.len()
     );
 
     // Fetch all members of the server
@@ -440,6 +456,7 @@ pub(crate) async fn synchronize_all_discord_roles(
     // Track changes made
     let mut total_changes = 0;
     let mut total_users_changed = 0;
+    let mut ignored_members = 0;
 
     // Process each member
     for member in &members {
@@ -449,10 +466,27 @@ pub(crate) async fn synchronize_all_discord_roles(
             .as_ref()
             .and_then(|user| discord_tier_map.get(&user.id).copied());
 
-        let changes = process_single_member(member, expected_tier, &cx, ts).await?;
-        if changes > 0 {
-            total_users_changed += 1;
-            total_changes += changes;
+        // Only process members that have a corresponding user in our system
+        let should_process = member
+            .user
+            .as_ref()
+            .map(|user| {
+                // if we don't have a discord user ID, that means they haven't linked their discord account
+                // to home and thus maybe their role is assigned by Patreon directly.
+                user_to_discord_map
+                    .values()
+                    .any(|discord_id| discord_id == &user.id)
+            })
+            .unwrap_or(false);
+
+        if should_process {
+            let changes = process_single_member(member, expected_tier, &cx, ts).await?;
+            if changes > 0 {
+                total_users_changed += 1;
+                total_changes += changes;
+            }
+        } else {
+            ignored_members += 1;
         }
     }
 
@@ -460,15 +494,16 @@ pub(crate) async fn synchronize_all_discord_roles(
     if total_changes > 0 {
         let duration = start_time.elapsed();
         let summary = format!(
-            "Discord role sync complete: Made {total_changes} role changes for {total_users_changed} users in {duration:.2?}"
+            "Discord role sync complete: Made {total_changes} role changes for {total_users_changed} users in {duration:.2?} ({ignored_members} members ignored for not having corresponding Discord user ID)"
         );
 
         log::info!("{summary}");
         cx.log(ts, "bots", &summary).await?;
     } else {
         log::info!(
-            "Discord role sync complete: No changes needed (checked {} members in {:.2?})",
-            members.len(),
+            "Discord role sync complete: No changes needed (checked {} members, {} ignored for not having corresponding Discord user ID, in {:.2?})",
+            members.len() - ignored_members,
+            ignored_members,
             start_time.elapsed()
         );
     }
