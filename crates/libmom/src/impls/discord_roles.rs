@@ -258,7 +258,7 @@ pub(crate) async fn synchronize_one_discord_role(
 
     // Check if user has Discord profile
     let Some(discord_profile) = &user_info.discord else {
-        log::debug!("User {} has no Discord profile", user_info.id);
+        log::info!("User {} has no Discord profile", user_info.id);
         return Ok(());
     };
 
@@ -270,10 +270,37 @@ pub(crate) async fn synchronize_one_discord_role(
         .get_fasterthanlime_tier()
         .map(|(tier, _cause)| tier);
 
-    // Fetch the specific guild member
-    let member = discord_mod
+    // Try to fetch the specific guild member
+    let member = match discord_mod
         .get_guild_member(&cx.guild.id, &discord_profile.id, &ts.ti.tc)
-        .await?;
+        .await
+    {
+        Ok(member) => {
+            // User is a member of the guild, upsert them in the database
+            let conn = ts.pool.get()?;
+            conn.execute(
+                "INSERT OR REPLACE INTO discord_guild_members (guild_id, user_id) VALUES (?1, ?2)",
+                [cx.guild.id.as_str(), discord_profile.id.as_str()],
+            )?;
+            log::info!("User {} is a member of guild {}", user_info.id, cx.guild.id);
+            member
+        }
+        Err(e) => {
+            // User is not a member of the guild, remove them from the database if they exist
+            let conn = ts.pool.get()?;
+            conn.execute(
+                "DELETE FROM discord_guild_members WHERE guild_id = ?1 AND user_id = ?2",
+                [cx.guild.id.as_str(), discord_profile.id.as_str()],
+            )?;
+            log::info!(
+                "User {} is not a member of guild {}: {}",
+                user_info.id,
+                cx.guild.id,
+                e
+            );
+            return Ok(());
+        }
+    };
 
     // Process this single member
     let changes = process_single_member(&member, expected_tier, &cx, ts).await?;

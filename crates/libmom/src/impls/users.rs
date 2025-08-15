@@ -198,17 +198,20 @@ pub(crate) fn fetch_user_info(
                 d.id as d_id,
                 d.username as d_username,
                 d.global_name as d_global_name,
-                d.avatar_hash as d_avatar_hash
+                d.avatar_hash as d_avatar_hash,
+                CASE WHEN dgm.user_id IS NOT NULL THEN 1 ELSE 0 END as in_discord
             FROM users u
             LEFT JOIN patreon_profiles p ON u.id = p.user_id
             LEFT JOIN github_profiles g ON u.id = g.user_id
             LEFT JOIN discord_profiles d ON u.id = d.user_id
+            LEFT JOIN discord_guild_members dgm ON dgm.user_id = d.id
             WHERE u.id = ?1
             ",
             [user_id],
             |row| {
                 let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
                 let gifted_tier: Option<String> = row.get("gifted_tier")?;
+                let in_discord: bool = row.get::<_, i32>("in_discord")? != 0;
 
                 // Build Patreon profile if data exists
                 let patreon = {
@@ -264,6 +267,7 @@ pub(crate) fn fetch_user_info(
                     patreon,
                     github,
                     discord,
+                    in_discord,
                 })
             },
         )
@@ -699,6 +703,44 @@ pub(crate) async fn refresh_userinfo(
         }
     };
 
+    // Check if the user is in Discord by querying the Discord API and updating the database
+    let in_discord = if let Some(discord_profile) = &discord {
+        let discord_mod = libdiscord::load();
+
+        // Get the first guild the bot is in
+        let guilds = discord_mod.list_bot_guilds(&ts.ti.tc).await?;
+        if let Some(guild) = guilds.first() {
+            // Try to fetch the member from Discord
+            match discord_mod
+                .get_guild_member(&guild.id, &discord_profile.id, &ts.ti.tc)
+                .await
+            {
+                Ok(_member) => {
+                    // Member exists in Discord, insert/update in database
+                    let conn = ts.pool.get()?;
+                    conn.execute(
+                        "INSERT OR REPLACE INTO discord_guild_members (guild_id, user_id) VALUES (?1, ?2)",
+                        [guild.id.as_str(), discord_profile.id.as_str()],
+                    )?;
+                    true
+                }
+                Err(_) => {
+                    // Member doesn't exist in Discord, remove from database
+                    let conn = ts.pool.get()?;
+                    conn.execute(
+                        "DELETE FROM discord_guild_members WHERE guild_id = ?1 AND user_id = ?2",
+                        [guild.id.as_str(), discord_profile.id.as_str()],
+                    )?;
+                    false
+                }
+            }
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+
     let user_info = UserInfo {
         id,
         fetched_at: OffsetDateTime::now_utc(),
@@ -706,6 +748,7 @@ pub(crate) async fn refresh_userinfo(
         patreon,
         github,
         discord,
+        in_discord,
     };
 
     discord_roles::synchronize_one_discord_role(ts, &user_info).await?;
@@ -736,17 +779,20 @@ pub(crate) async fn fetch_all_users(ts: &MomTenantState) -> eyre::Result<AllUser
             d.id as d_id,
             d.username as d_username,
             d.global_name as d_global_name,
-            d.avatar_hash as d_avatar_hash
+            d.avatar_hash as d_avatar_hash,
+            CASE WHEN dgm.user_id IS NOT NULL THEN 1 ELSE 0 END as in_discord
         FROM users u
         LEFT JOIN patreon_profiles p ON u.id = p.user_id
         LEFT JOIN github_profiles g ON u.id = g.user_id
         LEFT JOIN discord_profiles d ON u.id = d.user_id
+        LEFT JOIN discord_guild_members dgm ON dgm.user_id = d.id
         ",
         )?;
 
         let rows = stmt.query_map([], |row| {
             let id: UserId = UserId::new(row.get::<_, i64>("id")?.to_string());
             let gifted_tier: Option<String> = row.get("gifted_tier")?;
+            let in_discord: bool = row.get::<_, i32>("in_discord")? != 0;
 
             // Build Patreon profile if data exists
             let patreon = {
@@ -802,6 +848,7 @@ pub(crate) async fn fetch_all_users(ts: &MomTenantState) -> eyre::Result<AllUser
                 patreon,
                 github,
                 discord,
+                in_discord,
             })
         })?;
 

@@ -289,6 +289,7 @@ async fn serve_login_for_dev(tr: CubReqImpl) -> LegacyReply {
         discord: None,
         gifted_tier: None,
         fetched_at: OffsetDateTime::now_utc(),
+        in_discord: false,
     };
 
     let auth_bundle = AuthBundle { user_info };

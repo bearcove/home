@@ -76,6 +76,10 @@ pub struct UserInfo {
     #[facet(default)]
     pub discord: Option<DiscordProfile>,
 
+    /// Is that user a member of the Discord server?
+    #[facet(default)]
+    pub in_discord: bool,
+
     /// gifted tier (if any)
     #[facet(default)]
     pub gifted_tier: Option<String>,
