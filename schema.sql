@@ -111,3 +111,13 @@ CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
 CREATE INDEX idx_github_profiles_user_id ON github_profiles(user_id);
 CREATE INDEX idx_patreon_profiles_user_id ON patreon_profiles(user_id);
 CREATE INDEX idx_discord_profiles_user_id ON discord_profiles(user_id);
+CREATE TABLE discord_guilds (
+                guild_id TEXT PRIMARY KEY,
+                approximate_member_count INTEGER,
+                approximate_presence_count INTEGER
+            );
+CREATE TABLE discord_guild_members (
+                guild_id TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                PRIMARY KEY (guild_id, user_id)
+            );

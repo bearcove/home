@@ -12,7 +12,7 @@ use mom_types::{
 use std::str::FromStr;
 
 use libhttpclient::{
-    HeaderMap, HeaderValue, Uri,
+    HeaderMap, HeaderValue, Response, Uri,
     header::{self},
 };
 use log::info;
@@ -519,6 +519,15 @@ impl MomTenantClient for MomTenantClientImpl {
 
             let b: Box<dyn MediaUploader> = Box::new(MediaUploaderImpl { ws, listener });
             Ok(b)
+        })
+    }
+
+    fn opendoor<'fut>(&'fut self, body: Bytes) -> BoxFuture<'fut, Result<Box<dyn Response>>> {
+        Box::pin(async move {
+            let uri = self.config_mom_uri("opendoor");
+            let req = self.hclient.post(uri).with_auth(&self.mcc).body(body);
+            let res = req.send().await?;
+            Ok(res)
         })
     }
 }

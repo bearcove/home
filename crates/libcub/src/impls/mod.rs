@@ -294,9 +294,7 @@ async fn process_mom_good_morning(
             tc: tis.tc,
         });
 
-        if let Some(users) = tis.users {
-            users_per_ts.insert(tn.clone(), users);
-        }
+        users_per_ts.insert(tn.clone(), tis.users);
         let mappings = PathMappings::from_ti(&ti);
 
         let rs = 'load: {

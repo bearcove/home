@@ -55,7 +55,7 @@ pub(crate) struct MomTenantState {
     pub(crate) pool: Pool,
 
     pub(crate) users_inflight: InflightSlots<(), Arc<AllUsers>>,
-    pub(crate) users: Arc<Mutex<Option<Arc<AllUsers>>>>,
+    pub(crate) users: Arc<Mutex<Arc<AllUsers>>>,
     pub(crate) pak: Arc<Mutex<Option<Pak>>>,
 
     pub(crate) object_store: Arc<dyn ObjectStore>,
@@ -277,7 +277,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                     ts.ti.tc.name.magenta(),
                     users.users.len()
                 );
-                *ts.users.lock() = Some(Arc::new(users));
+                *ts.users.lock() = Arc::new(users);
             }
             Err(e) => {
                 error!(
@@ -321,7 +321,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                 match ts.users_inflight.query(()).await {
                     Ok(users) => {
                         log::debug!("[{}] Fetched {} sponsors", tenant_name, users.users.len());
-                        *ts.users.lock() = Some(users);
+                        *ts.users.lock() = users;
                     }
                     Err(e) => {
                         log::debug!("[{tenant_name}] Failed to fetch sponsors: {e} / {e:?}")

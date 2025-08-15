@@ -1,5 +1,6 @@
 use axum::{
     body::Body,
+    extract::{FromRequest, Request},
     http::{HeaderName, StatusCode, header},
     response::{IntoResponse, Response},
 };
@@ -59,6 +60,58 @@ where
             Body::from(payload),
         )
             .into_legacy_reply()
+    }
+}
+
+impl<T, S> FromRequest<S> for FacetJson<T>
+where
+    for<'facet> T: Facet<'facet>,
+    S: Send + Sync,
+{
+    type Rejection = LegacyReply;
+
+    fn from_request(
+        req: Request,
+        state: &S,
+    ) -> impl Future<Output = Result<Self, Self::Rejection>> + Send {
+        Box::pin(async move {
+            let body = match axum::body::Bytes::from_request(req, state).await {
+                Ok(body) => body,
+                Err(_) => {
+                    return Err(LegacyHttpError::with_status(
+                        StatusCode::BAD_REQUEST,
+                        "Failed to read request body",
+                    )
+                    .into_legacy_reply());
+                }
+            };
+
+            let body = match String::from_utf8(body.to_vec()) {
+                Ok(s) => s,
+                Err(_) => {
+                    return Err(LegacyHttpError::with_status(
+                        StatusCode::BAD_REQUEST,
+                        "Invalid UTF-8",
+                    )
+                    .into_legacy_reply());
+                }
+            };
+
+            let body: T = match facet_json::from_str(&body) {
+                Ok(obj) => obj,
+                Err(err) => {
+                    log::error!("JSON deserialization error: {err:?}");
+                    log::error!("JSON sent: {body}");
+                    return Err(LegacyHttpError::with_status(
+                        StatusCode::BAD_REQUEST,
+                        "Invalid JSON",
+                    )
+                    .into_legacy_reply());
+                }
+            };
+            // TODO: if error, log error _and_ t?
+            Ok(FacetJson(body))
+        })
     }
 }
 

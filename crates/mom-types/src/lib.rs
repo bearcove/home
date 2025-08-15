@@ -347,7 +347,7 @@ pub struct TenantInitialState {
     pub pak: Option<Pak>,
 
     /// The users for this tenant
-    pub users: Option<Arc<AllUsers>>,
+    pub users: Arc<AllUsers>,
 
     /// The configuration for this tenant
     pub tc: TenantConfig,

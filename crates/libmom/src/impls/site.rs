@@ -1,5 +1,8 @@
+use std::borrow::Cow;
+
 use axum::{
     body::Body,
+    extract::{FromRequest, Request},
     http::{
         StatusCode,
         header::{self, CONTENT_TYPE},
@@ -28,6 +31,56 @@ impl<T: IntoResponse> IntoReply for T {
 
 pub struct FacetJson<T>(pub T);
 
+impl<T, S> FromRequest<S> for FacetJson<T>
+where
+    for<'facet> T: Facet<'facet>,
+    S: Send + Sync,
+{
+    type Rejection = Reply;
+
+    fn from_request(
+        req: Request,
+        state: &S,
+    ) -> impl Future<Output = Result<Self, Self::Rejection>> + Send {
+        Box::pin(async move {
+            let body = match axum::body::Bytes::from_request(req, state).await {
+                Ok(body) => body,
+                Err(_) => {
+                    return Err(HttpError::with_status(
+                        StatusCode::BAD_REQUEST,
+                        "Failed to read request body",
+                    )
+                    .into_reply());
+                }
+            };
+
+            let body = match String::from_utf8(body.to_vec()) {
+                Ok(s) => s,
+                Err(_) => {
+                    return Err(
+                        HttpError::with_status(StatusCode::BAD_REQUEST, "Invalid UTF-8")
+                            .into_reply(),
+                    );
+                }
+            };
+
+            let body: T = match facet_json::from_str(&body) {
+                Ok(obj) => obj,
+                Err(err) => {
+                    log::error!("JSON deserialization error: {err:?}");
+                    log::error!("JSON sent: {body}");
+                    return Err(
+                        HttpError::with_status(StatusCode::BAD_REQUEST, "Invalid JSON")
+                            .into_reply(),
+                    );
+                }
+            };
+            // TODO: if error, log error _and_ t?
+            Ok(FacetJson(body))
+        })
+    }
+}
+
 impl<'facet, T> IntoReply for FacetJson<T>
 where
     T: Facet<'facet>,
@@ -46,10 +99,26 @@ where
 
 #[derive(Debug)]
 pub enum HttpError {
-    Structured { payload: MomStructuredError },
+    WithStatus {
+        status_code: StatusCode,
+        msg: Cow<'static, str>,
+    },
+    Structured {
+        payload: MomStructuredError,
+    },
 }
 
 impl HttpError {
+    pub fn with_status<S>(status_code: StatusCode, msg: S) -> Self
+    where
+        S: Into<Cow<'static, str>>,
+    {
+        HttpError::WithStatus {
+            status_code,
+            msg: msg.into(),
+        }
+    }
+
     fn from_report(err: Report) -> Self {
         let uuid = sentrywrap::capture_report(&err);
 
@@ -124,6 +193,7 @@ impl<'input> From<DeserError<'input>> for HttpError {
 impl IntoResponse for HttpError {
     fn into_response(self) -> Response {
         match self {
+            HttpError::WithStatus { status_code, msg } => (status_code, msg).into_response(),
             HttpError::Structured { payload } => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 [

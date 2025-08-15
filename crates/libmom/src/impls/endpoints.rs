@@ -177,9 +177,9 @@ async fn handle_socket(mut socket: ws::WebSocket) {
         let revision = ts.pak.lock().clone();
         let users = ts.users.lock().clone();
         log::info!(
-            "in good morning, for tenant {}, sending {} users (-1 means None)",
+            "in good morning, for tenant {}, sending {} users",
             tn,
-            users.as_ref().map(|s| s.users.len() as isize).unwrap_or(-1)
+            users.as_ref().users.len()
         );
 
         // Create a TenantConfig with derived cookie sauce

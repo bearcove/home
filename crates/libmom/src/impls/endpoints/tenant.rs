@@ -33,6 +33,7 @@ use super::tenant_extractor::TenantExtractor;
 
 mod derive;
 mod media;
+mod opendoor;
 
 pub fn tenant_routes() -> Router {
     Router::new()
@@ -51,6 +52,7 @@ pub fn tenant_routes() -> Router {
         .route("/media/transcode", post(media::transcode))
         .route("/derive", post(derive::derive))
         .route("/revision/upload/{revision_id}", put(revision_upload_revid))
+        .route("/opendoor", post(opendoor::opendoor))
 }
 
 async fn patreon_callback(
