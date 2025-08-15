@@ -390,24 +390,7 @@ impl Object for LoadedPageVal {
             "is_series_index" => (self.kind == PageKind::SeriesListing).into(),
             "is_series_parts_index" => (self.kind == PageKind::SeriesIndex).into(),
 
-            "exclusive_until" => {
-                // 6 months
-                const EXCLUSIVITY_DURATION: Duration = Duration::from_secs(60 * 60 * 24 * 30 * 6);
-                if self.video_info.dual_feature {
-                    let unlocks_at = self.date + EXCLUSIVITY_DURATION;
-
-                    if self.video_info.champion.is_some() {
-                        // thanks champ!
-                        Value::from(false)
-                    } else if unlocks_at > OffsetDateTime::now_utc() {
-                        unlocks_at.mj()
-                    } else {
-                        Value::from(false)
-                    }
-                } else {
-                    Value::from(false)
-                }
-            }
+            "exclusive_until" => Value::from(false),
 
             "video_info" => {
                 let video_info = self.video_info.clone();
