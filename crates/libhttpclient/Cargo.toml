@@ -29,3 +29,5 @@ mom-types = { version = "0.1.0", path = "../mom-types" }
 reqwest = { version = "0.12.18", default-features = false, features = [
     "rustls-tls-native-roots",
 ] }
+reqwest-middleware = "0.4.2"
+reqwest-retry = "0.7.0"

@@ -5,7 +5,9 @@ use facet_json::DeserError;
 use facet_reflect::Peek;
 use futures_core::{future::BoxFuture, stream::BoxStream};
 use mom_types::MomStructuredError;
-use std::collections::HashMap;
+use reqwest_middleware::ClientWithMiddleware;
+use reqwest_retry::{Jitter, RetryTransientMiddleware, policies::ExponentialBackoff};
+use std::{collections::HashMap, time::Duration};
 
 pub use form_urlencoded;
 pub use http::{
@@ -38,7 +40,7 @@ impl Mod for ModImpl {
 }
 
 struct HttpClientImpl {
-    client: reqwest::Client,
+    client: reqwest_middleware::ClientWithMiddleware,
 }
 
 impl HttpClientImpl {
@@ -54,8 +56,20 @@ impl HttpClientImpl {
                 builder = builder.redirect(reqwest::redirect::Policy::none());
             }
         }
+        let client = builder.build().unwrap();
+
+        // TODO: allow disabling retries in ClientOpts
+        let retry_policy = ExponentialBackoff::builder()
+            .retry_bounds(Duration::from_secs(1), Duration::from_secs(60))
+            .jitter(Jitter::Bounded)
+            .base(2)
+            .build_with_total_retry_duration(Duration::from_secs(24 * 60 * 60));
+        let client_with_middleware = reqwest_middleware::ClientBuilder::new(client)
+            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+            .build();
+
         Self {
-            client: builder.build().unwrap(),
+            client: client_with_middleware,
         }
     }
 }
@@ -92,7 +106,7 @@ impl HttpClient for HttpClientImpl {
 }
 
 struct RequestBuilderImpl {
-    client: reqwest::Client,
+    client: ClientWithMiddleware,
     method: Method,
     uri: Uri,
     headers: HeaderMap,
