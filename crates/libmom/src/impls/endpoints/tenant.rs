@@ -181,11 +181,10 @@ async fn discord_callback(
     let creds = mod_discord
         .handle_oauth_callback(&ts.ti.tc, web, &args)
         .await?;
-    let client = global_state().client.as_ref();
 
     let res: Option<mom_types::DiscordCallbackResponse> = match creds {
         Some(creds) => {
-            let profile = mod_discord.fetch_profile(&creds, client).await?;
+            let profile = mod_discord.fetch_profile(&creds).await?;
             save_discord_credentials(pool, &profile.id, &creds)?;
 
             let conn = pool.get()?;

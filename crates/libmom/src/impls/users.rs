@@ -537,13 +537,9 @@ pub(crate) async fn fetch_uptodate_discord_credentials(
         return Ok(None);
     };
 
-    let client = global_state().client.as_ref();
-
     if creds.expire_soon() {
         let discord = libdiscord::load();
-        let refreshed_creds = discord
-            .refresh_credentials(&ts.ti.tc, &creds, client)
-            .await?;
+        let refreshed_creds = discord.refresh_credentials(&ts.ti.tc, &creds).await?;
         save_discord_credentials(&ts.pool, discord_user_id, &refreshed_creds)?;
         Ok(Some(refreshed_creds))
     } else {
@@ -694,7 +690,7 @@ pub(crate) async fn refresh_userinfo(
                 })?;
 
             let discord = libdiscord::load();
-            let profile = discord.fetch_profile(&creds, client).await?;
+            let profile = discord.fetch_profile(&creds).await?;
             save_discord_profile(&ts.pool, &profile, &id)?;
 
             Some(profile)

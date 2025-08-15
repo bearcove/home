@@ -27,6 +27,18 @@ plait! {
     /// Discord user identifiers — those are snowflakes, we store them as string
     pub struct DiscordUserId => &DiscordUserIdRef;
 
+    /// Discord guild identifiers — those are snowflakes, we store them as string
+    pub struct DiscordGuildId => &DiscordGuildIdRef;
+
+    /// Discord role identifiers — those are snowflakes, we store them as string
+    pub struct DiscordRoleId => &DiscordRoleIdRef;
+
+    /// Discord channel identifiers — those are snowflakes, we store them as string
+    pub struct DiscordChannelId => &DiscordChannelIdRef;
+
+    /// Discord message identifiers — those are snowflakes, we store them as string
+    pub struct DiscordMessageId => &DiscordMessageIdRef;
+
     /// Why did we get such a tier?
     pub struct TierCause => &TierCauseRef;
 }
@@ -126,7 +138,7 @@ pub struct DiscordProfile {
 
 /// hardcoded stuff for fasterthanlime
 
-#[derive(Facet, Clone, Copy, Debug)]
+#[derive(Facet, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FasterthanlimeTier {
     None = 0,
@@ -146,14 +158,6 @@ impl Ord for FasterthanlimeTier {
         (*self as u8).cmp(&(*other as u8))
     }
 }
-
-impl PartialEq for FasterthanlimeTier {
-    fn eq(&self, other: &Self) -> bool {
-        std::mem::discriminant(self) == std::mem::discriminant(other)
-    }
-}
-
-impl Eq for FasterthanlimeTier {}
 
 impl UserInfo {
     pub fn get_fasterthanlime_tier(&self) -> Option<(FasterthanlimeTier, TierCause)> {

@@ -6,7 +6,6 @@ use sentrywrap::sentry;
 
 use crate::impls::{
     endpoints::tenant_extractor::TenantExtractor,
-    global_state,
     site::{FacetJson, IntoReply, Reply},
 };
 
@@ -17,12 +16,11 @@ pub(crate) async fn serve_wip(TenantExtractor(ts): TenantExtractor) -> Reply {
     }
 
     let discord = libdiscord::load();
-    let client = global_state().client.as_ref();
 
     let tc = &ts.ti.tc;
 
     log::info!("Listing bot guilds...");
-    let guilds = discord.list_bot_guilds(tc, client).await?;
+    let guilds = discord.list_bot_guilds(tc).await?;
 
     // Take the first guild and list its members
     if let Some(first_guild) = guilds.first() {
@@ -31,33 +29,27 @@ pub(crate) async fn serve_wip(TenantExtractor(ts): TenantExtractor) -> Reply {
             first_guild.name,
             first_guild.id
         );
-        let members = discord
-            .list_guild_members(&first_guild.id, tc, client)
-            .await?;
+        let members = discord.list_guild_members(&first_guild.id, tc).await?;
 
         log::info!(
             "Listing roles for guild: {} ({})",
             first_guild.name,
             first_guild.id
         );
-        let roles = discord
-            .list_guild_roles(&first_guild.id, tc, client)
-            .await?;
+        let roles = discord.list_guild_roles(&first_guild.id, tc).await?;
 
         log::info!(
             "Listing channels for guild: {} ({})",
             first_guild.name,
             first_guild.id
         );
-        let channels = discord
-            .list_guild_channels(&first_guild.id, tc, client)
-            .await?;
+        let channels = discord.list_guild_channels(&first_guild.id, tc).await?;
 
         // Try to find the "#bots" channel and send a message
         if let Some(bots_channel) = channels.iter().find(|c| c.name == "bots") {
             log::info!("Found #bots channel, sending message...");
             let _message = discord
-                .post_message_to_channel(&bots_channel.id, "Wip ran!", tc, client)
+                .post_message_to_channel(&bots_channel.id, "Wip ran!", tc)
                 .await?;
         }
 
