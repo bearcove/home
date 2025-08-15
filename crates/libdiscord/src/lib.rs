@@ -343,6 +343,20 @@ impl Mod for ModImpl {
             Ok(message)
         })
     }
+
+    fn get_guild_member<'fut>(
+        &'fut self,
+        guild_id: &'fut DiscordGuildIdRef,
+        user_id: &'fut DiscordUserIdRef,
+        tc: &'fut TenantConfig,
+    ) -> BoxFuture<'fut, Result<DiscordGuildMember>> {
+        Box::pin(async move {
+            let uri = v10_uri(&format!("/guilds/{guild_id}/members/{user_id}"), &[])?;
+            let member = json_req::<DiscordGuildMember>(tc, self.client.get(uri)).await?;
+            log::info!("Successfully fetched guild member {user_id} for guild {guild_id}");
+            Ok(member)
+        })
+    }
 }
 
 #[derive(Debug, Clone, Facet)]
