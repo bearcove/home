@@ -145,7 +145,7 @@ async fn process_single_member(
     if !actions.is_empty() {
         let display_name = user.global_name.as_deref().unwrap_or(&user.username);
         let action_list = actions.join(", ");
-        let message = format!("For @{} ({}): {}", user.username, display_name, action_list);
+        let message = format!("For <@{}> ({}): {}", user.id, display_name, action_list);
 
         // Send message to #bots channel if it exists
         cx.log(&message, ts).await?;
