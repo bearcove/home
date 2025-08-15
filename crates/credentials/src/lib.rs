@@ -170,10 +170,10 @@ impl UserInfo {
             .patreon
             .as_ref()
             .and_then(|p| p.tier.as_deref())
-            .map(|tier| match tier {
-                "Bronze" => FasterthanlimeTier::Bronze,
-                "Silver" => FasterthanlimeTier::Silver,
-                "Gold" | "Creator" => FasterthanlimeTier::Gold,
+            .map(|tier| match tier.to_lowercase().as_str() {
+                "bronze" => FasterthanlimeTier::Bronze,
+                "silver" => FasterthanlimeTier::Silver,
+                "gold" | "creator" => FasterthanlimeTier::Gold,
                 _ => FasterthanlimeTier::None,
             })
             .unwrap_or(FasterthanlimeTier::None);
@@ -195,10 +195,10 @@ impl UserInfo {
         let gifted_tier = self
             .gifted_tier
             .as_deref()
-            .map(|tier| match tier {
-                "Bronze" => FasterthanlimeTier::Bronze,
-                "Silver" => FasterthanlimeTier::Silver,
-                "Gold" | "Creator" => FasterthanlimeTier::Gold,
+            .map(|tier| match tier.to_lowercase().as_str() {
+                "bronze" => FasterthanlimeTier::Bronze,
+                "silver" => FasterthanlimeTier::Silver,
+                "gold" | "creator" => FasterthanlimeTier::Gold,
                 _ => FasterthanlimeTier::None,
             })
             .unwrap_or(FasterthanlimeTier::None);

@@ -331,12 +331,17 @@ pub(crate) async fn synchronize_one_discord_role(
     };
 
     // Process this single member
+    log::info!(
+        "Processing user {} with expected tier: {:?}",
+        user_info.id,
+        expected_tier
+    );
     let changes = process_single_member(&member, expected_tier, &cx, ts).await?;
 
     if changes > 0 {
         log::info!("Made {} role changes for user {}", changes, user_info.id);
     } else {
-        log::debug!("No role changes needed for user {}", user_info.id);
+        log::info!("No role changes needed for user {}", user_info.id);
     }
 
     Ok(())

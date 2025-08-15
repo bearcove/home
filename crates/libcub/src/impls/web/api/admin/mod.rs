@@ -47,28 +47,19 @@ async fn serve_opendoor(_tr: CubReqImpl, body: Body) -> LegacyReply {
     log::info!("serve_opendoor: starting request");
     let tcli = _tr.tenant.tcli();
     let bytes = match axum::body::to_bytes(body, 4 * 1024 * 1024).await {
-        Ok(bytes) => {
-            log::info!("serve_opendoor: received {} bytes", bytes.len());
-            bytes
-        }
+        Ok(bytes) => bytes,
         Err(e) => {
-            log::info!("serve_opendoor: failed to read request body: {e}");
+            log::warn!("Could not receive opendoor request body: {e}");
             return Ok(axum::http::Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("Request body too large or invalid"))
                 .unwrap());
         }
     };
-    log::info!("serve_opendoor: calling tcli.opendoor");
     let response = tcli.opendoor(bytes).await?;
     let status = response.status();
-    log::info!("serve_opendoor: received response with status {status}");
     let headers = response.headers_only_string_safe();
     let body = response.bytes().await?;
-    log::info!(
-        "serve_opendoor: received response body with {} bytes",
-        body.len()
-    );
 
     let mut response_builder = axum::http::Response::builder().status(status);
 
