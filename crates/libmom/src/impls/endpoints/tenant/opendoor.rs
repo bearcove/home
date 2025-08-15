@@ -1,11 +1,13 @@
 use axum::Extension;
-use credentials::UserId;
+use credentials::{UserId, UserInfo};
 use facet::Facet;
 use mom_types::AllUsers;
 
 use crate::impls::{
+    discord_roles::synchronize_one_discord_role,
     endpoints::tenant_extractor::TenantExtractor,
     site::{FacetJson, IntoReply, Reply},
+    users::refresh_userinfo,
 };
 
 #[allow(dead_code)]
@@ -24,7 +26,7 @@ pub enum OpendoorRequest {
 #[repr(u8)]
 pub enum OpendoorResponse {
     ListAllUsers { all_users: AllUsers },
-    SetGiftedTier {},
+    SetGiftedTier { user_info: UserInfo },
 }
 
 pub(crate) async fn opendoor(
@@ -47,7 +49,24 @@ pub(crate) async fn opendoor(
                     if rows_affected == 0 {
                         return Err(eyre::eyre!("User not found").into());
                     }
-                    FacetJson(OpendoorResponse::SetGiftedTier {}).into_reply()
+
+                    // Refresh user info after updating gifted tier
+                    let user_info = match refresh_userinfo(&ts, &user_id).await {
+                        Ok(user_info) => user_info,
+                        Err(e) => {
+                            log::error!(
+                                "Failed to refresh user info after updating gifted tier: {e}"
+                            );
+                            return Err(e.into());
+                        }
+                    };
+
+                    // Synchronize Discord roles if user has Discord profile
+                    if let Err(e) = synchronize_one_discord_role(&ts, &user_info).await {
+                        log::error!("Failed to sync Discord roles after updating gifted tier: {e}");
+                    }
+
+                    FacetJson(OpendoorResponse::SetGiftedTier { user_info }).into_reply()
                 }
                 Err(e) => {
                     log::error!("Failed to update gifted tier: {e}");
