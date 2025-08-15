@@ -200,9 +200,9 @@ async fn process_single_member(
 
             let thank_you_messages = [
                 "Joining the ROLE tier today: USER!",
-                "USER has joined the ROLE club.",
-                "USER enjoy the ROLE perks!",
-                "USER is now ROLE — thanks for your support!",
+                "USER has joined the ROLE tier.",
+                "USER enjoy the ROLE tier perks!",
+                "USER is now ROLE tier — thanks for your support!",
                 "Welcome to the ROLE tier, USER",
             ];
 
