@@ -6476,7 +6476,7 @@ dependencies = [
  "liberrhandling",
  "log",
  "owo-colors",
- "sentry-log",
+ "sentry",
  "sysinfo",
  "tokio",
 ]

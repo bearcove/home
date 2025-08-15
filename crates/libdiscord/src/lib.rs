@@ -19,6 +19,10 @@ pub fn load() -> &'static dyn Mod {
     &MOD
 }
 
+// Note: coolbearbot needs the following permissions:
+// Manage Roles, View Channels, View Server Insights, View Server Subscription Insights,
+// Send Messages, Embed Links, Attach Files, Create Polls
+
 #[autotrait]
 impl Mod for ModImpl {
     fn make_login_url(&self, tc: &TenantConfig, web: WebConfig) -> eyre::Result<String> {
@@ -440,6 +444,112 @@ impl Mod for ModImpl {
             Ok(())
         })
     }
+
+    fn list_guild_channels<'fut>(
+        &'fut self,
+        guild_id: &'fut str,
+        tc: &'fut TenantConfig,
+        client: &'fut dyn HttpClient,
+    ) -> BoxFuture<'fut, Result<Vec<DiscordChannel>>> {
+        Box::pin(async move {
+            let discord_secrets = tc.discord_secrets()?;
+            let url = format!("https://discord.com/api/v10/guilds/{guild_id}/channels");
+            let uri: Uri = url.parse().map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
+
+            let res = client
+                .get(uri)
+                .polite_user_agent()
+                .header(
+                    HeaderName::from_static("content-type"),
+                    HeaderValue::from_static("application/json"),
+                )
+                .header(
+                    HeaderName::from_static("authorization"),
+                    HeaderValue::from_str(&format!("Bot {}", discord_secrets.bot_token))
+                        .map_err(|e| eyre::eyre!("Invalid bot token: {}", e))?,
+                )
+                .send()
+                .await
+                .map_err(|e| eyre::eyre!("While fetching guild channels: {}", e))?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let error = res
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Could not get error text".into());
+                return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
+            }
+
+            let text = res.text().await?;
+            let channels = match facet_json::from_str::<Vec<DiscordChannel>>(&text) {
+                Ok(channels) => channels,
+                Err(e) => {
+                    log::warn!("Failed to parse channels response: {e}");
+                    log::warn!("Full response text: {text}");
+                    return Err(eyre::eyre!("Failed to parse channels response: {e}"));
+                }
+            };
+
+            log::info!(
+                "Successfully fetched {} channels for guild {guild_id}",
+                channels.len()
+            );
+            Ok(channels)
+        })
+    }
+
+    fn post_message_to_channel<'fut>(
+        &'fut self,
+        channel_id: &'fut str,
+        content: &'fut str,
+        tc: &'fut TenantConfig,
+        client: &'fut dyn HttpClient,
+    ) -> BoxFuture<'fut, Result<DiscordMessage>> {
+        Box::pin(async move {
+            let discord_secrets = tc.discord_secrets()?;
+            let url = format!("https://discord.com/api/v10/channels/{channel_id}/messages");
+            let uri: Uri = url.parse().map_err(|e| eyre::eyre!("Invalid URL: {}", e))?;
+
+            let message_payload = DiscordMessagePayload {
+                content: content.to_string(),
+            };
+
+            let res = client
+                .post(uri)
+                .polite_user_agent()
+                .header(
+                    HeaderName::from_static("content-type"),
+                    HeaderValue::from_static("application/json"),
+                )
+                .header(
+                    HeaderName::from_static("authorization"),
+                    HeaderValue::from_str(&format!("Bot {}", discord_secrets.bot_token))
+                        .map_err(|e| eyre::eyre!("Invalid bot token: {}", e))?,
+                )
+                .json(&message_payload)?
+                .send()
+                .await
+                .map_err(|e| eyre::eyre!("While posting message to channel: {}", e))?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let error = res
+                    .text()
+                    .await
+                    .unwrap_or_else(|_| "Could not get error text".into());
+                return Err(eyre::eyre!("got HTTP {status}, server said: {error}"));
+            }
+
+            let message = res
+                .json::<DiscordMessage>()
+                .await
+                .map_err(|e| eyre::eyre!("Failed to parse message response: {}", e))?;
+
+            log::info!("Successfully posted message to channel {channel_id}");
+            Ok(message)
+        })
+    }
 }
 
 #[derive(Debug, Clone, Facet)]
@@ -583,4 +693,62 @@ pub(crate) fn make_discord_callback_url(tc: &TenantConfig, web: WebConfig) -> St
 #[derive(Debug, Clone, Facet)]
 pub struct DiscordUnlinkArgs {
     pub logged_in_user_id: UserId,
+}
+
+#[derive(Debug, Clone, Facet)]
+pub struct DiscordChannel {
+    /// Channel id
+    pub id: String,
+    /// Channel name
+    pub name: String,
+    /// Channel type (0 = text, 2 = voice, etc.)
+    pub r#type: u8,
+    /// Channel topic (for text channels)
+    #[facet(default)]
+    pub topic: Option<String>,
+    /// Channel position
+    #[facet(default)]
+    pub position: Option<i32>,
+    /// Channel permissions overwrites
+    pub permission_overwrites: Option<Vec<DiscordPermissionOverwrite>>,
+    /// Channel parent id (for threads/categories)
+    #[facet(default)]
+    pub parent_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Facet)]
+pub struct DiscordPermissionOverwrite {
+    /// Role or user id
+    pub id: String,
+    /// Type of overwrite (0 = role, 1 = member)
+    pub r#type: u8,
+    /// Permission bit set for allowed permissions
+    pub allow: String,
+    /// Permission bit set for denied permissions
+    pub deny: String,
+}
+
+#[derive(Debug, Clone, Facet)]
+struct DiscordMessagePayload {
+    content: String,
+}
+
+#[derive(Debug, Clone, Facet)]
+pub struct DiscordMessage {
+    /// Message id
+    pub id: String,
+    /// Channel id this message was sent in
+    pub channel_id: String,
+    /// Author of this message
+    pub author: DiscordUser,
+    /// Contents of the message
+    pub content: String,
+    /// When this message was sent
+    pub timestamp: String,
+    /// When this message was edited (or null if never)
+    pub edited_timestamp: Option<String>,
+    /// Whether this is a TTS message
+    pub tts: bool,
+    /// Whether this message mentions everyone
+    pub mention_everyone: bool,
 }

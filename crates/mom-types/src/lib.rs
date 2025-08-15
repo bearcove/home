@@ -314,7 +314,7 @@ pub enum TenantEventPayload {
 
     /// cubs derive sponsors to show from user info themselves. there's no delta
     /// going on here — we just send them all user info every so often
-    UsersUpdated(AllUsers),
+    UsersUpdated(Arc<AllUsers>),
 }
 
 impl std::fmt::Debug for TenantEventPayload {
@@ -347,7 +347,7 @@ pub struct TenantInitialState {
     pub pak: Option<Pak>,
 
     /// The users for this tenant
-    pub users: Option<AllUsers>,
+    pub users: Option<Arc<AllUsers>>,
 
     /// The configuration for this tenant
     pub tc: TenantConfig,

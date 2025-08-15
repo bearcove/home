@@ -21,4 +21,4 @@ owo-colors = "4.2.1"
 tokio = { workspace = true }
 sysinfo = "0.35.1"
 liberrhandling = { version = "0.1.0", path = "../liberrhandling" }
-sentry-log = { version = "0.42.0", features = ["logs"] }
+sentry = { version = "0.42.0", features = ["logs", "log"] }

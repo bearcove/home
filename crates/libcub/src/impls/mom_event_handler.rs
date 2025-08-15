@@ -56,8 +56,8 @@ async fn handle_tenant_event(
     }
 }
 
-fn handle_users_updated(ts: Arc<CubTenantImpl>, users: AllUsers) {
-    *ts.users.write() = Arc::new(users);
+fn handle_users_updated(ts: Arc<CubTenantImpl>, users: Arc<AllUsers>) {
+    *ts.users.write() = users;
 }
 
 async fn handle_revision_changed(ts: Arc<CubTenantImpl>, pak: Box<Pak>, web: WebConfig) {

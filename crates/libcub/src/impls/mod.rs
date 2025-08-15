@@ -256,11 +256,11 @@ async fn process_mom_good_morning(
 ) -> eyre::Result<(
     HashMap<TenantDomain, Arc<TenantInfo>>,
     HashMap<TenantDomain, CubRevisionState>,
-    HashMap<TenantDomain, AllUsers>,
+    HashMap<TenantDomain, Arc<AllUsers>>,
 )> {
     let mod_revision = librevision::load();
     let mut revs_per_ts: HashMap<TenantDomain, CubRevisionState> = Default::default();
-    let mut users_per_ts: HashMap<TenantDomain, AllUsers> = Default::default();
+    let mut users_per_ts: HashMap<TenantDomain, Arc<AllUsers>> = Default::default();
 
     info!(
         "Waiting for mom's good morning message to initialize tenants and start serving content..."
@@ -373,7 +373,7 @@ async fn build_global_state(
     mom_deploy_client: Arc<dyn MomClient>,
     tenant_infos: &HashMap<TenantDomain, Arc<TenantInfo>>,
     revs_per_ts: &mut HashMap<TenantDomain, CubRevisionState>,
-    users_per_ts: &mut HashMap<TenantDomain, AllUsers>,
+    users_per_ts: &mut HashMap<TenantDomain, Arc<AllUsers>>,
 ) -> eyre::Result<CubGlobalState> {
     let mut gs = CubGlobalState {
         config,
@@ -401,16 +401,14 @@ async fn build_global_state(
         let cookie_key = tower_cookies::Key::derive_from(&cookie_master_key);
 
         let rs = revs_per_ts.remove(tn).unwrap().clone();
-        let users = users_per_ts.remove(tn).unwrap_or_else(|| AllUsers {
-            users: Default::default(),
-        });
+        let users = users_per_ts.remove(tn).unwrap_or_default();
         let ts = CubTenantImpl {
             ti: ti.clone(),
             rev_state: RwLock::new(rs),
             bx_rev,
             store: object_store,
             cookie_key,
-            users: RwLock::new(Arc::new(users)),
+            users: RwLock::new(users),
             vite_port: Default::default(),
         };
         let ts = Arc::new(ts);

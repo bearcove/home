@@ -95,7 +95,7 @@ pub fn setup() {
         printer.install(Box::new(stderr));
     }
 
-    let logger = sentry_log::SentryLogger::with_dest(SimpleLogger);
+    let logger = sentry::integrations::log::SentryLogger::with_dest(SimpleLogger);
     log::set_boxed_logger(Box::new(logger)).unwrap();
 
     // Respect RUST_LOG, fallback to Trace if not set or invalid

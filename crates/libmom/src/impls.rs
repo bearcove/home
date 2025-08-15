@@ -27,6 +27,7 @@ use mom_types::{
 
 mod db;
 mod deriver;
+mod discord_roles;
 mod endpoints;
 mod ffmpeg;
 mod ffmpeg_stream;
@@ -53,9 +54,8 @@ pub(crate) struct MomGlobalState {
 pub(crate) struct MomTenantState {
     pub(crate) pool: Pool,
 
-    pub(crate) users_inflight: InflightSlots<(), AllUsers>,
-    pub(crate) users: Arc<Mutex<Option<AllUsers>>>,
-
+    pub(crate) users_inflight: InflightSlots<(), Arc<AllUsers>>,
+    pub(crate) users: Arc<Mutex<Option<Arc<AllUsers>>>>,
     pub(crate) pak: Arc<Mutex<Option<Pak>>>,
 
     pub(crate) object_store: Arc<dyn ObjectStore>,
@@ -239,7 +239,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                         })
                         .unwrap();
                     Box::pin(async move {
-                        let res = users::refresh_sponsors(&ts).await?;
+                        let res = Arc::new(users::refresh_sponsors(&ts).await?);
                         ts.broadcast_event(TenantEventPayload::UsersUpdated(res.clone()))?;
 
                         Ok(res)
@@ -277,7 +277,7 @@ pub async fn serve(args: MomServeArgs) -> eyre::Result<()> {
                     ts.ti.tc.name.magenta(),
                     users.users.len()
                 );
-                *ts.users.lock() = Some(users);
+                *ts.users.lock() = Some(Arc::new(users));
             }
             Err(e) => {
                 error!(
