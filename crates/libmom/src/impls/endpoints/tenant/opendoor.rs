@@ -4,7 +4,6 @@ use facet::Facet;
 use mom_types::AllUsers;
 
 use crate::impls::{
-    discord_roles::synchronize_one_discord_role,
     endpoints::tenant_extractor::TenantExtractor,
     site::{FacetJson, IntoReply, Reply},
     users::refresh_userinfo,
@@ -22,6 +21,7 @@ pub enum OpendoorRequest {
 }
 
 #[allow(dead_code)]
+#[allow(clippy::large_enum_variant)]
 #[derive(Facet)]
 #[repr(u8)]
 pub enum OpendoorResponse {
@@ -40,11 +40,15 @@ pub(crate) async fn opendoor(
             FacetJson(OpendoorResponse::ListAllUsers { all_users }).into_reply()
         }
         OpendoorRequest::SetGiftedTier { user_id, tier } => {
-            let conn = ts.pool.get()?;
             let query = "UPDATE users SET gifted_tier = ? WHERE id = ?";
             let tier_param = tier.as_deref();
 
-            match conn.execute(query, rusqlite::params![tier_param, user_id]) {
+            let query_result = {
+                let conn = ts.pool.get()?;
+                conn.execute(query, rusqlite::params![tier_param, user_id])
+            };
+
+            match query_result {
                 Ok(rows_affected) => {
                     if rows_affected == 0 {
                         return Err(eyre::eyre!("User not found").into());
@@ -60,11 +64,6 @@ pub(crate) async fn opendoor(
                             return Err(e.into());
                         }
                     };
-
-                    // Synchronize Discord roles if user has Discord profile
-                    if let Err(e) = synchronize_one_discord_role(&ts, &user_info).await {
-                        log::error!("Failed to sync Discord roles after updating gifted tier: {e}");
-                    }
 
                     FacetJson(OpendoorResponse::SetGiftedTier { user_info }).into_reply()
                 }

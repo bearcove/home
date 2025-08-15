@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
+use config_types::TenantDomain;
 use credentials::{DiscordChannelId, DiscordRoleId, DiscordUserId, FasterthanlimeTier, UserInfo};
 use eyre::Result;
 use libdiscord::DiscordGuild;
@@ -9,6 +11,7 @@ use mom_types::AllUsers;
 use crate::impls::MomTenantState;
 
 /// Gathered when starting up a discord role synchronization
+#[derive(Clone)]
 struct DiscordRolesContext {
     guild: DiscordGuild,
     tier_role_map: HashMap<FasterthanlimeTier, DiscordRoleId>,
@@ -22,7 +25,24 @@ enum RoleChange {
     Remove,
 }
 
+// Cache for Discord roles context, keyed by tenant name
+static DISCORD_ROLES_CACHE: std::sync::LazyLock<
+    Arc<Mutex<HashMap<TenantDomain, DiscordRolesContext>>>,
+> = std::sync::LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
+
 async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRolesContext> {
+    let cache_key = ts.ti.tc.name.clone();
+
+    // Check cache first
+    {
+        let cache = DISCORD_ROLES_CACHE.lock().unwrap();
+        if let Some(cached_context) = cache.get(&cache_key) {
+            log::debug!("Using cached Discord roles context for tenant: {cache_key}");
+            return Ok(cached_context.clone());
+        }
+    }
+
+    log::debug!("Fetching fresh Discord roles context for tenant: {cache_key}");
     let discord_mod = libdiscord::load();
 
     // Fetch first guild the bot is in
@@ -75,11 +95,19 @@ async fn gather_discord_roles_context(ts: &MomTenantState) -> Result<DiscordRole
         log::warn!("No #lobby channel found in guild!");
     }
 
-    Ok(DiscordRolesContext {
+    let context = DiscordRolesContext {
         guild,
         tier_role_map,
         channel_ids,
-    })
+    };
+
+    // Cache the result
+    {
+        let mut cache = DISCORD_ROLES_CACHE.lock().unwrap();
+        cache.insert(cache_key, context.clone());
+    }
+
+    Ok(context)
 }
 
 impl DiscordRolesContext {

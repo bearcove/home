@@ -703,55 +703,33 @@ pub(crate) async fn refresh_userinfo(
         }
     };
 
-    // Check if the user is in Discord by querying the Discord API and updating the database
-    let in_discord = if let Some(discord_profile) = &discord {
-        let discord_mod = libdiscord::load();
-
-        // Get the first guild the bot is in
-        let guilds = discord_mod.list_bot_guilds(&ts.ti.tc).await?;
-        if let Some(guild) = guilds.first() {
-            // Try to fetch the member from Discord
-            match discord_mod
-                .get_guild_member(&guild.id, &discord_profile.id, &ts.ti.tc)
-                .await
-            {
-                Ok(_member) => {
-                    // Member exists in Discord, insert/update in database
-                    let conn = ts.pool.get()?;
-                    conn.execute(
-                        "INSERT OR REPLACE INTO discord_guild_members (guild_id, user_id) VALUES (?1, ?2)",
-                        [guild.id.as_str(), discord_profile.id.as_str()],
-                    )?;
-                    true
-                }
-                Err(_) => {
-                    // Member doesn't exist in Discord, remove from database
-                    let conn = ts.pool.get()?;
-                    conn.execute(
-                        "DELETE FROM discord_guild_members WHERE guild_id = ?1 AND user_id = ?2",
-                        [guild.id.as_str(), discord_profile.id.as_str()],
-                    )?;
-                    false
-                }
-            }
-        } else {
-            false
-        }
-    } else {
-        false
-    };
-
-    let user_info = UserInfo {
+    let mut user_info = UserInfo {
         id,
         fetched_at: OffsetDateTime::now_utc(),
         gifted_tier,
         patreon,
         github,
         discord,
-        in_discord,
+        in_discord: false,
     };
 
     discord_roles::synchronize_one_discord_role(ts, &user_info).await?;
+
+    // Check if the user is in Discord by querying the database
+    let in_discord = if let Some(discord_profile) = &user_info.discord {
+        let conn = ts.pool.get()?;
+        let exists: bool = conn
+            .query_row(
+                "SELECT 1 FROM discord_guild_members WHERE user_id = ?1 LIMIT 1",
+                [discord_profile.id.as_str()],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
+        exists
+    } else {
+        false
+    };
+    user_info.in_discord = in_discord;
 
     Ok(user_info)
 }
