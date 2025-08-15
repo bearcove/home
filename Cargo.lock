@@ -1791,9 +1791,9 @@ dependencies = [
 
 [[package]]
 name = "facet-json"
-version = "0.28.1"
+version = "0.28.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47f738c64eb5182e947a27c5743e0edf11b201328a1646aee46615991e6b331b"
+checksum = "3c330a456c68e333d5f64378beaa72e442ec08a401f50c346d40a97db692a999"
 dependencies = [
  "facet-core",
  "facet-deserialize",
