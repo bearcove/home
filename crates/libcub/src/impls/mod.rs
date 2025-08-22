@@ -83,13 +83,13 @@ pub(crate) async fn serve(
     let otlp_exporter = opentelemetry_otlp::SpanExporter::builder()
         .with_http()
         .with_protocol(Protocol::HttpBinary)
-        .with_endpoint("https://api.eu1.honeycomb.io")
+        .with_endpoint("https://api.eu1.honeycomb.io/v1/traces")
         .with_headers(otlp_headers)
         .build()?;
 
     // Create a tracer provider with the exporter
     let tracer_provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
-        .with_simple_exporter(otlp_exporter)
+        .with_batch_exporter(otlp_exporter)
         .with_resource(
             Resource::builder()
                 .with_service_name("cub")
