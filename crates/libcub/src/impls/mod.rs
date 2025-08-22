@@ -91,7 +91,7 @@ pub(crate) async fn serve(
             Resource::builder()
                 .with_service_name("cub")
                 .with_attribute(KeyValue::new(
-                    "hostname",
+                    "host.name",
                     gethostname::gethostname().to_string_lossy().to_string(),
                 ))
                 .build(),
