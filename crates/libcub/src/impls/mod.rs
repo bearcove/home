@@ -23,9 +23,7 @@ use mom_event_handler::spawn_mom_event_handler;
 use mom_types::{AllUsers, MomEvent};
 use node_metadata::{NodeMetadata, load_node_metadata};
 use opentelemetry::KeyValue;
-use opentelemetry_otlp::{
-    Protocol, WithExportConfig as _, WithTonicConfig, tonic_types::metadata::MetadataMap,
-};
+use opentelemetry_otlp::{Protocol, WithExportConfig as _, WithHttpConfig};
 use opentelemetry_sdk::Resource;
 use parking_lot::RwLock;
 use reply::{LegacyHttpError, LegacyReply};
@@ -67,10 +65,10 @@ pub(crate) async fn serve(
     let metadata = load_node_metadata().await?;
 
     let mut valid_otlp = true;
-    let mut otlp_metadata = MetadataMap::new();
+    let mut otlp_headers: HashMap<String, String> = Default::default();
     match cc.honeycomb_secrets.as_ref() {
         Some(hs) => {
-            otlp_metadata.insert("x-honeycomb-team", hs.api_key.parse().unwrap());
+            otlp_headers.insert("x-honeycomb-team".to_string(), hs.api_key.to_string());
         }
         None => {
             log::warn!("No honeycomb API key set! Traces won't be sent anywhere.");
@@ -83,10 +81,10 @@ pub(crate) async fn serve(
 
     // Initialize OTLP exporter using the GRPC protocol
     let otlp_exporter = opentelemetry_otlp::SpanExporter::builder()
-        .with_tonic()
-        .with_protocol(Protocol::Grpc)
-        .with_endpoint("api.eu1.honeycomb.io:443")
-        .with_metadata(otlp_metadata)
+        .with_http()
+        .with_protocol(Protocol::HttpBinary)
+        .with_endpoint("https://api.eu1.honeycomb.io")
+        .with_headers(otlp_headers)
         .build()?;
 
     // Create a tracer provider with the exporter
