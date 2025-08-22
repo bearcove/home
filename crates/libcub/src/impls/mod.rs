@@ -22,6 +22,9 @@ use log::{info, warn};
 use mom_event_handler::spawn_mom_event_handler;
 use mom_types::{AllUsers, MomEvent};
 use node_metadata::{NodeMetadata, load_node_metadata};
+use opentelemetry::KeyValue;
+use opentelemetry_otlp::{Protocol, WithExportConfig as _, WithHttpConfig};
+use opentelemetry_sdk::Resource;
 use parking_lot::RwLock;
 use reply::{LegacyHttpError, LegacyReply};
 use std::collections::HashMap;
@@ -59,6 +62,45 @@ pub(crate) async fn serve(
     ln: TcpListener,
     open_behavior: OpenBehavior,
 ) -> eyre::Result<()> {
+    let mut valid_otlp = true;
+    let otlp_headers: HashMap<String, String> = Default::default();
+    match cc.honeycomb_secrets.as_ref() {
+        Some(hs) => {
+            otlp_headers.insert("x-honeycomb-team".to_string(), hs.api_key.clone());
+        }
+        None => {
+            log::warn!("No honeycomb API key set! Traces won't be sent anywhere.");
+            if is_production() {
+                panic!("No honeycomb API key set, bailing out");
+            }
+        }
+    }
+
+    // Initialize OTLP exporter using the GRPC protocol
+    let otlp_exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_http()
+        .with_protocol(Protocol::Grpc)
+        .with_endpoint("api.eu1.honeycomb.io:443")
+        .with_headers(otlp_headers)
+        .build()?;
+
+    // Create a tracer provider with the exporter
+    let tracer_provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
+        .with_simple_exporter(otlp_exporter)
+        .with_resource(
+            Resource::builder()
+                .with_service_name("cub")
+                .with_attribute(KeyValue::new(
+                    "hostname",
+                    gethostname::gethostname().to_string_lossy().to_string(),
+                ))
+                .build(),
+        )
+        .build();
+
+    // Set it as the global provider
+    opentelemetry::global::set_tracer_provider(tracer_provider);
+
     let metadata = load_node_metadata().await?;
 
     let web = WebConfig {

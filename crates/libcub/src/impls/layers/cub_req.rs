@@ -7,6 +7,10 @@ use axum::{
     response::IntoResponse as _,
 };
 use futures_core::future::BoxFuture;
+use opentelemetry::{
+    KeyValue,
+    trace::{FutureExt, TraceContextExt, Tracer},
+};
 use tower::{Layer, Service};
 use tower_cookies::Cookies;
 use url::form_urlencoded;
@@ -70,10 +74,161 @@ where
                     // Insert CubReqImpl as an extension
                     parts.extensions.insert(cub_req);
 
+                    let tracer = opentelemetry::global::tracer("http");
+                    let method = &parts.method;
+                    let uri = &parts.uri;
+
+                    let mut span = tracer.span_builder(format!("{method} {uri}"));
+                    let mut attributes: Vec<KeyValue> = vec![];
+                    // HTTP request method (required)
+                    attributes.push(opentelemetry::KeyValue::new(
+                        "http.request.method",
+                        parts.method.to_string(),
+                    ));
+
+                    // URL path (required for server spans)
+                    attributes.push(opentelemetry::KeyValue::new(
+                        "url.path",
+                        parts.uri.path().to_string(),
+                    ));
+
+                    // URL scheme (required for server spans)
+                    let scheme = parts.uri.scheme_str().unwrap_or("http").to_string();
+                    attributes.push(opentelemetry::KeyValue::new("url.scheme", scheme.clone()));
+
+                    // URL query (conditionally required if present)
+                    if let Some(query) = parts.uri.query() {
+                        attributes
+                            .push(opentelemetry::KeyValue::new("url.query", query.to_string()));
+                    }
+
+                    // Client address from various headers (recommended)
+                    if let Some(forwarded_for) = parts.headers.get("x-forwarded-for") {
+                        if let Ok(forwarded_str) = forwarded_for.to_str() {
+                            // Take the first IP from the comma-separated list
+                            let client_ip = forwarded_str
+                                .split(',')
+                                .next()
+                                .unwrap_or(forwarded_str)
+                                .trim();
+                            attributes.push(opentelemetry::KeyValue::new(
+                                "client.address",
+                                client_ip.to_string(),
+                            ));
+                        }
+                    } else if let Some(real_ip) = parts.headers.get("x-real-ip") {
+                        if let Ok(ip_str) = real_ip.to_str() {
+                            attributes.push(opentelemetry::KeyValue::new(
+                                "client.address",
+                                ip_str.to_string(),
+                            ));
+                        }
+                    }
+
+                    // User agent (recommended)
+                    if let Some(user_agent) = parts.headers.get("user-agent") {
+                        if let Ok(ua_str) = user_agent.to_str() {
+                            attributes.push(opentelemetry::KeyValue::new(
+                                "user_agent.original",
+                                ua_str.to_string(),
+                            ));
+                        }
+                    }
+
+                    // Server address and port from Host header (recommended)
+                    if let Some(host_header) = parts.headers.get("host") {
+                        if let Ok(host_str) = host_header.to_str() {
+                            if let Some((server_addr, server_port)) = host_str.split_once(':') {
+                                attributes.push(opentelemetry::KeyValue::new(
+                                    "server.address",
+                                    server_addr.to_string(),
+                                ));
+                                if let Ok(port) = server_port.parse::<i64>() {
+                                    attributes
+                                        .push(opentelemetry::KeyValue::new("server.port", port));
+                                }
+                            } else {
+                                attributes.push(opentelemetry::KeyValue::new(
+                                    "server.address",
+                                    host_str.to_string(),
+                                ));
+                                // Default ports based on scheme
+                                let default_port = if scheme == "https" { 443 } else { 80 };
+                                attributes.push(opentelemetry::KeyValue::new(
+                                    "server.port",
+                                    default_port,
+                                ));
+                            }
+                        }
+                    }
+
+                    // Network protocol name and version (conditionally required)
+                    attributes.push(opentelemetry::KeyValue::new(
+                        "network.protocol.name",
+                        "http",
+                    ));
+                    // HTTP version detection based on the request
+                    let protocol_version = match parts.version {
+                        axum::http::Version::HTTP_09 => "0.9",
+                        axum::http::Version::HTTP_10 => "1.0",
+                        axum::http::Version::HTTP_11 => "1.1",
+                        axum::http::Version::HTTP_2 => "2",
+                        axum::http::Version::HTTP_3 => "3",
+                        _ => "1.1", // default fallback
+                    };
+                    attributes.push(opentelemetry::KeyValue::new(
+                        "network.protocol.version",
+                        protocol_version,
+                    ));
+                    span = span.with_attributes(attributes);
+                    let span = span.start(&tracer);
+                    let otel_cx = opentelemetry::context::Context::current_with_span(span);
+
                     // Reconstruct the request and continue
                     let req = Request::from_parts(parts, body);
                     let mut inner_service = inner;
-                    inner_service.call(req).await
+                    let res = inner_service.call(req).with_context(otel_cx.clone()).await;
+                    match &res {
+                        Ok(http_res) => {
+                            let span = otel_cx.span();
+
+                            // Set the HTTP response status code
+                            span.set_attribute(opentelemetry::KeyValue::new(
+                                "http.response.status_code",
+                                http_res.status().as_u16() as i64,
+                            ));
+
+                            // Set HTTP response headers (Opt-In)
+                            for (name, value) in http_res.headers() {
+                                if let Ok(value_str) = value.to_str() {
+                                    let header_key = format!(
+                                        "http.response.header.{}",
+                                        name.as_str().to_lowercase()
+                                    );
+                                    span.set_attribute(opentelemetry::KeyValue::new(
+                                        header_key,
+                                        value_str.to_string(),
+                                    ));
+                                }
+                            }
+
+                            // Set response body size if Content-Length header is present (Opt-In)
+                            if let Some(content_length) = http_res.headers().get("content-length") {
+                                if let Ok(length_str) = content_length.to_str() {
+                                    if let Ok(length) = length_str.parse::<i64>() {
+                                        span.set_attribute(opentelemetry::KeyValue::new(
+                                            "http.response.body.size",
+                                            length,
+                                        ));
+                                    }
+                                }
+                            }
+                        }
+                        Err(_e) => {
+                            // muffin
+                        }
+                    }
+                    res
                 }
                 Err(legacy_reply) => {
                     // Convert the legacy reply error into a response and return early
