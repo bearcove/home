@@ -62,8 +62,10 @@ pub(crate) async fn serve(
     ln: TcpListener,
     open_behavior: OpenBehavior,
 ) -> eyre::Result<()> {
+    let metadata = load_node_metadata().await?;
+
     let mut valid_otlp = true;
-    let otlp_headers: HashMap<String, String> = Default::default();
+    let mut otlp_headers: HashMap<String, String> = Default::default();
     match cc.honeycomb_secrets.as_ref() {
         Some(hs) => {
             otlp_headers.insert("x-honeycomb-team".to_string(), hs.api_key.clone());
@@ -73,6 +75,7 @@ pub(crate) async fn serve(
             if is_production() {
                 panic!("No honeycomb API key set, bailing out");
             }
+            valid_otlp = false;
         }
     }
 
@@ -94,14 +97,24 @@ pub(crate) async fn serve(
                     "host.name",
                     gethostname::gethostname().to_string_lossy().to_string(),
                 ))
+                .with_attribute(KeyValue::new(
+                    "deployment.environment",
+                    if is_development() {
+                        "development".to_string()
+                    } else {
+                        "production".to_string()
+                    },
+                ))
+                .with_attribute(KeyValue::new("host.type", metadata.node_type.clone()))
+                .with_attribute(KeyValue::new("cloud.region", metadata.region.clone()))
                 .build(),
         )
         .build();
 
-    // Set it as the global provider
-    opentelemetry::global::set_tracer_provider(tracer_provider);
-
-    let metadata = load_node_metadata().await?;
+    // Set it as the global provider (only if valid)
+    if valid_otlp {
+        opentelemetry::global::set_tracer_provider(tracer_provider);
+    }
 
     let web = WebConfig {
         env: Environment::default(),

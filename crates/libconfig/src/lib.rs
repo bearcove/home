@@ -42,7 +42,23 @@ impl Mod for ModImpl {
             eprintln!("Loading config from {config_path}");
 
             let file_contents = fs_err::read_to_string(config_path)?;
-            let config: CubConfig = serde_json::from_str(&file_contents)?;
+            let mut config: CubConfig = serde_json::from_str(&file_contents)?;
+
+            // Check for Discord secrets in environment variables
+            let honeycomb_secrets = match std::env::var("HOME_HONEYCOMB_API_KEY") {
+                Ok(api_key) => {
+                    log::info!("Found Honeycomb secrets in environment variables");
+                    Some(config_types::HoneycombSecrets { api_key })
+                }
+                _ => {
+                    log::info!(
+                        "No Honeycomb secrets found in environment variables (HOME_HONEYCOMB_API_KEY)",
+                    );
+                    None
+                }
+            };
+            config.honeycomb_secrets = honeycomb_secrets;
+
             return Ok(CubConfigBundle {
                 cc: config,
                 // those will be loaded from mom

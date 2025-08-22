@@ -16,3 +16,4 @@ facet-pretty.workspace = true
 autotrait = "0.2.1"
 eyre.workspace = true
 config-types = { version = "0.1.0", path = "../config-types" }
+log = "0.4.27"

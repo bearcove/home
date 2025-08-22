@@ -3526,6 +3526,7 @@ dependencies = [
  "facet-json",
  "facet-pretty",
  "fs-err",
+ "log",
  "owo-colors",
  "serde_json",
 ]
