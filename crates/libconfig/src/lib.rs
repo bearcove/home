@@ -43,21 +43,7 @@ impl Mod for ModImpl {
 
             let file_contents = fs_err::read_to_string(config_path)?;
             let mut config: CubConfig = serde_json::from_str(&file_contents)?;
-
-            // Check for Discord secrets in environment variables
-            let honeycomb_secrets = match std::env::var("HOME_HONEYCOMB_API_KEY") {
-                Ok(api_key) => {
-                    log::info!("Found Honeycomb secrets in environment variables");
-                    Some(config_types::HoneycombSecrets { api_key })
-                }
-                _ => {
-                    log::info!(
-                        "No Honeycomb secrets found in environment variables (HOME_HONEYCOMB_API_KEY)",
-                    );
-                    None
-                }
-            };
-            config.honeycomb_secrets = honeycomb_secrets;
+            apply_env_overrides(&mut config);
 
             return Ok(CubConfigBundle {
                 cc: config,
@@ -82,7 +68,9 @@ impl Mod for ModImpl {
                 .collect::<Vec<String>>()
                 .join(", ")
         );
-        let cc: CubConfig = serde_json::from_str("{}")?;
+        let mut cc: CubConfig = serde_json::from_str("{}")?;
+        apply_env_overrides(&mut cc);
+
         let mut bundle = CubConfigBundle {
             cc,
             tenants: HashMap::new(),
@@ -128,4 +116,20 @@ impl Mod for ModImpl {
         let config: MomConfig = serde_json::from_str(&fs_err::read_to_string(config_path)?)?;
         Ok(config)
     }
+}
+
+fn apply_env_overrides(config: &mut CubConfig) {
+    let honeycomb_secrets = match std::env::var("HOME_HONEYCOMB_API_KEY") {
+        Ok(api_key) => {
+            log::info!("Found Honeycomb secrets in environment variables");
+            Some(config_types::HoneycombSecrets { api_key })
+        }
+        _ => {
+            log::info!(
+                "No Honeycomb secrets found in environment variables (HOME_HONEYCOMB_API_KEY)",
+            );
+            None
+        }
+    };
+    config.honeycomb_secrets = honeycomb_secrets;
 }
