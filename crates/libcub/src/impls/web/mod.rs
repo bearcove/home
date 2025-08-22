@@ -231,11 +231,20 @@ async fn extra_files(
 }
 
 async fn favicon(rcx: CubReqImpl) -> LegacyReply {
-    let url = rcx
+    let url = match rcx
         .tenant_ref()
         .rev()?
         .rev
-        .asset_url(rcx.web(), InputPathRef::from_str("/content/favicon.png"))?;
+        .asset_url(rcx.web(), InputPathRef::from_str("/content/favicon.png"))
+    {
+        Ok(url) => url,
+        Err(_) => {
+            return Err(LegacyHttpError::with_status(
+                StatusCode::NOT_FOUND,
+                "no favicon for thee",
+            ));
+        }
+    };
     Ok(Redirect::temporary(url.as_str()).into_response())
 }
 
