@@ -11,9 +11,9 @@ eyre = { version = "0.6.12", default-features = false }
 credentials = { path = "../../crates/credentials" }
 jsonapi = { version = "0.7.0" }
 serde = { version = "1.0.219", features = ["derive"] }
-serde_json = { version = "1.0.140" }
+serde_json = { version = "1.0.143" }
 time = { version = "0.3.41" }
-url = { version = "2.5.4" }
+url = { version = "2.5.7" }
 futures-core = "0.3.31"
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 autotrait = "0.2.1"

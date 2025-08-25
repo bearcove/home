@@ -17,7 +17,7 @@ crate-type = ["rlib"]
 [dependencies]
 eyre = { version = "0.6.12", default-features = false }
 credentials = { path = "../../crates/credentials" }
-url = { version = "2.5.4" }
+url = { version = "2.5.7" }
 futures-core = "0.3.31"
 libhttpclient = { version = "0.1.0", path = "../libhttpclient" }
 autotrait = "0.2.1"

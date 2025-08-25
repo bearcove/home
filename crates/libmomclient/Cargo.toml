@@ -10,7 +10,7 @@ crate-type = ["rlib"]
 conflux = { path = "../../crates/conflux" }
 
 # impl deps
-rand = { version = "0.9.1" }
+rand = { version = "0.9.2" }
 tokio = { workspace = true, features = ["time"] }
 credentials = { path = "../../crates/credentials" }
 libpatreon = { path = "../libpatreon" }
@@ -25,6 +25,6 @@ objectstore-types = { version = "0.1.0", path = "../objectstore-types" }
 autotrait = "0.2.1"
 mom-types = { version = "0.1.0", path = "../mom-types" }
 facet-json.workspace = true
-fs-err = { version = "3.1.0", features = ["tokio"] }
+fs-err = { version = "3.1.1", features = ["tokio"] }
 log = "0.4.27"
 libdiscord = { version = "0.1.0", path = "../libdiscord" }

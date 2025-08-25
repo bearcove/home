@@ -12,7 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-camino = "1.1.9"
+camino = "1.1.11"
 config-types = { version = "0.1.0", path = "../config-types" }
 conflux = { version = "0.1.0", path = "../conflux" }
 derivations = { version = "0.1.0", path = "../derivations" }

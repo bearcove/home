@@ -16,13 +16,13 @@ image = { version = "0.25.6", default-features = false, features = [
     "avif",
     "avif-native",
 ] }
-ravif = { version = "0.11.12" }
-rgb = { version = "0.8.50" }
+ravif = { version = "0.11.20" }
+rgb = { version = "0.8.52" }
 webp = { version = "0.3.0" }
-jxl-oxide = { version = "0.12.2" }
+jxl-oxide = { version = "0.12.4" }
 jpegxl-rs = { version = "0.11.2", features = ["vendored"] }
-tempfile = { version = "3.20.0" }
-fs-err = { version = "3.1.0" }
+tempfile = { version = "3.21.0" }
+fs-err = { version = "3.1.1" }
 num_cpus = { version = "1.17.0" }
 autotrait = "0.2.1"
 eyre.workspace = true

@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-camino = "1.1.9"
+camino = "1.1.11"
 conflux = { version = "0.1.0", path = "../conflux" }
 eyre.workspace = true
-ffmpeg-sidecar = "2.0.6"
+ffmpeg-sidecar = "2.1.0"
 image-types = { version = "0.1.0", path = "../image-types" }
 tokio.workspace = true

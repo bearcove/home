@@ -8,7 +8,7 @@ crate-type = ["rlib"]
 
 [dependencies]
 atomicwrites = { version = "0.4.4" }
-camino = { version = "1.1.9" }
+camino = { version = "1.1.11" }
 closest = { version = "0.1.0", path = "../closest" }
 conflux = { version = "0.1.0", path = "../../crates/conflux" }
 content-type = { version = "0.1.0", path = "../content-type" }
@@ -23,8 +23,8 @@ futures-core = "0.3.31"
 libimage = { version = "0.1.0", path = "../libimage" }
 itertools = { version = "0.14.0" }
 libmarkdown = { version = "0.1.0", path = "../libmarkdown" }
-rayon = { version = "1.10.0" }
-redb = { version = "2.6.0" }
+rayon = { version = "1.11.0" }
+redb = { version = "2.6.3" }
 seahash = { version = "4.1.0" }
 libsearch = { version = "0.1.0", path = "../libsearch" }
 libsvg = { version = "0.1.0", path = "../libsvg" }
@@ -39,7 +39,7 @@ image-types = { version = "0.1.0", path = "../image-types" }
 template-types = { version = "0.1.0", path = "../template-types" }
 markdown-types = { version = "0.1.0", path = "../markdown-types" }
 autotrait = "0.2.1"
-fs-err = { version = "3.1.0", features = ["tokio"] }
+fs-err = { version = "3.1.1", features = ["tokio"] }
 facet.workspace = true
 facet-yaml = "0.28.0"
 log = "0.4.27"
