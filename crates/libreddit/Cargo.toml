@@ -8,7 +8,7 @@ crate-type = ["rlib"]
 
 [dependencies]
 libhttpclient = { path = "../libhttpclient" }
-url = { version = "2.5.4" }
+url = { version = "2.5.7" }
 futures-core = "0.3.31"
 eyre.workspace = true
 autotrait = "0.2.1"

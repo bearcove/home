@@ -27,7 +27,7 @@ markdown-types = { version = "0.1.0", path = "../markdown-types" }
 config-types = { version = "0.1.0", path = "../config-types" }
 indoc = "2.0.6"
 insta = "1.43.1"
-camino = "1.1.9"
+camino = "1.1.11"
 
 [features]
 default = ["impl"]

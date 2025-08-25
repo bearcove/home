@@ -11,8 +11,8 @@ futures-util = "0.3.31"
 bytes = "1"
 
 # impl deps
-object_store = { version = "0.12.1", features = ["aws"] }
-tokio = { version = "1.45" }
+object_store = { version = "0.12.3", features = ["aws"] }
+tokio = { version = "1.47" }
 futures-core = "0.3.31"
 autotrait = "0.2.1"
 config-types = { version = "0.1.0", path = "../config-types" }

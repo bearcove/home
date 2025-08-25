@@ -28,11 +28,11 @@ debug = 1
 lto = "off"
 
 [workspace.dependencies]
-tokio = { version = "1.45.1", features = ["full"] }
+tokio = { version = "1.47.1", features = ["full"] }
 serde = { version = "1.0.219", features = ["derive"] }
 rusqlite = { version = "0.36.0", default-features = false, features = ["time"] }
 eyre = "0.6.12"
-minijinja = { version = "2.10.2" }
-facet = { version = "0.28.0", features = ["camino", "ordered-float", "time"] }
+minijinja = { version = "2.12.0" }
+facet = { version = "0.28.1", features = ["camino", "ordered-float", "time"] }
 facet-json = { version = "0.28.2" }
 facet-pretty = { version = "0.28.0" }
