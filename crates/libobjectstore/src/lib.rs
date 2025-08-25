@@ -26,7 +26,7 @@ pub struct PutResult {
 }
 
 /// Options for a put_multipart request
-pub type PutMultipartOpts = PutOptions;
+pub type PutMultipartOptions = PutOptions;
 
 #[derive(Clone)]
 pub enum GetRange {
@@ -198,8 +198,8 @@ fn from_spec_put_opts(opts: PutOptions) -> object_store::PutOptions {
     out
 }
 
-fn from_spec_put_multipart_opts(opts: PutMultipartOpts) -> object_store::PutMultipartOpts {
-    let mut out = object_store::PutMultipartOpts::default();
+fn from_spec_put_multipart_opts(opts: PutMultipartOptions) -> object_store::PutMultipartOptions {
+    let mut out = object_store::PutMultipartOptions::default();
     if let Some(content_type) = opts.content_type {
         out.attributes.insert(
             object_store::Attribute::ContentType,
@@ -262,7 +262,7 @@ impl ObjectStore for ObjectStoreWrapper {
     fn put_multipart_opts(
         &self,
         key: &ObjectStoreKeyRef,
-        payload: PutMultipartOpts,
+        payload: PutMultipartOptions,
     ) -> BoxFuture<'_, Result<Box<dyn MultipartUpload>>> {
         let path = Path::from(key.as_str());
         Box::pin(async move {
@@ -504,7 +504,7 @@ impl ObjectStore for LayeredStore {
     fn put_multipart_opts(
         &self,
         _key: &ObjectStoreKeyRef,
-        _payload: PutMultipartOpts,
+        _payload: PutMultipartOptions,
     ) -> BoxFuture<'_, Result<Box<dyn MultipartUpload>>> {
         Box::pin(async move {
             Err(Error {
