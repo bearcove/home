@@ -314,6 +314,8 @@ pub(crate) struct Performer {
     pub(crate) screen: Screen,
     pub(crate) alt_screen: Screen,
     pub(crate) strict: bool,
+    // for ESC 7/8
+    pub(crate) saved_cursor_pos: Option<(usize, usize)>,
 }
 
 impl Perform for Performer {
@@ -739,7 +741,10 @@ impl Perform for Performer {
                     }
                 }
             }
-            b'H' => {
+            b'H' | b'f' => {
+                // H = CUP (Cursor position)
+                // f = HVP (Horizontal and vertical position)
+
                 // cursor position
                 let mut params = params.iter();
                 let row = params.next().unwrap_or(&[1])[0] as usize;
@@ -787,6 +792,23 @@ impl Perform for Performer {
 
     fn esc_dispatch(&mut self, _intermediates: &[u8], _ignore: bool, _byte: u8) {
         log::debug!("esc_dispatch: {:?} {:?}", _intermediates, _byte as char);
+
+        match _byte {
+            b'7' => {
+                // ESC 7 - Save Cursor (DECSC)
+                self.saved_cursor_pos = Some((self.screen.row, self.screen.col));
+            }
+            b'8' => {
+                // ESC 8 - Restore Cursor (DECRC)
+                if let Some((row, col)) = self.saved_cursor_pos {
+                    self.screen.row = row;
+                    self.screen.col = col;
+                }
+            }
+            _ => {
+                // Other ESC sequences - currently ignored
+            }
+        }
     }
 }
 
