@@ -427,6 +427,11 @@ impl Perform for Performer {
             action as char
         );
 
+        if !intermediates.is_empty() {
+            // trying to interpret those will be more trouble than it's worth
+            return;
+        }
+
         match action {
             b'm' => {
                 let mut params = params.iter();
