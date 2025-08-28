@@ -1,5 +1,4 @@
-use facet_pretty::FacetPretty;
-use skelly::{eyre, log};
+use skelly::eyre;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -12,8 +11,6 @@ async fn main() -> eyre::Result<()> {
         .collect();
     let args_slice: &'static [&'static str] = Box::leak(args_str.into_boxed_slice());
     let args: libterm::Args = facet_args::from_slice(args_slice).map_err(|e| e.into_owned())?;
-
-    log::info!("Args: {}", args.pretty());
 
     libterm::load().run(args);
 

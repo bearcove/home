@@ -118,8 +118,6 @@ pub fn setup() {
             log::warn!("Invalid SKELLY_PARENT_PID value: {parent_pid_str}");
         }
     }
-
-    eprintln!("skelly setup is complete");
 }
 
 fn watch_parent_process(parent_pid: usize) {
