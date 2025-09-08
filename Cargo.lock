@@ -2395,7 +2395,6 @@ name = "home-term"
 version = "0.1.0"
 dependencies = [
  "facet-args",
- "facet-pretty",
  "libterm",
  "skelly",
  "tokio",

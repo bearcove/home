@@ -24,9 +24,8 @@ pub struct Args {
     /// Print CSS
     #[facet(long)]
     pub css: bool,
-    //
     // /// Positional arguments — TODO: https://github.com/facet-rs/facet/pull/679
-    // #[facet()]
+    // #[facet(positional)]
     // pub args: Vec<String>,
 }
 
