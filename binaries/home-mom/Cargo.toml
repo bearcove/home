@@ -15,7 +15,7 @@ categories.workspace = true
 camino = "1.1.11"
 config-types = { version = "0.1.0", path = "../../crates/config-types" }
 facet.workspace = true
-facet-args = "0.28.0"
+facet-args = "0.28.1"
 facet-pretty.workspace = true
 fs-err = { version = "3.1.1", features = ["tokio"] }
 libconfig = { version = "0.1.0", path = "../../crates/libconfig" }
