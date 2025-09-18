@@ -41,5 +41,5 @@ markdown-types = { version = "0.1.0", path = "../markdown-types" }
 autotrait = "0.2.1"
 fs-err = { version = "3.1.1", features = ["tokio"] }
 facet.workspace = true
-facet-yaml = "0.28.0"
+facet-yaml.workspace = true
 log = "0.4.27"

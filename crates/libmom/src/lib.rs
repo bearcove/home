@@ -12,7 +12,7 @@ use mom_types::MomServeArgs;
 
 #[autotrait]
 impl Mod for ModImpl {
-    fn serve(&self, args: MomServeArgs) -> BoxFuture<Result<()>> {
+    fn serve<'fut>(&'fut self, args: MomServeArgs) -> BoxFuture<'fut, Result<()>> {
         Box::pin(impls::serve(args))
     }
 }

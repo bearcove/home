@@ -24,9 +24,10 @@ pub struct Args {
     /// Print CSS
     #[facet(long)]
     pub css: bool,
-    // /// Positional arguments — TODO: https://github.com/facet-rs/facet/pull/679
-    // #[facet(positional)]
-    // pub args: Vec<String>,
+
+    /// Positional arguments — TODO: https://github.com/facet-rs/facet/pull/679
+    #[facet(positional)]
+    pub args: Vec<String>,
 }
 
 #[autotrait]
@@ -201,7 +202,7 @@ impl Mod for ModImpl {
 
         eprintln!("✂️ Welcome to home-term, enjoy your favorite shell (set `$SHELL` to override)");
 
-        let child_args: Vec<String> = vec![];
+        let child_args: Vec<String> = args.args;
         let pty_system = portable_pty::native_pty_system();
 
         let (w, h) = term_size::dimensions().unwrap_or((80, 24));

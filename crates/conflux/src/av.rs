@@ -260,7 +260,7 @@ impl std::fmt::Display for VideoVariantContentType<'_> {
 
 impl VideoVariant {
     /// Returns a struct that implements Display for the full content-type header value
-    pub fn qualified_content_type(&self) -> VideoVariantContentType {
+    pub fn qualified_content_type<'a>(&'a self) -> VideoVariantContentType<'a> {
         VideoVariantContentType(self)
     }
 }
