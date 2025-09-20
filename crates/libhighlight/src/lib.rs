@@ -59,6 +59,7 @@ const HIGHLIGHT_NAMES: &[&str] = &[
     "text.title",
     "punctuation.special",
     "text.strikethrough",
+    "spell",
 ];
 
 #[autotrait]
@@ -168,8 +169,8 @@ impl Mod for ModImpl {
                         .get(lang_name)
                         .and_then(|lang| lang.conf.as_ref());
                     match &res {
-                        Some(_) => log::trace!("💉 Injecting {lang_name}"),
-                        None => log::trace!("No language found for {lang_name} injection"),
+                        Some(_) => log::debug!("💉 Injecting {lang_name}"),
+                        None => log::debug!("No language found for {lang_name} injection"),
                     }
                     res
                 })?;
@@ -183,7 +184,7 @@ impl Mod for ModImpl {
                         write_code_escaped(w, &params.source[start..end]).unwrap();
                     }
                     HighlightEvent::HighlightStart(Highlight(i)) => {
-                        log::trace!("Starting highlight {} (.hh{i})", HIGHLIGHT_NAMES[i]);
+                        log::debug!("Starting highlight {} (.hh{i})", HIGHLIGHT_NAMES[i]);
                         write!(w, r#"<i class=hh{i}>"#).unwrap();
                     }
                     HighlightEvent::HighlightEnd => {
