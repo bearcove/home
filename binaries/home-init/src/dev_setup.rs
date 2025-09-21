@@ -78,54 +78,6 @@ pub(crate) async fn perform_dev_setup(base_dir: &Utf8Path) -> eyre::Result<()> {
     Ok(())
 }
 
-pub fn generate_config(tenant_name: &str) -> serde_json::Value {
-    let random_cookie_sauce: String = std::iter::repeat_with(fastrand::alphanumeric)
-        .take(64)
-        .collect();
-
-    serde_json::json!({
-        "tenants": {
-            tenant_name: {
-                "base_dir": ".",
-                "object_storage": {
-                    "bucket": format!("home-assets-{}", tenant_name.replace('.', "-")),
-                    "region": "nbg1",
-                    "endpoint": "https://nbg1.your-objectstorage.com"
-                },
-                "secrets": {
-                    "cookie_sauce": random_cookie_sauce,
-                    "aws": {
-                        "access_key_id": "FILL-ME",
-                        "secret_access_key": "FILL-ME"
-                    },
-                    "patreon": {
-                        "oauth_client_id": "FILL-ME",
-                        "oauth_client_secret": "FILL-ME"
-                    },
-                    "github": {
-                        "oauth_client_id": "FILL-ME",
-                        "oauth_client_secret": "FILL-ME"
-                    }
-                },
-            }
-        },
-        "disk_cache_size": "200 MiB",
-        "env": "development",
-        "address": "127.0.0.1:1111",
-        "watch": true,
-        "mom_base_url": "http://mom.snug.blog:1118",
-        "secrets": {
-            "mom": {
-                "api_key": "mom_DUMMY_API_KEY"
-            },
-            "reddit": {
-                "oauth_client_id": "FILL-ME",
-                "oauth_client_secret": "FILL-ME"
-            }
-        }
-    })
-}
-
 #[derive(Debug)]
 struct FileInfo {
     path: String,
@@ -138,12 +90,12 @@ struct ProjectChangeSet {
 }
 
 impl ProjectChangeSet {
-    fn new(config: serde_json::Value) -> eyre::Result<Self> {
+    fn new() -> eyre::Result<Self> {
         Ok(Self {
             files: vec![
                 FileInfo {
                     path: "home.json".to_string(),
-                    content: serde_json::to_string_pretty(&config)?,
+                    content: r#"{ "id": "example.org" }"#.to_string(),
                 },
                 FileInfo {
                     path: "content/_index.md".to_string(),
@@ -214,8 +166,7 @@ pub async fn init_project(dir: &camino::Utf8Path, force: bool) -> eyre::Result<(
             absolute_dir
         ))?;
 
-    let config = generate_config(tenant_name);
-    let change_set = ProjectChangeSet::new(config)?;
+    let change_set = ProjectChangeSet::new()?;
 
     let existing_files = change_set.check_existing_files(dir).await?;
 
